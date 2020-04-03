@@ -8,7 +8,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 * a web server (e.g., Apache) that can run PHP and CGI scripts (e.g., mod_php and mod_cgi enabled);
 * Python 3 with the following packages: astropy, ephem;
-* a modern browser with HTML5 support (Visploat may load but not display correctly on older browsers, or it may fail to load at all);
+* a modern browser with HTML5 support (Visplot may load but not display correctly on older browsers, or it may fail to load at all);
 
 ## License
 
