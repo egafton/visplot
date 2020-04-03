@@ -12,7 +12,7 @@ body {
 #canvasFrame{
     padding:12px;
     background: rgba(255, 255, 255, 0);
-    background: url('./img/NOT.jpg');
+    background: url('./tel-NOT/image.jpg');
     background-size: 100% 100%;
     -webkit-box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
     -moz-box-shadow:2px 2px 8px rgba(0, 0, 0, 0.5);
@@ -185,6 +185,10 @@ pre#logger span.loggerWarning {
 }
 pre#logger span.loggerSuccess {
     color:green;
+    display:block;
+}
+pre#logger span.loggerDebug {
+    color: #AAA;
     display:block;
 }
 #left_upper,
