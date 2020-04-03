@@ -3,3 +3,6 @@ __pycache__/
 *.swp
 out/
 cgi-bin/
+test/
+__init__.py
+*.pyc
