@@ -12,4 +12,4 @@ These instructions will get you a copy of the project up and running on your loc
 
 ## License
 
-Visplot is released under the GNU General Public License, version 3 (GPL3) license. See [COPYING.md] for the full text of the license.
+Visplot is released under the GNU General Public License, version 3 (GPL3) license. See [LICENSE.md] for the full text of the license.
