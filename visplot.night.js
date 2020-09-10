@@ -76,6 +76,8 @@ Night.prototype.setEphemerides = function (obj) {
     var sret = sla.rdplan(this.Sunset + this.dut, "Sun", Driver.obs_lon_rad, Driver.obs_lat_rad);
     var mret = sla.rdplan(this.Sunset + this.dut, "Moon", Driver.obs_lon_rad, Driver.obs_lat_rad);
     var sep = sla.dsep(sret.ra, sret.dec, mret.ra, mret.dec);
+    this.moonra = mret.ra;
+    this.moondec = mret.dec;
     this.MoonIllStart = (1 - Math.cos(sep)) * 0.5 * 100;
     
     // Next noon; sunrise; morning twilight
@@ -101,6 +103,7 @@ Night.prototype.setEphemerides = function (obj) {
     var ut;
     
     var ell, diam, aop;
+    var moonra = [], moondec = [];
 
     for (i = 0; i < this.Nx; i += 1) {          // ... and its initialization
         ut = this.Sunset + this.xstep * i;

@@ -91,7 +91,6 @@ TargetList.prototype.targetStringToJSON = function (line) {
     obj.name = dat[0];
     obj.UTstart = night.ENauTwilight;
     obj.UTend = night.MNauTwilight;
-    obj.mdist = 0;
     obj.fillslot = false;
     obj.project = dat[9];
     obj.J2000 = {0:dat[1], 1:dat[4]};
@@ -101,7 +100,7 @@ TargetList.prototype.targetStringToJSON = function (line) {
     obj.line = Array();
     obj.dec = dat[4];
     obj.type = dat[11];
-    obj.exptime = parseFloat(dat[8]);
+    obj.exptime = parseFloat(dat[8])/86400.0;
     obj.constraints = dat[10];
     obj.inputDec = dat[4];
     rax = dat[3].split('/');
@@ -113,6 +112,7 @@ TargetList.prototype.targetStringToJSON = function (line) {
     if (decneg) {
         dec *= -1;
     }
+    obj.mdist = sla.r2d * sla.dsep(night.moonra, night.moondec, ra, dec);
     var pmra, pmdec;
     if (rax.length === 1) {
         pmra = 0;
@@ -150,6 +150,7 @@ TargetList.prototype.targetStringToJSON = function (line) {
         obj.line.push(helper.rad2deg(ell));
     }
     obj.zenithtime = night.xaxis[imax];
+    console.log(obj);
     return obj;
 };
 
@@ -1239,6 +1240,7 @@ Target.prototype.preCompute = function () {
             return;
         }
     }
+    console.log(this);
     driver.targets.Warning2.push(this.Name);
 };
 
