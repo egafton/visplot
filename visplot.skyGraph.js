@@ -88,13 +88,13 @@ SkyGraph.prototype.setup = function (triggered) {
     }
     this.display_coords(this.lastazalt);
     this.display_time();
-    driver.AJAX_GET('tcs.php', function (obj) {
+    /*driver.AJAX_GET('tcs.php', function (obj) {
         if (helper.notFloat(obj.alt) || helper.notFloat(obj.az)) {
             driver.skyGraph.setPointing(null);
         } else {
             driver.skyGraph.setPointing(driver.skyGraph.aatrans([obj.alt, obj.az]));
         }
-    });
+    });*/
 };
 
 SkyGraph.prototype.setPointing = function (xy) {

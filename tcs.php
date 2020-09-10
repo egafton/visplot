@@ -2,7 +2,7 @@
 /*
  * (c) 2016-2017 Emanuel Gafton, NOT/ING
  */
-
+die('');
 ini_set('include_path', '/home/www/html/include');
 require("access_control.inc.php");
 //if (!access_allowed("SKYCAM") && $_SERVER['REMOTE_ADDR'] != '1.1.1.1') { // for debugging purposes
