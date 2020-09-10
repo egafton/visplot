@@ -99,6 +99,7 @@ Night.prototype.setEphemerides = function (obj) {
     var ut;
     
     var ell, diam, aop;
+
     for (i = 0; i < this.Nx; i += 1) {          // ... and its initialization
         ut = this.Sunset + this.xstep * i;
         this.xaxis.push(ut);
@@ -108,8 +109,8 @@ Night.prototype.setEphemerides = function (obj) {
         } else {
             sla.aoppat(ut, aop);
         }
-        this.aoprms[i] = aop;
-        this.amprms = sla.mappa(2000, ut + this.dut);
+        this.aoprms[i] = Object.assign({}, aop);
+        this.amprms[i] = sla.mappa(2000, ut + this.dut);
         // Apparent RA, Dec of Moon
         ret = sla.rdplan(ut + this.dut, "Moon", Driver.obs_lon_rad, Driver.obs_lat_rad);
         diam = ret.diam;

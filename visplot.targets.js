@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016-2018 Emanuel Gafton, NOT/ING.
+ * Copyright (C) 2016-2021 Emanuel Gafton, NOT/ING.
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -79,11 +79,29 @@ function Target(k, obj) {
     this.ExtraInfo = null;
     this.BacklinkToOBQueue = null;
     this.Comments = null;
-};
+}
 
 TargetList.prototype.targetStringToJSON = function (line) {
     var night = driver.night;
     dat = line.split(/\s+/);
+    var obj = {};
+    obj.airmass = parseFloat(dat[10]);
+    obj.name = dat[0];
+    obj.UTstart = night.ENauTwilight;
+    obj.UTend = night.MNauTwilight;
+    obj.mdist = 0;
+    obj.fillslot = false;
+    obj.project = dat[9];
+    obj.J2000 = {0:dat[1], 1:dat[4]};
+    obj.epoch = parseFloat(dat[7]);
+    obj.inputRA = dat[1];
+    obj.ra = dat[1];
+    obj.line = Array();
+    obj.dec = dat[4];
+    obj.type = dat[11];
+    obj.exptime = parseFloat(dat[8]);
+    obj.constraints = dat[10];
+    obj.inputDec = dat[4];
     rax = dat[3].split('/');
     decx = dat[6]. split('/');
     ra = sla.dtf2r(parseInt(dat[1]), parseInt(dat[2]), parseFloat(rax[0]));
@@ -101,7 +119,7 @@ TargetList.prototype.targetStringToJSON = function (line) {
         // convert to radians/year
         pmra = parseFloat(rax[1]) * sla.das2r;
         // Remove the cos(dec) for SLALIB
-        pmra = pmra/Math.cos(dec);
+        pmera = pmra/Math.cos(dec);
     }
     if (decx.length === 1) {
         pmdec = 0;
@@ -109,39 +127,43 @@ TargetList.prototype.targetStringToJSON = function (line) {
         // convert to radians/year
         pmdec = parseFloat(decx[1]) * sla.das2r;
     }
-    epoch = parseFloat(dat[7]);
     
     var stl = helper.stl(night.utcMidnight, night.eqeqx);
-    var ret = sla.mapqk(ra, dec, pmra, pmdec, 0, 0, night.amprms);
+    var ret = sla.mapqk(ra, dec, pmra, pmdec, 0, 0, night.amprms[0]);
     var tsouth = - sla.drange(stl - ret.ra) * sla.r2d / 15;
-    console.log(ra,dec,ret,sla.dr2tf(2, sla.dranrm(tsouth)));
-    
-    var yaxis = [];
     var retap, retob;
+    var imax = 0;
+    var altmax = 0;
     for (i=0; i<night.Nx; i+=1) {
         retap = sla.mapqk(ra, dec, pmra, pmdec, 0, 0, night.amprms[i]);
         retob = sla.aopqk(retap.ra, retap.da, night.aoprms[i]);
+        //console.log(retob.zob);
         // Approximate refracted alt
-        ell = 0.5*Math.PI - sla.refz(0.5*Math.PI-ret.el, night.refa, night.refb);
-        yaxis.push(helper.rad2deg(ell));
+        ell = 0.5*Math.PI - sla.refz(retob.zob, night.ref.refa, night.ref.refb);
+        //console.log(ell);
+        if (ell > altmax) {
+            imax = i;
+            altmax = ell;
+        }
+        obj.line.push(helper.rad2deg(ell));
     }
-    //var alt =
+    obj.zenithtime = night.xaxis[imax];
+    return obj;
 };
 
 TargetList.prototype.setTargets = function (obj) {
-    var i, o, res;
+    var i, o, res = Array();
     var nobj = obj.length;
     for (i = 0; i < nobj; i += 1) {
-        console.log(obj[i]);
-        this.targetStringToJSON (obj[i]);
+        res[i] = this.targetStringToJSON (obj[i]);
     }
-    return;
-    this.nTargets = res.len;
+
+    this.nTargets = res.length;
     this.Targets = [];
     this.resetWarnings();
     this.processOfflineTime();
     for (i = 0; i < this.nTargets; i += 1) {
-        this.Targets[i] = this.processTarget(i, res['object ' + i.toString()], true);
+        this.Targets[i] = this.processTarget(i, res[i], true);
     }
     this.warnUnobservable();
     driver.graph.setTargetsSize(this.nTargets);
@@ -151,15 +173,11 @@ TargetList.prototype.setTargets = function (obj) {
 TargetList.prototype.addTargets = function (obj) {
     var i, o, res, oldNobjects = this.nTargets;
     var nobj = obj.length;
-    for (i = 0; i < nobj; i += 1) {
-        console.log(obj[i]);
-    }
-    return;
     this.nTargets += res.len;
     this.resetWarnings();
     this.processOfflineTime();
     for (i = oldNobjects; i < this.nTargets; i += 1) {
-        this.Targets[i] = this.processTarget(i, res['object ' + (i - oldNobjects).toString()], false);
+        this.Targets[i] = this.processTarget(i, res[i], false);
     }
     this.warnUnobservable();
     driver.graph.setTargetsSize(this.nTargets);
