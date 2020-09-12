@@ -69,6 +69,8 @@ sla.solsid = 1.00273790935;
 sla.c = 173.14463331;
 /* @constant {Number} Km/s to AU/year */
 sla.vf = 0.21094502;
+/* @constant {Number} Small number to avoid arithmetic problems */
+sla.tiny = 1e-30;
 
 /**
  * @summary **Air Mass**
@@ -1563,6 +1565,18 @@ sla.dtt = function (utc) {
 };
 
 /**
+ * Besselian Epoch to MJD.
+ * @summary Conversion of Besselian epoch to Modified Julian Date.
+ * @param {Number} epb - Besselian epoch
+ * @returns {Number} Modified Julian Date (JD - 2400000.5)
+ * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss81.html}
+ */
+sla.epb2d = function (epb) {
+    "use strict";
+    return 15019.81352 + ( epb - 1900.0 ) * 365.242198781;
+};
+
+/**
  * Equation of the equinoxes  (IAU 1994).
  * @summary Equation of the Equinoxes
  * @param {Number} date - TDB (formerly ET) as Modified Julian Date
@@ -1578,6 +1592,160 @@ sla.eqeqx = function (date) {
     var ret = sla.nutc(date);
     return ret.dpsi * Math.cos(ret.eps0) + sla.das2r * (0.00264 * Math.sin(om) +
             0.000063 * Math.sin(om + om));
+};
+
+/**
+ * FK4 to FK5, no P.M. or Parallax 
+ * @summary 
+ * @param {Number} r1950
+ * @returns 
+ * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss94.html}
+ */
+sla.fk45z = function (r1950, d1950, bepoch) {
+    "use strict";
+    var pmf = 100.0 * 60.0 * 60.0 * 360.0 / sla.d2pi;
+    var r0 = sla.dcs2c(r1950, d1950);
+    var i, j;
+
+    /* Adjust vector a to give zero proper motion in FK5 */
+    var w = (bepoch - 1950.0) / pmf;
+    var a1 = [];
+    for (i = 0; i < 3; i++) {
+        a1[i] = sla.fka[i] + w * sla.fkad[i];
+    }
+
+    /* Remove e-terms */
+    var v1 = [];
+    w = r0[0] * a1[0] + r0[1] * a1[1] + r0[2] * a1[2];
+    for (i = 0; i < 3; i++) {
+        v1[i] = r0[i] - a1[i] + w * r0[i];
+    }
+
+    /* Convert position vector to Fricke system */
+    var v2 = [];
+    for (i = 0; i < 6; i++) {
+        w = 0.0;
+        for (j = 0; j < 3; j++) {
+            w += sla.fkem3[i * 3 + j] * v1[j];
+        }
+        v2[i] = w;
+    }
+
+    /* Allow for fictitious proper motion in FK4 */
+    w = (sla.epj(sla.epb2d(bepoch)) - 2000.0) / pmf;
+    for (i = 0; i < 3; i++) {
+        v2[i] += w * v2[i + 3];
+   }
+
+    /* Revert to spherical coordinates */
+    var ret = sla.dcc2s(v2);
+    var r2000 = sla.dranrm(ret.a);
+    return {
+        r2000: r2000,
+        d2000: ret.b
+    };
+};
+
+/**
+ * FK4 to FK5.
+ * @summary 
+ * @param {Number} r1950
+ * @returns {Number})
+ * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss93.html}
+ */
+sla.fk425 = function (r1950, d1950, dr1950, dd1950, p1950, v1950) {
+    "use strict";
+    /* Radians per year to arcsec per century */
+    var pmf = 100.0 * 60.0 * 60.0 * 360.0 / sla.d2pi;
+
+    /* Km per sec to AU per tropical century */
+    var vf = 21.095;
+
+    var i, j;
+
+    /* Pick up B1950 data (units radians and arcsec/tc) */
+    var r = r1950;
+    var d = d1950;
+    var ur = dr1950 * pmf;
+    var ud = dd1950 * pmf;
+    var px = p1950;
+    var rv = v1950;
+
+    /* Spherical to Cartesian */
+    var sr = Math.sin(r);
+    var cr = Math.cos(r);
+    var sd = Math.sin(d);
+    var cd = Math.cos(d);
+
+    var r0 = [cr * cd, sr * cd, sd];
+    var w = vf * rv * px;
+    var rd0 = [
+        ( -sr * cd * ur ) - ( cr * sd * ud ) + ( w * r0[0] ),
+        ( cr * cd * ur ) - ( sr * sd * ud ) + ( w * r0[1] ),
+        ( cd * ud ) + ( w * r0[2] )
+    ];
+
+    /* Allow for e-terms and express as position+velocity 6-vector */
+    w = ( r0[0] * sla.fka[0] ) + ( r0[1] * sla.fka[1] ) + ( r0[2] * sla.fka[2] );
+    var wd = ( r0[0] * sla.fkad[0] ) + ( r0[1] * sla.fkad[1] ) + ( r0[2] * sla.fkad[2] );
+    
+    var v1 = [];
+    for ( i = 0; i < 3; i++ ) {
+        v1[i] = r0[i]  - sla.fka[i]  + w * r0[i];
+        v1[i+3] = rd0[i] - sla.fkad[i] + wd * r0[i];
+    }
+
+    /* Convert position+velocity vector to Fricke system */
+    var v2 = [];
+    for ( i = 0; i < 6; i++ ) {
+        w = 0.0;
+        for ( j = 0; j < 6; j++ ) {
+            w += sla.fkem6[i * 6 + j] * v1[j];
+        }
+        v2[i] = w;
+    }
+
+    /* Revert to spherical coordinates */
+    var x = v2[0];
+    var y = v2[1];
+    var z = v2[2];
+    var xd = v2[3];
+    var yd = v2[4];
+    var zd = v2[5];
+
+    var rxysq = ( x * x ) + ( y * y );
+    var rxyzsq = ( rxysq ) + ( z * z );
+    var rxy = Math.sqrt ( rxysq );
+    var rxyz = Math.sqrt (  rxyzsq );
+    var spxy = ( x * xd ) + ( y * yd );
+    var spxyz = spxy + ( z * zd );
+
+    if ( (x == 0.0) && (y == 0.0) )
+        r = 0.0;
+    else {
+        r = Math.atan2 ( y, x );
+        if ( r < 0.0 )
+            r += sla.d2pi;
+    }
+    d = Math.atan2 ( z, rxy );
+
+    if ( rxy > sla.tiny ) {
+        ur = ( ( x * yd ) - ( y * xd ) ) / rxysq;
+        ud = ( ( zd * rxysq ) - ( z * spxy ) ) / ( rxyzsq * rxy );
+    }
+    if ( px > sla.tiny ) {
+        rv = spxyz / ( px * rxyz * vf );
+        px = px / rxyz;
+    }
+
+    return {
+        r2000: r,
+        d2000: d,
+        dr2000: ur / pmf,
+        dd2000: ud / pmf,
+        v2000: rv,
+        p2000: px
+    };
 };
 
 /**
@@ -4025,6 +4193,7 @@ function assertAlmostEqual(val, ref, tol) {
 sla.performUnitTests = function () {
     "use strict";
     var ret;
+    console.log("Performing slalib unit tests...");
 
     /* sla_AIRMAS */
     assertAlmostEqual(sla.airmas(1.2354), 3.015698990074724, 12);
@@ -4313,6 +4482,20 @@ sla.performUnitTests = function () {
     assertAlmostEqual(ret.dph[1], 0.8036439916076232, 7);
     assertAlmostEqual(ret.dph[2], 0.3484298459102053, 7);
 
+    /* sla_FK45Z */
+    ret = sla.fk45z(1.234, -0.123, 1984);
+    assertAlmostEqual(ret.r2000, 1.244616510731691, 12);
+    assertAlmostEqual(ret.d2000, -0.1214185839586555, 12);
+
+    /* sla_FK425 */
+    ret = sla.fk425(1.234, -0.123, -1e-5, 2e-6, 0.5, 20);
+    assertAlmostEqual(ret.r2000, 1.244117554618727, 8);
+    assertAlmostEqual(ret.d2000, -0.1213164254458709, 12);
+    assertAlmostEqual(ret.dr2000, -9.964265838268711e-6, 17);
+    assertAlmostEqual(ret.dd2000, 2.038065265773541e-6, 12);
+    assertAlmostEqual(ret.p2000, 0.4997443812415410, 12);
+    assertAlmostEqual(ret.v2000, 20.010460915421010, 11);
+
     /* sla_FK52H */
     ret = sla.fk52h(1.234, -0.987, 1e-6, -2e-6);
     assertAlmostEqual(ret.rh, 1.234000000272122558, 13);
@@ -4481,6 +4664,8 @@ sla.performUnitTests = function () {
 
     /* sla_ZD */
     assertAlmostEqual(sla.zd(-1.023, -0.876, -0.432), 0.8963914139430839, 12);
+
+    console.log("Done.");
 };
 
 sla.performUnitTests();

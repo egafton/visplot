@@ -430,8 +430,8 @@ Driver.prototype.EvtFrame_Click = function (e) {
                 $('#popcomm').val(obj.Comments);
             }
 
-            ra = 15 * helper.dmstodeg(obj.J2000[0]);
-            dec = helper.dmstodeg(obj.J2000[1]);
+            ra = obj.J2000[0] * sla.r2d;
+            dec = obj.J2000[1] * sla.r2d;
             if (this.aladinInitialized) {
                 this.objAladin.gotoRaDec(ra, dec);
             } else {

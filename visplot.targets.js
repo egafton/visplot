@@ -84,31 +84,31 @@ function Target(k, obj) {
 }
 
 TargetList.prototype.targetStringToJSON = function (line) {
+    // Parse an input string into a Target object
     var night = driver.night;
     dat = line.split(/\s+/);
     var obj = {};
-    obj.airmass = parseFloat(dat[10]);
     obj.name = dat[0];
+    obj.airmass = parseFloat(dat[10]);
     obj.UTstart = night.ENauTwilight;
     obj.UTend = night.MNauTwilight;
     obj.fillslot = false;
     obj.project = dat[9];
-    obj.J2000 = {0:dat[1], 1:dat[4]};
     obj.epoch = parseFloat(dat[7]);
-    obj.inputRA = dat[1];
-    obj.ra = dat[1];
     obj.line = Array();
-    obj.dec = dat[4];
     obj.type = dat[11];
     obj.exptime = parseFloat(dat[8])/86400.0;
     obj.constraints = dat[10];
-    obj.inputDec = dat[4];
     rax = dat[3].split('/');
     decx = dat[6]. split('/');
-    ra = sla.dtf2r(parseInt(dat[1]), parseInt(dat[2]), parseFloat(rax[0]));
-    decdeg = Math.abs(parseInt(dat[4]));
-    decneg = dat[4].substring(0, 1) === '-';
-    dec = sla.daf2r(decdeg, parseInt(dat[5]), parseFloat(decx[0]));
+    obj.ra = `${dat[1]}:${dat[2]}:${rax[0]}`;
+    obj.dec = `${dat[4]}:${dat[5]}:${decx[0]}`;
+    obj.inputRA = obj.ra.replaceAll(":", " ");
+    obj.inputDec = obj.dec.replaceAll(":", " ");
+    var ra = sla.dtf2r(parseInt(dat[1]), parseInt(dat[2]), parseFloat(rax[0]));
+    var decdeg = Math.abs(parseInt(dat[4]));
+    var decneg = dat[4].substring(0, 1) === '-';
+    var dec = sla.daf2r(decdeg, parseInt(dat[5]), parseFloat(decx[0]));
     if (decneg) {
         dec *= -1;
     }
@@ -129,6 +129,20 @@ TargetList.prototype.targetStringToJSON = function (line) {
         // convert to radians/year
         pmdec = parseFloat(decx[1]) * sla.das2r;
     }
+    /* Conversion from Besselian to Julian, if necessary */
+    if (obj.epoch > 1984) {
+        obj.J2000 = [ra, dec];
+    } else {
+        var j2000;
+        /* No proper motion */
+        if (pmra == 0 && pmdec == 0) {
+            j2000 = sla.fk45z(ra, dec, obj.epoch);
+            obj.J2000 = [j2000.r2000, j2000.d2000];
+        } else {
+            j2000 = sla.fk425(ra, dec, pmra, pmdec, 0, 0);
+            obj.J2000 = [j2000.r2000, j2000.d2000];
+        }
+    }
     
     var stl = helper.stl(night.utcMidnight, night.eqeqx);
     var ret = sla.mapqk(ra, dec, pmra, pmdec, 0, 0, night.amprms[0]);
@@ -139,10 +153,8 @@ TargetList.prototype.targetStringToJSON = function (line) {
     for (i=0; i<night.Nx; i+=1) {
         retap = sla.mapqk(ra, dec, pmra, pmdec, 0, 0, night.amprms[i]);
         retob = sla.aopqk(retap.ra, retap.da, night.aoprms[i]);
-        //console.log(retob.zob);
         // Approximate refracted alt
         ell = 0.5*Math.PI - sla.refz(retob.zob, night.ref.refa, night.ref.refb);
-        //console.log(ell);
         if (ell > altmax) {
             imax = i;
             altmax = ell;
@@ -150,7 +162,6 @@ TargetList.prototype.targetStringToJSON = function (line) {
         obj.line.push(helper.rad2deg(ell));
     }
     obj.zenithtime = night.xaxis[imax];
-    console.log(obj);
     return obj;
 };
 
@@ -1240,7 +1251,6 @@ Target.prototype.preCompute = function () {
             return;
         }
     }
-    console.log(this);
     driver.targets.Warning2.push(this.Name);
 };
 
