@@ -213,7 +213,6 @@ $_DEBUG = TRUE;
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.3/FileSaver.min.js"></script>
     <script src="http://aladin.u-strasbg.fr/AladinLite/api/v2/latest/aladin.min.js" type="text/javascript" charset="utf-8"></script>
-<?php //if($_DEBUG) { ?>
     <script src="rendering.js" type="text/javascript"></script>
     <script src="visplot.driver.js" type="text/javascript"></script>
     <script src="visplot.sla_coeffs.js" type="text/javascript"></script>
@@ -224,17 +223,6 @@ $_DEBUG = TRUE;
     <script src="visplot.helper.js" type="text/javascript"></script>
     <script src="visplot.serializer.js" type="text/javascript"></script>
     <script src="visplot.skyGraph.js" type="text/javascript"></script>
-<?php /*} else { ?>
-    <script src="rendering.min.js" type="text/javascript"></script>
-    <script>
-    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-        })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-     ga('create', 'UA-92152502-1', 'auto');
-     ga('send', 'pageview');
-    </script>
-<?php } */?>
     <?php if ($obpost) { echo '<input type="hidden" id="obinfo" value="'.rawurlencode($obinfo).'" /> '; } ?>
 </body>
 </html>
