@@ -5356,7 +5356,7 @@ sla._performUnitTests = function () {
 /**
  * @summary Perform all unit tests.
  * @description This is merely a wrapper for {@link sla._performUnitTests},
- *              which encloses the function in call in a try..catch construct
+ *              which encloses the function call in a try..catch construct
  *              and informs the user if anything goes wrong.
  */
 sla.performUnitTests = function () {
@@ -5368,5 +5368,6 @@ sla.performUnitTests = function () {
     } catch (error) {
         helper.LogError("slalib unit tests failed");
         helper.LogError(error);
+        helper.LogError(error.stack);
     }
 };
