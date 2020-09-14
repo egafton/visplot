@@ -834,6 +834,7 @@ Driver.prototype.Callback_ShowCurrentTime = function () {
 };
 
 Driver.prototype.Refresh = function () {
+    document.title = `${Driver.telescopeName}/Visplot`;
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.graph.drawTargets(this.targets.Targets);
     this.graph.drawEphemerides();
