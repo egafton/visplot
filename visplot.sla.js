@@ -1,12 +1,11 @@
 /**
  * @file SLALIB subroutines used by Visplot, ported to JavaScript.
  * @author Emanuel Gafton
- * 
  * @copyright 2016-2021 Emanuel Gafton, NOT/ING.
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version. See LICENSE.md.
+ *     This program is free software: you can redistribute it and/or modify
+ *     it under the terms of the GNU General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version. See LICENSE.md.
  */
 
 /* @constant {Number} Earth equatorial radius (metres) */
@@ -42,7 +41,7 @@ sla.djc = 36525;
 sla.djm0 = 51544.5;
 /* @constant {Number} Seconds of time to radians */
 sla.ds2r = 7.272205216643039903848712e-5;
-/* @constant {Number} Earth equatorial radius in AU (= 6378.137 / 149597870 ) */
+/* @constant {Number} Earth equatorial radius in AU (= 6378.137 / 149597870) */
 sla.eradau = 4.2635212653763e-5;
 /* @constant {Number} Mean sidereal rate (at J2000) in radians per UT1 second */
 sla.sr = 7.292115855306589e-5;
@@ -79,15 +78,15 @@ sla.tiny = 1e-30;
  * @description Air mass at given zenith distance.
  * 1. The *observed* zenith distance referred to above means “as affected by
  *    refraction”.
- * +  The routine uses Hardie’s (1962) polynomial fit to Bemporad’s data
+ * 2. The routine uses Hardie’s (1962) polynomial fit to Bemporad’s data
  *    for the relative air mass, X, in units of thickness at the zenith as
  *    tabulated by Schoenberg (1929). This is adequate for all normal needs
  *    as it is accurate to better than 0.1% up to X=6.8 and better than 1%
  *    up to X=10. Bemporad’s tabulated values are unlikely to be trustworthy
  *    to such accuracy because of variations in density, pressure and other
  *    conditions in the atmosphere from those assumed in his work.
- * +  The sign of the ZD is ignored.
- * +  At zenith distances greater than about ζ=87° the air mass is held
+ * 3. The sign of the ZD is ignored.
+ * 4. At zenith distances greater than about ζ=87° the air mass is held
  *    constant to avoid arithmetic overflows.
  * ----------
  * References:
@@ -119,16 +118,17 @@ sla.airmas = function (zd) {
  * @param {Number} rh - local relative humidity (in the range 0−1)
  * @param {Number} wl - effective wavelength (μm, e.g. 0.55)
  * @param {Number} tlr - tropospheric lapse rate (K per metre, e.g. 0.0065)
- * @returns {Object} aob - observed azimuth (radians: N=0, E=90°)
- *                   zob - observed zenith distance (radians)
- *                   hob - observed Hour Angle (radians)
- *                   dob - observed *δ* (radians)
- *                   rob - observed *α* (radians)
+ * @returns {Object}
+ * + aob - observed azimuth (radians: N=0, E=90°)
+ * + zob - observed zenith distance (radians)
+ * + hob - observed Hour Angle (radians)
+ * + dob - observed *δ* (radians)
+ * + rob - observed *α* (radians)
  * @description Apparent to observed place, for sources distant from the
  *              solar system.
  * 1. This routine returns zenith distance rather than elevation in order to
  *    reflect the fact that no allowance is made for depression of the horizon.
- * +  The accuracy of the result is limited by the corrections for refraction.
+ * 2. The accuracy of the result is limited by the corrections for refraction.
  *    Providing the meteorological parameters are known accurately and there
  *    are no gross local effects, the predicted azimuth and elevation should
  *    be within about ′′01 for ζ<70°. Even at a topocentric zenith distance of
@@ -138,10 +138,10 @@ sla.airmas = function (zd) {
  *    routines {@link sla.aop} (or {@link sla.aopqk}) and {@link sla.oap} (or
  *    {@link sla.oapqk} are self-consistent to better than 1 microarcsecond all
  *    over the celestial sphere.
- * +  It is advisable to take great care with units, as even unlikely values
+ * 3. It is advisable to take great care with units, as even unlikely values
  *    of the input parameters are accepted and processed in accordance with
  *    the models used.
- * +  *Apparent* [*α*,*δ*] means the geocentric apparent right ascension and
+ * 4. *Apparent* [*α*,*δ*] means the geocentric apparent right ascension and
  *    declination, which is obtained from a catalogue mean place by allowing
  *    for space motion, parallax, the Sun’s gravitational lens effect, annual
  *    aberration, and precession-nutation. For star positions in the FK5 system
@@ -150,7 +150,7 @@ sla.airmas = function (zd) {
  *    transformations will be needed; for example, FK4 (i.e. B1950) mean places
  *    would first have to be converted to FK5, which can be done with the
  *    {@link sla.fk425} etc. routines.
- * +  *Observed* [*Az*,*El*] means the position that would be seen by a perfect
+ * 5. *Observed* [*Az*,*El*] means the position that would be seen by a perfect
  *    theodolite located at the observer. This is obtained from the geocentric
  *    apparent [*α*,*δ*] by allowing for Earth orientation and diurnal
  *    aberration, rotating from equator to horizon coordinates, and then
@@ -160,7 +160,7 @@ sla.airmas = function (zd) {
  *    located at the observer and with its polar axis aligned to the Earth’s
  *    axis of rotation (n.b. not to the refracted pole). Finally, the *α* is
  *    obtained by subtracting the *h* from the local apparent ST.
- * +  To predict the required setting of a real telescope, the observed place
+ * 6. To predict the required setting of a real telescope, the observed place
  *    produced by this routine would have to be adjusted for the tilt of the
  *    azimuth or polar axis of the mounting (with appropriate corrections for
  *    mount flexures), for non-perpendicularity between the mounting axes, for
@@ -169,7 +169,7 @@ sla.airmas = function (zd) {
  *    zero points. Some telescopes would, of course, exhibit other properties
  *    which would need to be accounted for at the appropriate point in the
  *    sequence.
- * +  This routine takes time to execute, due mainly to the rigorous integration
+ * 7. This routine takes time to execute, due mainly to the rigorous integration
  *    used to evaluate the refraction. For processing multiple stars for one
  *    location and time, call {@link sla.aoppa} once followed by one call per
  *    star to {@link sla.aopqk}. Where a range of times within a limited period
@@ -177,7 +177,7 @@ sla.airmas = function (zd) {
  *    call {@link sla.aoppa} once, followed by a call to {@link sla.aoppat}
  *    each time the time changes, followed by one call per star to
  *    {@link sla.aopqk}.
- * +  The DATE argument is UTC expressed as an MJD. This is, strictly speaking,
+ * 8. The DATE argument is UTC expressed as an MJD. This is, strictly speaking,
  *    wrong, because of leap seconds. However, as long as the ΔUT and the UTC
  *    are consistent there are no difficulties, except during a leap second.
  *    In this case, the start of the 61st second of the final minute should
@@ -185,25 +185,25 @@ sla.airmas = function (zd) {
  *    As the 61st second completes, the MJD should revert to the start of the
  *    day as, simultaneously, the ΔUT changes by one second to its post-leap
  *    new value.
- * +  The ΔUT (UT1−UTC) is tabulated in IERS circulars and elsewhere. It
+ * 9. The ΔUT (UT1−UTC) is tabulated in IERS circulars and elsewhere. It
  *    increases by exactly one second at the end of each UTC leap second,
  *    introduced in order to keep ΔUT within ±0.9s.
- * +  IMPORTANT − TAKE CARE WITH THE LONGITUDE SIGN CONVENTION. The longitude
+ * 10. IMPORTANT − TAKE CARE WITH THE LONGITUDE SIGN CONVENTION. The longitude
  *    required by the present routine is **east-positive**, in accordance with
  *    geographical convention (and right-handed). In particular, note that
  *    the longitudes returned by the {@link sla.obs} routine are west-positive
  *    (as in the *Astronomical Almanac* before 1984) and must be reversed in
  *    sign before use in the present routine.
- * +  The polar coordinates XP,YP can be obtained from IERS circulars and
+ * 11. The polar coordinates XP,YP can be obtained from IERS circulars and
  *    equivalent publications. The maximum amplitude is about ′′03. If XP,YP
  *    values are unavailable, use XP=YP=0. See page B60 of the 1988
  *    *Astronomical Almanac* for a definition of the two angles.
- * +  The height above sea level of the observing station, HM, can be obtained
+ * 12. The height above sea level of the observing station, HM, can be obtained
  *    from the *Astronomical Almanac* (Section J in the 1988 edition), or via
  *    the routine {@link sla.obs}. If P, the pressure in millibars, is
  *    available, an adequate estimate of HM can be obtained from the following
  *    expression:
- *        HM = -29.3 * TSL * Math.log(P / 1013.25)
+ *       HM = -29.3 * TSL * Math.log(P / 1013.25)
  *    where TSL is the approximate sea-level air temperature in K (see
  *    *Astrophysical Quantities*, C.W.Allen, 3rd edition, §52). Similarly, if
  *    the pressure P is not known, it can be estimated from the height of the
@@ -211,7 +211,7 @@ sla.airmas = function (zd) {
  *        P = 1013.25 * Math.exp(-HM / (29.3 * TSL))
  *    Note, however, that the refraction is nearly proportional to the pressure
  *    and that an accurate P value is important for precise work.
- * +  The azimuths etc. used by the present routine are with respect to the
+ * 13. The azimuths etc. used by the present routine are with respect to the
  *    celestial pole. Corrections to the terrestrial pole can be computed using
  *    {@link sla.polmo}.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss7.html}
@@ -229,7 +229,7 @@ sla.aop = function (rap, dap, date, dut, elongm, phim, hm, xp, yp,
 /**
  * @summary **Appt-to-Obs Parameters**
  * @param {Number} date - UTC date/time (Modified Julian Date, JD–2400000.5)
- * @param {Number} dut - \Delta UT: UT1–UTC (UTC seconds)
+ * @param {Number} dut - ΔUT: UT1–UTC (UTC seconds)
  * @param {Number} elongm - observer’s mean longitude (radians, east +ve)
  * @param {Number} phim - observer’s mean geodetic latitude (radians)
  * @param {Number} hm - observer’s height above sea level (metres)
@@ -258,7 +258,7 @@ sla.aop = function (rap, dap, date, dut, elongm, phim, hm, xp, yp,
  * 1. It is advisable to take great care with units, as even unlikely values
  *    of the input parameters are accepted and processed in accordance with
  *    the models used.
- * +  The DATE argument is UTC expressed as an MJD. This is, strictly speaking,
+ * 2. The DATE argument is UTC expressed as an MJD. This is, strictly speaking,
  *    wrong, because of leap seconds. However, as long as the ΔUT and the UTC
  *    are consistent there are no difficulties, except during a leap second.
  *    In this case, the start of the 61st second of the final minute should
@@ -266,20 +266,20 @@ sla.aop = function (rap, dap, date, dut, elongm, phim, hm, xp, yp,
  *    As the 61st second completes, the MJD should revert to the start of the
  *    day as, simultaneously, the ΔUT changes by one second to its post-leap
  *    new value.
- * +  The ΔUT (UT1−UTC) is tabulated in IERS circulars and elsewhere. It
+ * 3. The ΔUT (UT1−UTC) is tabulated in IERS circulars and elsewhere. It
  *    increases by exactly one second at the end of each UTC leap second,
  *    introduced in order to keep ΔUT within ±0.9s.
- * +  IMPORTANT − TAKE CARE WITH THE LONGITUDE SIGN CONVENTION. The longitude
+ * 4. IMPORTANT − TAKE CARE WITH THE LONGITUDE SIGN CONVENTION. The longitude
  *    required by the present routine is **east-positive**, in accordance with
  *    geographical convention (and right-handed). In particular, note that
  *    the longitudes returned by the {@link sla.obs} routine are west-positive
  *    (as in the *Astronomical Almanac* before 1984) and must be reversed in
  *    sign before use in the present routine.
- * +  The polar coordinates XP,YP can be obtained from IERS circulars and
+ * 5. The polar coordinates XP,YP can be obtained from IERS circulars and
  *    equivalent publications. The maximum amplitude is about ′′03. If XP,YP
  *    values are unavailable, use XP=YP=0. See page B60 of the 1988
  *    *Astronomical Almanac* for a definition of the two angles.
- * +  The height above sea level of the observing station, HM, can be obtained
+ * 6. The height above sea level of the observing station, HM, can be obtained
  *    from the *Astronomical Almanac* (Section J in the 1988 edition), or via
  *    the routine {@link sla.obs}. If P, the pressure in millibars, is
  *    available, an adequate estimate of HM can be obtained from the following
@@ -292,7 +292,7 @@ sla.aop = function (rap, dap, date, dut, elongm, phim, hm, xp, yp,
  *        P = 1013.25 * Math.exp(-HM / (29.3 * TSL))
  *    Note, however, that the refraction is nearly proportional to the pressure
  *    and that an accurate P value is important for precise work.
- * +  Repeated, computationally-expensive, calls to {@link sla.aoppa} for times
+ * 7. Repeated, computationally-expensive, calls to {@link sla.aoppa} for times
  *    that are very close together can be avoided by calling {@link sla.aoppa}
  *    just once and then using {@link sla.aoppat} for the subsequent times.
  *    Fresh calls to {@link sla.aoppa} will be needed only when changes in the
@@ -367,6 +367,7 @@ sla.aoppa = function (date, dut, elongm, phim, hm, xp, yp,
 sla.aoppat = function (date, aoprms) {
     "use strict";
     aoprms[13] = sla.gmst(date) + aoprms[12];
+    return aoprms;
 };
 
 /**
@@ -382,7 +383,7 @@ sla.aoppat = function (date, aoprms) {
  * @description Quick apparent to observed place (but see Note 8, below).
  * 1. This routine returns zenith distance rather than elevation in order to
  *    reflect the fact that no allowance is made for depression of the horizon.
- * +  The accuracy of the result is limited by the corrections for refraction.
+ * 2. The accuracy of the result is limited by the corrections for refraction.
  *    Providing the meteorological parameters are known accurately and there
  *    are no gross local effects, the predicted azimuth and elevation should
  *    be within about ′′01 for ζ<70°. Even at a topocentric zenith distance of
@@ -392,10 +393,10 @@ sla.aoppat = function (date, aoprms) {
  *    routines {@link sla.aop} (or {@link sla.aopqk}) and {@link sla.oap} (or
  *    {@link sla.oapqk} are self-consistent to better than 1 microarcsecond all
  *    over the celestial sphere.
- * +  It is advisable to take great care with units, as even unlikely values
+ * 3. It is advisable to take great care with units, as even unlikely values
  *    of the input parameters are accepted and processed in accordance with
  *    the models used.
- * +  *Apparent* [*α*,*δ*] means the geocentric apparent right ascension and
+ * 4. *Apparent* [*α*,*δ*] means the geocentric apparent right ascension and
  *    declination, which is obtained from a catalogue mean place by allowing
  *    for space motion, parallax, the Sun’s gravitational lens effect, annual
  *    aberration, and precession-nutation. For star positions in the FK5 system
@@ -404,7 +405,7 @@ sla.aoppat = function (date, aoprms) {
  *    transformations will be needed; for example, FK4 (i.e. B1950) mean places
  *    would first have to be converted to FK5, which can be done with the
  *    {@link sla.fk425} etc. routines.
- * +  *Observed* [*Az*,*El*] means the position that would be seen by a perfect
+ * 5. *Observed* [*Az*,*El*] means the position that would be seen by a perfect
  *    theodolite located at the observer. This is obtained from the geocentric
  *    apparent [*α*,*δ*] by allowing for Earth orientation and diurnal
  *    aberration, rotating from equator to horizon coordinates, and then
@@ -414,7 +415,7 @@ sla.aoppat = function (date, aoprms) {
  *    located at the observer and with its polar axis aligned to the Earth’s
  *    axis of rotation (n.b. not to the refracted pole). Finally, the *α* is
  *    obtained by subtracting the *h* from the local apparent ST.
- * +  To predict the required setting of a real telescope, the observed place
+ * 6. To predict the required setting of a real telescope, the observed place
  *    produced by this routine would have to be adjusted for the tilt of the
  *    azimuth or polar axis of the mounting (with appropriate corrections for
  *    mount flexures), for non-perpendicularity between the mounting axes, for
@@ -423,11 +424,11 @@ sla.aoppat = function (date, aoprms) {
  *    zero points. Some telescopes would, of course, exhibit other properties
  *    which would need to be accounted for at the appropriate point in the
  *    sequence.
- * +  The star-independent apparent-to-observed-place parameters in AOPRMS may
+ * 7. The star-independent apparent-to-observed-place parameters in AOPRMS may
  *    be computed by means of the {@link sla.aoppa} routine. If nothing has
  *    changed significantly except the time, the {@link sla.aoppat} routine may
  *    be used to perform the requisite partial recomputation of AOPRMS.
- * +  At zenith distances beyond about 76°, the need for special care with the
+ * 8. At zenith distances beyond about 76°, the need for special care with the
  *    corrections for refraction causes a marked increase in execution time.
  *    Moreover, the effect gets worse with increasing zenith distance. Adroit
  *    programming in the calling application may allow the problem to be
@@ -440,7 +441,7 @@ sla.aoppat = function (date, aoprms) {
  *    there would be no need for the full calculation if the preliminary call
  *    had already established that the source was well below the elevation
  *    limits for a particular telescope.
- * +  The azimuths etc. used by the present routine are with respect to the
+ * 9. The azimuths etc. used by the present routine are with respect to the
  *    celestial pole. Corrections to the terrestrial pole can be computed using
  *    {@link sla.polmo}.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss10.html}
@@ -553,11 +554,12 @@ sla.aopqk = function (rap, dap, aoprms) {
  *    wavelength. Subsequently, calls to {@link sla.atmdsp} specifying different
  *    wavelengths will produce new, slightly adjusted refraction coefficients
  *    A2, B2, which apply to the specified wavelength.
- * +  Most of the atmospheric dispersion happens between 0.7μm and the UV
+ * 2. Most of the atmospheric dispersion happens between 0.7μm and the UV
  *    atmospheric cutoff, and the effect increases strongly towards the UV end.
  *    For this reason a blue reference wavelength is recommended, for example
  *    0.4μm.
- * +  The accuracy, for this set of conditions:
+ * 3. The accuracy, for this set of conditions:
+ *
  *        height above sea level | 2000 m
  *                      latitude | 29°
  *                      pressure | 793 mb
@@ -566,15 +568,16 @@ sla.aopqk = function (rap, dap, aoprms) {
  *                    lapse rate | 0.0065 K/m
  *          reference wavelength | 0.4 μm
  *                star elevation | 15°
+ *
  *    is about 2.5 mas RMS between 0.3 and 1.0μm, and stays within 4 mas for
  *    the whole range longward of 0.3μm (compared with a total dispersion from
  *    0.3 to 20μm of about 11′′). These errors are typical for ordinary
  *    conditions; in extreme conditions values a few times this size may occur.
- * +  If either wavelength exceeds 100μm, the radio case is assumed and the
+ * 4. If either wavelength exceeds 100μm, the radio case is assumed and the
  *    returned refraction coefficients are the same as the given ones. Note that
  *    radio refraction coefficients cannot be turned into optical values using
  *    this routine, nor vice versa.
- * +  The algorithm consists of calculation of the refractivity of the air at
+ * 5. The algorithm consists of calculation of the refractivity of the air at
  *    the observer for the two wavelengths, using the methods of the
  *    {@link sla.refro} routine, and then scaling of the two refraction
  *    coefficients according to classical refraction theory. This amounts to
@@ -635,12 +638,23 @@ sla.atmdsp = function (tdk, pmb, rh, wl1, a1, b1, wl2) {
 };
 
 /**
- * Gregorian Calendar to Modified Julian Date.
- * @summary Calendar to MJD
+ * @summary **Calendar to MJD**
  * @param {Number} iy - Year in Gregorian calendar (-4699 or later)
  * @param {Number} im - Month in Gregorian calendar (1 to 12)
  * @param {Number} id - Day in Gregorian calendar (1 to 28-31)
  * @returns {Number} Modified Julian Date (JD-2400000.5) for 0h
+ * @description Gregorian Calendar to Modified Julian Date.
+ * 1. When an invalid year or month is supplied (status J = 1 or 2) the MJD
+ *    is *not* computed. When an invalid day is supplied (status J = 3)
+ *    the MJD *is* computed.
+ * 2. The year must be -4699 (i.e. 4700BC) or later. For year nBC use
+ *    IY = -(n-1).
+ * 3. An alternative to the present routine is sla_CALDJ, which accepts a year
+ *    with the century missing.
+ * ----------
+ * References:
+ * - The algorithm is adapted from Hatcher, *Q. Jl. R. astr. Soc.* (1984) 25,
+ *   53-55.
  * @throws {RangeError} If the year, month, or day are out of range.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss20.html}
  */
@@ -662,13 +676,21 @@ sla.cldj = function (iy, im, id) {
 };
 
 /**
- * Modified Julian Date to Gregorian Calendar Date, expressed in a form
- * convenient for formatting messages (namely rounded to a specified
- * precision, and with the fields stored in a single array).
- * @summary MJD to Gregorian for Output
+ * @summary **MJD to Gregorian for Output**
  * @param {Number} ndp - number of decimal places of days in fraction
  * @param {Number} djm - modified Julian Date (JD-2400000.5)
  * @returns {Array} year, month, day, fraction in Gregorian calendar
+ * @description Modified Julian Date to Gregorian Calendar Date, expressed in
+ *              a form convenient for formatting messages (namely rounded to
+ *              a specified precision, and with the fields stored in a single
+ *              array).
+ * 1. Any date after 4701BC March 1 is accepted.
+ * 2. Large NDP values risk internal overflows. It is typically safe to use
+ *    up to NDP=4.
+ * ----------
+ * References:
+ * - The algorithm is adapted from Hatcher, *Q. Jl. R. astr. Soc.* (1984) 25,
+ *   53-55.
  * @throws {RangeError} If the MJD is out of range.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss45.html}
  */
@@ -708,11 +730,16 @@ sla.djcal = function (ndp, djm) {
 };
 
 /**
- * Modified Julian Date to Gregorian year, month, day, and fraction of a day.
- * @summary MJD to Year,Month,Day,Frac
+ * @summary **MJD to Year,Month,Day,Frac**
  * @param {Number} djm - modified Julian Date (JD-2400000.5)
  * @returns {Object} iy - year, im - month, id - day
  *                   fd - fraction of day
+ * @description Modified Julian Date to Gregorian year, month, day, and
+ *              fraction of a day.
+ * ----------
+ * References:
+ * - The algorithm is adapted from Hatcher, *Q. Jl. R. astr. Soc.* (1984) 25,
+ *   53-55.
  * @throws {RangeError} If the MJD is out of range.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss46.html}
  */
@@ -746,11 +773,26 @@ sla.djcl = function (djm) {
 };
 
 /**
- * Increment to be applied to Coordinated Universal Time UTC to give
- * International Atomic Time TAI.
- * @summary TAI-UTC
+ * @summary **TAI-UTC**
  * @param {Number} utc - Date as a modified JD (JD-2400000.5)
  * @returns {Number} TAI-UTC in seconds
+ * @description Increment to be applied to Coordinated Universal Time UTC to
+ *              give International Atomic Time TAI.
+ * 1. The UTC is specified to be a date rather than a time to indicate that
+ *    care needs to be taken not to specify an instant which lies within a
+ *    leap second. Though in most cases UTC can include the fractional part,
+ *    correct behaviour on the day of a leap second can be guaranteed only up
+ *    to the end of the second 23h59m59s.
+ * 2. For epochs from 1961 January 1 onwards, the expressions from the file
+ *    @link{ftp://maia.usno.navy.mil/ser7/tai-utc.dat} are used. A 5ms time
+ *    step at 1961 January 1 is taken from 2.58.1 (p87) of the 1992
+ *    Explanatory Supplement.
+ * 3. UTC began at 1960 January 1.0 (JD 2436934.5) and it is improper to call
+ *    the routine with an earlier epoch. However, if this is attempted, the
+ *    TAI-UTC expression for the year 1960 is used.
+ * 4. This routine has to be updated on each occasion that a leap second is
+ *    announced, and programs using it relinked. Refer to the program source
+ *    code for information on when the most recent leap second was added.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss31.html}
  */
 sla.dat = function (utc) {
@@ -887,10 +929,17 @@ sla.dat = function (utc) {
 };
 
 /**
- * Form the rotation matrix corresponding to a given axial vector.
- * @summary Rotation Matrix from Axial Vector
+ * @summary **Rotation Matrix from Axial Vector**
  * @param {Array} axvec - axial vector (radians)
  * @returns {Array} 3x3 rotation matrix
+ * @description Form the rotation matrix corresponding to a given axial vector.
+ * 1. A rotation matrix describes a rotation about some arbitrary axis,
+ *    called the Euler axis. The *axial vector* supplied to this routine has
+ *    the same direction as the Euler axis, and its magnitude is the amount
+ *    of rotation in radians.
+ * 2. If AXVEC is null, the unit matrix is returned.
+ * 3. The reference frame rotates clockwise as seen looking along the axial
+ *    vector from the origin.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss32.html}
  */
 sla.dav2m = function (axvec) {
@@ -920,10 +969,16 @@ sla.dav2m = function (axvec) {
 };
 
 /**
- * Cartesian coordinates to spherical coordinates.
- * @summary Cartesian to Spherical
+ * @summary **Cartesian to Spherical**
  * @param {Number} v - [x,y,z] vector
  * @returns {Object} a,b - spherical coordinates in radians
+ * @description Cartesian coordinates to spherical coordinates.
+ * 1. The spherical coordinates are longitude (+ve anticlockwise looking from
+ *    the +ve latitude pole) and latitude. The Cartesian coordinates are right
+ *    handed, with the x-axis at zero longitude and latitude, and the z-axis
+ *    at the +ve latitude pole.
+ * 2. If V is null, zero A and B are returned.
+ * 3. At either pole, zero A is returned.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss36.html}
  */
 sla.dcc2s = function (v) {
@@ -947,12 +1002,29 @@ sla.dcc2s = function (v) {
 };
 
 /**
- * Equatorial to horizon coordinates.
- * @summary h,\delta to Az,El
+ * @summary **h,δ to Az,El**
  * @param {Number} ha - Hour Angle in radians
  * @param {Number} dec - Declination in radians
  * @param {Number} phi - Observatory latitude in radians
  * @returns {array} [az,el] - Azimuth and elevation in radians
+ * @description Equatorial to horizon coordinates.
+ * 1. Azimuth is returned in the range 0−2π; north is zero, and east is +π/2.
+ *    Elevation is returned in the range ±π.
+ * 2. The latitude must be geodetic. In critical applications, corrections
+ *    for polar motion should be applied.
+ * 3. In some applications it will be important to specify the correct type
+ *    of hour angle and declination in order to produce the required type of
+ *    azimuth and elevation. In particular, it may be important to distinguish
+ *    between elevation as affected by refraction, which would require the
+ *    *observed* [h,δ], and the elevation *in vacuo*, which would require the
+ *    *topocentric* [h,δ]. If the effects of diurnal aberration can be
+ *    neglected, the *apparent* [h,δ] may be used instead of the topocentric
+ *    [h,δ].
+ * 4. No range checking of arguments is carried out.
+ * 5. In applications which involve many such calculations, rather than calling
+ *    the present routine it will be more efficient to use inline code, having
+ *    previously computed fixed terms such as sine and cosine of latitude, and
+ *    (for tracking a star) sine and cosine of declination.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss40.html}
  */
 sla.de2h = function (ha, dec, phi) {
@@ -981,14 +1053,29 @@ sla.de2h = function (ha, dec, phi) {
 };
 
 /**
- * Form a rotation matrix from the Euler angles - three successive rotations
- * about specified Cartesian axes.
- * @summary Euler Angles to Rotation Matrix
+ * @summary **Euler Angles to Rotation Matrix**
  * @param {string} order - Specifies about which axes the rotations occur
  * @param {Number} phi - 1st rotation (radians)
  * @param {Number} theta - 2nd rotation (radians)
  * @param {Number} psi - 3rd rotation (radians)
  * @return {Array} Rotation matrix
+ * @description Form a rotation matrix from the Euler angles - three successive
+ *              rotations about specified Cartesian axes.
+ * 1. A rotation is positive when the reference frame rotates anticlockwise as
+ *    seen looking towards the origin from the positive region of the specified
+ *    axis.
+ * 2. The characters of ORDER define which axes the three successive rotations
+ *    are about. A typical value is ‘ZXZ’, indicating that RMAT is to become
+ *    the direction cosine matrix corresponding to rotations of the reference
+ *    frame through PHI radians about the old z-axis, followed by THETA radians
+ *    about the resulting x-axis, then PSI radians about the resulting z-axis.
+ * 3. The axis names can be any of the following, in any order or combination:
+ *    X, Y, Z, uppercase or lowercase, 1, 2, 3. Normal axis labelling/numbering
+ *    conventions apply; the xyz (≡123) triad is right-handed. Thus, the ‘ZXZ’
+ *    example given above could be written ‘zxz’ or ‘313’ (or even ‘ZxZ’ or
+ *    ‘3xZ’). ORDER is terminated by length or by the first unrecognized
+ *    character. Fewer than three rotations are acceptable, in which case the
+ *    later angle arguments are ignored. Zero rotations produces the identity RMAT.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss41.html}
  */
 sla.deuler = function (order, phi, theta, psi) {
@@ -1070,12 +1157,33 @@ sla.deuler = function (order, phi, theta, psi) {
 };
 
 /**
- * Approximate geocentric position and velocity of the Moon.
- * @summary: Approx Moon Pos/Vel
+ * @summary **Approx Moon Pos/Vel**
  * @param {Number} date - TDB (loosely ET) as a Modified Julian Date
  *                        (JD-2400000.5)
  * @returns {Array} Moon [x,y,z,\dot x,\dot y,\dot z], mean equator and
  *                  equinox of date (AU, AU/s)
+ * @description Approximate geocentric position and velocity of the Moon.
+ * 1. This routine is a full implementation of the algorithm published by
+ *    Meeus (see reference).
+ * 2. Meeus quotes accuracies of 10′′ in longitude, 3′′ in latitude and
+ *    ′′02 arcsec in HP (equivalent to about 20 km in distance). 
+ *    JPL DE200 over the interval 1960-2025 gives RMS errors of ′′37 and 83
+ *    mas/hour in longitude, ′′23 arcsec and 48 mas/hour in latitude, 11 km
+ *    and 81 mm/s in distance. The maximum errors over the same interval are
+ *    18′′ and ′′050/hour in longitude, 11′′ and ′′024/hour in latitude, 40 km
+ *    and 0.29 m/s in distance.
+ * 3. The original algorithm is expressed in terms of the obsolete time scale
+ *    *Ephemeris Time*. Either TDB or TT can be used, but not UT without
+ *    incurring significant errors (30′′ at the present time) due to the Moon’s
+ *    ′′05/s movement.
+ * 4. The algorithm is based on pre IAU 1976 standards. However, the result has
+ *    been moved onto the new (FK5) equinox, an adjustment which is in any case
+ *    much smaller than the intrinsic accuracy of the procedure.
+ * 5. Velocity is obtained by a complete analytical differentiation of the
+ *    Meeus model.
+ * ----------
+ * References:
+ * - Meeus, *L’Astronomie*, June 1984, p. 348.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss49.html}
  */
 sla.dmoon = function (date) {
@@ -1351,11 +1459,19 @@ sla.dmoon = function (date) {
 };
 
 /**
- * Multiply a 3-vector by a rotation matrix.
- * @summary Apply 3D Rotation
+ * @summary **Apply 3D Rotation**
  * @param {Array} dm - 3x3 rotation matrix
  * @param {Array} va - 3-vector to be rotated
  * @returns {Array} Result 3-vector.
+ * @description Multiply a 3-vector by a rotation matrix.
+ * 1. This routine performs the operation: **b = M⋅a** where **a** and **b**
+ *    are the 3-vectors VA and VB respectively, and **M** is the 3×3 matrix DM.
+ * 2. The main function of this routine is apply a rotation; under these
+ *    circumstances, **M** is a proper real orthogonal matrix.
+ * 3. To comply with the ANSI Fortran 77 standard, VA and VB must not be the
+ *    same array. The routine is, in fact, coded so as to work properly with
+ *    many Fortran compilers even if this rule is violated, something that is
+ *    *not*, however, recommended.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss51.html}
  */
 sla.dmxv = function (dm, va) {
@@ -1375,12 +1491,23 @@ sla.dmxv = function (dm, va) {
 };
 
 /**
- * Convert an interval in days into hours, minutes, seconds.
- * @summary Days to Hour,Min,Sec
+ * @summary **Days to Hour,Min,Sec**
  * @param {Number} ndp - Number of decimal places of seconds
  * @param {Number} days - Interval in days
  * @returns {Array} [0] sign, '+' or '-'
  *                  [1-4] degrees, arcminutes, arcseconds, fraction
+ * @decription Convert an interval in days into hours, minutes, seconds.
+ * 1. NDP less than zero is interpreted as zero.
+ * 2. The largest useful value for NDP is determined by the size of DAYS,
+ *    the format of DOUBLE PRECISION floating-point numbers on the target
+ *    machine, and the risk of overflowing IHMSF(4). On some architectures,
+ *    for DAYS up to 1D0, the available floating-point precision corresponds
+ *    roughly to NDP=12. However, the practical limit is NDP=9, set by the
+ *    capacity of a typical 32-bit IHMSF(4).
+ * 3. The absolute value of DAYS may exceed 1D0. In cases where it does not,
+ *    it is up to the caller to test for and handle the case where DAYS is
+ *    very nearly 1D0 and rounds up to 24 hours, by testing for IHMSF(1)=24
+ *    and setting IHMSF(1-4) to zero.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss39.html}
  */
 sla.dd2tf = function (ndp, days) {
@@ -1422,12 +1549,23 @@ sla.dd2tf = function (ndp, days) {
 };
 
 /**
- * Convert an angle in radians to degrees, minutes, seconds, fraction.
- * @summary Radians to Hour,Min,Sec,Frac
+ * @summary **Radians to Hour,Min,Sec,Frac**
  * @param {Number} ndp - Number of decimal places of arcseconds
  * @param {Number} angle - Angle in radians
  * @return {Array} [0] sign, '+' or '-'
  *                 [1-4] degrees, arcminutes, arcseconds, fraction
+ * @description Convert an angle in radians to degrees, minutes, seconds, fraction.
+ * 1. NDP less than zero is interpreted as zero.
+ * 2. The largest useful value for NDP is determined by the size of ANGLE, the
+ *    format of DOUBLE PRECISION floating-point numbers on the target machine,
+ *    and the risk of overflowing IDMSF(4). On some architectures, for ANGLE
+ *    up to 2π, the available floating-point precision corresponds roughly to
+ *    NDP=12. However, the practical limit is NDP=9, set by the capacity of a
+ *    typical 32-bit IDMSF(4).
+ * 3. The absolute value of ANGLE may exceed 2π. In cases where it does not,
+ *    it is up to the caller to test for and handle the case where ANGLE is
+ *    very nearly 2π and rounds up to 360∘, by testing for IDMSF(1)=360 and
+ *    setting IDMSF(1-4) to zero.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss53.html}
  */
 sla.dr2af = function (ndp, angle) {
@@ -1440,12 +1578,23 @@ sla.dr2af = function (ndp, angle) {
 };
 
 /**
- * Convert an angle in radians to hours, minutes, seconds, fraction.
- * @summary Radians to Hour,Min,Sec,Frac
+ * @summary **Radians to Hour,Min,Sec,Frac**
  * @param {Number} ndp - Number of decimal places of seconds
  * @param {Number} angle - Angle in radians
  * @return {Array} [0] - sign, '+' or '-'
  *                 [1-4] - hours, minutes, seconds, fraction
+ * @description Convert an angle in radians to hours, minutes, seconds, fraction.
+ * 1. NDP less than zero is interpreted as zero.
+ * 2. The largest useful value for NDP is determined by the size of ANGLE, the
+ *    format of DOUBLE PRECISION floating-point numbers on the target machine,
+ *    and the risk of overflowing IHMSF(4). On some architectures, for ANGLE
+ *    up to 2π, the available floating-point precision corresponds roughly to
+ *    NDP=12. However, the practical limit is NDP=9, set by the capacity of a
+ *    typical 32-bit IHMSF(4).
+ * 3. The absolute value of ANGLE may exceed 2π. In cases where it does not,
+ *    it is up to the caller to test for and handle the case where ANGLE is
+ *    very nearly 2π and rounds up to 24 hours, by testing for IHMSF(1)=24 and
+ *    setting IHMSF(1-4) to zero.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss54.html}
  */
 sla.dr2tf = function (ndp, angle) {
@@ -1454,10 +1603,10 @@ sla.dr2tf = function (ndp, angle) {
 };
 
 /**
- * Normalize an angle into the range -\pi - \pi.
- * @summary Put Angle into Range -\pi - \pi
+ * @summary **Put Angle into Range ±π**
  * @param {Number} angle - Angle in radians
- * @returns {Number} Angle expressed in the range -\pi - \pi
+ * @returns {Number} Angle expressed in the range ±π
+ * @description Normalize an angle into the range ±π.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss55.html}
  */
 sla.drange = function (angle) {
@@ -1470,10 +1619,10 @@ sla.drange = function (angle) {
 };
 
 /**
- * Normalize angle into range 0 - 2 \pi.
- * @summary Put Angle into Range 0 - 2\pi
+ * @summary **Put Angle into Range 0−2π**
  * @param {Number} angle - Angle in radians
- * @returns {Number} Angle expressed in the range 0-2 \pi
+ * @returns {Number} Angle expressed in the range 0−2π
+ * @description Normalize angle into range 0−2π.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss56.html}
  */
 sla.dranrm = function (angle) {
@@ -1486,12 +1635,14 @@ sla.dranrm = function (angle) {
 };
 
 /**
- * Convert hours, minutes, seconds to days.
- * @summary Hour,Min,Sec to Days
+ * @summary **Hour,Min,Sec to Days**
  * @param {Number} ihour - Hours
  * @param {Number} imin - Minutes
  * @param {Number} sec - Seconds
  * @returns {Number} Interval in days
+ * @description Convert hours, minutes, seconds to days.
+ * 1. The result is computed even if any of the range checks fail.
+ * 2. The sign must be dealt with outside this routine.
  * @throws {RangeError} If hours, minutes or seconds are out of range.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss62.html}
  */
@@ -1510,12 +1661,14 @@ sla.dtf2d = function (ihour, imin, sec) {
 };
 
 /**
- * Convert hours, minutes, seconds to radians.
- * @summary Hour,Min,Sec to Radians
+ * @summary **Hour,Min,Sec to Radians**
  * @param {Number} ihour - Hours
  * @param {Number} imin - Minutes
  * @param {Number} sec - Seconds
  * @returns {Number} Angle in radians
+ * @description Convert hours, minutes, seconds to radians.
+ * 1. The result is computed even if any of the range checks fail.
+ * 2. The sign must be dealt with outside this routine.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss63.html}
  */
 sla.dtf2r = function (ihour, imin, sec) {
@@ -1525,12 +1678,14 @@ sla.dtf2r = function (ihour, imin, sec) {
 };
 
 /**
- * Convert degrees, arcminutes, arcseconds to radians.
- * @summary Deg,Arcmin,Arcsec to Radians
+ * @summary **Deg,Arcmin,Arcsec to Radians**
  * @param {Number} ideg - Degrees
  * @param {Number} iamin - Arcminutes
  * @param {Number} asec - Arcseconds
  * @returns {Number} Angle in radians
+ * @description Convert degrees, arcminutes, arcseconds to radians.
+ * 1. The result is computed even if any of the range checks fail.
+ * 2. The sign must be dealt with outside this routine.
  * @throws {RangeError} If degrees, arcminutes or arcseconds are out of range.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss29.html}
  */
@@ -1552,11 +1707,20 @@ sla.daf2r = function (ideg, iamin, asec) {
 };
 
 /**
- * Compute \Delta TT, the increment to be applied to Coordinated Universal Time
- * UTC to give Terrestrial Time TT.
- * @summary TT minus UTC
+ * @summary **TT minus UTC**
  * @param {Number} utc - UTC date as a modified JD (JD-2400000.5)
  * @returns {Number} TT-UTC in seconds
+ * @description Compute ΔTT, the increment to be applied to Coordinated
+ *              Universal Time UTC to give Terrestrial Time TT.
+ * 1. The UTC is specified to be a date rather than a time to indicate that
+ *    care needs to be taken not to specify an instant which lies within a leap
+ *    second. Though in most cases UTC can include the fractional part, correct
+ *    behaviour on the day of a leap second can be guaranteed only up to the
+ *    end of the second 23h59m59s.
+ * 2. Pre 1972 January 1 a fixed value of 10 + ET−TAI is returned.
+ * 3. TT is one interpretation of the defunct time scale *Ephemeris Time*, ET.
+ * 4. See also the routine {sla.dt}, which roughly estimates ET−UT for
+ *    historical epochs.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss68.html}
  */
 sla.dtt = function (utc) {
@@ -1565,23 +1729,36 @@ sla.dtt = function (utc) {
 };
 
 /**
- * Besselian Epoch to MJD.
- * @summary Conversion of Besselian epoch to Modified Julian Date.
+ * @summary Besselian Epoch to MJD.
  * @param {Number} epb - Besselian epoch
  * @returns {Number} Modified Julian Date (JD - 2400000.5)
+ * @description Conversion of Besselian epoch to Modified Julian Date.
+ * ----------
+ * References:
+ * - Lieske, J.H., 1979. *Astr.Astrophys.* 73, 282.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss81.html}
  */
 sla.epb2d = function (epb) {
     "use strict";
-    return 15019.81352 + ( epb - 1900.0 ) * 365.242198781;
+    return 15019.81352 + (epb - 1900.0) * 365.242198781;
 };
 
 /**
- * Equation of the equinoxes  (IAU 1994).
- * @summary Equation of the Equinoxes
+ * @summary **Equation of the Equinoxes**
  * @param {Number} date - TDB (formerly ET) as Modified Julian Date
  *                        (JD-2400000.5)
  * @returns {Number} The equation of the equinoxes (radians)
+ * @description Equation of the equinoxes  (IAU 1994).
+ * 1. The equation of the equinoxes is defined here as GAST-GMST: it is added
+ *    to a *mean* sidereal time to give the *apparent* sidereal time.
+ * 2. The change from the classic “textbook” expression Δψ cosϵ occurred with
+ *    IAU Resolution C7, Recommendation 3 (1994). The new formulation takes
+ *    into account cross-terms between the various precession and nutation
+ *    quantities, amounting to about 3 milliarcsec. The transition from the old
+ *    to the new model officially took place on 1997 February 27.
+ * ----------
+ * References:
+ * - Capitaine, N. & Gontier, A.-M. (1993), *Astron. Astrophys.*, 275, 645-650.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss87.html}
  */
 sla.eqeqx = function (date) {
@@ -1595,10 +1772,51 @@ sla.eqeqx = function (date) {
 };
 
 /**
- * FK4 to FK5, no P.M. or Parallax 
- * @summary 
- * @param {Number} r1950
- * @returns 
+ * @summary **FK4 to FK5, no P.M. or Parallax**
+ * @param {Number} r1950 - B1950.0 FK4 α at epoch BEPOCH (radians)
+ * @param {Number} d1950 - B1950.0 FK4 δ at epoch BEPOCH (radians)
+ * @param {Number} epoch - Besselian epoch (e.g. 1979.3D0)
+ * @returns {Object}
+ * - r2000 - J2000.0 FK5 α (radians)
+ * - d2000 - J2000.0 FK5 δ (radians)
+ * @description Convert B1950.0 FK4 star data to J2000.0 FK5 assuming zero
+ *              proper motion in the FK5 frame. This routine converts stars
+ *              from the old, Bessel-Newcomb, FK4 system to the new, IAU 1976,
+ *              FK5, Fricke system, in such a way that the FK5 proper motion is
+ *              zero. Because such a star has, in general, a non-zero proper
+ *              motion in the FK4 system, the routine requires the epoch at
+ *              which the position in the FK4 system was determined. The method
+ *              is from appendix 2 of reference 1, but using the constants of
+ *              reference 4.
+ * 1. The epoch BEPOCH is strictly speaking Besselian, but if a Julian epoch
+ *    is supplied the result will be affected only to a negligible extent.
+ * 2. Conversion from Besselian epoch 1950.0 to Julian epoch 2000.0 only is
+ *    provided for. Conversions involving other epochs will require use of the
+ *    appropriate precession, proper motion, and E-terms routines before and/or
+ *    after {@link sla.fk45z} is called.
+ * 3. In the FK4 catalogue the proper motions of stars within 10∘ of the poles
+ *    do not include the *differential E-terms* effect and should, strictly
+ *    speaking, be handled in a different manner from stars outside these
+ *    regions. However, given the general lack of homogeneity of the star data
+ *    available for routine astrometry, the difficulties of handling positions
+ *    that may have been determined from astrometric fields spanning the polar
+ *    and non-polar regions, the likelihood that the differential E-terms
+ *    effect was not taken into account when allowing for proper motion in
+ *    past astrometry, and the undesirability of a discontinuity in the
+ *    algorithm, the decision has been made in this routine to include the
+ *    effect of differential E-terms on the proper motions for all stars,
+ *    whether polar or not. At epoch 2000, and measuring on the sky rather than
+ *    in terms of Δα, the errors resulting from this simplification are less
+ *    than 1 milliarcsecond in position and 1 milliarcsecond per century in
+ *    proper motion.
+ * 4. See also {@link sla.fk425}, {@link sla.fk524}, {@link sla.fk54z}.
+ * ----------
+ * References:
+ * 1. Aoki, S., et al., 1983. *Astr.Astrophys.*, 128, 263.
+ * 2. Smith, C.A. et al., 1989. *Astr.J.* 97, 265.
+ * 3. Yallop, B.D. et al., 1989. *Astr.J.* 97, 274.
+ * 4. Seidelmann, P.K. (ed), 1992. *Explanatory Supplement to the Astronomical
+ *    Almanac*, ISBN 0-935702-68-7.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss94.html}
  */
 sla.fk45z = function (r1950, d1950, bepoch) {
@@ -1647,10 +1865,55 @@ sla.fk45z = function (r1950, d1950, bepoch) {
 };
 
 /**
- * FK4 to FK5.
- * @summary 
- * @param {Number} r1950
- * @returns {Number})
+ * @summary **FK4 to FK5.**
+ * @param {Number} r1950 - B1950.0 α (radians)
+ * @param {Number} d1950 - B1950.0 δ (radians)
+ * @param {Number} dr1950 - B1950.0 proper motion in α (radians per tropical year)
+ * @param {Number} dd1950 - B1950.0 proper motion in δ (radians per tropical year)
+ * @param {Number} p1950 - B1950.0 parallax (arcsec)
+ * @param {Number} v1950 - B1950.0 radial velocity (km/s, +ve = moving away)
+ * @returns {Object}
+ * - r2000 - J2000.0 α (radians)
+ * - d2000 - J2000.0 δ (radians)
+ * - dr2000 - J2000.0 proper motion in α (radians per Julian year)
+ * - dd2000 - J2000.0 proper motion in δ (radians per Julian year)
+ * - p2000 - J2000.0 parallax (arcsec)
+ * - v2000 - J2000.0 radial velocity (km/s, +ve = moving away)
+ * @description Convert B1950.0 FK4 star data to J2000.0 FK5. This routine
+ *              converts stars from the old, Bessel-Newcomb, FK4 system to the
+ *              new, IAU 1976, FK5, Fricke system. The precepts of Smith et al.
+ *              (see reference 1) are followed, using the implementation by
+ *              Yallop et al. (reference 2) of a matrix method due to Standish.
+ *              Kinoshita’s development of Andoyer’s post-Newcomb precession is
+ *              used. The numerical constants from Seidelmann et al. (reference
+ *              3) are used canonically.
+ * 1. The α proper motions are α̇  rather than α̇ cosδ, and are per year rather
+ *    than per century.
+ * 2. Conversion from Besselian epoch 1950.0 to Julian epoch 2000.0 only is
+ *    provided for. Conversions involving other epochs will require use of the
+ *    appropriate precession, proper motion, and E-terms routines before and/or
+ *    after {@link sla.fk425} is called.
+ * 3. In the FK4 catalogue the proper motions of stars within 10∘ of the poles
+ *    do not include the *differential E-terms* effect and should, strictly
+ *    speaking, be handled in a different manner from stars outside these
+ *    regions. However, given the general lack of homogeneity of the star data
+ *    available for routine astrometry, the difficulties of handling positions
+ *    that may have been determined from astrometric fields spanning the polar
+ *    and non-polar regions, the likelihood that the differential E-terms
+ *    effect was not taken into account when allowing for proper motion in past
+ *    astrometry, and the undesirability of a discontinuity in the algorithm,
+ *    the decision has been made in this routine to include the effect of
+ *    differential E-terms on the proper motions for all stars, whether polar
+ *    or not. At epoch J2000, and measuring on the sky rather than in terms of
+ *    Δα, the errors resulting from this simplification are less than 1
+ *    milliarcsecond in position and 1 milliarcsecond per century in proper motion.
+ * 4. See also {@link sla.fk45z}, {@link sla.fk524}, {@link sla.fk54z}.
+ * ----------
+ * References:
+ * 1. Smith, C.A. et al., 1989. *Astr.J.* 97, 265.
+ * 2. Yallop, B.D. et al., 1989. *Astr.J.* 97, 274.
+ * 3. Seidelmann, P.K. (ed), 1992. *Explanatory Supplement to the Astronomical
+ *    Almanac*, ISBN 0-935702-68-7.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss93.html}
  */
 sla.fk425 = function (r1950, d1950, dr1950, dd1950, p1950, v1950) {
@@ -1680,26 +1943,26 @@ sla.fk425 = function (r1950, d1950, dr1950, dd1950, p1950, v1950) {
     var r0 = [cr * cd, sr * cd, sd];
     var w = vf * rv * px;
     var rd0 = [
-        ( -sr * cd * ur ) - ( cr * sd * ud ) + ( w * r0[0] ),
-        ( cr * cd * ur ) - ( sr * sd * ud ) + ( w * r0[1] ),
-        ( cd * ud ) + ( w * r0[2] )
+        (-sr * cd * ur) - (cr * sd * ud) + (w * r0[0]),
+        (cr * cd * ur) - (sr * sd * ud) + (w * r0[1]),
+        (cd * ud) + (w * r0[2])
     ];
 
     /* Allow for e-terms and express as position+velocity 6-vector */
-    w = ( r0[0] * sla.fka[0] ) + ( r0[1] * sla.fka[1] ) + ( r0[2] * sla.fka[2] );
-    var wd = ( r0[0] * sla.fkad[0] ) + ( r0[1] * sla.fkad[1] ) + ( r0[2] * sla.fkad[2] );
+    w = (r0[0] * sla.fka[0]) + (r0[1] * sla.fka[1]) + (r0[2] * sla.fka[2]);
+    var wd = (r0[0] * sla.fkad[0]) + (r0[1] * sla.fkad[1]) + (r0[2] * sla.fkad[2]);
     
     var v1 = [];
-    for ( i = 0; i < 3; i++ ) {
+    for (i = 0; i < 3; i++) {
         v1[i] = r0[i]  - sla.fka[i]  + w * r0[i];
         v1[i+3] = rd0[i] - sla.fkad[i] + wd * r0[i];
     }
 
     /* Convert position+velocity vector to Fricke system */
     var v2 = [];
-    for ( i = 0; i < 6; i++ ) {
+    for (i = 0; i < 6; i++) {
         w = 0.0;
-        for ( j = 0; j < 6; j++ ) {
+        for (j = 0; j < 6; j++) {
             w += sla.fkem6[i * 6 + j] * v1[j];
         }
         v2[i] = w;
@@ -1713,28 +1976,29 @@ sla.fk425 = function (r1950, d1950, dr1950, dd1950, p1950, v1950) {
     var yd = v2[4];
     var zd = v2[5];
 
-    var rxysq = ( x * x ) + ( y * y );
-    var rxyzsq = ( rxysq ) + ( z * z );
-    var rxy = Math.sqrt ( rxysq );
-    var rxyz = Math.sqrt (  rxyzsq );
-    var spxy = ( x * xd ) + ( y * yd );
-    var spxyz = spxy + ( z * zd );
+    var rxysq = (x * x) + (y * y);
+    var rxyzsq = (rxysq) + (z * z);
+    var rxy = Math.sqrt(rxysq);
+    var rxyz = Math.sqrt(rxyzsq);
+    var spxy = (x * xd) + (y * yd);
+    var spxyz = spxy + (z * zd);
 
-    if ( (x == 0.0) && (y == 0.0) )
+    if ((x == 0.0) && (y == 0.0)) {
         r = 0.0;
-    else {
-        r = Math.atan2 ( y, x );
-        if ( r < 0.0 )
+    } else {
+        r = Math.atan2(y, x);
+        if (r < 0.0) {
             r += sla.d2pi;
+        }
     }
-    d = Math.atan2 ( z, rxy );
+    d = Math.atan2 (z, rxy);
 
-    if ( rxy > sla.tiny ) {
-        ur = ( ( x * yd ) - ( y * xd ) ) / rxysq;
-        ud = ( ( zd * rxysq ) - ( z * spxy ) ) / ( rxyzsq * rxy );
+    if (rxy > sla.tiny) {
+        ur = ((x * yd) - (y * xd)) / rxysq;
+        ud = ((zd * rxysq) - (z * spxy)) / (rxyzsq * rxy);
     }
-    if ( px > sla.tiny ) {
-        rv = spxyz / ( px * rxyz * vf );
+    if (px > sla.tiny) {
+        rv = spxyz / (px * rxyz * vf);
         px = px / rxyz;
     }
 
@@ -1749,11 +2013,21 @@ sla.fk425 = function (r1950, d1950, dr1950, dd1950, p1950, v1950) {
 };
 
 /**
- * Conversion from universal time UT1 to Greenwich mean sidereal time.
- * @summary UT to GMST
+ * @summary **UT to GMST**
  * @param {Number} ut1 - Universal time (strictly UT1) expressed as modified
  *                       Julian Date (JD-2400000.5).
  * @returns {Number} Greenwich mean sidereal time (radians).
+ * @description Conversion from universal time UT1 to Greenwich mean sidereal time.
+ * 1. The IAU 1982 expression (see page S15 of the 1984 *Astronomical Almanac*)
+ *    is used, but rearranged to reduce rounding errors. This expression is
+ *    always described as giving the GMST at 0hUT; in fact, it gives the
+ *    difference between the GMST and the UT, which happens to equal the GMST
+ *    (modulo 24 hours) at 0hUT each day. In {@link sla.gmst}, the entire UT
+ *    is used directly as the argument for the canonical formula, and the
+ *    fractional part of the UT is added separately; note that the factor
+ *    1.0027379⋯ does not appear.
+ * 2. See also the routine {@link sla.gmsta}, which delivers better numerical
+ *    precision by accepting the UT date and time as separate arguments.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss104.html}
  */
 sla.gmst = function (ut1) {
@@ -1764,13 +2038,25 @@ sla.gmst = function (ut1) {
 };
 
 /**
- * Conversion from Universal Time to Greenwich mean sidereal time,
- * with rounding errors minimized.
- * @summary UT to GMST (extra precision)
+ * @summary **UT to GMST (extra precision)**
  * @param {Number} date - UT1 date as Modified Julian Date (integer part of
  *                        JD-2400000.5)
  * @param {Number} ut - UT1 time (fraction of a day)
  * @returns {Number} Greenwich mean sidereal time (radians)
+ * @description Conversion from Universal Time to Greenwich mean sidereal time,
+ *              with rounding errors minimized.
+ * 1. The algorithm is derived from the IAU 1982 expression (see page S15 of
+ *    the 1984 *Astronomical Almanac*).
+ * 2. There is no restriction on how the UT is apportioned between the DATE
+ *    and UT1 arguments. Either of the two arguments could, for example, be
+ *    zero and the entire date + time supplied in the other. However, the
+ *    routine is designed to deliver maximum accuracy when the DATE argument
+ *    is a whole number and the UT1 argument lies in the range [0,1], or vice versa.
+ * 3. See also the routine {@link sla.gmst}, which accepts the UT1 as a single
+ *    argument. Compared with {@link sla.gmst}, the extra numerical precision
+ *    delivered by the present routine is unlikely to be important in an
+ *    absolute sense, but may be useful when critically comparing algorithms
+ *    and in applications where two sidereal times close together are differenced.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss105.html}
  */
 sla.gmsta = function (date, ut) {
@@ -1790,12 +2076,14 @@ sla.gmsta = function (date, ut) {
 };
 
 /**
- * Convert geodetic position to geocentric.
- * @summary Geodetic to Geocentric
+ * @summary **Geodetic to Geocentric**
  * @param {Number} p - Latitude (geodetic, radians).
  * @param {Number} h - Height above reference spheroid (geodetic, metres).
  * @returns {Array} [0] Distance from Earth axis (AU)
  *                  [1] Distance from plane of Earth equator (AU)
+ * @description Convert geodetic position to geocentric.
+ * 1. Geocentric latitude can be obtained by evaluating ATAN2(Z,R).
+ * 2. IAU 1976 constants are used.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss103.html}
  */
 sla.geoc = function (p, h) {
@@ -1811,16 +2099,16 @@ sla.geoc = function (p, h) {
 };
 
 /**
- * Conversion of position & velocity in spherical coordinates to
- * Cartesian coordinates.
- * @summary Spherical Pos/Vel to Cartesian
- * @param {Number} a - longitude (radians) - for example \alpha
- * @param {Number} b - latitude (radians) - for example \delta
+ * @summary **Spherical Pos/Vel to Cartesian**
+ * @param {Number} a - longitude (radians) - for example α
+ * @param {Number} b - latitude (radians) - for example δ
  * @param {Number} r - radial coordinate
  * @param {Number} ad - longitude derivative (radians per unit time)
  * @param {Number} bd - latitude derivative (radians per unit time)
  * @param {Number} rd - radial derivative
  * @returns {Array} [x,y,z,\dot x,\dot y,\dot z]
+ * @description Conversion of position & velocity in spherical coordinates to
+ *              Cartesian coordinates.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss57.html}
  */
 sla.ds2c6 = function (a, b, r, ad, bd, rd) {
@@ -1848,11 +2136,20 @@ sla.ds2c6 = function (a, b, r, ad, bd, rd) {
 };
 
 /**
- * Multiply a 3-vector by the inverse of a rotation matrix.
- * @summary Apply 3D Reverse Rotation
+ * @summary **Apply 3D Reverse Rotation**
  * @param {Array} dm - 3x3 rotation matrix
  * @param {Array} va - vector to be rotated
  * @returns {Array} result vector
+ * @description Multiply a 3-vector by the inverse of a rotation matrix.
+ * 1. This routine performs the operation: **b = M^T⋅a** where **a** and **b**
+ *    are the 3-vectors VA and VB respectively, and **M** is the 3×3 matrix DM.
+ * 2. The main function of this routine is apply an inverse rotation; under
+ *    these circumstances, **M** is *orthogonal*, with its inverse the same as
+ *    its transpose.
+ * 3. To comply with the ANSI Fortran 77 standard, VA and VB must *not* be the
+ *    same array. The routine is, in fact, coded so as to work properly on
+ *    the VAX and many other systems even if this rule is violated, something
+ *    that is *not*, however, recommended.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss44.html}
  */
 sla.dimxv = function (dm, va) {
@@ -1874,9 +2171,7 @@ sla.dimxv = function (dm, va) {
 };
 
 /**
- * Conversion of position & velocity in Cartesian coordinates to
- * spherical coordinates.
- * @summary Cartesian 6-Vector to Spherical
+ * @summary **Cartesian 6-Vector to Spherical**
  * @param {Array} v - [x,y,z,\dot x,\dot y,\dot z]
  * @returns {Object} a - longitude (radians)
  *                   b - latitude (radians)
@@ -1884,6 +2179,8 @@ sla.dimxv = function (dm, va) {
  *                   ad - longitude derivative (radians per unit time)
  *                   bd - latitude derivative (radians per unit time)
  *                   rd - radial derivative
+ * @description Conversion of position & velocity in Cartesian coordinates to
+ *              spherical coordinates.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss35.html}
  */
 sla.dc62s = function (v) {
@@ -1952,21 +2249,17 @@ sla.dc62s = function (v) {
 };
 
 /**
- * Transform an FK5 (J2000) position and proper motion into the
- * frame of the Hipparcos catalogue.
- * @summary FK5 to Hipparcos
- * @param {Number} r5 - J2000.0 FK5 \alpha (radians)
- * @param {Number} d5 - J2000.0 FK5 \delta (radians)
- * @param {Number} dr5 - J2000.0 FK5 proper motion in \alpha
- *                       (radians per Julian year)
- * @param {Number} dd5 - J2000.0 FK5 proper motion in \delta
- *                       (radians per Julian year)
- * @returns {Object} rh - Hipparcos \alpha (radians)
- *                   dh - Hipparcos \delta (radians)
- *                   drh - Hipparcos proper motion in \alpha
- *                         (radians per Julian year)
- *                   ddh - Hipparcos proper motion in \delta
- *                         (radians per Julian year)
+ * @summary **FK5 to Hipparcos**
+ * @param {Number} r5 - J2000.0 FK5 α (radians)
+ * @param {Number} d5 - J2000.0 FK5 δ (radians)
+ * @param {Number} dr5 - J2000.0 FK5 proper motion in α (radians per Julian year)
+ * @param {Number} dd5 - J2000.0 FK5 proper motion in δ (radians per Julian year)
+ * @returns {Object} rh - Hipparcos α (radians)
+ *                   dh - Hipparcos δ (radians)
+ *                   drh - Hipparcos proper motion in α (radians per Julian year)
+ *                   ddh - Hipparcos proper motion in δ (radians per Julian year)
+ * @description Transform an FK5 (J2000) position and proper motion into the
+ *              frame of the Hipparcos catalogue.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss96.html}
  */
 sla.fk52h = function (r5, d5, dr5, dd5) {
@@ -2005,21 +2298,38 @@ sla.fk52h = function (r5, d5, dr5, dd5) {
 };
 
 /**
- * Transform a Hipparcos star position and proper motion into the
- * FK5 (J2000) frame.
- * @summary Hipparcos to FK
- * @param {Number} rh - Hipparcos \alpha (radians)
- * @param {Number} dh - Hipparcos \delta (radians)
- * @param {Number} drh - Hipparcos proper motion in \alpha
- *                       (radians per Julian year)
- * @param {Number} ddh - Hipparcos proper motion in \delta
- *                       (radians per Julian year)
- * @returns {Object} r5 - J2000.0 FK5 \alpha (radians)
- *                   d5 - J2000.0 FK5 \delta (radians)
- *                   dr5 - J2000.0 FK5 proper motion in \alpha
- *                         (radians per Julian year)
- *                   dd5 - J2000.0 FK5 proper motion in \delta
- *                         (radians per Julian year)
+ * @summary **Hipparcos to FK**
+ * @param {Number} rh - Hipparcos α (radians)
+ * @param {Number} dh - Hipparcos δ (radians)
+ * @param {Number} drh - Hipparcos proper motion in α (radians per Julian year)
+ * @param {Number} ddh - Hipparcos proper motion in δ (radians per Julian year)
+ * @returns {Object} r5 - J2000.0 FK5 α (radians)
+ *                   d5 - J2000.0 FK5 δ (radians)
+ *                   dr5 - J2000.0 FK5 proper motion in α (radians per Julian year)
+ *                   dd5 - J2000.0 FK5 proper motion in δ (radians per Julian year)
+ * @description Transform a Hipparcos star position and proper motion into the
+ *              FK5 (J2000) frame.
+ * 1. The α proper motions are α̇  rather than α̇ cosδ, and are per year rather
+ *    than per century.
+ * 2. The FK5 to Hipparcos transformation consists of a pure rotation and spin;
+ *    zonal errors in the FK5 catalogue are not taken into account.
+ * 3. The adopted epoch J2000.0 FK5 to Hipparcos orientation and spin values
+ *    are as follows (see reference):
+ * 
+ *      | orientation | spin
+ *    -----------------------
+ *    x | -19.9       | -0.30
+ *    y |  -9.1       | +0.60
+ *    z | +22.9       | +0.70
+ *      | mas         | mas/y
+ * 
+ *    These orientation and spin components are interpreted as axial vectors.
+ *    An axial vector points at the pole of the rotation and its length is the
+ *    amount of rotation in radians.
+ * 4. See also {@link sla.fk52h}, {@link sla.fk5hz}, {@link sla.hfk5z}.
+ * ----------
+ * References:
+ * - Feissel, M. & Mignard, F., 1998., *Astron.Astrophys.* 331, L33-L36.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss108.html}
  */
 sla.h2fk5 = function (rh, dh, drh, ddh) {
@@ -2061,11 +2371,27 @@ sla.h2fk5 = function (rh, dh, drh, ddh) {
 };
 
 /**
- * Form the matrix of nutation (SF2001 theory) for a given date.
- * @summary Nutation Matrix
+ * @summary **Nutation Matrix**
  * @param {Number} date - TDB (formerly ET) as Modified Julian Date
  *                        (JD-2400000.5).
  * @returns {Array} 3x3 nutation matrix.
+ * @description Form the matrix of nutation (SF2001 theory) for a given date.
+ * 1. The matrix is in the sense:
+ *    **v**_true = **M**×**v**_mean
+ *    where **v**_true is the star vector relative to the true equator and
+ *    equinox of date, **M** is the 3×3 matrix rmatn and **v**_mean is the
+ *    star vector relative to the mean equator and equinox of date.
+ * 2. The matrix represents forced nutation (but not free core nutation) plus
+ *    corrections to the IAU 1976 precession model.
+ * 3. Earth attitude predictions made by combining the present nutation matrix
+ *    with IAU 1976 precession are accurate to 1 mas (with respect to the ICRS)
+ *    for a few decades around 2000.
+ * 4. The distinction between the required TDB and TT is always negligible.
+ *    Moreover, for all but the most critical applications UTC is adequate.
+ * ----------
+ * References:
+ * 1. Kaplan, G.H., 1981. *USNO circular No. 163*, p. A3-6.
+ * 2. Shirai, T. & Fukushima, T., 2001, *Astron.J.*, 121, 3270-3283.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss122.html}
  */
 sla.nut = function (date) {
@@ -2075,14 +2401,29 @@ sla.nut = function (date) {
 };
 
 /**
- * Nutation (SF2001 theory): longitude & obliquity components, and mean
- * obliquity.
- * @summary: Nutation Components
+ * @summary **Nutation Components**
  * @param {Number} date - TDB (formerly ET) as Modified Julian Date
  *                        (JD-2400000.5)
  * @returns {Array} [0] Nutation in longitude (radians)
  *                  [1] Nutation in obliquity (radians)
  *                  [2] Mean obliquity (radians)
+ * @description Nutation (SF2001 theory): longitude & obliquity components,
+ *              and mean obliquity.
+ * 1. The routine predicts forced nutation (but not free core nutation) plus
+ *    corrections to the IAU 1976 precession model.
+ * 2. Earth attitude predictions made by combining the present nutation model
+ *    with IAU 1976 precession are accurate to 1 mas (with respect to the ICRS)
+ *    for a few decades around 2000.
+ * 3. The {@link sla.nutc80} routine is the equivalent of the present routine
+ *    but using the IAU 1980 nutation theory. The older theory is less
+ *    accurate, leading to errors as large as 350 mas over the interval
+ *    1900-2100, mainly because of the error in the IAU 1976 precession.
+ * ----------
+ * References:
+ * 1. Shirai, T. & Fukushima, T., Astron.J. 121, 3270-3283 (2001).
+ * 2. Fukushima, T., Astron.Astrophys. 244, L11 (1991).
+ * 3. Simon, J. L., Bretagnon, P., Chapront, J., Chapront-Touze, M., Francou, G.
+ *    & Laskar, J., Astron.Astrophys. 282, 663 (1994).
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss123.html}
  */
 sla.nutc = function (date) {
@@ -2174,15 +2515,13 @@ sla.nutc = function (date) {
 };
 
 /**
- * Transform conventional osculating orbital elements into "universal" form.
- * @summary Conventional to Universal Elements
+ * @summary **Conventional to Universal Elements**
  * @param {Number} date - Epoch (TT MJD) of osculation (Note 3)
  * @param {Number} jform - Choice of element set (1-3; Note 6)
  * @param {Number} epoch - Epoch of elements (t0 or T, TT MJD)
  * @param {Number} orbinc - Inclination (i, radians)
- * @param {Number} anode - Longitude of the ascending node (\Omega, radians)
- * @param {Number} perih - Longitude or argument of perihelion (\varpi or
- *                         \omega, radians)
+ * @param {Number} anode - Longitude of the ascending node (Ω, radians)
+ * @param {Number} perih - Longitude or argument of perihelion (ϖ or ω, radians)
  * @param {Number} aorq - Mean distance or perihelion distance (a or q, AU)
  * @param {Number} e - Eccentricity (e)
  * @param {Number} aorl - Mean anomaly or longitude (M or L, radians,
@@ -2190,14 +2529,54 @@ sla.nutc = function (date) {
  * @param {Number} dm - Daily motion (n, radians, jform=1 only)
  * @returns {Array} Universal orbital elements (Note 1)
  *                  [0] combined mass (M+m)
- *                  [1] total energy of the orbit (\alpha)
+ *                  [1] total energy of the orbit (α)
  *                  [2] reference (osculating) epoch (t0)
  *                  [3-5] position at reference epoch (r0)
  *                  [6-8] velocity at reference epoch (v0)
  *                  [9] heliocentric distance at reference epoch
  *                  [10] r0.v0
  *                  [11] date (t)
- *                  [12] universal eccentric anomaly (\psi) of date, approx
+ *                  [12] universal eccentric anomaly (ψ) of date, approx
+ * @description Transform conventional osculating orbital elements into
+ *              "universal" form.
+ * 1. The “universal” elements are those which define the orbit for the
+ *    purposes of the method of universal variables (see reference). They
+ *    consist of the combined mass of the two bodies, an epoch, and the
+ *    position and velocity vectors (arbitrary reference frame) at that epoch.
+ *    The parameter set used here includes also various quantities that can,
+ *    in fact, be derived from the other information. This approach is taken
+ *    to avoiding unnecessary computation and loss of accuracy. The
+ *    supplementary quantities are (i) α, which is proportional to the total
+ *    energy of the orbit, (ii) the heliocentric distance at epoch, (iii) the
+ *    outwards component of the velocity at the given epoch, (iv) an estimate
+ *    of ψ, the “universal eccentric anomaly” at a given date and (v) that date.
+ * 2. The companion routine is {@link sla.ue2pv}. This takes the set of numbers
+ *    that the present routine outputs and uses them to derive the object’s
+ *    position and velocity. A single prediction requires one call to the
+ *    present routine followed by one call to {@link sla.ue2pv}; for
+ *    convenience, the two calls are packaged as the routine {@link sla.planel}.
+ *    Multiple predictions may be made by again calling the present routine
+ *    once, but then calling {@link sla.ue2pv} multiple times, which is faster
+ *    than multiple calls to {@link sla.planel}.
+ * 3. DATE is the epoch of osculation. It is in the TT time scale (formerly
+ *    Ephemeris Time, ET) and is a Modified Julian Date (JD−2400000.5).
+ * 4. The supplied orbital elements are with respect to the J2000 ecliptic and
+ *    equinox. The position and velocity parameters returned in the array U
+ *    are with respect to the mean equator and equinox of epoch J2000, and
+ *    are for the perihelion prior to the specified epoch.
+ * 5. The universal elements returned in the array U are in canonical units
+ *    (solar masses, AU and canonical days).
+ * 6. Three different element-format options are supported, as follows.
+ *    - JFORM=1, suitable for the major planets:
+ *    - JFORM=2, suitable for minor planets:
+ *    - JFORM=3, suitable for comets:
+ * 7. Unused elements (DM for JFORM=2, AORL and DM for JFORM=3) are not accessed.
+ * 8. The algorithm was originally adapted from the EPHSLA program of D.H.P.
+ *    Jones (private communication, 1996). The method is based on Stumpff’s
+ *    Universal Variables.
+ * ----------
+ * References:
+ * - Everhart, E. & Pitkin, E.T., *Am. J. Phys.* 51, 712, 1983.
  * @throws {RangeError} If jform, e, aorq or dm are out of range.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss79.html}
  */
@@ -2302,22 +2681,60 @@ sla.el2ue = function (date, jform, epoch, orbinc, anode, perih,
 };
 
 /**
- * Heliocentric position and velocity of a planet, asteroid or comet, starting
- * from orbital elements in the "universal variables" form.
- * @summary Pos/Vel from Universal Elements
+ * @summary **Pos/Vel from Universal Elements**
  * @param {Number} date - Date (TT Modified Julian Date = JD-2400000.5)
  * @param {Array} u - Universal orbital elements (updated; Note 1)
  *                [0] combined mass (M+m)
- *                [1] total energy of the orbit (\alpha)
+ *                [1] total energy of the orbit (α)
  *                [2] reference (osculating) epoch (t0)
  *                [3-5] position at reference epoch (r0)
  *                [6-8] velocity at reference epoch (v0)
  *                [9] heliocentric distance at reference epoch
  *                [10] r0.v0
  *                [11] date (t)
- *                [12] universal eccentric anomaly (\psi) of date, approx
+ *                [12] universal eccentric anomaly (ψ) of date, approx
  * @returns {Array} Heliocentric [x,y,z,\dot x,\dot y,\dot z], equatorial,
  *                  J2000 (AU, AU/s; Note 1)
+ * @description Heliocentric position and velocity of a planet, asteroid or
+ *              comet, starting from orbital elements in the "universal
+ *              variables" form.
+ * 1. The “universal” elements are those which define the orbit for the
+ *    purposes of the method of universal variables (see reference). They
+ *    consist of the combined mass of the two bodies, an epoch, and the
+ *    position and velocity vectors (arbitrary reference frame) at that epoch.
+ *    The parameter set used here includes also various quantities that can,
+ *    in fact, be derived from the other information. This approach is taken to
+ *    avoiding unnecessary computation and loss of accuracy. The supplementary
+ *    quantities are (i) α, which is proportional to the total energy of the
+ *    orbit, (ii) the heliocentric distance at epoch, (iii) the outwards
+ *    component of the velocity at the given epoch, (iv) an estimate of ψ,
+ *    the “universal eccentric anomaly” at a given date and (v) that date.
+ * 2. The companion routine is {@link sla.el2ue}. This takes the conventional
+ *    orbital elements and transforms them into the set of numbers needed by
+ *    the present routine. A single prediction requires one one call to
+ *    {@link sla.el2ue} followed by one call to the present routine; for
+ *    convenience, the two calls are packaged as the routine {@link sla.planel}.
+ *    Multiple predictions may be made by again calling {@link sla.el2ue}
+ *    once, but then calling the present routine multiple times, which is
+ *    faster than multiple calls to {@link sla.planel}.
+ *    It is not obligatory to use {@link sla.el2ue} to obtain the parameters.
+ *    However, it should be noted that because {@link sla.el2ue} performs its
+ *    own validation, no checks on the contents of the array U are made by the
+ *    present routine.
+ * 3. DATE is the instant for which the prediction is required. It is in the
+ *    TT time scale (formerly Ephemeris Time, ET) and is a Modified Julian Date
+ *    (JD−2400000.5).
+ * 4. The universal elements supplied in the array U are in canonical units
+ *    (solar masses, AU and canonical days). The position and velocity are not
+ *    sensitive to the choice of reference frame. The {@link sla.el2ue}
+ *    routine in fact produces coordinates with respect to the J2000 equator
+ *    and equinox.
+ * 5. The algorithm was originally adapted from the EPHSLA program of D.H.P.
+ *    Jones (private communication, 1996). The method is based on Stumpff’s
+ *    Universal Variables.
+ * ----------
+ * References:
+ * - Everhart, E. & Pitkin, E.T., *Am. J. Phys.* 51, 712, 1983.
  * @throws {RangeError} If radius vector is zero.
  * @throws {Error} If the algorithm fails to converge.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss180.html}
@@ -2450,9 +2867,7 @@ sla.ue2pv = function (date, u) {
 };
 
 /**
- * Construct a universal element set based on an instantaneous position and
- * velocity.
- * @summary Position/Velocity to Universal Elements
+ * @summary **Position/Velocity to Universal Elements**
  * @param {Array} pv - Heliocentric [x,y,z,\dot x,\dot y,\dot z], equatorial,
  *                     J2000 (AU, AU/s; Note 1)
  * @param {Number} date - Date (TT Modified Julian Date = JD-2400000.5)
@@ -2466,7 +2881,28 @@ sla.ue2pv = function (date, u) {
  *                  [9] heliocentric distance at reference epoch
  *                  [10] r0.v0
  *                  [11] date (t)
- *                  [12] universal eccentric anomaly (\psi) of date, approx
+ *                  [12] universal eccentric anomaly (ψ) of date, approx
+ * @description Construct a universal element set based on an instantaneous
+ *              position and velocity.
+ * 1. The PV 6-vector can be with respect to any chosen inertial frame, and
+ *    the resulting universal-element set will be with respect to the same
+ *    frame. A common choice will be mean equator and ecliptic of epoch J2000.
+ * 2. The mass, PMASS, is important only for the larger planets. For most
+ *    purposes (e.g. asteroids) use 0D0. Values less than zero are illegal.
+ * 3. The “universal” elements are those which define the orbit for the
+ *    purposes of the method of universal variables (see reference). They
+ *    consist of the combined mass of the two bodies, an epoch, and the
+ *    position and velocity vectors (arbitrary reference frame) at that epoch.
+ *    The parameter set used here includes also various quantities that can,
+ *    in fact, be derived from the other information. This approach is taken
+ *    to avoiding unnecessary computation and loss of accuracy. The
+ *    supplementary quantities are (i) α, which is proportional to the total
+ *    energy of the orbit, (ii) the heliocentric distance at epoch, (iii) the
+ *    outwards component of the velocity at the given epoch, (iv) an estimate
+ *    of ψ, the “universal eccentric anomaly” at a given date and (v) that date.
+ * ----------
+ * References:
+ * - Everhart, E. & Pitkin, E.T., *Am. J. Phys.* 51, 712, 1983.
  * @throws {RangeError} If pmass is negative, or r or v are too small.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss148.html}
  */
@@ -2516,16 +2952,13 @@ sla.pv2ue = function (pv, date, pmass) {
 };
 
 /**
- * Heliocentric position and velocity of a planet, asteroid or comet, starting
- * from orbital elements.
- * @summary Planet Position from Elements
+ * @summary **Planet Position from Elements**
  * @param {Number} date - Epoch (TT MJD) of observation (JD-2400000.5, Note 1)
  * @param {Number} jform - Choice of element set (1-3; Note 3)
  * @param {Number} epoch - Epoch of elements (t0 or T, TT MJD, Note 4)
  * @param {Number} orbinc - Inclination (i, radians)
- * @param {Number} anode - Longitude of the ascending node (\Omega, radians)
- * @param {Number} perih - Longitude or argument of perihelion (\varphi or
- *                         \omega, radians)
+ * @param {Number} anode - Longitude of the ascending node (Ω, radians)
+ * @param {Number} perih - Longitude or argument of perihelion (ϖ or ω, radians)
  * @param {Number} aorq - Mean distance or perihelion distance (a or q, AU)
  * @param {Number} e - Eccentricity (e)
  * @param {Number} aorl - Mean anomaly or longitude (M or L, radians,
@@ -2533,6 +2966,59 @@ sla.pv2ue = function (pv, date, pmass) {
  * @param {Number} dm - Daily motion (n, radians, jform=1 only)
  * @returns {Array} Heliocentric [x,y,z,\dot x,\dot y,\dot z], equatorial,
  *                  J2000 (AU, AU/s)
+ * @description Heliocentric position and velocity of a planet, asteroid or
+ *              comet, starting from orbital elements.
+ * 1. DATE is the instant for which the prediction is required. It is in the
+ *    TT time scale (formerly Ephemeris Time, ET) and is a Modified Julian
+ *    Date (JD−2400000.5).
+ * 2. The elements are with respect to the J2000 ecliptic and equinox.
+ * 3. A choice of three different element-format options is available,
+ *    as follows.
+ *    - JFORM=1, suitable for the major planets:
+ *    - JFORM=2, suitable for minor planets:
+ *    - JFORM=3, suitable for comets:
+ *    Unused elements (DM for JFORM=2, AORL and DM for JFORM=3) are not accessed.
+ * 4. Each of the three element sets defines an unperturbed heliocentric orbit.
+ *    For a given epoch of observation, the position of the body in its orbit
+ *    can be predicted from these elements, which are called *osculating
+ *    elements*, using standard two-body analytical solutions. However, due to
+ *    planetary perturbations, a given set of osculating elements remains
+ *    usable for only as long as the unperturbed orbit that it describes is an
+ *    adequate approximation to reality. Attached to such a set of elements is
+ *    a date called the *osculating epoch*, at which the elements are,
+ *    momentarily, a perfect representation of the instantaneous position and
+ *    velocity of the body.
+ *    Therefore, for any given problem there are up to three different epochs
+ *    in play, and it is vital to distinguish clearly between them:
+ *    - The epoch of observation: the moment in time for which the position of
+ *      the body is to be predicted.
+ *    - The epoch defining the position of the body: the moment in time at
+ *      which, in the absence of purturbations, the specified position—mean
+ *      longitude, mean anomaly, or perihelion—is reached.
+ *    - The osculating epoch: the moment in time at which the given elements
+ *      are correct.
+ *    For the major-planet and minor-planet cases it is usual to make the epoch
+ *    that defines the position of the body the same as the epoch of osculation.
+ *    Thus, only two different epochs are involved: the epoch of the elements
+ *    and the epoch of observation. For comets, the epoch of perihelion fixes
+ *    the position in the orbit and in general a different epoch of osculation
+ *    will be chosen. Thus, all three types of epoch are involved.
+ *    For the present routine:
+ *    - The epoch of observation is the argument DATE.
+ *    - The epoch defining the position of the body is the argument EPOCH.
+ *    - The osculating epoch is not used and is assumed to be close enough to
+ *      the epoch of observation to deliver adequate accuracy. If not, a
+ *      preliminary call to {@link sla.pertel} may be used to update the
+ *      element-set (and its associated osculating epoch) by applying planetary
+ *      perturbations.
+ * 5. The reference frame for the result is equatorial and is with respect to
+ *    the mean equinox and ecliptic of epoch J2000.
+ * 6. The algorithm was originally adapted from the EPHSLA program of D.H.P.
+ *    Jones (private communication, 1996). The method is based on Stumpff’s
+ *    Universal Variables.
+ * ----------
+ * References:
+ * - Everhart, E. & Pitkin, E.T., *Am. J. Phys.* 51, 712, 1983.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss136.html}
  */
 sla.planel = function (date, jform, epoch, orbinc, anode, perih,
@@ -2543,8 +3029,7 @@ sla.planel = function (date, jform, epoch, orbinc, anode, perih,
 };
 
 /**
- * Approximate heliocentric position and velocity of a planet.
- * @summary Planetary Ephemerides
+ * @summary **Planetary Ephemerides**
  * @param {Number} date - Modified Julian Date (JD-2400000.5)
  * @param {Number} np - Planet:
  *                       1 = Mercury
@@ -2558,6 +3043,7 @@ sla.planel = function (date, jform, epoch, orbinc, anode, perih,
  *                       9 = Pluto
  * @returns {Array} Heliocentric [x,y,z,\dot x,\dot y,\dot z], equatorial,
  *                  J2000 (AU, AU/s)
+ * @description Approximate heliocentric position and velocity of a planet.
  * @throws {RangeError} If np or date are out of range.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss137.html}
  */
@@ -2721,13 +3207,13 @@ sla.planet = function (date, np) {
 };
 
 /**
- * Position and velocity of an observing station.
- * @summary Observatory Position & Velocity.
+ * @summary **Observatory Position & Velocity.**
  * @param {Number} p - Latitude (geodetic, radians)
  * @param {Number} h - Height above reference spheroid (geodetic, metres)
  * @param {Number} stl - Local apparent sidereal time (radians)
  * @returns {Array} [x,y,z,\dot x,\dot y,\dot z] (AU, AU/s, true equator
  *                  and equinox of date)
+ * @description Position and velocity of an observing station.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss149.html}
  */
 sla.pvobs = function (p, h, stl) {
@@ -2747,11 +3233,31 @@ sla.pvobs = function (p, h, stl) {
 };
 
 /**
- * Estimate \Delta T, the offset between dynamical time and Universal Time,
- * for a given historical epoch.
- * @summary Approximate ET minus UT
+ * @summary **Approximate ET minus UT**
  * @param {Number} epoch - (Julian) epoch (e.g. 1850D0)
  * @returns {Number} Approximate ET-UT (after 1984, TT-UT1) in seconds
+ * @description Estimate ΔT, the offset between dynamical time and Universal
+ *              Time, for a given historical epoch.
+ * 1. Depending on the epoch, one of three parabolic approximations is used:
+ *        before AD 979      | Stephenson & Morrison’s 390 BC to AD 948 model
+ *        AD 979 to AD 1708  | Stephenson & Morrison’s AD 948 to AD 1600 model
+ *        after AD 1708      | McCarthy & Babcock’s post-1650 model
+ *    The breakpoints are chosen to ensure continuity: they occur at places where
+ *    the adjacent models give the same answer as each other.
+ * 2. The accuracy is modest, with errors of up to 20s during the interval
+ *    since 1650, rising to perhaps 30m by 1000 BC. Comparatively accurate
+ *    values from AD 1600 are tabulated in the *Astronomical Almanac* (see
+ *    section K8 of the 1995 edition).
+ * 3. The use of DOUBLE PRECISION for both argument and result is simply for
+ *    compatibility with other SLALIB time routines.
+ * 4. The models used are based on a lunar tidal acceleration value of
+ *    ′′-2600 per century.
+ * ----------
+ * References:
+ * - Seidelmann, P.K. (ed), 1992. *Explanatory Supplement to the Astronomical
+ *   Almanac*, ISBN 0-935702-68-7. This contains references to the papers by
+ *   Stephenson & Morrison and by McCarthy & Babcock which describe the models
+ *   used here.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss61.html}
  */
 sla.dt = function (epoch) {
@@ -2773,11 +3279,15 @@ sla.dt = function (epoch) {
 };
 
 /**
- * Product of two 3x3 matrices.
- * @summary Multiply 3x3 Matrices
+ * @summary **Multiply 3x3 Matrices**
  * @param {Array} a - 3x3 matrix A
  * @param {Array} b - 3x3 matrix B
  * @returns {Array} 3x3 matrix result: AxB
+ * @description Product of two 3x3 matrices.
+ * - To comply with the ANSI Fortran 77 standard, A, B and C must be different
+ *   arrays. However, the routine is coded so as to work properly on many
+ *   platforms even if this rule is violated, something that is not, however,
+ *   recommended.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss50.html}
  */
 sla.dmxm = function (a, b) {
@@ -2804,10 +3314,13 @@ sla.dmxm = function (a, b) {
 };
 
 /**
- * Convert Modified Julian Date to Julian Epoch.
- * @summary MJD to Julian Epoch
+ * @summary **MJD to Julian Epoch**
  * @param {Number} date - Modified Julian Date (JD-2400000.5)
  * @returns {Number} Julian Epoch
+ * @description Convert Modified Julian Date to Julian Epoch.
+ * ----------
+ * References:
+ * - Lieske, J.H., 1979. *Astr.Astrophys.*, 73, 282.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss83.html}
  */
 sla.epj = function (date) {
@@ -2816,11 +3329,31 @@ sla.epj = function (date) {
 };
 
 /**
- * Form the matrix of precession between two epochs (IAU 1976, FK5).
- * @summary Precession Matrix (FK5)
+ * @summary **Precession Matrix (FK5)**
  * @param {Number} ep0 - beginning epoch
  * @param {Number} ep1 - ending epoch
  * @returns {Array} 3x3 precession matrix
+ * @description Form the matrix of precession between two epochs (IAU 1976, FK5).
+ * 1. The epochs are TDB Julian epochs.
+ * 2. The matrix is in the sense:
+ *    **v**_1 = **M**⋅**v**_0
+ *    where **v**_1 is the star vector relative to the mean equator and equinox
+ *    of epoch EP1, **M** is the 3×3 matrix RMATP and **v**_0 is the star
+ *    vector relative to the mean equator and equinox of epoch EP0.
+ * 3. Though the matrix method itself is rigorous, the precession angles are
+ *    expressed through canonical polynomials which are valid only for a
+ *    limited time span. There are also known errors in the IAU precession rate.
+ *    The absolute accuracy of the present formulation is better than ′′01 from
+ *    1960 AD to 2040 AD, better than 1′′ from 1640 AD to 2360 AD, and remains
+ *    below 3′′ for the whole of the period 500 BC to 3000 AD. The errors
+ *    exceed 10′′ outside the range 1200 BC to 3900 AD, exceed 100′′ outside
+ *    4200 BC to 5600 AD and exceed 1000′′ outside 6800 BC to 8200 AD. The
+ *    SLALIB routine {@link sla.precl} implements a more elaborate model which
+ *    is suitable for problems spanning several thousand years.
+ * ----------
+ * References:
+ * 1. Lieske, J.H., 1979. *Astr.Astrophys.* 73, 282; equations 6 & 7, p283. 
+ * 2. Kaplan, G.H., 1981. *USNO circular no. 163*, p. A2.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss143.html}
  */
 sla.prec = function (ep0, ep1) {
@@ -2837,12 +3370,12 @@ sla.prec = function (ep0, ep1) {
 };
 
 /**
- * Form the matrix of precession and nutation (SF2001).
- * @summary Precession-Nutation Matrix
+ * @summary **Precession-Nutation Matrix**
  * @param {Number} epoch - Julian Epoch for mean coordinates
  * @param {Number} date - Modified Julian Date (JD-2400000.5) for
  *                        true coordinates
  * @returns {Array} Combined 3x3 precession-nutation matrix
+ * @description Form the matrix of precession and nutation (SF2001).
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss146.html}
  */
 sla.prenut = function (epoch, date) {
@@ -2851,8 +3384,7 @@ sla.prenut = function (epoch, date) {
 };
 
 /**
- * Approximate topocentric apparent [α,δ] and angular size of a planet.
- * @summary Apparent [α,δ] of Planet
+ * @summary **Apparent [α,δ] of Planet**
  * @param {Number} date - MJD of observation (JD-2400000.5)
  * @param {Number} np - Planet:
  *                       1 = Mercury
@@ -2869,6 +3401,8 @@ sla.prenut = function (epoch, date) {
  * @param {Number} phi - Observer's latitude (radians)
  * @returns {Array} [0-1] topocentric apparent [α,δ] (radians)
  *                  [2] angular diameter (equatorial, radians)
+ * @description Approximate topocentric apparent [α,δ] and angular size of
+ *              a planet.
  * @throws {RangeError} If np is out of range.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss155.html}
  */
@@ -2986,9 +3520,9 @@ sla.rdplan = function (date, np, elong, phi) {
 };
 
 /**
- * Refractive index and derivative with respect to height for the
- * troposphere.
- * @summary Internal routine used by REFRO
+ * @summary **Internal routine used by REFRO**
+ * @description Refractive index and derivative with respect to height for the
+ *              troposphere.
  * @returns {Array} [0] Temperature at R (K)
  *                  [1] Refractive index at R
  *                  [2] R * rate the refractive index is changing at R
@@ -3007,9 +3541,9 @@ sla.atmt = function (r0, t0, alpha, gamm2, delm2, c1, c2, c3, c4, c5, c6, r) {
 };
 
 /**
- * Refractive index and derivative with respect to height for the
- * stratosphere.
- * @summary Internal routine used by REFRO
+ * @summary **Internal routine used by REFRO**
+ * @description Refractive index and derivative with respect to height for the
+ *              stratosphere.
  * @returns {Array} [0] Refractive index at R
  *                  [1] R * rate the refractive index is changing at R
  */
@@ -3024,8 +3558,7 @@ sla.atms = function (rt, tt, dnt, gamal, r) {
 };
 
 /**
- * Atmospheric refraction, for radio or optical/IR wavelengths.
- * @summary Refraction
+ * @summary **Refraction**
  * @param {Number} zobs - Observed zenith distance of the source (radians)
  * @param {Number} hm - Height of the observer above sea level (metre)
  * @param {Number} tdk - Ambient temperature at the observer K)
@@ -3036,6 +3569,7 @@ sla.atms = function (rt, tt, dnt, gamal, r) {
  * @param {Number} tlr - Temperature lapse rate in the troposphere (K per metre)
  * @param {Number} eps - Precision required to terminate iteration (radian)
  * @returns {Number} Refraction: in vacuo ZD minus observed ZD (radians)
+ * @description Atmospheric refraction, for radio or optical/IR wavelengths.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss158.html}
  */
 sla.refro = function (zobs, hm, tdk, pmb, rh, wl, phi, tlr, eps) {
@@ -3308,12 +3842,7 @@ sla.refro = function (zobs, hm, tdk, pmb, rh, wl, phi, tlr, eps) {
 };
 
 /**
- * Determine the constants a and b in the atmospheric refraction model
- *     \Delta\zeta=a\tan\zeta+b\tan^3\zeta,
- * where \zeta is the observed zenith distance (i.e. affected by refraction) and
- * \Delta\zeta is what to add to \zeta to give the topocentric (i.e. in vacuo)
- * zenith distance.
- * @summary Refraction Constants
+ * @summary **Refraction Constants**
  * @param {Number} hm - Height of the observer above sea level (metre)
  * @param {Number} tdk - Ambient temperature at the observer K)
  * @param {Number} pmb - Pressure at the observer (mb)
@@ -3322,8 +3851,13 @@ sla.refro = function (zobs, hm, tdk, pmb, rh, wl, phi, tlr, eps) {
  * @param {Number} phi - Latitude of the observer (radian, astronomical)
  * @param {Number} tlr - Temperature lapse rate in the troposphere (K per metre)
  * @param {Number} eps - Precision required to terminate iteration (radian)
- * @returns {Array} [0] \tan\zeta coefficient (radians)
- *                  [1] \tan^3\zeta coefficient (radians)
+ * @returns {Array} [0] \tan ζ coefficient (radians)
+ *                  [1] \tan^3 ζ coefficient (radians)
+ * @description Determine the constants a and b in the atmospheric refraction
+ *              model Δζ=a\tan ζ+b\tan^3 ζ, where ζ is the observed
+ *              zenith distance (i.e. affected by refraction) and Δζ is what
+ *              to add to ζ to give the topocentric (i.e. in vacuo) zenith
+ *              distance.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss156.html}
  */
 sla.refco = function (hm, tdk, pmb, rh, wl, phi, tlr, eps) {
@@ -3344,13 +3878,14 @@ sla.refco = function (hm, tdk, pmb, rh, wl, phi, tlr, eps) {
 };
 
 /**
- * Adjust an unrefracted zenith distance to include the effect of atmospheric
- * refraction, using the simple \Delta\zeta=a\tan\zeta+b\tan^3\zeta model.
- * @summary Apply Refraction to ZD
+ * @summary **Apply Refraction to ZD**
  * @param {Number} zu - Unrefracted zenith distance of the source (radians)
- * @param {Number} refa - \tan\zeta coefficient (radians)
- * @param {Number} refb - \tan^3\zeta coefficient (radians)
+ * @param {Number} refa - \tan ζ coefficient (radians)
+ * @param {Number} refb - \tan^3 ζ coefficient (radians)
  * @returns {Number} Refracted zenith distance (radians)
+ * @description Adjust an unrefracted zenith distance to include the effect of
+ *     atmospheric refraction, using the simple Δζ=a\tan ζ+b\tan^3 ζ
+ *     model.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss160.html}
  */
 sla.refz = function (zu, refa, refb) {
@@ -3407,8 +3942,7 @@ sla.refz = function (zu, refa, refb) {
 };
 
 /**
- * Barycentric and heliocentric velocity and position of the Earth.
- * @summary Earth Position & Velocity
+ * @summary **Earth Position & Velocity**
  * @param {Number} date - TDB (formerly ET) as a Modified Julian Date
  *                        (JD-2400000.5).
  * @param {Number} deqx - Julian Epoch (e.g. 2000D0) of mean equator and
@@ -3419,6 +3953,26 @@ sla.refz = function (zu, refa, refb) {
  *                  [1] dpb - barycentric [x,y,z], AU
  *                  [2] dvh - heliocentric [\dot x,\dot y,\dot z], AU/s
  *                  [3] dph - heliocentric [x,y,z], AU
+ * @description Barycentric and heliocentric velocity and position of the Earth.
+ * 1. This routine is accurate enough for many purposes but faster and more
+ *    compact than the {@link sla.epv} routine. The maximum deviations from the
+ *    JPL DE96 ephemeris are as follows:
+ *    - velocity (barycentric or heliocentric): 420 mm/s
+ *    - position (barycentric): 6900 km
+ *    - position (heliocentric): 1600 km
+ * 2. The routine is adapted from the BARVEL and BARCOR subroutines of Stumpff
+ *    (1980). Most of the changes are merely cosmetic and do not affect the
+ *    results at all. However, some adjustments have been made so as to give
+ *    results that refer to the IAU 1976 ‘FK5’ equinox and precession, although
+ *    the differences these changes make relative to the results from Stumpff’s
+ *    original ‘FK4’ version are smaller than the inherent accuracy of the
+ *    algorithm. One minor shortcoming in the original routines that has *not*
+ *    been corrected is that slightly better numerical accuracy could be
+ *    achieved if the various polynomial evaluations were to be so arranged
+ *    that the smallest terms were computed first.
+ * ----------
+ * References:
+ * - Stumpff, P., 1980., *Astron.Astrophys.Suppl.Ser.* 41, 1-8.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss91.html}
  */
 sla.evp = function (date, deqx) {
@@ -3448,8 +4002,8 @@ sla.evp = function (date, deqx) {
             forbel[k - 1] = dlocal;
         }
     }
-    var deps = (sla.dceps[0] + dt * sla.dceps[1] + dtsq * sla.dceps[2])
-            % sla.d2pi;
+    var deps = (sla.dceps[0] + dt * sla.dceps[1] + dtsq * sla.dceps[2]) %
+               sla.d2pi;
     for (k = 0; k < 17; k += 1) {
         k3 = k * 3;
         sorbel[k] = (sla.ccsel[k3] + dt * sla.ccsel[k3 + 1] +
@@ -3653,11 +4207,12 @@ sla.evp = function (date, deqx) {
 };
 
 /**
- * Normalize a 3-vector, also giving the modulus (double precision).
- * @summary Normalize Vector
+ * @summary **Normalize Vector**
  * @param {Array} v - vector
  * @returns {Object} uv - unit vector in direction of V
  *                   vm - modulus of V
+ * @description Normalize a 3-vector, also giving the modulus (double precision).
+ * - If the modulus of V is zero, UV is set to zero as well.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss71.html}
  */
 sla.dvn = function (v) {
@@ -3684,12 +4239,7 @@ sla.dvn = function (v) {
 };
 
 /**
- * Compute star-independent parameters in preparation for conversions between
- * mean place and geocentric apparent place. The parameters produced by this
- * routine are required in the parallax, light deflection, aberration, and
- * precession-nutation parts of the mean/apparent transformations. The reference
- * frames and time scales used are post IAU 1976.
- * @summary Mean to Apparent Parameters
+ * @summary **Mean to Apparent Parameters**
  * @param {Number} eq - Epoch of mean equinox to be used (Julian)
  * @param {Number} date - TDB (JD-2400000.5)
  * @returns {Array} Star-independent mean-to-apparent parameters:
@@ -3700,6 +4250,12 @@ sla.dvn = function (v) {
  *                  [8-10] v: barycentric Earth velocity in units of c
  *                  [11] \sqrt{1-|v|^2}
  *                  [12-20] precession-nutation 3x3 matrix
+ * @description Compute star-independent parameters in preparation for
+ *              conversions between mean place and geocentric apparent place.
+ *              The parameters produced by this routine are required in the
+ *              parallax, light deflection, aberration, and precession-nutation
+ *              parts of the mean/apparent transformations. The reference
+ *              frames and time scales used are post IAU 1976.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss116.html}
  */
 sla.mappa = function (eq, date) {
@@ -3741,16 +4297,43 @@ sla.mappa = function (eq, date) {
 };
 
 /**
- * Transform star [\alpha,\delta] from mean place to geocentric apparent.
- * The reference frames and time scales used are post IAU 1976.
- * @summary Mean to Apparent
- * @param {Number} rm, dm - mean [\alpha,\delta] (radians)
- * @param {Number} pr - proper motions: [\alpha,\delta] changes per Julian year
+ * @summary **Mean to Apparent**
+ * @param {Number} rm, dm - mean [α,δ] (radians)
+ * @param {Number} pr - proper motions: [α,δ] changes per Julian year
  * @param {Number} pd - parallax (arcsec)
  * @param {Number} rv - radial velocity (km/s, +ve if receding)
  * @param {Number} eq - epoch and equinox of star data (Julian)
  * @param {Number} date - TDB for apparent place (JD-2400000.5)
- * @returns {Object} ra,da - apparent [\alpha,\delta] (radians)
+ * @returns {Object} ra,da - apparent [α,δ] (radians)
+ * @description Transform star [α,δ] from mean place to geocentric apparent.
+ *              The reference frames and time scales used are post IAU 1976.
+ * 1. EQ is the Julian epoch specifying both the reference frame and the epoch
+ *    of the position – usually 2000. For positions where the epoch and equinox
+ *    are different, use the routine {@link sla.pm} to apply proper motion
+ *    corrections before using this routine.
+ * 2. The distinction between the required TDB and TT is always negligible.
+ *    Moreover, for all but the most critical applications UTC is adequate.
+ * 3. The α proper motions are α̇  rather than α̇ cosδ, and are per year rather
+ *    than per century.
+ * 4. This routine may be wasteful for some applications because it recomputes
+ *    the Earth position/velocity and the precession-nutation matrix each time,
+ *    and because it allows for parallax and proper motion. Where multiple
+ *    transformations are to be carried out for one epoch, a faster method is
+ *    to call the {@link sla.mappa} routine once and then either the
+ *    {@link sla.mapqk} routine (which includes parallax and proper motion) or
+ *    {@link sla.mapqkz} (which assumes zero parallax and FK5 proper motion).
+ * 5. The accuracy, starting from ICRS star data, is limited to about 1 mas by
+ *    the precession-nutation model used, SF2001. A different
+ *    precession-nutation model can be introduced by using {@link sla.mappa}
+ *    and {@link sla.mapqk} (see the previous note) and replacing the
+ *    precession-nutation matrix into the parameter array directly.
+ * 6. The accuracy is further limited by the routine {@link sla.evp}, called by
+ *    {@link sla.mappa}, which computes the Earth position and velocity using
+ *    the methods of Stumpff. The maximum error is about 0.3 milliarcsecond.
+ * ----------
+ * References:
+ * 1. 1984 *Astronomical Almanac*, pp B39-B41. 
+ * 2. Lederle & Schwan, 1984. *Astr.Astrophys.*, 134, 1-6.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss115.html}
  */
 sla.map = function (rm, dm, pr, pd, px, rv, eq, date) {
@@ -3762,10 +4345,7 @@ sla.map = function (rm, dm, pr, pd, px, rv, eq, date) {
 };
 
 /**
- * Polar motion:  correct site longitude and latitude for polar
- * motion and calculate azimuth difference between celestial and
- * terrestrial poles.
- * @summary Polar Motion
+ * @summary **Polar Motion**
  * @param {Number} elongm - mean longitude of the site (radians, east +ve)
  * @param {Number} phim - mean geodetic latitude of the site (radians)
  * @param {Number} xp - polar motion x-coordinate (radians)
@@ -3773,6 +4353,49 @@ sla.map = function (rm, dm, pr, pd, px, rv, eq, date) {
  * @returns {Object} elong - true longitude of the site (radians, east +ve)
  *                   phi - true geodetic latitude of the site (radians)
  *                   daz - azimuth correction (terrestrial-celestial, radians)
+ * @description Polar motion: correct site longitude and latitude for polar
+ *              motion and calculate azimuth difference between celestial and
+ *              terrestrial poles.
+ * 1. “Mean” longitude and latitude are the (fixed) values for the site’s
+ *    location with respect to the IERS terrestrial reference frame; the
+ *    latitude is geodetic. TAKE CARE WITH THE LONGITUDE SIGN CONVENTION. The
+ *    longitudes used by the present routine are east-positive, in accordance
+ *    with geographical convention (and right-handed). In particular, note that
+ *    the longitudes returned by the {@link sla.obs} routine are west-positive,
+ *    following astronomical usage, and must be reversed in sign before use in
+ *    the present routine.
+ * 2. XP and YP are the (changing) coordinates of the Celestial Ephemeris Pole
+ *    with respect to the IERS Reference Pole. XP is positive along the
+ *    meridian at longitude 0∘, and YP is positive along the meridian at
+ *    longitude 270∘ (i.e. 90∘ west). Values for XP,YP can be obtained from
+ *    IERS circulars and equivalent publications; the maximum amplitude
+ *    observed so far is about ′′03.
+ * 3. “True” longitude and latitude are the (moving) values for the site’s
+ *    location with respect to the celestial ephemeris pole and the meridian
+ *    which corresponds to the Greenwich apparent sidereal time. The true
+ *    longitude and latitude link the terrestrial coordinates with the standard
+ *    celestial models (for precession, nutation, sidereal time etc).
+ * 4. The azimuths produced by {@link sla.aop} and {@link sla.aopqk} are with
+ *    respect to due north as defined by the Celestial Ephemeris Pole, and can
+ *    therefore be called “celestial azimuths”. However, a telescope fixed to
+ *    the Earth measures azimuth essentially with respect to due north as
+ *    defined by the IERS Reference Pole, and can therefore be called
+ *    “terrestrial azimuth”. Uncorrected, this would manifest itself as a
+ *    changing “azimuth zero-point error”. The value DAZ is the correction to
+ *    be added to a celestial azimuth to produce a terrestrial azimuth.
+ * 5. The present routine is rigorous. For most practical purposes, the
+ *    following simplified formulae provide an adequate approximation:
+ *        ELONG = ELONGM+XP*COS(ELONGM)-YP*SIN(ELONGM)
+ *        PHI   = PHIM+(XP*SIN(ELONGM)+YP*COS(ELONGM))*TAN(PHIM)
+ *        DAZ   = -SQRT(XP*XP+YP*YP)*COS(ELONGM-ATAN2(XP,YP))/COS(PHIM)
+ *    An alternative formulation for DAZ is:
+ *        X     = COS(ELONGM)*COS(PHIM)
+ *        Y     = SIN(ELONGM)*COS(PHIM)
+ *        DAZ   = ATAN2(-X*YP-Y*XP,X*X+Y*Y)
+ * ----------
+ * References:
+ * - Seidelmann, P.K. (ed), 1992. *Explanatory Supplement to the Astronomical
+ *   Almanac*, ISBN 0-935702-68-7, sections 3.27, 4.25, 4.52.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss141.html}
  */
 sla.polmo = function (elongm, phim, xp, yp) {
@@ -3837,10 +4460,14 @@ sla.polmo = function (elongm, phim, xp, yp) {
 };
 
 /**
- * Spherical coordinates to Cartesian coordinates.
- * @summary Spherical to Cartesian
- * @param {Number} a,b - spherical coordinates in radians: [\alpha, \delta] etc.
+ * @summary **Spherical to Cartesian**
+ * @param {Number} a,b - spherical coordinates in radians: [α,δ] etc.
  * @returns {Array} [x,y,z] unit vector
+ * @description Spherical coordinates to Cartesian coordinates.
+ * - The spherical coordinates are longitude (+ve anticlockwise looking from
+ *   the +ve latitude pole) and latitude. The Cartesian coordinates are right
+ *   handed, with the x-axis at zero longitude and latitude, and the z-axis at
+ *   the +ve latitude pole.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss38.html}
  */
 sla.dcs2c = function (a, b) {
@@ -3853,11 +4480,11 @@ sla.dcs2c = function (a, b) {
 };
 
 /**
- * Scalar product of two 3-vectors.
- * @summary Scalar Product
+ * @summary **Scalar Product**
  * @param {Array(3)} va - first vector
  * @param {Array(3)} vb - second vector
  * @returns {Array(3)} scalar product VA.VB
+ * @description Scalar product of two 3-vectors.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss70.html}
  */
 sla.dvdv = function (va, vb) {
@@ -3866,12 +4493,8 @@ sla.dvdv = function (va, vb) {
 };
 
 /**
- * Quick mean to apparent place: transform a star [\alpha,\delta] from
- * mean place to geocentric apparent place, given the star-independent
- * parameters, and assuming zero parallax and FK5 proper motion. The
- * reference frames and time scales used are post IAU 1976.
- * @summary Quick Mean-Appt, no PM etc.
- * @param {Number} rm, dm - mean [\alpha,\delta] (radians)
+ * @summary **Quick Mean-Appt, no PM etc.**
+ * @param {Number} rm, dm - mean [α,δ] (radians)
  * @param {Array} amprms - star-independent mean-to-apparent parameters:
  *                [0] time interval for proper motion (Julian years)
  *                [1-3] barycentric position of the Earth (AU)
@@ -3880,7 +4503,11 @@ sla.dvdv = function (va, vb) {
  *                [8-10] v: barycentric Earth velocity in units of c
  *                [11] \sqrt{1-|v|^2}
  *                [12-20] precession-nutation 3x3 matrix
- * @returns {Object} ra, da - apparent [\alpha,\delta] (radians)
+ * @returns {Object} ra, da - apparent [α,δ] (radians)
+ * @description Quick mean to apparent place: transform a star [α,δ] from
+ *              mean place to geocentric apparent place, given the star-independent
+ *              parameters, and assuming zero parallax and FK5 proper motion.
+ *              The reference frames and time scales used are post IAU 1976.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss118.html}
  */
 sla.mapqkz = function (rm, dm, amprms) {
@@ -3933,10 +4560,7 @@ sla.mapqkz = function (rm, dm, amprms) {
 };
 
 /**
- * Quick mean to apparent place:  transform a star RA,Dec from
- * mean place to geocentric apparent place, given the
- * star-independent parameters.
- * @summary Quick Mean to Apparent
+ * @summary **Quick Mean to Apparent**
  * @param {Number} rm, dm - mean [α,δ] (radians)
  * @param {Number} pr, pd - proper motions: [α,δ] changes per Julian year
  * @param {Number} px - parallax (arcsec)
@@ -3949,7 +4573,10 @@ sla.mapqkz = function (rm, dm, amprms) {
  *                [8-10] v: barycentric Earth velocity in units of c
  *                [11] \sqrt{1-|v|^2}
  *                [12-20] precession-nutation 3x3 matrix
- * @returns {Object} ra, da - apparent [\alpha,\delta] (radians)
+ * @returns {Object} ra, da - apparent [α,δ] (radians)
+ * @description Quick mean to apparent place: transform a star RA,Dec from
+ *              mean place to geocentric apparent place, given the
+ *              star-independent parameters.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss117.html}
  */
 sla.mapqk = function (rm, dm, pr, pd, px, rv, amprms) {
@@ -4022,11 +4649,11 @@ sla.mapqk = function (rm, dm, pr, pd, px, rv, amprms) {
 };
 
 /**
- * Vector product of two 3-vectors.
- * @summary Vector product
+ * @summary **Vector product**
  * @param {Array} va - first vector
  * @param {Array} vb - second vector
  * @returns {Array} vector product VA x VB
+ * @description Vector product of two 3-vectors.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss72.html}
  */
 sla.dvxv = function (va, vb) {
@@ -4040,11 +4667,14 @@ sla.dvxv = function (va, vb) {
 };
 
 /**
- * Angle between two vectors.
- * @summary Angle Between 2 Vectors
+ * @summary **Angle Between 2 Vectors**
  * @param {Array} v1 - first vector
  * @param {Array} v2 - second vector
  * @returns {Array} angle between V1 and V2 in radians
+ * @description Angle between two vectors.
+ * 1. There is no requirement for either vector to be of unit length.
+ * 2. If either vector is null, zero is returned.
+ * 3. The result is always positive.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss60.html}
  */
 sla.dsepv = function (v1, v2) {
@@ -4065,11 +4695,14 @@ sla.dsepv = function (v1, v2) {
 };
 
 /**
- * Angle between two points on a sphere.
- * @summary Angle Between 2 Points on Sphere
+ * @summary **Angle Between 2 Points on Sphere**
  * @param {Number} a1, b1 - spherical coordinates of one point (radians)
  * @param {Number} a2, b2 - spherical coordinates of the other point (radians)
  * @returns {Number} angle between [A1,B1] and [A2,B2] in radians
+ * @description Angle between two points on a sphere.
+ * 1. The spherical coordinates are right ascension and declination, longitude
+ *    and latitude, etc., in radians.
+ * 2. The result is always positive.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss59.html}
  */
 sla.dsep = function (a1, b1, a2, b2) {
@@ -4083,11 +4716,13 @@ sla.dsep = function (a1, b1, a2, b2) {
 };
 
 /**
- * Form the equatorial to ecliptic rotation matrix (IAU 1980 theory).
- * @summary Form \alpha,\delta -> \lambda,\beta Matrix
+ * @summary **Form α,δ -> λ,β Matrix**
  * @param {Number} date - TDB (formerly ET) as Modified Julian Date
  *                        (JD-2400000.5)
  * @returns {Array} 3x3 rotation matrix
+ * @description Form the equatorial to ecliptic rotation matrix (IAU 1980 theory).
+ * 1. RMAT is matrix **M** in the expression **v**_ecl = **M**⋅**v**_equ.
+ * 2. The equator, equinox and ecliptic are mean of date.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss76.html}
  */
 sla.ecmat = function (date) {
@@ -4104,14 +4739,14 @@ sla.ecmat = function (date) {
 };
 
 /**
- * Transformation from J2000.0 equatorial coordinates to ecliptic
- * longitude and latitude.
- * @summary J2000 RA, Dec to Ecliptic
- * @param {Number} dr, dd - J2000.0 mean [\alpha, \delta] (radians)
+ * @summary **J2000 RA, Dec to Ecliptic**
+ * @param {Number} dr, dd - J2000.0 mean [α,δ] (radians)
  * @param {Number} date - TDB (formerly ET) as Modified Julian Date
  *                        (JD-2400000.5)
  * @return {Object} dl, db - ecliptic longitude and latitude (mean of date,
  *                           IAU 1980 theory, radians)
+ * @description Transformation from J2000.0 equatorial coordinates to ecliptic
+ *              longitude and latitude.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss86.html}
  */
 sla.eqecl = function (dr, dd, date) {
@@ -4138,11 +4773,27 @@ sla.eqecl = function (dr, dd, date) {
 };
 
 /**
- * Hour angle and declination to zenith distance.
- * @summary h,\delta to Zenith Distance
+ * @summary **h,δ to Zenith Distance**
  * @param {Number} ha - Hour Angle in radians
  * @param {Number} dec - Declination in radians
  * @param {Number} phi - Observatory latitude in radians
+ * @return {Number} Zenith distance (radians, 0−π)
+ * @description Hour angle and declination to zenith distance.
+ * 1. The latitude must be geodetic. In critical applications, corrections for
+ *    polar motion should be applied (see @link{sla.polmo}).
+ * 2. In some applications it will be important to specify the correct type
+ *    of hour angle and declination in order to produce the required type of
+ *    azimuth and elevation. In particular, it may be important to distinguish
+ *    between elevation as affected by refraction, which would require the
+ *    *observed* [h,δ], and the elevation *in vacuo*, which would require the
+ *    *topocentric* [h,δ]. If the effects of diurnal aberration can be
+ *    neglected, the *apparent* [h,δ] may be used instead of the topocentric
+ *    [h,δ].
+ * 3. No range checking of arguments is done.
+ * 4. In applications which involve many zenith distance calculations, rather
+ *    than calling the present routine it will be more efficient to use inline
+ *    code, having previously computed fixed terms such as sine and cosine of
+ *    latitude, and perhaps sine and cosine of declination.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss188.html}
  */
 sla.zd = function (ha, dec, phi) {
@@ -4162,6 +4813,13 @@ sla.zd = function (ha, dec, phi) {
 /**
  * Unit testing
  */
+
+/**
+ * @summary Assert that two objects are equal.
+ * @throws {Error} If *val* is not equal to the reference value *ref*.
+ * @param {Object} val - Value to check.
+ * @param {Object} ref - Reference value.
+ */
 function assertEqual(val, ref) {
     "use strict";
     if (val === ref) {
@@ -4175,10 +4833,20 @@ function assertEqual(val, ref) {
     }
 }
 
+/**
+ * @summary Assert that two numbers are equal, to a given precision.
+ * @param {Number} val - Value to check.
+ * @param {Number} ref - Reference value.
+ * @param {Number} tol - Desired precision (relative difference between *val*
+ *                       and *ref* must be smaller than 10^*tol*).
+ * @throws {TypeError} If the value to check is NaN.
+ * @throws {Error} If *val* is not equal to the reference value *ref*, within
+ *                 the desired precision.
+ */
 function assertAlmostEqual(val, ref, tol) {
     "use strict";
     if (Number.isNaN(val)) {
-        throw new Error("Assertion failed. NaN value passed.");
+        throw new TypeError("Assertion failed. NaN value passed.");
     }
     if (Math.abs(val - ref) / Math.abs(ref) > Math.pow(10, -tol)) {
         throw new Error("Assertion failed. Desired precision not reached.");
@@ -4186,9 +4854,11 @@ function assertAlmostEqual(val, ref, tol) {
 }
 
 /**
- * Unit tests. The values are taken from the original unit tests in SLALIB
- * (sla_test.f). The desired precision is typically the same, although for
- * some tests it can be lower by a few orders of magnitude.
+ * @summary Perform all unit tests.
+ * @description The values are taken from the original unit tests in SLALIB
+ *              (sla_test.f). The desired precision is typically the same,
+ *              although for some tests it can be lower by a few orders of
+ *              magnitude.
  */
 sla.performUnitTests = function () {
     "use strict";
@@ -4489,10 +5159,10 @@ sla.performUnitTests = function () {
 
     /* sla_FK425 */
     ret = sla.fk425(1.234, -0.123, -1e-5, 2e-6, 0.5, 20);
-    assertAlmostEqual(ret.r2000, 1.244117554618727, 8);
+    assertAlmostEqual(ret.r2000, 1.244117554618727, 12);
     assertAlmostEqual(ret.d2000, -0.1213164254458709, 12);
     assertAlmostEqual(ret.dr2000, -9.964265838268711e-6, 17);
-    assertAlmostEqual(ret.dd2000, 2.038065265773541e-6, 12);
+    assertAlmostEqual(ret.dd2000, 2.038065265773541e-6, 15);
     assertAlmostEqual(ret.p2000, 0.4997443812415410, 12);
     assertAlmostEqual(ret.v2000, 20.010460915421010, 11);
 

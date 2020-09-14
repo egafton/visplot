@@ -1358,7 +1358,7 @@ sla.ccpam = [
 ];
 sla.ccim = 8.978749e-2;
 
-/* Canonical constants for FK4 to FK5 conversion */
+/* Canonical constants for the FK4 to FK5 conversions */
 sla.fka = [ -1.62557e-6, -0.31919e-6, -0.13843e-6 ];
 sla.fkad = [ 1.245e-3, -1.580e-3, -0.659e-3 ];
 sla.fkem3 = [
