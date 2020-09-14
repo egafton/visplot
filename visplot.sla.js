@@ -97,9 +97,8 @@ sla.tiny = 1e-30;
  */
 sla.airmas = function (zd) {
     "use strict";
-    var seczm1 = 1 / (Math.cos(Math.min(1.52, Math.abs(zd)))) - 1;
-    return 1 + seczm1 * (0.9981833 -
-            seczm1 * (0.002875 + 0.0008083 * seczm1));
+    let seczm1 = 1 / (Math.cos(Math.min(1.52, Math.abs(zd)))) - 1;
+    return 1 + seczm1 * (0.9981833 - seczm1 * (0.002875 + 0.0008083 * seczm1));
 };
 
 /**
@@ -220,8 +219,8 @@ sla.aop = function (rap, dap, date, dut, elongm, phim, hm, xp, yp,
         tdk, pmb, rh, wl, tlr) {
     "use strict";
     /* Star-independent parameters */
-    var aoprms = sla.aoppa(date, dut, elongm, phim, hm, xp, yp,
-            tdk, pmb, rh, wl, tlr);
+    let aoprms = sla.aoppa(date, dut, elongm, phim, hm, xp, yp, tdk, pmb, rh,
+        wl, tlr);
     /* Apparent to observed */
     return sla.aopqk(rap, dap, aoprms);
 };
@@ -303,29 +302,29 @@ sla.aop = function (rap, dap, date, dut, elongm, phim, hm, xp, yp,
 sla.aoppa = function (date, dut, elongm, phim, hm, xp, yp,
         tdk, pmb, rh, wl, tlr) {
     "use strict";
-    var aoprms = [];
 
     /* Observer's location corrected for polar motion */
-    var cphim = Math.cos(phim);
-    var xt = Math.cos(elongm) * cphim;
-    var yt = Math.sin(elongm) * cphim;
-    var zt = Math.sin(phim);
-    var xc = xt - xp * zt;
-    var yc = yt + yp * zt;
-    var zc = xp * xt - yp * yt + zt;
-    var elong;
+    let cphim = Math.cos(phim);
+    let xt = Math.cos(elongm) * cphim;
+    let yt = Math.sin(elongm) * cphim;
+    let zt = Math.sin(phim);
+    let xc = xt - xp * zt;
+    let yc = yt + yp * zt;
+    let zc = xp * xt - yp * yt + zt;
+    let elong;
     if (xc === 0 && yc === 0) {
         elong = 0;
     } else {
         elong = Math.atan2(yc, xc);
     }
-    var phi = Math.atan2(zc, Math.sqrt(xc * xc + yc * yc));
+    let phi = Math.atan2(zc, Math.sqrt(xc * xc + yc * yc));
+    let aoprms = [];
     aoprms[0] = phi;
     aoprms[1] = Math.sin(phi);
     aoprms[2] = Math.cos(phi);
 
     /* Magnitude of the diurnal aberration vector */
-    var ret = sla.geoc(phi, hm);
+    let ret = sla.geoc(phi, hm);
     aoprms[3] = sla.d2pi * ret.r * sla.solsid / sla.c;
 
     /* Copy the refraction parameters and compute the A & B constants */
@@ -448,34 +447,34 @@ sla.aoppat = function (date, aoprms) {
  */
 sla.aopqk = function (rap, dap, aoprms) {
     "use strict";
-    var zbreak = 0.242535625;
+    let zbreak = 0.242535625;
     /* Sin, cos of latitude */
-    var sphi = aoprms[1];
-    var cphi = aoprms[2];
+    let sphi = aoprms[1];
+    let cphi = aoprms[2];
 
     /* Local apparent sidereal time */
-    var st = aoprms[13];
+    let st = aoprms[13];
 
     /* Apparent RA,Dec to Cartesian -HA,Dec */
-    var v = sla.dcs2c(rap - st, dap);
-    var xhd = v[0];
-    var yhd = v[1];
-    var zhd = v[2];
+    let v = sla.dcs2c(rap - st, dap);
+    let xhd = v[0];
+    let yhd = v[1];
+    let zhd = v[2];
 
     /* Diurnal aberration */
-    var diurab = aoprms[3];
-    var f = (1 - diurab * yhd);
-    var xhdt = f * xhd;
-    var yhdt = f * (yhd + diurab);
-    var zhdt = f * zhd;
+    let diurab = aoprms[3];
+    let f = (1 - diurab * yhd);
+    let xhdt = f * xhd;
+    let yhdt = f * (yhd + diurab);
+    let zhdt = f * zhd;
 
     /* Cartesian -HA,Dec to Cartesian Az,El (S=0,E=90) */
-    var xaet = sphi * xhdt - cphi * zhdt;
-    var yaet = yhdt;
-    var zaet = cphi * xhdt + sphi * zhdt;
+    let xaet = sphi * xhdt - cphi * zhdt;
+    let yaet = yhdt;
+    let zaet = cphi * xhdt + sphi * zhdt;
 
     /* Azimuth (N=0,E=90) */
-    var azobs;
+    let azobs;
     if (xaet === 0 && yaet === 0) {
         azobs = 0;
     } else {
@@ -483,17 +482,17 @@ sla.aopqk = function (rap, dap, aoprms) {
     }
 
     /* Topocentric zenith distance */
-    var zdt = Math.atan2(Math.sqrt(xaet * xaet + yaet * yaet), zaet);
+    let zdt = Math.atan2(Math.sqrt(xaet * xaet + yaet * yaet), zaet);
     /* Refraction */
-    var zdobs = sla.refz(zdt, aoprms[10], aoprms[11]);
+    let zdobs = sla.refz(zdt, aoprms[10], aoprms[11]);
 
     /* Large zenith distance? */
     if (Math.cos(zdobs) < zbreak) {
         /* Yes: use rigorous algorithm */
         /* Initialize loop (maximum of 10 iterations) */
-        var i = 0;
-        var dzd = 1;
-        var dref;
+        let i = 0;
+        let dzd = 1;
+        let dref;
         while (Math.abs(dzd) > 1e-10 && i < 10) {
             /* Compute refraction using current estimate of observed ZD */
             dref = sla.refro(zdobs, aoprms[4], aoprms[5], aoprms[6],
@@ -508,10 +507,10 @@ sla.aopqk = function (rap, dap, aoprms) {
     }
 
     /* To Cartesian Az/ZD */
-    var ce = Math.sin(zdobs);
-    var xaeo = -Math.cos(azobs) * ce;
-    var yaeo = Math.sin(azobs) * ce;
-    var zaeo = Math.cos(zdobs);
+    let ce = Math.sin(zdobs);
+    let xaeo = -Math.cos(azobs) * ce;
+    let yaeo = Math.sin(azobs) * ce;
+    let zaeo = Math.cos(zdobs);
 
     /* Cartesian Az/ZD to Cartesian -HA,Dec */
     v[0] = sphi * xaeo + cphi * zaeo;
@@ -519,20 +518,20 @@ sla.aopqk = function (rap, dap, aoprms) {
     v[2] = -cphi * xaeo + sphi * zaeo;
 
     /* To spherical -HA,Dec */
-    var ret = sla.dcc2s(v);
-    var hmobs = ret.a;
-    var dcobs = ret.b;
+    let ret = sla.dcc2s(v);
+    let hmobs = ret.a;
+    let dcobs = ret.b;
 
     /* Right Ascension */
-    var raobs = sla.dranrm(st + hmobs);
+    let raobs = sla.dranrm(st + hmobs);
 
     /* Return the results */
     return {
-        aob: azobs,
-        zob: zdobs,
-        hob: -hmobs,
-        dob: dcobs,
-        rob: raobs
+        "aob": azobs,
+        "zob": zdobs,
+        "hob": -hmobs,
+        "dob": dcobs,
+        "rob": raobs
     };
 };
 
@@ -592,29 +591,29 @@ sla.atmdsp = function (tdk, pmb, rh, wl1, a1, b1, wl2) {
     if (wl1 > 100 || wl2 > 100) {
         /* Radio: no dispersion */
         return {
-            a2: a1,
-            b2: b1
+            "a2": a1,
+            "b2": b1
         };
     }
     /* Optical: keep arguments within safe bounds */
-    var tdkok = Math.min(Math.max(tdk, 100), 500);
-    var pmbok = Math.min(Math.max(pmb, 0), 10000);
-    var rhok = Math.min(Math.max(rh, 0), 1);
+    let tdkok = Math.min(Math.max(tdk, 100), 500);
+    let pmbok = Math.min(Math.max(pmb, 0), 10000);
+    let rhok = Math.min(Math.max(rh, 0), 1);
 
     /* Atmosphere parameters at the observer */
-    var psat = Math.pow(10, -8.7115 + 0.03477 * tdkok);
-    var pw0 = rhok * psat;
-    var w1 = 11.2684e-6 * pw0;
+    let psat = Math.pow(10, -8.7115 + 0.03477 * tdkok);
+    let pw0 = rhok * psat;
+    let w1 = 11.2684e-6 * pw0;
 
     /* Refractivity at the observer for first wavelength */
-    var wlok = Math.max(wl1, 0.1);
-    var wlsq = wlok * wlok;
-    var w2 = 77.5317e-6 + (0.43909e-6 + 0.00367e-6 / wlsq) / wlsq;
-    var dn1 = (w2 * pmbok - w1) / tdkok;
+    let wlok = Math.max(wl1, 0.1);
+    let wlsq = wlok * wlok;
+    let w2 = 77.5317e-6 + (0.43909e-6 + 0.00367e-6 / wlsq) / wlsq;
+    let dn1 = (w2 * pmbok - w1) / tdkok;
     if (dn1 === 0) {
         return {
-            a2: a1,
-            b2: b1
+            "a2": a1,
+            "b2": b1
         };
     }
 
@@ -622,18 +621,18 @@ sla.atmdsp = function (tdk, pmb, rh, wl1, a1, b1, wl2) {
     wlok = Math.max(wl2, 0.1);
     wlsq = wlok * wlok;
     w2 = 77.5317e-6 + (0.43909e-6 + 0.00367e-6 / wlsq) / wlsq;
-    var dn2 = (w2 * pmbok - w1) / tdkok;
+    let dn2 = (w2 * pmbok - w1) / tdkok;
 
     /* Scale the refraction coefficients (see Green 4.31, p.93) */
-    var f = dn2 / dn1;
-    var a2 = a1 * f;
-    var b2 = b1 * f;
+    let f = dn2 / dn1;
+    let a2 = a1 * f;
+    let b2 = b1 * f;
     if (dn1 !== a1) {
         b2 = b2 * (1 + dn1 * (dn1 - dn2) / (2 * (dn1 - a1)));
     }
     return {
-        a2: a2,
-        b2: b2
+        "a2": a2,
+        "b2": b2
     };
 };
 
@@ -702,24 +701,24 @@ sla.djcal = function (ndp, djm) {
     }
 
     /* Denominator of fraction. */
-    var fd = Math.pow(10, Math.max(ndp, 0));
+    let fd = Math.pow(10, Math.max(ndp, 0));
 
     /* Round date and express in units of fraction. */
-    var df = Math.round(djm * fd);
+    let df = Math.round(djm * fd);
 
     /* Separate day and fraction. */
-    var f = df % fd;
+    let f = df % fd;
     if (f < 0) {
         f += fd;
     }
-    var d = (df - f) / fd;
+    let d = (df - f) / fd;
 
     /* Express day in Gregorian calendar. */
-    var jd = Math.round(d) + 2400001;
+    let jd = Math.round(d) + 2400001;
 
-    var n4 = 4 * (Math.floor(jd + (Math.floor((2 * Math.floor((4 * jd -
+    let n4 = 4 * (Math.floor(jd + (Math.floor((2 * Math.floor((4 * jd -
             17918) / 146097) * 3) / 4) + 1) / 2) - 37);
-    var nd10 = 10 * Math.floor(((n4 - 237) % 1461) / 4) + 5;
+    let nd10 = 10 * Math.floor(((n4 - 237) % 1461) / 4) + 5;
 
     return [
         Math.floor(n4 / 1461) - 4712,
@@ -751,24 +750,24 @@ sla.djcl = function (djm) {
     }
 
     /* Separate day and fraction. */
-    var f = djm % 1;
+    let f = djm % 1;
     if (f < 0) {
         f += 1;
     }
-    var d = Math.round(djm - f);
+    let d = Math.round(djm - f);
 
     /* Express day in Gregorian calendar. */
-    var jd = Math.round(d) + 2400001;
+    let jd = Math.round(d) + 2400001;
 
-    var n4 = 4 * (Math.floor(jd + (Math.floor((6 * Math.floor((4 * jd -
+    let n4 = 4 * (Math.floor(jd + (Math.floor((6 * Math.floor((4 * jd -
             17918) / 146097)) / 4) + 1) / 2) - 37);
-    var nd10 = 10 * Math.floor(((n4 - 237) % 1461) / 4) + 5;
+    let nd10 = 10 * Math.floor(((n4 - 237) % 1461) / 4) + 5;
 
     return {
-        iy: Math.floor(n4 / 1461) - 4712,
-        im: (Math.floor(nd10 / 306) + 2) % 12 + 1,
-        id: Math.floor((nd10 % 306) / 10) + 1,
-        fd: f
+        "iy": Math.floor(n4 / 1461) - 4712,
+        "im": (Math.floor(nd10 / 306) + 2) % 12 + 1,
+        "id": Math.floor((nd10 % 306) / 10) + 1,
+        "fd": f
     };
 };
 
@@ -945,19 +944,19 @@ sla.dat = function (utc) {
 sla.dav2m = function (axvec) {
     "use strict";
     /* Rotation angle - magnitude of axial vector - and functions */
-    var x = axvec[0];
-    var y = axvec[1];
-    var z = axvec[2];
-    var phi = Math.sqrt(x * x + y * y + z * z);
-    var s = Math.sin(phi);
-    var c = Math.cos(phi);
-    var w = 1 - c;
+    let x = axvec[0];
+    let y = axvec[1];
+    let z = axvec[2];
+    let phi = Math.sqrt(x * x + y * y + z * z);
+    let s = Math.sin(phi);
+    let c = Math.cos(phi);
+    let w = 1 - c;
 
     /* Euler axis - direction of axial vector (perhaps null) */
     if (phi !== 0) {
-        x /= phi;
-        y /= phi;
-        z /= phi;
+        x = x / phi;
+        y = y / phi;
+        z = z / phi;
     }
 
     /* Compute the rotation matrix */
@@ -983,21 +982,21 @@ sla.dav2m = function (axvec) {
  */
 sla.dcc2s = function (v) {
     "use strict";
-    var x = v[0];
-    var y = v[1];
-    var z = v[2];
-    var r = Math.sqrt(x * x + y * y);
-    var a = 0;
+    let x = v[0];
+    let y = v[1];
+    let z = v[2];
+    let r = Math.sqrt(x * x + y * y);
+    let a = 0;
     if (r !== 0) {
         a = Math.atan2(y, x);
     }
-    var b = 0;
+    let b = 0;
     if (z !== 0) {
         b = Math.atan2(z, r);
     }
     return {
-        a: a,
-        b: b
+        "a": a,
+        "b": b
     };
 };
 
@@ -1029,17 +1028,17 @@ sla.dcc2s = function (v) {
  */
 sla.de2h = function (ha, dec, phi) {
     "use strict";
-    var sh = Math.sin(ha);
-    var ch = Math.cos(ha);
-    var sd = Math.sin(dec);
-    var cd = Math.cos(dec);
-    var sp = Math.sin(phi);
-    var cp = Math.cos(phi);
-    var x = -ch * cd * sp + sd * cp;
-    var y = -sh * cd;
-    var z = ch * cd * cp + sd * sp;
-    var r = Math.sqrt(x * x + y * y);
-    var a = 0;
+    let sh = Math.sin(ha);
+    let ch = Math.cos(ha);
+    let sd = Math.sin(dec);
+    let cd = Math.cos(dec);
+    let sp = Math.sin(phi);
+    let cp = Math.cos(phi);
+    let x = -ch * cd * sp + sd * cp;
+    let y = -sh * cd;
+    let z = ch * cd * cp + sd * sp;
+    let r = Math.sqrt(x * x + y * y);
+    let a = 0;
     if (r !== 0) {
         a = Math.atan2(y, x);
         if (a < 0) {
@@ -1047,8 +1046,8 @@ sla.de2h = function (ha, dec, phi) {
         }
     }
     return {
-        az: a,
-        el: Math.atan2(z, r)
+        "az": a,
+        "el": Math.atan2(z, r)
     };
 };
 
@@ -1075,40 +1074,34 @@ sla.de2h = function (ha, dec, phi) {
  *    example given above could be written ‘zxz’ or ‘313’ (or even ‘ZxZ’ or
  *    ‘3xZ’). ORDER is terminated by length or by the first unrecognized
  *    character. Fewer than three rotations are acceptable, in which case the
- *    later angle arguments are ignored. Zero rotations produces the identity RMAT.
+ *    later angle arguments are ignored. Zero rotations produces the identity
+ *    RMAT.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss41.html}
  */
 sla.deuler = function (order, phi, theta, psi) {
     "use strict";
     /* Initialize result matrix */
-    var result = [
+    let result = [
         [1, 0, 0],
         [0, 1, 0],
         [0, 0, 1]
     ];
-    var wm = [
+    let wm = [
         [0, 0, 0],
         [0, 0, 0],
         [0, 0, 0]
     ];
     /* Establish length of axis string */
-    var l = order.length;
+    let l = order.length;
+
     /* Look at each character of axis string until finished */
-    var n;
-    var rotn;
-    var angle;
-    var s;
-    var c;
-    var axis;
-    var i;
-    var j;
-    var k;
-    var w;
+    let n;
     for (n = 0; n < 3; n += 1) {
         if (n > l) {
             break;
         }
         /* Pick up the appropriate Euler angle and take sine & cosine */
+        let angle;
         if (n === 0) {
             angle = phi;
         } else if (n === 1) {
@@ -1116,11 +1109,12 @@ sla.deuler = function (order, phi, theta, psi) {
         } else {
             angle = psi;
         }
-        s = Math.sin(angle);
-        c = Math.cos(angle);
+        let s = Math.sin(angle);
+        let c = Math.cos(angle);
 
         /* Identify the axis */
-        axis = order.substring(n, n + 1);
+        let axis = order.substring(n, n + 1);
+        let rotn;
         if (axis === "X" || axis === "x" || axis === "1") {
             rotn = [[1, 0, 0],
                     [0, c, s],
@@ -1137,9 +1131,12 @@ sla.deuler = function (order, phi, theta, psi) {
             break;
         }
 
+        let i;
+        let j;
         for (i = 0; i < 3; i += 1) {
             for (j = 0; j < 3; j += 1) {
-                w = 0;
+                let w = 0;
+                let k;
                 for (k = 0; k < 3; k += 1) {
                     w += rotn[i][k] * result[k][j];
                 }
@@ -1166,7 +1163,7 @@ sla.deuler = function (order, phi, theta, psi) {
  * 1. This routine is a full implementation of the algorithm published by
  *    Meeus (see reference).
  * 2. Meeus quotes accuracies of 10′′ in longitude, 3′′ in latitude and
- *    ′′02 arcsec in HP (equivalent to about 20 km in distance). 
+ *    ′′02 arcsec in HP (equivalent to about 20 km in distance).
  *    JPL DE200 over the interval 1960-2025 gives RMS errors of ′′37 and 83
  *    mas/hour in longitude, ′′23 arcsec and 48 mas/hour in latitude, 11 km
  *    and 81 mm/s in distance. The maximum errors over the same interval are
@@ -1189,95 +1186,95 @@ sla.deuler = function (order, phi, theta, psi) {
 sla.dmoon = function (date) {
     "use strict";
     /* Moon's mean longitude */
-    var elp0 = 270.434164;
-    var elp1 = 481267.8831;
-    var elp2 = -0.001133;
-    var elp3 = 0.0000019;
+    let elp0 = 270.434164;
+    let elp1 = 481267.8831;
+    let elp2 = -0.001133;
+    let elp3 = 0.0000019;
     /* Sun's mean anomaly */
-    var em0 = 358.475833;
-    var em1 = 35999.0498;
-    var em2 = -0.000150;
-    var em3 = -0.0000033;
+    let em0 = 358.475833;
+    let em1 = 35999.0498;
+    let em2 = -0.000150;
+    let em3 = -0.0000033;
     /* Moon's mean anomaly */
-    var emp0 = 296.104608;
-    var emp1 = 477198.8491;
-    var emp2 = 0.009192;
-    var emp3 = 0.0000144;
+    let emp0 = 296.104608;
+    let emp1 = 477198.8491;
+    let emp2 = 0.009192;
+    let emp3 = 0.0000144;
     /* Moon's mean elongation */
-    var d0 = 350.737486;
-    var d1 = 445267.1142;
-    var d2 = -0.001436;
-    var d3 = 0.0000019;
+    let d0 = 350.737486;
+    let d1 = 445267.1142;
+    let d2 = -0.001436;
+    let d3 = 0.0000019;
     /* Mean distance of the Moon from its ascending node */
-    var f0 = 11.250889;
-    var f1 = 483202.0251;
-    var f2 = -0.003211;
-    var f3 = -0.0000003;
+    let f0 = 11.250889;
+    let f1 = 483202.0251;
+    let f2 = -0.003211;
+    let f3 = -0.0000003;
     /* Longitude of the Moon's ascending node */
-    var om0 = 259.183275;
-    var om1 = -1934.1420;
-    var om2 = 0.002078;
-    var om3 = 0.0000022;
+    let om0 = 259.183275;
+    let om1 = -1934.1420;
+    let om2 = 0.002078;
+    let om3 = 0.0000022;
     /* Coefficients for (dimensionless) E factor */
-    var e1 = -0.002495;
-    var e2 = -0.00000752;
+    let e1 = -0.002495;
+    let e2 = -0.00000752;
     /* Coefficients for periodic variations etc. */
-    var pac = 0.000233;
-    var pa0 = 51.2;
-    var pa1 = 20.2;
-    var pbc = -0.001778;
-    var pcc = 0.000817;
-    var pdc = 0.002011;
-    var pec = 0.003964;
-    var pe0 = 346.560;
-    var pe1 = 132.870;
-    var pe2 = -0.0091731;
-    var pfc = 0.001964;
-    var pgc = 0.002541;
-    var phc = 0.001964;
-    var pic = -0.024691;
-    var pjc = -0.004328;
-    var pj0 = 275.05;
-    var pj1 = -2.30;
-    var cw1 = 0.0004664;
-    var cw2 = 0.0000754;
+    let pac = 0.000233;
+    let pa0 = 51.2;
+    let pa1 = 20.2;
+    let pbc = -0.001778;
+    let pcc = 0.000817;
+    let pdc = 0.002011;
+    let pec = 0.003964;
+    let pe0 = 346.560;
+    let pe1 = 132.870;
+    let pe2 = -0.0091731;
+    let pfc = 0.001964;
+    let pgc = 0.002541;
+    let phc = 0.001964;
+    let pic = -0.024691;
+    let pjc = -0.004328;
+    let pj0 = 275.05;
+    let pj1 = -2.30;
+    let cw1 = 0.0004664;
+    let cw2 = 0.0000754;
     /* Coefficients for Moon position */
     /* Centuries since J1900 */
-    var t = (date - 15019.5) / 36525;
+    let t = (date - 15019.5) / 36525;
 
     /**
      * Fundamental arguments (radians) and derivatives (radians per
      * Julian century) for the current epoch.
      */
     /* Moon's mean longitude */
-    var elp = sla.d2r * ((elp0 + (elp1 + (elp2 + elp3 * t) * t) * t) % 360);
-    var delp = sla.d2r * (elp1 + (2 * elp2 + 3 * elp3 * t) * t);
+    let elp = sla.d2r * ((elp0 + (elp1 + (elp2 + elp3 * t) * t) * t) % 360);
+    let delp = sla.d2r * (elp1 + (2 * elp2 + 3 * elp3 * t) * t);
     /* Sun's mean anomaly */
-    var em = sla.d2r * ((em0 + (em1 + (em2 + em3 * t) * t) * t) % 360);
-    var dem = sla.d2r * (em1 + (2 * em2 + 3 * em3 * t) * t);
+    let em = sla.d2r * ((em0 + (em1 + (em2 + em3 * t) * t) * t) % 360);
+    let dem = sla.d2r * (em1 + (2 * em2 + 3 * em3 * t) * t);
     /* Moon's mean anomaly */
-    var emp = sla.d2r * ((emp0 + (emp1 + (emp2 + emp3 * t) * t) * t) % 360);
-    var demp = sla.d2r * (emp1 + (2 * emp2 + 3 * emp3 * t) * t);
+    let emp = sla.d2r * ((emp0 + (emp1 + (emp2 + emp3 * t) * t) * t) % 360);
+    let demp = sla.d2r * (emp1 + (2 * emp2 + 3 * emp3 * t) * t);
     /* Moon's mean elongation */
-    var d = sla.d2r * ((d0 + (d1 + (d2 + d3 * t) * t) * t) % 360);
-    var dd = sla.d2r * (d1 + (2 * d2 + 3 * d3 * t) * t);
+    let d = sla.d2r * ((d0 + (d1 + (d2 + d3 * t) * t) * t) % 360);
+    let dd = sla.d2r * (d1 + (2 * d2 + 3 * d3 * t) * t);
     /* Mean distance of the Moon from its ascending node */
-    var f = sla.d2r * ((f0 + (f1 + (f2 + f3 * t) * t) * t) % 360);
-    var df = sla.d2r * (f1 + (2 * f2 + 3 * f3 * t) * t);
+    let f = sla.d2r * ((f0 + (f1 + (f2 + f3 * t) * t) * t) % 360);
+    let df = sla.d2r * (f1 + (2 * f2 + 3 * f3 * t) * t);
     /* Longitude of the Moon's ascending node */
-    var om = sla.d2r * ((om0 + (om1 + (om2 + om3 * t) * t) * t) % 360);
-    var dom = sla.d2r * (om1 + (2 * om2 + 3 * om3 * t) * t);
-    var sinom = Math.sin(om);
-    var cosom = Math.cos(om);
-    var domcom = dom * cosom;
+    let om = sla.d2r * ((om0 + (om1 + (om2 + om3 * t) * t) * t) % 360);
+    let dom = sla.d2r * (om1 + (2 * om2 + 3 * om3 * t) * t);
+    let sinom = Math.sin(om);
+    let cosom = Math.cos(om);
+    let domcom = dom * cosom;
 
     /* Add the periodic variations */
-    var theta = sla.d2r * (pa0 + pa1 * t);
-    var wa = Math.sin(theta);
-    var dwa = sla.d2r * pa1 * Math.cos(theta);
+    let theta = sla.d2r * (pa0 + pa1 * t);
+    let wa = Math.sin(theta);
+    let dwa = sla.d2r * pa1 * Math.cos(theta);
     theta = sla.d2r * (pe0 + (pe1 + pe2 * t) * t);
-    var wb = pec * Math.sin(theta);
-    var dwb = sla.d2r * pec * (pe1 + 2 * pe2 * t) * Math.cos(theta);
+    let wb = pec * Math.sin(theta);
+    let dwb = sla.d2r * pec * (pe1 + 2 * pe2 * t) * Math.cos(theta);
     elp += sla.d2r * (pac * wa + wb + pfc * sinom);
     delp += sla.d2r * (pac * dwa + dwb + pfc * domcom);
     em += sla.d2r * pbc * wa;
@@ -1286,40 +1283,40 @@ sla.dmoon = function (date) {
     demp += sla.d2r * (pcc * dwa + dwb + pgc * domcom);
     d += sla.d2r * (pdc * wa + wb + phc * sinom);
     dd += sla.d2r * (pdc * dwa + dwb + phc * domcom);
-    var wom = om + sla.d2r * (pj0 + pj1 * t);
-    var dwom = dom + sla.d2r * pj1;
-    var sinwom = Math.sin(wom);
-    var coswom = Math.cos(wom);
+    let wom = om + sla.d2r * (pj0 + pj1 * t);
+    let dwom = dom + sla.d2r * pj1;
+    let sinwom = Math.sin(wom);
+    let coswom = Math.cos(wom);
     f += sla.d2r * (wb + pic * sinom + pjc * sinwom);
     df += sla.d2r * (dwb + pic * domcom + pjc * dwom * coswom);
     /* E-factor, and square */
-    var e = 1 + (e1 + e2 * t) * t;
-    var de = e1 + 2 * e2 * t;
-    var esq = e * e;
-    var desq = 2 * e * de;
+    let e = 1 + (e1 + e2 * t) * t;
+    let de = e1 + 2 * e2 * t;
+    let esq = e * e;
+    let desq = 2 * e * de;
 
     /**
      * Series expansions
      */
-    var nl = 50;
-    var nb = 45;
-    var np = 31;
-    var n;
-    var coeff;
-    var emn;
-    var empn;
-    var dn;
-    var fn;
-    var i;
-    var en;
-    var den;
-    var dtheta;
-    var ftheta;
+    let nl = 50;
+    let nb = 45;
+    let np = 31;
+    let n;
+    let coeff;
+    let emn;
+    let empn;
+    let dn;
+    let fn;
+    let i;
+    let en;
+    let den;
+    let dtheta;
+    let ftheta;
 
     /* Longitude */
-    var v = 0;
-    var dv = 0;
-    var n5;
+    let v = 0;
+    let dv = 0;
+    let n5;
     for (n = 0; n < nl; n += 1) {
         n5 = n * 5;
         coeff = sla.tl[n];
@@ -1344,8 +1341,8 @@ sla.dmoon = function (date) {
         v += coeff * ftheta * en;
         dv += coeff * (Math.cos(theta) * dtheta * en + ftheta * den);
     }
-    var el = elp + sla.d2r * v;
-    var del = (delp + sla.d2r * dv) / sla.cj;
+    let el = elp + sla.d2r * v;
+    let del = (delp + sla.d2r * dv) / sla.cj;
 
     /* Latitude */
     v = 0;
@@ -1374,10 +1371,10 @@ sla.dmoon = function (date) {
         v += coeff * ftheta * en;
         dv += coeff * (Math.cos(theta) * dtheta * en + ftheta * den);
     }
-    var bf = 1 - cw1 * cosom - cw2 * coswom;
-    var dbf = cw1 * dom * sinom + cw2 * dwom * sinwom;
-    var b = sla.d2r * v * bf;
-    var db = sla.d2r * (dv * bf + v * dbf) / sla.cj;
+    let bf = 1 - cw1 * cosom - cw2 * coswom;
+    let dbf = cw1 * dom * sinom + cw2 * dwom * sinwom;
+    let b = sla.d2r * v * bf;
+    let db = sla.d2r * (dv * bf + v * dbf) / sla.cj;
 
     /* Parallax */
     v = 0;
@@ -1406,48 +1403,48 @@ sla.dmoon = function (date) {
         v += coeff * ftheta * en;
         dv += coeff * (-Math.sin(theta) * dtheta * en + ftheta * den);
     }
-    var p = sla.d2r * v;
-    var dp = sla.d2r * dv / sla.cj;
+    let p = sla.d2r * v;
+    let dp = sla.d2r * dv / sla.cj;
 
     /**
      * Transformation into final form
      */
     /* Parallax to distance (AU, AU/sec) */
-    var sp = Math.sin(p);
-    var r = sla.eradau / sp;
-    var dr = -r * dp * Math.cos(p) / sp;
+    let sp = Math.sin(p);
+    let r = sla.eradau / sp;
+    let dr = -r * dp * Math.cos(p) / sp;
 
     /* Longitude, latitude to x,y,z (AU) */
-    var sel = Math.sin(el);
-    var cel = Math.cos(el);
-    var sb = Math.sin(b);
-    var cb = Math.cos(b);
-    var rcb = r * cb;
-    var rbd = r * db;
-    var w = rbd * sb - cb * dr;
-    var x = rcb * cel;
-    var y = rcb * sel;
-    var z = r * sb;
-    var xd = -y * del - w * cel;
-    var yd = x * del - w * sel;
-    var zd = rbd * cb + sb * dr;
+    let sel = Math.sin(el);
+    let cel = Math.cos(el);
+    let sb = Math.sin(b);
+    let cb = Math.cos(b);
+    let rcb = r * cb;
+    let rbd = r * db;
+    let w = rbd * sb - cb * dr;
+    let x = rcb * cel;
+    let y = rcb * sel;
+    let z = r * sb;
+    let xd = -y * del - w * cel;
+    let yd = x * del - w * sel;
+    let zd = rbd * cb + sb * dr;
 
     /* Julian centuries since J2000 */
     t = (date - 51544.5) / 36525;
 
     /* Fricke equinox correction */
-    var epj = 2000 + t * 100;
-    var eqcor = sla.ds2r * (0.035 + 0.00085 * (epj - sla.b1950));
+    let epj = 2000 + t * 100;
+    let eqcor = sla.ds2r * (0.035 + 0.00085 * (epj - sla.b1950));
 
     /* Mean obliquity (IAU 1976) */
-    var eps = sla.das2r * (84381.448 + (-46.8150 + (-0.00059 +
+    let eps = sla.das2r * (84381.448 + (-46.8150 + (-0.00059 +
             0.001813 * t) * t) * t);
 
     /* To the equatorial system, mean of date, FK5 system */
-    var sineps = Math.sin(eps);
-    var coseps = Math.cos(eps);
-    var es = eqcor * sineps;
-    var ec = eqcor * coseps;
+    let sineps = Math.sin(eps);
+    let coseps = Math.cos(eps);
+    let es = eqcor * sineps;
+    let ec = eqcor * coseps;
     return [
         x - ec * y + es * z,
         eqcor * x + y * coseps - z * sineps,
@@ -1476,12 +1473,11 @@ sla.dmoon = function (date) {
  */
 sla.dmxv = function (dm, va) {
     "use strict";
-    var i;
-    var j;
-    var w;
-    var vb = [];
+    let vb = [];
+    let i;
+    let j;
     for (i = 0; i < 3; i += 1) {
-        w = 0;
+        let w = 0;
         for (j = 0; j < 3; j += 1) {
             w += dm[i][j] * va[j];
         }
@@ -1512,25 +1508,25 @@ sla.dmxv = function (dm, va) {
  */
 sla.dd2tf = function (ndp, days) {
     "use strict";
-    var rs = 1;
-    var n;
+    let rs = 1;
+    let n;
     for (n = 0; n < ndp; n += 1) {
         rs *= 10;
     }
-    var rm = rs * 60;
-    var rh = rm * 60;
+    let rm = rs * 60;
+    let rh = rm * 60;
 
     /* Round interval and express in smallest units required */
-    var a = Math.round(rs * sla.d2s * Math.abs(days));
+    let a = Math.round(rs * sla.d2s * Math.abs(days));
 
     /* Separate into fields */
-    var ah = Math.floor(a / rh);
+    let ah = Math.floor(a / rh);
     a -= ah * rh;
-    var am = Math.floor(a / rm);
+    let am = Math.floor(a / rm);
     a -= am * rm;
-    var as = Math.floor(a / rs);
+    let as = Math.floor(a / rs);
     a -= as * rs;
-    var sign;
+    let sign;
     if (days >= 0) {
         sign = "+";
     } else {
@@ -1538,8 +1534,8 @@ sla.dd2tf = function (ndp, days) {
     }
 
     return {
-        sign: sign,
-        ihmsf: [
+        "sign": sign,
+        "ihmsf": [
             Math.max(Math.round(ah), 0),
             Math.max(Math.min(Math.round(am), 59), 0),
             Math.max(Math.min(Math.round(as), 59), 0),
@@ -1554,7 +1550,8 @@ sla.dd2tf = function (ndp, days) {
  * @param {Number} angle - Angle in radians
  * @return {Array} [0] sign, '+' or '-'
  *                 [1-4] degrees, arcminutes, arcseconds, fraction
- * @description Convert an angle in radians to degrees, minutes, seconds, fraction.
+ * @description Convert an angle in radians to degrees, minutes, seconds,
+ *              fraction.
  * 1. NDP less than zero is interpreted as zero.
  * 2. The largest useful value for NDP is determined by the size of ANGLE, the
  *    format of DOUBLE PRECISION floating-point numbers on the target machine,
@@ -1570,10 +1567,10 @@ sla.dd2tf = function (ndp, days) {
  */
 sla.dr2af = function (ndp, angle) {
     "use strict";
-    var ret = sla.dd2tf(ndp, angle * sla.f);
+    let ret = sla.dd2tf(ndp, angle * sla.f);
     return {
-        sign: ret.sign,
-        idmsf: ret.ihmsf
+        "sign": ret.sign,
+        "idmsf": ret.ihmsf
     };
 };
 
@@ -1583,7 +1580,8 @@ sla.dr2af = function (ndp, angle) {
  * @param {Number} angle - Angle in radians
  * @return {Array} [0] - sign, '+' or '-'
  *                 [1-4] - hours, minutes, seconds, fraction
- * @description Convert an angle in radians to hours, minutes, seconds, fraction.
+ * @description Convert an angle in radians to hours, minutes, seconds,
+ *              fraction.
  * 1. NDP less than zero is interpreted as zero.
  * 2. The largest useful value for NDP is determined by the size of ANGLE, the
  *    format of DOUBLE PRECISION floating-point numbers on the target machine,
@@ -1611,7 +1609,7 @@ sla.dr2tf = function (ndp, angle) {
  */
 sla.drange = function (angle) {
     "use strict";
-    var ret = angle % sla.d2pi;
+    let ret = angle % sla.d2pi;
     if (Math.abs(ret) >= Math.PI) {
         ret -= Math.sign(angle) * sla.d2pi;
     }
@@ -1627,7 +1625,7 @@ sla.drange = function (angle) {
  */
 sla.dranrm = function (angle) {
     "use strict";
-    var ret = angle % sla.d2pi;
+    let ret = angle % sla.d2pi;
     if (ret < 0) {
         ret = ret + sla.d2pi;
     }
@@ -1763,12 +1761,12 @@ sla.epb2d = function (epb) {
  */
 sla.eqeqx = function (date) {
     "use strict";
-    var t = (date - 51544.5) / 36525;
-    var om = sla.das2r * (450160.280 + (-5 * sla.t2as - 482890.539 +
+    let t = (date - 51544.5) / 36525;
+    let om = sla.das2r * (450160.280 + (-5 * sla.t2as - 482890.539 +
             (7.455 + 0.008 * t) * t) * t);
-    var ret = sla.nutc(date);
+    let ret = sla.nutc(date);
     return ret.dpsi * Math.cos(ret.eps0) + sla.das2r * (0.00264 * Math.sin(om) +
-            0.000063 * Math.sin(om + om));
+           0.000063 * Math.sin(om + om));
 };
 
 /**
@@ -1821,29 +1819,30 @@ sla.eqeqx = function (date) {
  */
 sla.fk45z = function (r1950, d1950, bepoch) {
     "use strict";
-    var pmf = 100.0 * 60.0 * 60.0 * 360.0 / sla.d2pi;
-    var r0 = sla.dcs2c(r1950, d1950);
-    var i, j;
+    let pmf = 100.0 * 60.0 * 60.0 * 360.0 / sla.d2pi;
+    let r0 = sla.dcs2c(r1950, d1950);
+    let i;
+    let j;
 
     /* Adjust vector a to give zero proper motion in FK5 */
-    var w = (bepoch - 1950.0) / pmf;
-    var a1 = [];
-    for (i = 0; i < 3; i++) {
+    let w = (bepoch - 1950.0) / pmf;
+    let a1 = [];
+    for (i = 0; i < 3; i += 1) {
         a1[i] = sla.fka[i] + w * sla.fkad[i];
     }
 
     /* Remove e-terms */
-    var v1 = [];
+    let v1 = [];
     w = r0[0] * a1[0] + r0[1] * a1[1] + r0[2] * a1[2];
-    for (i = 0; i < 3; i++) {
+    for (i = 0; i < 3; i += 1) {
         v1[i] = r0[i] - a1[i] + w * r0[i];
     }
 
     /* Convert position vector to Fricke system */
-    var v2 = [];
-    for (i = 0; i < 6; i++) {
+    let v2 = [];
+    for (i = 0; i < 6; i += 1) {
         w = 0.0;
-        for (j = 0; j < 3; j++) {
+        for (j = 0; j < 3; j += 1) {
             w += sla.fkem3[i * 3 + j] * v1[j];
         }
         v2[i] = w;
@@ -1851,16 +1850,16 @@ sla.fk45z = function (r1950, d1950, bepoch) {
 
     /* Allow for fictitious proper motion in FK4 */
     w = (sla.epj(sla.epb2d(bepoch)) - 2000.0) / pmf;
-    for (i = 0; i < 3; i++) {
+    for (i = 0; i < 3; i += 1) {
         v2[i] += w * v2[i + 3];
    }
 
     /* Revert to spherical coordinates */
-    var ret = sla.dcc2s(v2);
-    var r2000 = sla.dranrm(ret.a);
+    let ret = sla.dcc2s(v2);
+    let r2000 = sla.dranrm(ret.a);
     return {
-        r2000: r2000,
-        d2000: ret.b
+        "r2000": r2000,
+        "d2000": ret.b
     };
 };
 
@@ -1868,8 +1867,10 @@ sla.fk45z = function (r1950, d1950, bepoch) {
  * @summary **FK4 to FK5.**
  * @param {Number} r1950 - B1950.0 α (radians)
  * @param {Number} d1950 - B1950.0 δ (radians)
- * @param {Number} dr1950 - B1950.0 proper motion in α (radians per tropical year)
- * @param {Number} dd1950 - B1950.0 proper motion in δ (radians per tropical year)
+ * @param {Number} dr1950 - B1950.0 proper motion in α (radians per tropical
+ *                          year)
+ * @param {Number} dd1950 - B1950.0 proper motion in δ (radians per tropical
+ *                          year)
  * @param {Number} p1950 - B1950.0 parallax (arcsec)
  * @param {Number} v1950 - B1950.0 radial velocity (km/s, +ve = moving away)
  * @returns {Object}
@@ -1906,7 +1907,8 @@ sla.fk45z = function (r1950, d1950, bepoch) {
  *    differential E-terms on the proper motions for all stars, whether polar
  *    or not. At epoch J2000, and measuring on the sky rather than in terms of
  *    Δα, the errors resulting from this simplification are less than 1
- *    milliarcsecond in position and 1 milliarcsecond per century in proper motion.
+ *    milliarcsecond in position and 1 milliarcsecond per century in proper
+ *    motion.
  * 4. See also {@link sla.fk45z}, {@link sla.fk524}, {@link sla.fk54z}.
  * ----------
  * References:
@@ -1919,30 +1921,31 @@ sla.fk45z = function (r1950, d1950, bepoch) {
 sla.fk425 = function (r1950, d1950, dr1950, dd1950, p1950, v1950) {
     "use strict";
     /* Radians per year to arcsec per century */
-    var pmf = 100.0 * 60.0 * 60.0 * 360.0 / sla.d2pi;
+    let pmf = 100.0 * 60.0 * 60.0 * 360.0 / sla.d2pi;
 
     /* Km per sec to AU per tropical century */
-    var vf = 21.095;
+    let vf = 21.095;
 
-    var i, j;
+    let i;
+    let j;
 
     /* Pick up B1950 data (units radians and arcsec/tc) */
-    var r = r1950;
-    var d = d1950;
-    var ur = dr1950 * pmf;
-    var ud = dd1950 * pmf;
-    var px = p1950;
-    var rv = v1950;
+    let r = r1950;
+    let d = d1950;
+    let ur = dr1950 * pmf;
+    let ud = dd1950 * pmf;
+    let px = p1950;
+    let rv = v1950;
 
     /* Spherical to Cartesian */
-    var sr = Math.sin(r);
-    var cr = Math.cos(r);
-    var sd = Math.sin(d);
-    var cd = Math.cos(d);
+    let sr = Math.sin(r);
+    let cr = Math.cos(r);
+    let sd = Math.sin(d);
+    let cd = Math.cos(d);
 
-    var r0 = [cr * cd, sr * cd, sd];
-    var w = vf * rv * px;
-    var rd0 = [
+    let r0 = [cr * cd, sr * cd, sd];
+    let w = vf * rv * px;
+    let rd0 = [
         (-sr * cd * ur) - (cr * sd * ud) + (w * r0[0]),
         (cr * cd * ur) - (sr * sd * ud) + (w * r0[1]),
         (cd * ud) + (w * r0[2])
@@ -1950,40 +1953,41 @@ sla.fk425 = function (r1950, d1950, dr1950, dd1950, p1950, v1950) {
 
     /* Allow for e-terms and express as position+velocity 6-vector */
     w = (r0[0] * sla.fka[0]) + (r0[1] * sla.fka[1]) + (r0[2] * sla.fka[2]);
-    var wd = (r0[0] * sla.fkad[0]) + (r0[1] * sla.fkad[1]) + (r0[2] * sla.fkad[2]);
-    
-    var v1 = [];
-    for (i = 0; i < 3; i++) {
+    let wd = (r0[0] * sla.fkad[0]) + (r0[1] * sla.fkad[1]) +
+             (r0[2] * sla.fkad[2]);
+
+    let v1 = [];
+    for (i = 0; i < 3; i += 1) {
         v1[i] = r0[i]  - sla.fka[i]  + w * r0[i];
         v1[i+3] = rd0[i] - sla.fkad[i] + wd * r0[i];
     }
 
     /* Convert position+velocity vector to Fricke system */
-    var v2 = [];
-    for (i = 0; i < 6; i++) {
+    let v2 = [];
+    for (i = 0; i < 6; i += 1) {
         w = 0.0;
-        for (j = 0; j < 6; j++) {
+        for (j = 0; j < 6; j += 1) {
             w += sla.fkem6[i * 6 + j] * v1[j];
         }
         v2[i] = w;
     }
 
     /* Revert to spherical coordinates */
-    var x = v2[0];
-    var y = v2[1];
-    var z = v2[2];
-    var xd = v2[3];
-    var yd = v2[4];
-    var zd = v2[5];
+    let x = v2[0];
+    let y = v2[1];
+    let z = v2[2];
+    let xd = v2[3];
+    let yd = v2[4];
+    let zd = v2[5];
 
-    var rxysq = (x * x) + (y * y);
-    var rxyzsq = (rxysq) + (z * z);
-    var rxy = Math.sqrt(rxysq);
-    var rxyz = Math.sqrt(rxyzsq);
-    var spxy = (x * xd) + (y * yd);
-    var spxyz = spxy + (z * zd);
+    let rxysq = (x * x) + (y * y);
+    let rxyzsq = (rxysq) + (z * z);
+    let rxy = Math.sqrt(rxysq);
+    let rxyz = Math.sqrt(rxyzsq);
+    let spxy = (x * xd) + (y * yd);
+    let spxyz = spxy + (z * zd);
 
-    if ((x == 0.0) && (y == 0.0)) {
+    if ((x === 0.0) && (y === 0.0)) {
         r = 0.0;
     } else {
         r = Math.atan2(y, x);
@@ -2003,12 +2007,12 @@ sla.fk425 = function (r1950, d1950, dr1950, dd1950, p1950, v1950) {
     }
 
     return {
-        r2000: r,
-        d2000: d,
-        dr2000: ur / pmf,
-        dd2000: ud / pmf,
-        v2000: rv,
-        p2000: px
+        "r2000": r,
+        "d2000": d,
+        "dr2000": ur / pmf,
+        "dd2000": ud / pmf,
+        "v2000": rv,
+        "p2000": px
     };
 };
 
@@ -2017,7 +2021,8 @@ sla.fk425 = function (r1950, d1950, dr1950, dd1950, p1950, v1950) {
  * @param {Number} ut1 - Universal time (strictly UT1) expressed as modified
  *                       Julian Date (JD-2400000.5).
  * @returns {Number} Greenwich mean sidereal time (radians).
- * @description Conversion from universal time UT1 to Greenwich mean sidereal time.
+ * @description Conversion from universal time UT1 to Greenwich mean sidereal
+ *              time.
  * 1. The IAU 1982 expression (see page S15 of the 1984 *Astronomical Almanac*)
  *    is used, but rearranged to reduce rounding errors. This expression is
  *    always described as giving the GMST at 0hUT; in fact, it gives the
@@ -2032,7 +2037,7 @@ sla.fk425 = function (r1950, d1950, dr1950, dd1950, p1950, v1950) {
  */
 sla.gmst = function (ut1) {
     "use strict";
-    var tu = (ut1 - 51544.5) / 36525;
+    let tu = (ut1 - 51544.5) / 36525;
     return sla.dranrm((ut1 % 1) * sla.d2pi + (24110.54841 +
             (8640184.812866 + (0.093104 - 6.2e-6 * tu) * tu) * tu) * sla.ds2r);
 };
@@ -2051,18 +2056,20 @@ sla.gmst = function (ut1) {
  *    and UT1 arguments. Either of the two arguments could, for example, be
  *    zero and the entire date + time supplied in the other. However, the
  *    routine is designed to deliver maximum accuracy when the DATE argument
- *    is a whole number and the UT1 argument lies in the range [0,1], or vice versa.
+ *    is a whole number and the UT1 argument lies in the range [0,1], or vice
+ *    versa.
  * 3. See also the routine {@link sla.gmst}, which accepts the UT1 as a single
  *    argument. Compared with {@link sla.gmst}, the extra numerical precision
  *    delivered by the present routine is unlikely to be important in an
  *    absolute sense, but may be useful when critically comparing algorithms
- *    and in applications where two sidereal times close together are differenced.
+ *    and in applications where two sidereal times close together are
+ *    differenced.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss105.html}
  */
 sla.gmsta = function (date, ut) {
     "use strict";
-    var d1;
-    var d2;
+    let d1;
+    let d2;
     if (date < ut) {
         d1 = date;
         d2 = ut;
@@ -2070,9 +2077,9 @@ sla.gmsta = function (date, ut) {
         d1 = ut;
         d2 = date;
     }
-    var t = (d1 + (d2 - 51544.5)) / 36525;
+    let t = (d1 + (d2 - 51544.5)) / 36525;
     return sla.dranrm(sla.ds2r * (24110.54841 + (8640184.812866 + (0.093104 -
-            6.2e-6 * t) * t) * t + sla.d2s * (d1 % 1 + d2 % 1)));
+           6.2e-6 * t) * t) * t + sla.d2s * (d1 % 1 + d2 % 1)));
 };
 
 /**
@@ -2088,13 +2095,13 @@ sla.gmsta = function (date, ut) {
  */
 sla.geoc = function (p, h) {
     "use strict";
-    var sp = Math.sin(p);
-    var cp = Math.cos(p);
-    var c = 1 / Math.sqrt(cp * cp + sla.sb * sp * sp);
-    var s = sla.sb * c;
+    let sp = Math.sin(p);
+    let cp = Math.cos(p);
+    let c = 1 / Math.sqrt(cp * cp + sla.sb * sp * sp);
+    let s = sla.sb * c;
     return {
-        r: (sla.a0 * c + h) * cp / sla.au,
-        z: (sla.a0 * s + h) * sp / sla.au
+        "r": (sla.a0 * c + h) * cp / sla.au,
+        "z": (sla.a0 * s + h) * sp / sla.au
     };
 };
 
@@ -2114,15 +2121,15 @@ sla.geoc = function (p, h) {
 sla.ds2c6 = function (a, b, r, ad, bd, rd) {
     "use strict";
     /* Useful functions */
-    var sa = Math.sin(a);
-    var ca = Math.cos(a);
-    var sb = Math.sin(b);
-    var cb = Math.cos(b);
-    var rcb = r * cb;
-    var x = rcb * ca;
-    var y = rcb * sa;
-    var rbd = r * bd;
-    var w = rbd * sb - cb * rd;
+    let sa = Math.sin(a);
+    let ca = Math.cos(a);
+    let sb = Math.sin(b);
+    let cb = Math.cos(b);
+    let rcb = r * cb;
+    let x = rcb * ca;
+    let y = rcb * sa;
+    let rbd = r * bd;
+    let w = rbd * sb - cb * rd;
 
     /* Position and velocity */
     return [
@@ -2154,13 +2161,12 @@ sla.ds2c6 = function (a, b, r, ad, bd, rd) {
  */
 sla.dimxv = function (dm, va) {
     "use strict";
-    var i;
-    var j;
-    var w;
-    var vb = [];
+    let vb = [];
+    let i;
+    let j;
     /* Inverse of matrix DM * vector VA -> vector VW */
     for (i = 0; i < 3; i += 1) {
-        w = 0;
+        let w = 0;
         for (j = 0; j < 3; j += 1) {
             w += dm[j][i] * va[j];
         }
@@ -2186,18 +2192,18 @@ sla.dimxv = function (dm, va) {
 sla.dc62s = function (v) {
     "use strict";
     /* Components of position/velocity vector */
-    var x = v[0];
-    var y = v[1];
-    var z = v[2];
-    var xd = v[3];
-    var yd = v[4];
-    var zd = v[5];
+    let x = v[0];
+    let y = v[1];
+    let z = v[2];
+    let xd = v[3];
+    let yd = v[4];
+    let zd = v[5];
 
     /* Component of R in XY plane squared */
-    var rxy2 = x * x + y * y;
+    let rxy2 = x * x + y * y;
 
     /* Modulus squared */
-    var r2 = rxy2 + z * z;
+    let r2 = rxy2 + z * z;
 
     /* Protection against null vector */
     if (r2 === 0) {
@@ -2209,12 +2215,12 @@ sla.dc62s = function (v) {
     }
 
     /* Position and velocity in spherical coordinates */
-    var rxy = Math.sqrt(rxy2);
-    var xyp = x * xd + y * yd;
-    var a;
-    var b;
-    var ad;
-    var bd;
+    let rxy = Math.sqrt(rxy2);
+    let xyp = x * xd + y * yd;
+    let a;
+    let b;
+    let ad;
+    let bd;
     if (rxy2 !== 0) {
         a = Math.atan2(y, x);
         b = Math.atan2(z, rxy);
@@ -2230,8 +2236,8 @@ sla.dc62s = function (v) {
         ad = 0;
         bd = 0;
     }
-    var r = Math.sqrt(r2);
-    var rd;
+    let r = Math.sqrt(r2);
+    let rd;
     if (r !== 0) {
         rd = (xyp + z * zd) / r;
     } else {
@@ -2239,12 +2245,12 @@ sla.dc62s = function (v) {
     }
 
     return {
-        a: a,
-        b: b,
-        r: r,
-        ad: ad,
-        bd: bd,
-        rd: rd
+        "a": a,
+        "b": b,
+        "r": r,
+        "ad": ad,
+        "bd": bd,
+        "rd": rd
     };
 };
 
@@ -2252,12 +2258,16 @@ sla.dc62s = function (v) {
  * @summary **FK5 to Hipparcos**
  * @param {Number} r5 - J2000.0 FK5 α (radians)
  * @param {Number} d5 - J2000.0 FK5 δ (radians)
- * @param {Number} dr5 - J2000.0 FK5 proper motion in α (radians per Julian year)
- * @param {Number} dd5 - J2000.0 FK5 proper motion in δ (radians per Julian year)
+ * @param {Number} dr5 - J2000.0 FK5 proper motion in α (radians per Julian
+ *                       year)
+ * @param {Number} dd5 - J2000.0 FK5 proper motion in δ (radians per Julian
+ *                       year)
  * @returns {Object} rh - Hipparcos α (radians)
  *                   dh - Hipparcos δ (radians)
- *                   drh - Hipparcos proper motion in α (radians per Julian year)
- *                   ddh - Hipparcos proper motion in δ (radians per Julian year)
+ *                   drh - Hipparcos proper motion in α (radians per Julian
+ *                         year)
+ *                   ddh - Hipparcos proper motion in δ (radians per Julian
+ *                         year)
  * @description Transform an FK5 (J2000) position and proper motion into the
  *              frame of the Hipparcos catalogue.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss96.html}
@@ -2265,35 +2275,35 @@ sla.dc62s = function (v) {
 sla.fk52h = function (r5, d5, dr5, dd5) {
     "use strict";
     /* FK5 to Hipparcos orientation and spin (radians, radians/year) */
-    var epx = -19.9e-3 * sla.das2r;
-    var epy = -9.1e-3 * sla.das2r;
-    var epz = 22.9e-3 * sla.das2r;
-    var omx = -0.30e-3 * sla.das2r;
-    var omy = 0.60e-3 * sla.das2r;
-    var omz = 0.70e-3 * sla.das2r;
+    let epx = -19.9e-3 * sla.das2r;
+    let epy = -9.1e-3 * sla.das2r;
+    let epz = 22.9e-3 * sla.das2r;
+    let omx = -0.30e-3 * sla.das2r;
+    let omy = 0.60e-3 * sla.das2r;
+    let omz = 0.70e-3 * sla.das2r;
 
     /* FK5 barycentric position/velocity 6-vector (normalized) */
-    var pv5 = sla.ds2c6(r5, d5, 1, dr5, dd5, 0);
+    let pv5 = sla.ds2c6(r5, d5, 1, dr5, dd5, 0);
 
     /* FK5 to Hipparcos orientation matrix. */
-    var r5h = sla.dav2m([epx, epy, epz]);
+    let r5h = sla.dav2m([epx, epy, epz]);
 
     /* Orient & spin the 6-vector into the Hipparcos frame. */
-    var pvh = sla.dmxv(r5h, pv5);
-    var vv = sla.dvxv(pv5, [omx, omy, omz]);
-    var i;
+    let pvh = sla.dmxv(r5h, pv5);
+    let vv = sla.dvxv(pv5, [omx, omy, omz]);
+    let i;
     for (i = 0; i < 3; i += 1) {
         vv[i] += pv5[i + 3];
     }
-    var pvhd = sla.dmxv(r5h, vv);
+    let pvhd = sla.dmxv(r5h, vv);
 
     /* Hipparcos 6-vector to spherical. */
-    var ret = sla.dc62s(pvh.concat(pvhd));
+    let ret = sla.dc62s(pvh.concat(pvhd));
     return {
-        rh: sla.dranrm(ret.a),
-        dh: ret.b,
-        drh: ret.ad,
-        ddh: ret.bd
+        "rh": sla.dranrm(ret.a),
+        "dh": ret.b,
+        "drh": ret.ad,
+        "ddh": ret.bd
     };
 };
 
@@ -2305,8 +2315,10 @@ sla.fk52h = function (r5, d5, dr5, dd5) {
  * @param {Number} ddh - Hipparcos proper motion in δ (radians per Julian year)
  * @returns {Object} r5 - J2000.0 FK5 α (radians)
  *                   d5 - J2000.0 FK5 δ (radians)
- *                   dr5 - J2000.0 FK5 proper motion in α (radians per Julian year)
- *                   dd5 - J2000.0 FK5 proper motion in δ (radians per Julian year)
+ *                   dr5 - J2000.0 FK5 proper motion in α (radians per Julian
+ *                         year)
+ *                   dd5 - J2000.0 FK5 proper motion in δ (radians per Julian
+ *                         year)
  * @description Transform a Hipparcos star position and proper motion into the
  *              FK5 (J2000) frame.
  * 1. The α proper motions are α̇  rather than α̇ cosδ, and are per year rather
@@ -2315,14 +2327,14 @@ sla.fk52h = function (r5, d5, dr5, dd5) {
  *    zonal errors in the FK5 catalogue are not taken into account.
  * 3. The adopted epoch J2000.0 FK5 to Hipparcos orientation and spin values
  *    are as follows (see reference):
- * 
+ *
  *      | orientation | spin
  *    -----------------------
  *    x | -19.9       | -0.30
  *    y |  -9.1       | +0.60
  *    z | +22.9       | +0.70
  *      | mas         | mas/y
- * 
+ *
  *    These orientation and spin components are interpreted as axial vectors.
  *    An axial vector points at the pole of the rotation and its length is the
  *    amount of rotation in radians.
@@ -2335,38 +2347,38 @@ sla.fk52h = function (r5, d5, dr5, dd5) {
 sla.h2fk5 = function (rh, dh, drh, ddh) {
     "use strict";
     /* FK5 to Hipparcos orientation and spin (radians, radians/year) */
-    var epx = -19.9e-3 * sla.das2r;
-    var epy = -9.1e-3 * sla.das2r;
-    var epz = 22.9e-3 * sla.das2r;
-    var omx = -0.30e-3 * sla.das2r;
-    var omy = 0.60e-3 * sla.das2r;
-    var omz = 0.70e-3 * sla.das2r;
+    let epx = -19.9e-3 * sla.das2r;
+    let epy = -9.1e-3 * sla.das2r;
+    let epz = 22.9e-3 * sla.das2r;
+    let omx = -0.30e-3 * sla.das2r;
+    let omy = 0.60e-3 * sla.das2r;
+    let omz = 0.70e-3 * sla.das2r;
 
     /* Hipparcos barycentric position/velocity 6-vector (normalized). */
-    var pvh = sla.ds2c6(rh, dh, 1, drh, ddh, 0);
+    let pvh = sla.ds2c6(rh, dh, 1, drh, ddh, 0);
 
     /* FK5 to Hipparcos orientation matrix. */
-    var r5h = sla.dav2m([epx, epy, epz]);
+    let r5h = sla.dav2m([epx, epy, epz]);
 
     /* Rotate the spin vector into the Hipparcos frame. */
-    var sh = sla.dmxv(r5h, [omx, omy, omz]);
+    let sh = sla.dmxv(r5h, [omx, omy, omz]);
 
     /* De-orient & de-spin the 6-vector into FK5 J2000. */
-    var pv5 = sla.dimxv(r5h, pvh);
-    var vv = sla.dvxv(pvh, sh);
-    var i;
+    let pv5 = sla.dimxv(r5h, pvh);
+    let vv = sla.dvxv(pvh, sh);
+    let i;
     for (i = 0; i < 3; i += 1) {
         vv[i] = pvh[i + 3] - vv[i];
     }
-    var pv5d = sla.dimxv(r5h, vv);
+    let pv5d = sla.dimxv(r5h, vv);
 
     /* FK5 6-vector to spherical. */
-    var ret = sla.dc62s(pv5.concat(pv5d));
+    let ret = sla.dc62s(pv5.concat(pv5d));
     return {
-        r5: sla.dranrm(ret.a),
-        d5: ret.b,
-        dr5: ret.ad,
-        dd5: ret.bd
+        "r5": sla.dranrm(ret.a),
+        "d5": ret.b,
+        "dr5": ret.ad,
+        "dd5": ret.bd
     };
 };
 
@@ -2396,7 +2408,7 @@ sla.h2fk5 = function (rh, dh, drh, ddh) {
  */
 sla.nut = function (date) {
     "use strict";
-    var ret = sla.nutc(date);
+    let ret = sla.nutc(date);
     return sla.deuler("XZX", ret.eps0, -ret.dpsi, -(ret.eps0 + ret.deps));
 };
 
@@ -2429,58 +2441,58 @@ sla.nut = function (date) {
 sla.nutc = function (date) {
     "use strict";
     /* Number of terms in the nutation model */
-    var nterms = 194;
+    let nterms = 194;
 
     /* Interval between fundamental epoch J2000.0 and given epoch (JC). */
-    var t = (date - sla.djm0) / sla.djc;
+    let t = (date - sla.djm0) / sla.djc;
 
     /* Mean anomaly of the Moon. */
-    var el = 134.96340251 * sla.dd2r + (t * (1717915923.2178 + t * (31.8792 +
+    let el = 134.96340251 * sla.dd2r + (t * (1717915923.2178 + t * (31.8792 +
             t * (0.051635 + t * (-0.00024470)))) % sla.t2as) * sla.das2r;
 
     /* Mean anomaly of the Sun. */
-    var elp = 357.52910918 * sla.dd2r + (t * (129596581.0481 + t * (-0.5532 +
+    let elp = 357.52910918 * sla.dd2r + (t * (129596581.0481 + t * (-0.5532 +
             t * (0.000136 + t * (-0.00001149)))) % sla.t2as) * sla.das2r;
 
     /* Mean argument of the latitude of the Moon. */
-    var f = 93.27209062 * sla.dd2r + (t * (1739527262.8478 + t * (-12.7512 +
+    let f = 93.27209062 * sla.dd2r + (t * (1739527262.8478 + t * (-12.7512 +
             t * (-0.001037 + t * (0.00000417)))) % sla.t2as) * sla.das2r;
 
     /* Mean elongation of the Moon from the Sun. */
-    var d = 297.85019547 * sla.dd2r + (t * (1602961601.2090 + t * (-6.3706 +
+    let d = 297.85019547 * sla.dd2r + (t * (1602961601.2090 + t * (-6.3706 +
             t * (0.006539 + t * (-0.00003169)))) % sla.t2as) * sla.das2r;
 
     /* Mean longitude of the ascending node of the Moon. */
-    var om = 125.04455501 * sla.dd2r + (t * (-6962890.5431 + t * (7.4722 +
+    let om = 125.04455501 * sla.dd2r + (t * (-6962890.5431 + t * (7.4722 +
             t * (0.007702 + t * (-0.00005939)))) % sla.t2as) * sla.das2r;
 
     /* Mean longitude of Venus. */
-    var ve = 181.97980085 * sla.dd2r + ((210664136.433548 * t) %
+    let ve = 181.97980085 * sla.dd2r + ((210664136.433548 * t) %
             sla.t2as) * sla.das2r;
 
     /* Mean longitude of Mars. */
-    var ma = 355.43299958 * sla.dd2r + ((68905077.493988 * t) %
+    let ma = 355.43299958 * sla.dd2r + ((68905077.493988 * t) %
             sla.t2as) * sla.das2r;
 
     /* Mean longitude of Jupiter. */
-    var ju = 34.351518740 * sla.dd2r + ((10925660.377991 * t) %
+    let ju = 34.351518740 * sla.dd2r + ((10925660.377991 * t) %
             sla.t2as) * sla.das2r;
 
     /* Mean longitude of Saturn. */
-    var sa = 50.077444300 * sla.dd2r + ((4399609.855732 * t) %
+    let sa = 50.077444300 * sla.dd2r + ((4399609.855732 * t) %
             sla.t2as) * sla.das2r;
 
     /* Geodesic nutation (Fukushima 1991) in microarcsec. */
-    var dp = -153.1 * Math.sin(elp) - 1.9 * Math.sin(2 * elp);
-    var de = 0;
+    let dp = -153.1 * Math.sin(elp) - 1.9 * Math.sin(2 * elp);
+    let de = 0;
 
     /* Shirai & Fukushima (2001) nutation series. */
-    var i9 = 0;
-    var i4 = 0;
-    var j;
-    var theta;
-    var c;
-    var s;
+    let i9 = 0;
+    let i4 = 0;
+    let j;
+    let theta;
+    let c;
+    let s;
     for (j = 0; j < nterms; j += 1) {
         theta = sla.na[i9] * el +
                 sla.na[i9 + 1] * elp +
@@ -2501,16 +2513,16 @@ sla.nutc = function (date) {
         i4 += 4;
     }
     /* Change of units, and addition of the precession correction. */
-    var dpsi = (dp * 1e-6 - 0.042888 - 0.29856 * t) * sla.das2r;
-    var deps = (de * 1e-6 - 0.005171 - 0.02408 * t) * sla.das2r;
+    let dpsi = (dp * 1e-6 - 0.042888 - 0.29856 * t) * sla.das2r;
+    let deps = (de * 1e-6 - 0.005171 - 0.02408 * t) * sla.das2r;
     /* Mean obliquity of date (Simon et al. 1994). */
-    var eps0 = (84381.412 + (-46.80927 + (-0.000152 + (0.0019989 +
+    let eps0 = (84381.412 + (-46.80927 + (-0.000152 + (0.0019989 +
             (-0.00000051 + (-0.000000025) * t) * t) * t) * t) * t) *
             sla.das2r;
     return {
-        dpsi: dpsi,
-        deps: deps,
-        eps0: eps0
+        "dpsi": dpsi,
+        "deps": deps,
+        "eps0": eps0
     };
 };
 
@@ -2570,7 +2582,8 @@ sla.nutc = function (date) {
  *    - JFORM=1, suitable for the major planets:
  *    - JFORM=2, suitable for minor planets:
  *    - JFORM=3, suitable for comets:
- * 7. Unused elements (DM for JFORM=2, AORL and DM for JFORM=3) are not accessed.
+ * 7. Unused elements (DM for JFORM=2, AORL and DM for JFORM=3) are not
+ *    accessed.
  * 8. The algorithm was originally adapted from the EPHSLA program of D.H.P.
  *    Jones (private communication, 1996). The method is based on Stumpff’s
  *    Universal Variables.
@@ -2596,11 +2609,11 @@ sla.el2ue = function (date, jform, epoch, orbinc, anode, perih,
         throw new RangeError("Illegal DM (j=-4).");
     }
 
-    var pht;
-    var argph;
-    var q;
-    var w;
-    var cm;
+    let pht;
+    let argph;
+    let q;
+    let w;
+    let cm;
     /* Transform elements into standard form */
     if (jform === 1) {
         /* Major planet */
@@ -2626,55 +2639,55 @@ sla.el2ue = function (date, jform, epoch, orbinc, anode, perih,
     /* The universal variable alpha.  This is proportional to the total
      *  energy of the orbit:  -ve for an ellipse, zero for a parabola,
      *  +ve for a hyperbola. */
-    var alpha = cm * (e - 1) / q;
+    let alpha = cm * (e - 1) / q;
 
     /* Speed at perihelion */
-    var phs = Math.sqrt(alpha + 2 * cm / q);
+    let phs = Math.sqrt(alpha + 2 * cm / q);
 
     /* Functions of the Euler angles. */
-    var sw = Math.sin(argph);
-    var cw = Math.cos(argph);
-    var si = Math.sin(orbinc);
-    var ci = Math.cos(orbinc);
-    var so = Math.sin(anode);
-    var co = Math.cos(anode);
+    let sw = Math.sin(argph);
+    let cw = Math.cos(argph);
+    let si = Math.sin(orbinc);
+    let ci = Math.cos(orbinc);
+    let so = Math.sin(anode);
+    let co = Math.cos(anode);
 
     /* Position at perihelion (AU) */
-    var x = q * cw;
-    var y = q * sw;
-    var z = y * si;
+    let x = q * cw;
+    let y = q * sw;
+    let z = y * si;
     y = y * ci;
-    var px = x * co - y * so;
+    let px = x * co - y * so;
     y = x * so + y * co;
-    var py = y * sla.ce - z * sla.se;
-    var pz = y * sla.se + z * sla.ce;
+    let py = y * sla.ce - z * sla.se;
+    let pz = y * sla.se + z * sla.ce;
 
     /* Velocity at perihelion (AU per canonical day). */
     x = -phs * sw;
     y = phs * cw;
     z = y * si;
     y = y * ci;
-    var vx = x * co - y * so;
+    let vx = x * co - y * so;
     y = x * so + y * co;
-    var vy = y * sla.ce - z * sla.se;
-    var vz = y * sla.se + z * sla.ce;
+    let vy = y * sla.ce - z * sla.se;
+    let vz = y * sla.se + z * sla.ce;
 
     /* Time from perihelion to date (in Canonical Days: a canonical day
      *  is 58.1324409... days, defined as 1/GCON). */
-    var dt = (date - pht) * sla.gcon;
+    let dt = (date - pht) * sla.gcon;
 
     /* First approximation to the Universal Eccentric Anomaly, PSI,
      *  based on the circle (FC) and parabola (FP) values. */
-    var fc = dt / q;
+    let fc = dt / q;
     w = Math.pow(3 * dt + Math.sqrt(9 * dt * dt + 8 * q * q * q), 1 / 3);
-    var fp = w - 2 * q / w;
-    var psi = (1 - e) * fc + e * fp;
+    let fp = w - 2 * q / w;
+    let psi = (1 - e) * fc + e * fp;
 
     /* Assemble local copy of element set. */
-    var ul = [cm, alpha, pht, px, py, pz, vx, vy, vz, q, 0, date, psi];
+    let ul = [cm, alpha, pht, px, py, pz, vx, vy, vz, q, 0, date, psi];
 
     /* Predict position+velocity at epoch of osculation. */
-    var pv = sla.ue2pv(date, ul);
+    let pv = sla.ue2pv(date, ul);
 
     /* Convert back to universal elements. */
     return sla.pv2ue(pv, date, cm - 1);
@@ -2742,42 +2755,42 @@ sla.el2ue = function (date, jform, epoch, orbinc, anode, perih,
 sla.ue2pv = function (date, u) {
     "use strict";
     /* Unpack the parameters. */
-    var test = 1e-13;
-    var nitmax = 25;
+    let test = 1e-13;
+    let nitmax = 25;
 
-    var cm = u[0];
-    var alpha = u[1];
-    var t0 = u[2];
-    var p0 = u.slice(3, 6);
-    var v0 = u.slice(6, 9);
-    var r0 = u[9];
-    var sigma0 = u[10];
-    var t = u[11];
-    var psi = u[12];
+    let cm = u[0];
+    let alpha = u[1];
+    let t0 = u[2];
+    let p0 = u.slice(3, 6);
+    let v0 = u.slice(6, 9);
+    let r0 = u[9];
+    let sigma0 = u[10];
+    let t = u[11];
+    let psi = u[12];
 
     /* Approximately update the universal eccentric anomaly. */
     psi += (date - t) * sla.gcon / r0;
 
     /* Time from reference epoch to date (in Canonical Days: a canonical
      *  day is 58.1324409... days, defined as 1/GCON). */
-    var dt = (date - t0) * sla.gcon;
+    let dt = (date - t0) * sla.gcon;
 
     /* Refine the universal eccentric anomaly, psi. */
-    var nit = 1;
-    var w = 1;
-    var tol = 0;
-    var n;
-    var psj;
-    var psj2;
-    var beta;
-    var s3;
-    var s2;
-    var s1;
-    var s0;
-    var ff;
-    var r;
-    var flast;
-    var plast;
+    let nit = 1;
+    let w = 1;
+    let tol = 0;
+    let n;
+    let psj;
+    let psj2;
+    let beta;
+    let s3;
+    let s2;
+    let s1;
+    let s0;
+    let ff;
+    let r;
+    let flast;
+    let plast;
     while (Math.abs(w) > tol) {
         /* Form half angles until BETA small enough. */
         n = 0;
@@ -2786,9 +2799,9 @@ sla.ue2pv = function (date, u) {
         beta = alpha * psj2;
         while (Math.abs(beta) > 0.7) {
             n += 1;
-            beta /= 4;
-            psj /= 2;
-            psj2 /= 4;
+            beta = beta / 4;
+            psj = psj / 2;
+            psj2 = psj2 / 4;
         }
         /* Calculate Universal Variables S0,S1,S2,S3 by nested series. */
         s3 = psj * psj2 * ((((((beta / 210 + 1) * beta / 156 + 1) *
@@ -2848,12 +2861,12 @@ sla.ue2pv = function (date, u) {
 
     /* Project the position and velocity vectors (scaling velocity to AU/s). */
     w = cm * s2;
-    var f = 1 - w / r0;
-    var g = dt - cm * s3;
-    var fd = -cm * s1 / (r0 * r);
-    var gd = 1 - w / r;
-    var i;
-    var pv = [];
+    let f = 1 - w / r0;
+    let g = dt - cm * s3;
+    let fd = -cm * s1 / (r0 * r);
+    let gd = 1 - w / r;
+    let i;
+    let pv = [];
     for (i = 0; i < 3; i += 1) {
         pv[i] = p0[i] * f + v0[i] * g;
         pv[i + 3] = sla.cd2s * (p0[i] * fd + v0[i] * gd);
@@ -2908,30 +2921,30 @@ sla.ue2pv = function (date, u) {
  */
 sla.pv2ue = function (pv, date, pmass) {
     "use strict";
-    var rmin = 1e-3;
-    var vmin = 1e-3;
+    let rmin = 1e-3;
+    let vmin = 1e-3;
 
     /* Reference epoch. */
-    var t0 = date;
+    let t0 = date;
 
     /* Combined mass (mu=M+m). */
     if (pmass < 0) {
         throw new RangeError("Illegal PMASS (j=-1).");
     }
-    var cm = 1 + pmass;
+    let cm = 1 + pmass;
 
     /* Unpack the state vector, expressing velocity in AU per canonical day. */
-    var x = pv[0];
-    var y = pv[1];
-    var z = pv[2];
-    var xd = pv[3] / sla.cd2s;
-    var yd = pv[4] / sla.cd2s;
-    var zd = pv[5] / sla.cd2s;
+    let x = pv[0];
+    let y = pv[1];
+    let z = pv[2];
+    let xd = pv[3] / sla.cd2s;
+    let yd = pv[4] / sla.cd2s;
+    let zd = pv[5] / sla.cd2s;
 
     /* Heliocentric distance, and speed. */
-    var r = Math.sqrt(x * x + y * y + z * z);
-    var v2 = xd * xd + yd * yd + zd * zd;
-    var v = Math.sqrt(v2);
+    let r = Math.sqrt(x * x + y * y + z * z);
+    let v2 = xd * xd + yd * yd + zd * zd;
+    let v = Math.sqrt(v2);
 
     /* Reject unreasonably small values. */
     if (r < rmin) {
@@ -2942,10 +2955,10 @@ sla.pv2ue = function (pv, date, pmass) {
     }
 
     /* Total energy of the orbit. */
-    var alpha = v2 - 2 * cm / r;
+    let alpha = v2 - 2 * cm / r;
 
     /* Outward component of velocity. */
-    var rdv = x * xd + y * yd + z * zd;
+    let rdv = x * xd + y * yd + z * zd;
 
     /* Construct the universal-element set. */
     return [cm, alpha, t0, x, y, z, xd, yd, zd, r, rdv, t0, 0];
@@ -2977,7 +2990,8 @@ sla.pv2ue = function (pv, date, pmass) {
  *    - JFORM=1, suitable for the major planets:
  *    - JFORM=2, suitable for minor planets:
  *    - JFORM=3, suitable for comets:
- *    Unused elements (DM for JFORM=2, AORL and DM for JFORM=3) are not accessed.
+ *    Unused elements (DM for JFORM=2, AORL and DM for JFORM=3) are not
+ *    accessed.
  * 4. Each of the three element sets defines an unperturbed heliocentric orbit.
  *    For a given epoch of observation, the position of the body in its orbit
  *    can be predicted from these elements, which are called *osculating
@@ -3052,9 +3066,9 @@ sla.planet = function (date, np) {
     if (np < 1 || np > 9) {
         throw new RangeError("Unknown planet given as argument to planet.");
     }
-    var t;
-    var j;
-    var dl;
+    let t;
+    let j;
+    let dl;
     /* Separate algorithms for Pluto and the rest. */
     if (np !== 9) {
         /* Mercury through Neptune */
@@ -3067,25 +3081,25 @@ sla.planet = function (date, np) {
         }
 
         /* Compute the mean elements. */
-        var np3 = (np - 1) * 3; // First index
-        var da = sla.a[np3] + (sla.a[np3 + 1] + sla.a[np3 + 2] * t) * t;
+        let np3 = (np - 1) * 3; // First index
+        let da = sla.a[np3] + (sla.a[np3 + 1] + sla.a[np3 + 2] * t) * t;
         dl = (3600 * sla.dlm[np3] + (sla.dlm[np3 + 1] + sla.dlm[np3 + 2] *
                 t) * t) * sla.das2r;
-        var de = sla.e[np3] + (sla.e[np3 + 1] + sla.e[np3 + 2] * t) * t;
-        var dpe = ((3600 * sla.pi[np3] + (sla.pi[np3 + 1] + sla.pi[np3 + 2] *
+        let de = sla.e[np3] + (sla.e[np3 + 1] + sla.e[np3 + 2] * t) * t;
+        let dpe = ((3600 * sla.pi[np3] + (sla.pi[np3 + 1] + sla.pi[np3 + 2] *
                 t) * t) * sla.das2r) % sla.d2pi;
-        var di = (3600 * sla.dinc[np3] + (sla.dinc[np3 + 1] +
+        let di = (3600 * sla.dinc[np3] + (sla.dinc[np3 + 1] +
                 sla.dinc[np3 + 2] * t) * t) * sla.das2r;
-        var dom = ((3600 * sla.omega[np3] + (sla.omega[np3 + 1] +
+        let dom = ((3600 * sla.omega[np3] + (sla.omega[np3 + 1] +
                 sla.omega[np3 + 2] * t) * t) * sla.das2r) % sla.d2pi;
 
         /* Apply the trigonometric terms. */
-        var dmu = 0.35953620 * t;
-        var arga;
-        var argl;
-        var nj;
+        let dmu = 0.35953620 * t;
+        let arga;
+        let argl;
+        let nj;
         np3 = (np - 1) * 9;
-        var nq3 = (np - 1) * 10;
+        let nq3 = (np - 1) * 10;
         for (j = 0; j < 8; j += 1) {
             arga = sla.dkp[np3 + j] * dmu;
             argl = sla.dkq[nq3 + j] * dmu;
@@ -3107,7 +3121,7 @@ sla.planet = function (date, np) {
         dl %= sla.d2pi;
 
         /* Daily motion */
-        var dm = sla.gcon * Math.sqrt((1 + 1 / sla.amas[np - 1]) /
+        let dm = sla.gcon * Math.sqrt((1 + 1 / sla.amas[np - 1]) /
                 (da * da * da));
         /* Make the prediction */
         return sla.planel(date, 1, date, di, dom, dpe, da, de, dl, dm);
@@ -3122,25 +3136,25 @@ sla.planet = function (date, np) {
         }
 
         /* Fundamental arguments (radians) */
-        var dj = (sla.dj0 + sla.djd * t) * sla.d2r;
-        var ds = (sla.ds0 + sla.dsd * t) * sla.d2r;
-        var dp = (sla.dp0 + sla.dpd * t) * sla.d2r;
+        let dj = (sla.dj0 + sla.djd * t) * sla.d2r;
+        let ds = (sla.ds0 + sla.dsd * t) * sla.d2r;
+        let dp = (sla.dp0 + sla.dpd * t) * sla.d2r;
 
         /* Initialize coefficients and derivatives */
-        var wlbr = [0, 0, 0];
-        var wlbrd = [0, 0, 0];
+        let wlbr = [0, 0, 0];
+        let wlbrd = [0, 0, 0];
 
-        var i;
-        var j3;
-        var wj;
-        var ws;
-        var wp;
-        var al;
-        var ald;
-        var sal;
-        var cal;
-        var ac;
-        var bc;
+        let i;
+        let j3;
+        let wj;
+        let ws;
+        let wp;
+        let al;
+        let ald;
+        let sal;
+        let cal;
+        let ac;
+        let bc;
         /* Term by term through Meeus Table 36.A. */
         for (j = 0; j < 43; j += 1) {
             j3 = j * 3;
@@ -3168,31 +3182,31 @@ sla.planet = function (date, np) {
 
         /* Heliocentric longitude and derivative (radians, radians/sec). */
         dl = (sla.dl0 + sla.dld0 * t + wlbr[0]) * sla.d2r;
-        var dld = (sla.dld0 + wlbrd[0]) * sla.d2r / sla.spc;
+        let dld = (sla.dld0 + wlbrd[0]) * sla.d2r / sla.spc;
 
         /* Heliocentric latitude and derivative (radians, radians/sec). */
-        var db = (sla.db0 + wlbr[1]) * sla.d2r;
-        var dbd = wlbrd[1] * sla.d2r / sla.spc;
+        let db = (sla.db0 + wlbr[1]) * sla.d2r;
+        let dbd = wlbrd[1] * sla.d2r / sla.spc;
 
         /* Heliocentric radius vector and derivative (AU, AU/sec). */
-        var dr = sla.dr0 + wlbr[2];
-        var drd = wlbrd[2] / sla.spc;
+        let dr = sla.dr0 + wlbr[2];
+        let drd = wlbrd[2] / sla.spc;
 
         /*  Functions of latitude, longitude, radius vector. */
-        var sl = Math.sin(dl);
-        var cl = Math.cos(dl);
-        var sb = Math.sin(db);
-        var cb = Math.cos(db);
-        var slcb = sl * cb;
-        var clcb = cl * cb;
+        let sl = Math.sin(dl);
+        let cl = Math.cos(dl);
+        let sb = Math.sin(db);
+        let cb = Math.cos(db);
+        let slcb = sl * cb;
+        let clcb = cl * cb;
 
         /* Heliocentric vector and derivative, J2000 ecliptic and equinox. */
-        var x = dr * clcb;
-        var y = dr * slcb;
-        var z = dr * sb;
-        var xd = drd * clcb - dr * (cl * sb * dbd + slcb * dld);
-        var yd = drd * slcb + dr * (-sl * sb * dbd + clcb * dld);
-        var zd = drd * sb + dr * cb * dbd;
+        let x = dr * clcb;
+        let y = dr * slcb;
+        let z = dr * sb;
+        let xd = drd * clcb - dr * (cl * sb * dbd + slcb * dld);
+        let yd = drd * slcb + dr * (-sl * sb * dbd + clcb * dld);
+        let zd = drd * sb + dr * cb * dbd;
 
         /* Transform to J2000 equator and equinox. */
         return [
@@ -3218,12 +3232,12 @@ sla.planet = function (date, np) {
  */
 sla.pvobs = function (p, h, stl) {
     "use strict";
-    var ret = sla.geoc(p, h);
+    let ret = sla.geoc(p, h);
     /* Functions of ST */
-    var s = Math.sin(stl);
-    var c = Math.cos(stl);
+    let s = Math.sin(stl);
+    let c = Math.cos(stl);
     /* Speed */
-    var v = sla.sr * ret.r;
+    let v = sla.sr * ret.r;
     return [ret.r * c,
             ret.r * s,
             ret.z,
@@ -3242,8 +3256,8 @@ sla.pvobs = function (p, h, stl) {
  *        before AD 979      | Stephenson & Morrison’s 390 BC to AD 948 model
  *        AD 979 to AD 1708  | Stephenson & Morrison’s AD 948 to AD 1600 model
  *        after AD 1708      | McCarthy & Babcock’s post-1650 model
- *    The breakpoints are chosen to ensure continuity: they occur at places where
- *    the adjacent models give the same answer as each other.
+ *    The breakpoints are chosen to ensure continuity: they occur at places
+ *    where the adjacent models give the same answer as each other.
  * 2. The accuracy is modest, with errors of up to 20s during the interval
  *    since 1650, rising to perhaps 30m by 1000 BC. Comparatively accurate
  *    values from AD 1600 are tabulated in the *Astronomical Almanac* (see
@@ -3263,11 +3277,11 @@ sla.pvobs = function (p, h, stl) {
 sla.dt = function (epoch) {
     "use strict";
     /* Centuries since 1800 */
-    var t = (epoch - 1800) / 100;
+    let t = (epoch - 1800) / 100;
     /* Select model */
     if (epoch >= 1708.185161980887) {
         /* Post-1708: use McCarthy & Babcock */
-        var w = t - 0.19;
+        let w = t - 0.19;
         return 5.156 + 13.3066 * w * w;
     } else if (epoch >= 979.0258204760233) {
         /* 979-1708: use Stephenson & Morrison's 948-1600 model */
@@ -3292,18 +3306,17 @@ sla.dt = function (epoch) {
  */
 sla.dmxm = function (a, b) {
     "use strict";
-    var c = [
+    let c = [
         [0, 0, 0],
         [0, 0, 0],
         [0, 0, 0]
     ];
-    var i;
-    var j;
-    var w;
-    var k;
+    let i;
+    let j;
+    let k;
     for (i = 0; i < 3; i += 1) {
         for (j = 0; j < 3; j += 1) {
-            w = 0;
+            let w = 0;
             for (k = 0; k < 3; k += 1) {
                 w += a[i][k] * b[k][j];
             }
@@ -3333,7 +3346,8 @@ sla.epj = function (date) {
  * @param {Number} ep0 - beginning epoch
  * @param {Number} ep1 - ending epoch
  * @returns {Array} 3x3 precession matrix
- * @description Form the matrix of precession between two epochs (IAU 1976, FK5).
+ * @description Form the matrix of precession between two epochs (IAU 1976,
+ *              FK5).
  * 1. The epochs are TDB Julian epochs.
  * 2. The matrix is in the sense:
  *    **v**_1 = **M**⋅**v**_0
@@ -3352,20 +3366,20 @@ sla.epj = function (date) {
  *    is suitable for problems spanning several thousand years.
  * ----------
  * References:
- * 1. Lieske, J.H., 1979. *Astr.Astrophys.* 73, 282; equations 6 & 7, p283. 
+ * 1. Lieske, J.H., 1979. *Astr.Astrophys.* 73, 282; equations 6 & 7, p283.
  * 2. Kaplan, G.H., 1981. *USNO circular no. 163*, p. A2.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss143.html}
  */
 sla.prec = function (ep0, ep1) {
     "use strict";
-    var t0 = (ep0 - 2000) / 100;
-    var t = (ep1 - ep0) / 100;
-    var tas2r = t * sla.das2r;
-    var w = 2306.2181 + (1.39656 - 0.000139 * t0) * t0;
-    var zeta = (w + ((0.30188 - 0.000344 * t0) + 0.017998 * t) * t) * tas2r;
-    var z = (w + ((1.09468 + 0.000066 * t0) + 0.018203 * t) * t) * tas2r;
-    var theta = ((2004.3109 + (-0.85330 - 0.000217 * t0) * t0) +
-            ((-0.42665 - 0.000217 * t0) - 0.041833 * t) * t) * tas2r;
+    let t0 = (ep0 - 2000) / 100;
+    let t = (ep1 - ep0) / 100;
+    let tas2r = t * sla.das2r;
+    let w = 2306.2181 + (1.39656 - 0.000139 * t0) * t0;
+    let zeta = (w + ((0.30188 - 0.000344 * t0) + 0.017998 * t) * t) * tas2r;
+    let z = (w + ((1.09468 + 0.000066 * t0) + 0.018203 * t) * t) * tas2r;
+    let theta = ((2004.3109 + (-0.85330 - 0.000217 * t0) * t0) +
+                ((-0.42665 - 0.000217 * t0) - 0.041833 * t) * t) * tas2r;
     return sla.deuler("ZYZ", -zeta, theta, -z);
 };
 
@@ -3408,12 +3422,12 @@ sla.prenut = function (epoch, date) {
  */
 sla.rdplan = function (date, np, elong, phi) {
     "use strict";
-    var eqrau = [
+    let eqrau = [
         696000, 2439.7, 6051.9, 1738, 3397, 71492,
         60268, 25559, 24764, 1151
     ];
     /* Classify NP */
-    var ip;
+    let ip;
     if (np <= 0 || np > 9 || np === "Sun") {
         ip = 0;
     } else if (np === 1 || np === "Mercury") {
@@ -3439,15 +3453,15 @@ sla.rdplan = function (date, np, elong, phi) {
     }
 
     /* Approximate local ST */
-    var stl = sla.gmst(date - sla.dt(sla.epj(date)) / sla.d2s) + elong;
+    let stl = sla.gmst(date - sla.dt(sla.epj(date)) / sla.d2s) + elong;
     /* Geocentre to Moon (mean of date) */
-    var v = sla.dmoon(date);
+    let v = sla.dmoon(date);
     /* Nutation to true of date */
-    var rmat = sla.nut(date);
-    var vgm = sla.dmxv(rmat, v.slice(0, 3));
-    var vgm4 = sla.dmxv(rmat, v.slice(3));
+    let rmat = sla.nut(date);
+    let vgm = sla.dmxv(rmat, v.slice(0, 3));
+    let vgm4 = sla.dmxv(rmat, v.slice(3));
     vgm = vgm.concat(vgm4);
-    var i;
+    let i;
     /* Moon? */
     if (ip === 3) {
         /* Yes: geocentre to Moon (true of date) */
@@ -3460,10 +3474,10 @@ sla.rdplan = function (date, np, elong, phi) {
         /* Sun to Earth-Moon Barycentre (J2000) */
         v = sla.planet(date, 3);
         /* Precession and nutation to date */
-        var vse = sla.dmxv(rmat, v.slice(0, 3));
-        var vse4 = sla.dmxv(rmat, v.slice(3));
+        let vse = sla.dmxv(rmat, v.slice(0, 3));
+        let vse4 = sla.dmxv(rmat, v.slice(3));
         vse = vse.concat(vse4);
-        var vsg = [];
+        let vsg = [];
         /* Sun to geocentre (true of date) */
         for (i = 0; i < 6; i += 1) {
             vsg[i] = vse[i] - 0.012150581 * vgm[i];
@@ -3474,8 +3488,8 @@ sla.rdplan = function (date, np, elong, phi) {
                 v[i] = -vsg[i];
             }
         } else {
-            var vsp;
-            var vsp4;
+            let vsp;
+            let vsp4;
             /* No: Sun to Planet (J2000) */
             v = sla.planet(date, ip);
             /* Precession and nutation to date */
@@ -3489,19 +3503,19 @@ sla.rdplan = function (date, np, elong, phi) {
         }
     }
     /* Refer to origin at the observer */
-    var vg0 = sla.pvobs(phi, 0, stl);
+    let vg0 = sla.pvobs(phi, 0, stl);
     for (i = 0; i < 6; i += 1) {
         v[i] -= vg0[i];
     }
 
     /* Geometric distance (AU) */
-    var dx = v[0];
-    var dy = v[1];
-    var dz = v[2];
-    var r = Math.sqrt(dx * dx + dy * dy + dz * dz);
+    let dx = v[0];
+    let dy = v[1];
+    let dz = v[2];
+    let r = Math.sqrt(dx * dx + dy * dy + dz * dz);
 
     /* Light time (sec) */
-    var tl = sla.tau * r;
+    let tl = sla.tau * r;
 
     /* Correct position for planetary aberration */
     for (i = 0; i < 3; i += 1) {
@@ -3509,13 +3523,13 @@ sla.rdplan = function (date, np, elong, phi) {
     }
 
     /* To RA,Dec */
-    var ret = sla.dcc2s(v);
+    let ret = sla.dcc2s(v);
 
     /* Angular diametre (radians) */
     return {
-        ra: sla.dranrm(ret.a),
-        dec: ret.b,
-        diam: 2 * Math.asin(eqrau[ip] / (r * sla.aukm))
+        "ra": sla.dranrm(ret.a),
+        "dec": ret.b,
+        "diam": 2 * Math.asin(eqrau[ip] / (r * sla.aukm))
     };
 };
 
@@ -3529,14 +3543,14 @@ sla.rdplan = function (date, np, elong, phi) {
  */
 sla.atmt = function (r0, t0, alpha, gamm2, delm2, c1, c2, c3, c4, c5, c6, r) {
     "use strict";
-    var t = Math.max(Math.min(t0 - alpha * (r - r0), 320), 100);
-    var tt0 = t / t0;
-    var tt0gm2 = Math.pow(tt0, gamm2);
-    var tt0dm2 = Math.pow(tt0, delm2);
+    let t = Math.max(Math.min(t0 - alpha * (r - r0), 320), 100);
+    let tt0 = t / t0;
+    let tt0gm2 = Math.pow(tt0, gamm2);
+    let tt0dm2 = Math.pow(tt0, delm2);
     return {
-        t: t,
-        dn: 1 + (c1 * tt0gm2 - (c2 - c5 / t) * tt0dm2) * tt0,
-        rdndr: r * (-c3 * tt0gm2 + (c4 - c6 / tt0) * tt0dm2)
+        "t": t,
+        "dn": 1 + (c1 * tt0gm2 - (c2 - c5 / t) * tt0dm2) * tt0,
+        "rdndr": r * (-c3 * tt0gm2 + (c4 - c6 / tt0) * tt0dm2)
     };
 };
 
@@ -3549,11 +3563,11 @@ sla.atmt = function (r0, t0, alpha, gamm2, delm2, c1, c2, c3, c4, c5, c6, r) {
  */
 sla.atms = function (rt, tt, dnt, gamal, r) {
     "use strict";
-    var b = gamal / tt;
-    var w = (dnt - 1) * Math.exp(-b * (r - rt));
+    let b = gamal / tt;
+    let w = (dnt - 1) * Math.exp(-b * (r - rt));
     return {
-        dn: 1 + w,
-        rdndr: -r * b * w
+        "dn": 1 + w,
+        "rdndr": -r * b * w
     };
 };
 
@@ -3575,149 +3589,149 @@ sla.atms = function (rt, tt, dnt, gamal, r) {
 sla.refro = function (zobs, hm, tdk, pmb, rh, wl, phi, tlr, eps) {
     "use strict";
     /* 93 degrees in radians */
-    var d93 = 1.623156204;
+    let d93 = 1.623156204;
     /* Universal gas constant */
-    var gcr = 8314.32;
+    let gcr = 8314.32;
     /* Molecular weight of dry air */
-    var dmd = 28.9644;
+    let dmd = 28.9644;
     /* Molecular weight of water vapour */
-    var dmw = 18.0152;
+    let dmw = 18.0152;
     /* Mean Earth radius (metre) */
-    var s = 6378120;
+    let s = 6378120;
     /* Exponent of temperature dependence of water vapour pressure */
-    var delta = 18.36;
+    let delta = 18.36;
     /* Height of tropopause (metre) */
-    var ht = 11000;
+    let ht = 11000;
     /* Upper limit for refractive effects (metre) */
-    var hs = 80000;
+    let hs = 80000;
     /* Numerical integration: maximum number of strips. */
-    var ismax = 16384;
+    let ismax = 16384;
 
     /* The refraction integrand */
-    var refi = function (dn, rdndr) {
+    let refi = function (dn, rdndr) {
         return rdndr / (dn + rdndr);
     };
 
     /* Transform ZOBS into the normal range. */
-    var zobs1 = sla.drange(zobs);
-    var zobs2 = Math.min(Math.abs(zobs1), d93);
+    let zobs1 = sla.drange(zobs);
+    let zobs2 = Math.min(Math.abs(zobs1), d93);
 
     /* Keep other arguments within safe bounds. */
-    var hmok = Math.min(Math.max(hm, -1e3), hs);
-    var tdkok = Math.min(Math.max(tdk, 100), 500);
-    var pmbok = Math.min(Math.max(pmb, 0), 10000);
-    var rhok = Math.min(Math.max(rh, 0), 1);
-    var wlok = Math.max(wl, 0.1);
-    var alpha = Math.min(Math.max(Math.abs(tlr), 0.001), 0.01);
+    let hmok = Math.min(Math.max(hm, -1e3), hs);
+    let tdkok = Math.min(Math.max(tdk, 100), 500);
+    let pmbok = Math.min(Math.max(pmb, 0), 10000);
+    let rhok = Math.min(Math.max(rh, 0), 1);
+    let wlok = Math.max(wl, 0.1);
+    let alpha = Math.min(Math.max(Math.abs(tlr), 0.001), 0.01);
 
     /* Tolerance for iteration. */
-    var tol = Math.min(Math.max(Math.abs(eps), 1e-12), 0.1) / 2;
+    let tol = Math.min(Math.max(Math.abs(eps), 1e-12), 0.1) / 2;
 
     /* Decide whether optical/IR or radio case - switch at 100 microns. */
-    var optic = wlok <= 100;
+    let optic = wlok <= 100;
 
     /* Set up model atmosphere parameters defined at the observer. */
-    var wlsq = wlok * wlok;
-    var gb = 9.784 * (1 - 0.0026 * Math.cos(phi + phi) - 0.00000028 * hmok);
-    var a;
+    let wlsq = wlok * wlok;
+    let gb = 9.784 * (1 - 0.0026 * Math.cos(phi + phi) - 0.00000028 * hmok);
+    let a;
     if (optic) {
-        a = (287.6155 + (1.62887 + 0.01360 / wlsq) / wlsq)
-                * 273.15e-6 / 1013.25;
+        a = (287.6155 + (1.62887 + 0.01360 / wlsq) / wlsq) *
+            273.15e-6 / 1013.25;
     } else {
         a = 77.6890e-6;
     }
-    var gamal = (gb * dmd) / gcr;
-    var gamma = gamal / alpha;
-    var gamm2 = gamma - 2;
-    var delm2 = delta - 2;
-    var tdc = tdkok - 273.15;
-    var psat = Math.pow(10, (0.7859 + 0.03477 * tdc) / (1 + 0.00412 * tdc) *
+    let gamal = (gb * dmd) / gcr;
+    let gamma = gamal / alpha;
+    let gamm2 = gamma - 2;
+    let delm2 = delta - 2;
+    let tdc = tdkok - 273.15;
+    let psat = Math.pow(10, (0.7859 + 0.03477 * tdc) / (1 + 0.00412 * tdc) *
             (1 + pmbok * (4.5e-6 + 6e-10 * tdc * tdc)));
-    var pw0 = 0;
+    let pw0 = 0;
     if (pmbok > 0) {
         pw0 = rhok * psat / (1 - (1 - rhok) * psat / pmbok);
     }
-    var w = pw0 * (1 - dmw / dmd) * gamma / (delta - gamma);
-    var c1 = a * (pmbok + w) / tdkok;
-    var c2;
+    let w = pw0 * (1 - dmw / dmd) * gamma / (delta - gamma);
+    let c1 = a * (pmbok + w) / tdkok;
+    let c2;
     if (optic) {
         c2 = (a * w + 11.2684e-6 * pw0) / tdkok;
     } else {
         c2 = (a * w + 6.3938e-6 * pw0) / tdkok;
     }
-    var c3 = (gamma - 1) * alpha * c1 / tdkok;
-    var c4 = (delta - 1) * alpha * c2 / tdkok;
-    var c5 = 0;
-    var c6 = 0;
+    let c3 = (gamma - 1) * alpha * c1 / tdkok;
+    let c4 = (delta - 1) * alpha * c2 / tdkok;
+    let c5 = 0;
+    let c6 = 0;
     if (!optic) {
         c5 = 375463e-6 * pw0 / tdkok;
         c6 = c5 * delm2 * alpha / (tdkok * tdkok);
     }
 
     /* Conditions at the observer. */
-    var r0 = s + hmok;
-    var ret = sla.atmt(r0, tdkok, alpha, gamm2, delm2,
+    let r0 = s + hmok;
+    let ret = sla.atmt(r0, tdkok, alpha, gamm2, delm2,
             c1, c2, c3, c4, c5, c6, r0);
-    var dn0 = ret.dn;
-    var rdndr0 = ret.rdndr;
-    var sk0 = dn0 * r0 * Math.sin(zobs2);
-    var f0 = refi(dn0, rdndr0);
+    let dn0 = ret.dn;
+    let rdndr0 = ret.rdndr;
+    let sk0 = dn0 * r0 * Math.sin(zobs2);
+    let f0 = refi(dn0, rdndr0);
 
     /* Conditions in the troposphere at the tropopause. */
-    var rt = s + Math.max(ht, hmok);
+    let rt = s + Math.max(ht, hmok);
     ret = sla.atmt(r0, tdkok, alpha, gamm2, delm2,
             c1, c2, c3, c4, c5, c6, rt);
-    var tt = ret.t;
-    var dnt = ret.dn;
-    var rdndrt = ret.rdndr;
-    var sine = sk0 / (rt * dnt);
-    var zt = Math.atan2(sine, Math.sqrt(Math.max(1 - sine * sine, 0)));
-    var ft = refi(dnt, rdndrt);
+    let tt = ret.t;
+    let dnt = ret.dn;
+    let rdndrt = ret.rdndr;
+    let sine = sk0 / (rt * dnt);
+    let zt = Math.atan2(sine, Math.sqrt(Math.max(1 - sine * sine, 0)));
+    let ft = refi(dnt, rdndrt);
 
     /* Conditions in the stratosphere at the tropopause. */
     ret = sla.atms(rt, tt, dnt, gamal, rt);
-    var dnts = ret.dn;
-    var rdndrp = ret.rdndr;
+    let dnts = ret.dn;
+    let rdndrp = ret.rdndr;
     sine = sk0 / (rt * dnts);
-    var zts = Math.atan2(sine, Math.sqrt(Math.max(1 - sine * sine, 0)));
-    var fts = refi(dnts, rdndrp);
+    let zts = Math.atan2(sine, Math.sqrt(Math.max(1 - sine * sine, 0)));
+    let fts = refi(dnts, rdndrp);
 
     /* Conditions at the stratosphere limit. */
-    var rs = s + hs;
+    let rs = s + hs;
     ret = sla.atms(rt, tt, dnt, gamal, rs);
-    var dns = ret.dn;
-    var rdndrs = ret.rdndr;
+    let dns = ret.dn;
+    let rdndrs = ret.rdndr;
     sine = sk0 / (rs * dns);
-    var zs = Math.atan2(sine, Math.sqrt(Math.max(1 - sine * sine, 0)));
-    var fs = refi(dns, rdndrs);
+    let zs = Math.atan2(sine, Math.sqrt(Math.max(1 - sine * sine, 0)));
+    let fs = refi(dns, rdndrs);
 
     /* Variable initialization to avoid compiler warning. */
-    var reft = 0;
+    let reft = 0;
 
     /* Integrate the refraction integral in two parts;  first in the
      * troposphere (K=1), then in the stratosphere (K=2). */
-    var k;
-    var refold;
-    var is;
-    var z0;
-    var zrange;
-    var fb;
-    var ff;
-    var fe;
-    var n;
-    var loop;
-    var dn;
-    var rdndr;
-    var h;
-    var r;
-    var i;
-    var sz;
-    var rg;
-    var dr;
-    var j;
-    var f;
-    var refp;
-    var ref;
+    let k;
+    let refold;
+    let is;
+    let z0;
+    let zrange;
+    let fb;
+    let ff;
+    let fe;
+    let n;
+    let loop;
+    let dn;
+    let rdndr;
+    let h;
+    let r;
+    let i;
+    let sz;
+    let rg;
+    let dr;
+    let j;
+    let f;
+    let refp;
+    let ref;
 
     for (k = 1; k <= 2; k += 1) {
         /* Initialize previous refraction to ensure at least two iterations. */
@@ -3863,17 +3877,17 @@ sla.refro = function (zobs, hm, tdk, pmb, rh, wl, phi, tlr, eps) {
 sla.refco = function (hm, tdk, pmb, rh, wl, phi, tlr, eps) {
     "use strict";
     /* Sample zenith distances: arctan(1) and arctan(4) */
-    var atn1 = 0.7853981633974483;
-    var atn4 = 1.325817663668033;
+    let atn1 = 0.7853981633974483;
+    let atn4 = 1.325817663668033;
 
     /* Determine refraction for the two sample zenith distances */
-    var r1 = sla.refro(atn1, hm, tdk, pmb, rh, wl, phi, tlr, eps);
-    var r2 = sla.refro(atn4, hm, tdk, pmb, rh, wl, phi, tlr, eps);
+    let r1 = sla.refro(atn1, hm, tdk, pmb, rh, wl, phi, tlr, eps);
+    let r2 = sla.refro(atn4, hm, tdk, pmb, rh, wl, phi, tlr, eps);
 
     /* Solve for refraction constants */
     return {
-        refa: (64 * r1 - r2) / 60,
-        refb: (r2 - 4 * r1) / 60
+        "refa": (64 * r1 - r2) / 60,
+        "refb": (r2 - 4 * r1) / 60
     };
 };
 
@@ -3891,31 +3905,31 @@ sla.refco = function (hm, tdk, pmb, rh, wl, phi, tlr, eps) {
 sla.refz = function (zu, refa, refb) {
     "use strict";
     /* @constant {Number} Largest usable ZD (deg) */
-    var d93 = 93;
+    let d93 = 93;
 
     /* Coefficients for high ZD model (used beyond ZD 83 deg) */
-    var c1 = 0.55445;
-    var c2 = -0.01133;
-    var c3 = 0.00202;
-    var c4 = 0.28385;
-    var c5 = 0.02390;
+    let c1 = 0.55445;
+    let c2 = -0.01133;
+    let c3 = 0.00202;
+    let c4 = 0.28385;
+    let c5 = 0.02390;
 
     /* ZD at which one model hands over to the other (radians) */
-    var z83 = 83 / sla.r2d;
+    let z83 = 83 / sla.r2d;
 
     /* High-ZD-model prediction (deg) for that point */
-    var ref83 = (c1 + c2 * 7 + c3 * 49) / (1 + c4 * 7 + c5 * 49);
+    let ref83 = (c1 + c2 * 7 + c3 * 49) / (1 + c4 * 7 + c5 * 49);
 
     /* Perform calculations for ZU or 83 deg, whichever is smaller */
-    var zu1 = Math.min(zu, z83);
+    let zu1 = Math.min(zu, z83);
 
     /* Functions of zd */
-    var zl = zu1;
-    var s = Math.sin(zl);
-    var c = Math.cos(zl);
-    var t = s / c;
-    var tsq = t * t;
-    var tcu = t * tsq;
+    let zl = zu1;
+    let s = Math.sin(zl);
+    let c = Math.cos(zl);
+    let t = s / c;
+    let tsq = t * t;
+    let tcu = t * tsq;
 
     /* Refracted ZD (mathematically to better than 1 mas at 70 deg) */
     zl -= (refa * t + refb * tcu) / (1 + (refa + 3 * refb * tsq) / (c * c));
@@ -3926,13 +3940,13 @@ sla.refz = function (zu, refa, refb) {
     t = s / c;
     tsq = t * t;
     tcu = t * tsq;
-    var ref = zu1 - zl + (zl - zu1 + refa * t + refb * tcu) /
+    let ref = zu1 - zl + (zl - zu1 + refa * t + refb * tcu) /
             (1 + (refa + 3 * refb * tsq) / (c * c));
 
     /* Special handling for large ZU */
     if (zu > zu1) {
-        var e = 90 - Math.min(d93, zu * sla.r2d);
-        var e2 = e * e;
+        let e = 90 - Math.min(d93, zu * sla.r2d);
+        let e2 = e * e;
         ref = (ref / ref83) * (c1 + c2 * e + c3 * e2) /
                 (1 + c4 * e + c5 * e2);
     }
@@ -3978,20 +3992,20 @@ sla.refz = function (zu, refa, refb) {
 sla.evp = function (date, deqx) {
     "use strict";
     /* Control parameter IDEQ, and time arguments */
-    var ideq = 0;
+    let ideq = 0;
     if (deqx > 0) {
         ideq = 1;
     }
-    var dt = (date - 15019.5) / 36525;
-    var dtsq = dt * dt;
+    let dt = (date - 15019.5) / 36525;
+    let dtsq = dt * dt;
 
     /* Values of all elements for the instant DATE */
-    var forbel = [];
-    var sorbel = [];
-    var k;
-    var dlocal;
-    var k3;
-    var dml;
+    let forbel = [];
+    let sorbel = [];
+    let k;
+    let dlocal;
+    let k3;
+    let dml;
     for (k = 0; k < 8; k += 1) {
         k3 = k * 3;
         dlocal = (sla.dcfel[k3] + dt * sla.dcfel[k3 + 1] + dtsq *
@@ -4002,15 +4016,15 @@ sla.evp = function (date, deqx) {
             forbel[k - 1] = dlocal;
         }
     }
-    var deps = (sla.dceps[0] + dt * sla.dceps[1] + dtsq * sla.dceps[2]) %
+    let deps = (sla.dceps[0] + dt * sla.dceps[1] + dtsq * sla.dceps[2]) %
                sla.d2pi;
     for (k = 0; k < 17; k += 1) {
         k3 = k * 3;
         sorbel[k] = (sla.ccsel[k3] + dt * sla.ccsel[k3 + 1] +
                 dtsq * sla.ccsel[k3 + 2]) % sla.d2pi;
     }
-    var sn = [];
-    var a;
+    let sn = [];
+    let a;
     /* Secular perturbations in longitude */
     for (k = 0; k < 4; k += 1) {
         k3 = k * 3;
@@ -4018,14 +4032,14 @@ sla.evp = function (date, deqx) {
         sn[k] = Math.sin(a);
     }
     /* Periodic perturbations of the EMB (Earth-Moon barycentre) */
-    var pertl = sla.ccsec[0] * sn[0] + sla.ccsec[3] * sn[1] +
+    let pertl = sla.ccsec[0] * sn[0] + sla.ccsec[3] * sn[1] +
             (sla.ccsec[6] + dt * sla.ccsec3) * sn[2] + sla.ccsec[9] * sn[3];
-    var pertld = 0;
-    var pertr = 0;
-    var pertrd = 0;
-    var k5;
-    var cosa;
-    var sina;
+    let pertld = 0;
+    let pertr = 0;
+    let pertrd = 0;
+    let k5;
+    let cosa;
+    let sina;
     for (k = 0; k < 15; k += 1) {
         k3 = k * 2;
         k5 = k * 5;
@@ -4043,38 +4057,38 @@ sla.evp = function (date, deqx) {
     }
 
     /* Elliptic part of the motion of the EMB */
-    var e = sorbel[0];
-    var g = forbel[0];
-    var esq = e * e;
-    var dparam = 1 - esq;
-    var twoe = e + e;
-    var twog = g + g;
-    var phi = twoe * ((1 - esq * 0.125) * Math.sin(g) + e * 0.625 *
+    let e = sorbel[0];
+    let g = forbel[0];
+    let esq = e * e;
+    let dparam = 1 - esq;
+    let twoe = e + e;
+    let twog = g + g;
+    let phi = twoe * ((1 - esq * 0.125) * Math.sin(g) + e * 0.625 *
             Math.sin(twog) + esq * 0.54166667 * Math.sin(g + twog));
-    var f = g + phi;
-    var sinf = Math.sin(f);
-    var cosf = Math.cos(f);
-    var dpsi = dparam / (1 + (e * cosf));
-    var phid = twoe * sla.ccsgd * ((1 + esq * 1.5) * cosf + e *
+    let f = g + phi;
+    let sinf = Math.sin(f);
+    let cosf = Math.cos(f);
+    let dpsi = dparam / (1 + (e * cosf));
+    let phid = twoe * sla.ccsgd * ((1 + esq * 1.5) * cosf + e *
             (1.25 - sinf * sinf * 0.5));
-    var psid = sla.ccsgd * e * sinf / Math.sqrt(dparam);
+    let psid = sla.ccsgd * e * sinf / Math.sqrt(dparam);
 
     /* Perturbed heliocentric motion of the EMB */
-    var d1pdro = 1 + pertr;
-    var drd = d1pdro * (psid + dpsi * pertrd);
-    var drld = d1pdro * dpsi * (sla.dcsld + phid + pertld);
-    var dtl = (dml + phi + pertl) % sla.d2pi;
-    var dsinls = Math.sin(dtl);
-    var dcosls = Math.cos(dtl);
-    var dxhd = drd * dcosls - drld * dsinls;
-    var dyhd = drd * dsinls + drld * dcosls;
+    let d1pdro = 1 + pertr;
+    let drd = d1pdro * (psid + dpsi * pertrd);
+    let drld = d1pdro * dpsi * (sla.dcsld + phid + pertld);
+    let dtl = (dml + phi + pertl) % sla.d2pi;
+    let dsinls = Math.sin(dtl);
+    let dcosls = Math.cos(dtl);
+    let dxhd = drd * dcosls - drld * dsinls;
+    let dyhd = drd * dsinls + drld * dcosls;
 
     /* Influence of eccentricity, evection and variation on the
      * geocentric motion of the Moon */
     pertl = 0;
     pertld = 0;
-    var pertp = 0;
-    var pertpd = 0;
+    let pertp = 0;
+    let pertpd = 0;
     for (k = 0; k < 3; k += 1) {
         k3 = k * 2;
         k5 = k * 4;
@@ -4088,25 +4102,25 @@ sla.evp = function (date, deqx) {
     }
 
     /* Heliocentric motion of the Earth */
-    var tl = forbel[1] + pertl;
-    var sinlm = Math.sin(tl);
-    var coslm = Math.cos(tl);
-    var sigma = sla.cckm / (1 + pertp);
+    let tl = forbel[1] + pertl;
+    let sinlm = Math.sin(tl);
+    let coslm = Math.cos(tl);
+    let sigma = sla.cckm / (1 + pertp);
     a = sigma * (sla.ccmld + pertld);
-    var b = sigma * pertpd;
+    let b = sigma * pertpd;
     dxhd += a * sinlm + b * coslm;
     dyhd += -a * coslm + b * sinlm;
-    var dzhd = -sigma * sla.ccfdi * Math.cos(forbel[2]);
+    let dzhd = -sigma * sla.ccfdi * Math.cos(forbel[2]);
 
     /* Barycentric motion of the Earth */
-    var dxbd = dxhd * sla.dc1mme;
-    var dybd = dyhd * sla.dc1mme;
-    var dzbd = dzhd * sla.dc1mme;
-    var sinlp = [];
-    var coslp = [];
-    var plon;
-    var pomg;
-    var pecc;
+    let dxbd = dxhd * sla.dc1mme;
+    let dybd = dyhd * sla.dc1mme;
+    let dzbd = dzhd * sla.dc1mme;
+    let sinlp = [];
+    let coslp = [];
+    let plon;
+    let pomg;
+    let pecc;
     for (k = 0; k < 4; k += 1) {
         plon = forbel[k + 3];
         pomg = sorbel[k + 1];
@@ -4121,26 +4135,26 @@ sla.evp = function (date, deqx) {
     }
 
     /* Transition to mean equator of date */
-    var dcosep = Math.cos(deps);
-    var dsinep = Math.sin(deps);
-    var dyahd = dcosep * dyhd - dsinep * dzhd;
-    var dzahd = dsinep * dyhd + dcosep * dzhd;
-    var dyabd = dcosep * dybd - dsinep * dzbd;
-    var dzabd = dsinep * dybd + dcosep * dzbd;
+    let dcosep = Math.cos(deps);
+    let dsinep = Math.sin(deps);
+    let dyahd = dcosep * dyhd - dsinep * dzhd;
+    let dzahd = dsinep * dyhd + dcosep * dzhd;
+    let dyabd = dcosep * dybd - dsinep * dzbd;
+    let dzabd = dsinep * dybd + dcosep * dzbd;
 
     /* Heliocentric coordinates of the Earth */
-    var dr = dpsi * d1pdro;
-    var flatm = sla.ccim * Math.sin(forbel[2]);
+    let dr = dpsi * d1pdro;
+    let flatm = sla.ccim * Math.sin(forbel[2]);
     a = sigma * Math.cos(flatm);
-    var dxh = dr * dcosls - a * coslm;
-    var dyh = dr * dsinls - a * sinlm;
-    var dzh = -sigma * Math.sin(flatm);
+    let dxh = dr * dcosls - a * coslm;
+    let dyh = dr * dsinls - a * sinlm;
+    let dzh = -sigma * Math.sin(flatm);
 
     /* Barycentric coordinates of the Earth */
-    var dxb = dxh * sla.dc1mme;
-    var dyb = dyh * sla.dc1mme;
-    var dzb = dzh * sla.dc1mme;
-    var flat;
+    let dxb = dxh * sla.dc1mme;
+    let dyb = dyh * sla.dc1mme;
+    let dzb = dzh * sla.dc1mme;
+    let flat;
     for (k = 0; k < 4; k += 1) {
         flat = sorbel[k + 13] * Math.sin(forbel[k + 3] - sorbel[k + 5]);
         a = sla.ccpam[k] * (1 - sorbel[k + 9] *
@@ -4152,30 +4166,30 @@ sla.evp = function (date, deqx) {
     }
 
     /* Transition to mean equator of date */
-    var dyah = dcosep * dyh - dsinep * dzh;
-    var dzah = dsinep * dyh + dcosep * dzh;
-    var dyab = dcosep * dyb - dsinep * dzb;
-    var dzab = dsinep * dyb + dcosep * dzb;
+    let dyah = dcosep * dyh - dsinep * dzh;
+    let dzah = dsinep * dyh + dcosep * dzh;
+    let dyab = dcosep * dyb - dsinep * dzb;
+    let dzab = dsinep * dyb + dcosep * dzb;
 
     /* Copy result components into vectors, correcting for FK4 equinox */
-    var depj = sla.epj(date);
-    var deqcor = sla.ds2r * (0.035 + 0.00085 * (depj - sla.b1950));
-    var dvh = [
+    let depj = sla.epj(date);
+    let deqcor = sla.ds2r * (0.035 + 0.00085 * (depj - sla.b1950));
+    let dvh = [
         dxhd - deqcor * dyahd,
         dyahd + deqcor * dxhd,
         dzahd
     ];
-    var dvb = [
+    let dvb = [
         dxbd - deqcor * dyabd,
         dyabd + deqcor * dxbd,
         dzabd
     ];
-    var dph = [
+    let dph = [
         dxh - deqcor * dyah,
         dyah + deqcor * dxh,
         dzah
     ];
-    var dpb = [
+    let dpb = [
         dxb - deqcor * dyab,
         dyab + deqcor * dxb,
         dzab
@@ -4184,7 +4198,7 @@ sla.evp = function (date, deqx) {
     /* Was precession to another equinox requested? */
     if (ideq !== 0) {
         /* Yes: compute precession matrix from MJD DATE to Julian epoch DEQX */
-        var dprema = sla.prec(depj, deqx);
+        let dprema = sla.prec(depj, deqx);
 
         /* Rotate DVH */
         dvh = sla.dmxv(dprema, dvh);
@@ -4199,10 +4213,10 @@ sla.evp = function (date, deqx) {
         dpb = sla.dmxv(dprema, dpb);
     }
     return {
-        dvb: dvb,
-        dpb: dpb,
-        dvh: dvh,
-        dph: dph
+        "dvb": dvb,
+        "dpb": dpb,
+        "dvh": dvh,
+        "dph": dph
     };
 };
 
@@ -4211,15 +4225,15 @@ sla.evp = function (date, deqx) {
  * @param {Array} v - vector
  * @returns {Object} uv - unit vector in direction of V
  *                   vm - modulus of V
- * @description Normalize a 3-vector, also giving the modulus (double precision).
+ * @description Normalize a 3-vector, also giving the modulus.
  * - If the modulus of V is zero, UV is set to zero as well.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss71.html}
  */
 sla.dvn = function (v) {
     "use strict";
-    var w1 = 0;
-    var i;
-    var w2;
+    let w1 = 0;
+    let i;
+    let w2;
     for (i = 0; i < 3; i += 1) {
         w2 = v[i];
         w1 += w2 * w2;
@@ -4231,10 +4245,10 @@ sla.dvn = function (v) {
         w1 = 1;
     }
     return {
-        uv: v.map(function (x) {
+        "uv": v.map(function (x) {
             return x / w1;
         }),
-        vm: w1
+        "vm": w1
     };
 };
 
@@ -4260,31 +4274,31 @@ sla.dvn = function (v) {
  */
 sla.mappa = function (eq, date) {
     "use strict";
-    var amprms = [];
+    let amprms = [];
 
     /* Time interval for proper motion correction */
     amprms[0] = sla.epj(date) - eq;
 
     /* Get Earth barycentric and heliocentric position and velocity */
-    var ret = sla.evp(date, eq);
-    var ebd = ret.dvb;
+    let ret = sla.evp(date, eq);
+    let ebd = ret.dvb;
     amprms[1] = ret.dpb[0];
     amprms[2] = ret.dpb[1];
     amprms[3] = ret.dpb[2];
-    var eh = ret.dph;
+    let eh = ret.dph;
 
     /* Heliocentric direction of earth (normalized) and modulus */
     ret = sla.dvn(eh);
     amprms[4] = ret.uv[0];
     amprms[5] = ret.uv[1];
     amprms[6] = ret.uv[2];
-    var e = ret.vm;
+    let e = ret.vm;
 
     /* Light deflection parameter */
     amprms[7] = sla.gr2 / e;
 
     /* Aberration parameters */
-    var i;
+    let i;
     for (i = 0; i < 3; i += 1) {
         amprms[i + 8] = ebd[i] * sla.tau;
     }
@@ -4292,7 +4306,7 @@ sla.mappa = function (eq, date) {
     amprms[11] = Math.sqrt(1 - ret.vm * ret.vm);
 
     /* Precession/nutation matrix */
-    var p13 = sla.prenut(eq, date);
+    let p13 = sla.prenut(eq, date);
     return amprms.concat(p13[0], p13[1], p13[2]);
 };
 
@@ -4332,14 +4346,14 @@ sla.mappa = function (eq, date) {
  *    the methods of Stumpff. The maximum error is about 0.3 milliarcsecond.
  * ----------
  * References:
- * 1. 1984 *Astronomical Almanac*, pp B39-B41. 
+ * 1. 1984 *Astronomical Almanac*, pp B39-B41.
  * 2. Lederle & Schwan, 1984. *Astr.Astrophys.*, 134, 1-6.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss115.html}
  */
 sla.map = function (rm, dm, pr, pd, px, rv, eq, date) {
     "use strict";
     /* Star-independent parameters */
-    var amprms = sla.mappa(eq, date);
+    let amprms = sla.mappa(eq, date);
     /* Mean to apparent */
     return sla.mapqk(rm, dm, pr, pd, px, rv, amprms);
 };
@@ -4401,31 +4415,31 @@ sla.map = function (rm, dm, pr, pd, px, rv, eq, date) {
 sla.polmo = function (elongm, phim, xp, yp) {
     "use strict";
     /* Site mean longitude and mean geodetic latitude as a Cartesian vector */
-    var sel = Math.sin(elongm);
-    var cel = Math.cos(elongm);
-    var sph = Math.sin(phim);
-    var cph = Math.cos(phim);
+    let sel = Math.sin(elongm);
+    let cel = Math.cos(elongm);
+    let sph = Math.sin(phim);
+    let cph = Math.cos(phim);
 
-    var xm = cel * cph;
-    var ym = sel * cph;
-    var zm = sph;
+    let xm = cel * cph;
+    let ym = sel * cph;
+    let zm = sph;
 
     /* Rotate site vector by polar motion, Y-component then X-component */
-    var sxp = Math.sin(xp);
-    var cxp = Math.cos(xp);
-    var syp = Math.sin(yp);
-    var cyp = Math.cos(yp);
+    let sxp = Math.sin(xp);
+    let cxp = Math.cos(xp);
+    let syp = Math.sin(yp);
+    let cyp = Math.cos(yp);
 
-    var zw = -ym * syp + zm * cyp;
+    let zw = -ym * syp + zm * cyp;
 
-    var xt = xm * cxp - zw * sxp;
-    var yt = ym * cyp + zm * syp;
-    var zt = xm * sxp + zw * cxp;
+    let xt = xm * cxp - zw * sxp;
+    let yt = ym * cyp + zm * syp;
+    let zt = xm * sxp + zw * cxp;
 
     /* Rotate also the geocentric direction of the terrestrial pole (0,0,1) */
-    var xnm = -sxp * cyp;
-    var ynm = syp;
-    var znm = cxp * cyp;
+    let xnm = -sxp * cyp;
+    let ynm = syp;
+    let znm = cxp * cyp;
 
     cph = Math.sqrt(xt * xt + yt * yt);
     if (cph === 0) {
@@ -4435,27 +4449,27 @@ sla.polmo = function (elongm, phim, xp, yp) {
     cel = xt / cph;
 
     /* Return true longitude and true geodetic latitude of site */
-    var elong;
+    let elong;
     if (xt !== 0 || yt !== 0) {
         elong = Math.atan2(yt, xt);
     } else {
         elong = 0;
     }
-    var phi = Math.atan2(zt, cph);
+    let phi = Math.atan2(zt, cph);
 
     /* Return current azimuth of terrestrial pole seen from site position */
-    var xnt = (xnm * cel + ynm * sel) * zt - znm * cph;
-    var ynt = -xnm * sel + ynm * cel;
-    var daz;
+    let xnt = (xnm * cel + ynm * sel) * zt - znm * cph;
+    let ynt = -xnm * sel + ynm * cel;
+    let daz;
     if (xnt !== 0 || ynt !== 0) {
         daz = Math.atan2(-ynt, -xnt);
     } else {
         daz = 0;
     }
     return {
-        elong: elong,
-        phi: phi,
-        daz: daz
+        "elong": elong,
+        "phi": phi,
+        "daz": daz
     };
 };
 
@@ -4505,57 +4519,58 @@ sla.dvdv = function (va, vb) {
  *                [12-20] precession-nutation 3x3 matrix
  * @returns {Object} ra, da - apparent [α,δ] (radians)
  * @description Quick mean to apparent place: transform a star [α,δ] from
- *              mean place to geocentric apparent place, given the star-independent
- *              parameters, and assuming zero parallax and FK5 proper motion.
- *              The reference frames and time scales used are post IAU 1976.
+ *              mean place to geocentric apparent place, given the
+ *              star-independent parameters, and assuming zero parallax and FK5
+ *              proper motion. The reference frames and time scales used are
+ *              post IAU 1976.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss118.html}
  */
 sla.mapqkz = function (rm, dm, amprms) {
     "use strict";
     /* Unpack scalar and vector parameters */
-    var gr2e = amprms[7];
-    var ab1 = amprms[11];
-    var ehn = [];
-    var abv = [];
-    var i;
+    let gr2e = amprms[7];
+    let ab1 = amprms[11];
+    let ehn = [];
+    let abv = [];
+    let i;
     for (i = 0; i < 3; i += 1) {
         ehn[i] = amprms[i + 4];
         abv[i] = amprms[i + 8];
     }
 
     /* Spherical to x,y,z */
-    var p = sla.dcs2c(rm, dm);
+    let p = sla.dcs2c(rm, dm);
 
     /* Light deflection */
-    var p1 = [];
-    var p2 = [];
-    var pde = sla.dvdv(p, ehn);
-    var pdep1 = pde + 1;
-    var w = gr2e / Math.max(pdep1, 1e-5);
+    let p1 = [];
+    let p2 = [];
+    let pde = sla.dvdv(p, ehn);
+    let pdep1 = pde + 1;
+    let w = gr2e / Math.max(pdep1, 1e-5);
     for (i = 0; i < 3; i += 1) {
         p1[i] = p[i] + w * (ehn[i] - pde * p[i]);
     }
 
     /* Aberration */
-    var p1dv = sla.dvdv(p1, abv);
-    var p1dvp1 = p1dv + 1;
+    let p1dv = sla.dvdv(p1, abv);
+    let p1dvp1 = p1dv + 1;
     w = 1 + p1dv / (ab1 + 1);
     for (i = 0; i < 3; i += 1) {
         p2[i] = (ab1 * p1[i] + w * abv[i]) / p1dvp1;
     }
 
     /* Precession and nutation */
-    var p3 = sla.dmxv([
+    let p3 = sla.dmxv([
         amprms.slice(12, 15),
         amprms.slice(15, 18),
         amprms.slice(18, 21)
     ], p2);
 
     /* Geocentric apparent RA,Dec */
-    var ret = sla.dcc2s(p3);
+    let ret = sla.dcc2s(p3);
     return {
-        ra: sla.dranrm(ret.a),
-        da: ret.b
+        "ra": sla.dranrm(ret.a),
+        "da": ret.b
     };
 };
 
@@ -4582,13 +4597,13 @@ sla.mapqkz = function (rm, dm, amprms) {
 sla.mapqk = function (rm, dm, pr, pd, px, rv, amprms) {
     "use strict";
     /* Unpack scalar and vector parameters */
-    var pmt = amprms[0];
-    var gr2e = amprms[7];
-    var ab1 = amprms[11];
-    var eb = [];
-    var ehn = [];
-    var abv = [];
-    var i;
+    let pmt = amprms[0];
+    let gr2e = amprms[7];
+    let ab1 = amprms[11];
+    let eb = [];
+    let ehn = [];
+    let abv = [];
+    let i;
     for (i = 0; i < 3; i += 1) {
         eb[i] = amprms[i + 1];
         ehn[i] = amprms[i + 4];
@@ -4596,45 +4611,45 @@ sla.mapqk = function (rm, dm, pr, pd, px, rv, amprms) {
     }
 
     /* Spherical to x,y,z */
-    var q = sla.dcs2c(rm, dm);
+    let q = sla.dcs2c(rm, dm);
 
     /* Space motion (radians per year) */
-    var pxr = px * sla.das2r;
-    var w = sla.vf * rv * pxr;
-    var em = [
+    let pxr = px * sla.das2r;
+    let w = sla.vf * rv * pxr;
+    let em = [
         -pr * q[1] - pd * Math.cos(rm) * Math.sin(dm) + w * q[0],
         pr * q[0] - pd * Math.sin(rm) * Math.sin(dm) + w * q[1],
         pd * Math.cos(dm) + w * q[2]
     ];
 
     /* Geocentric direction of star (normalized) */
-    var p = [];
-    var p1 = [];
-    var p2 = [];
+    let p = [];
+    let p1 = [];
+    let p2 = [];
     for (i = 0; i < 3; i += 1) {
         p[i] = q[i] + pmt * em[i] - pxr * eb[i];
     }
-    var ret = sla.dvn(p);
-    var pn = ret.uv;
+    let ret = sla.dvn(p);
+    let pn = ret.uv;
     w = ret.vm;
 
     /* Light deflection (restrained within the Sun's disc) */
-    var pde = sla.dvdv(pn, ehn);
-    var pdep1 = pde + 1;
+    let pde = sla.dvdv(pn, ehn);
+    let pdep1 = pde + 1;
     w = gr2e / Math.max(pdep1, 1e-5);
     for (i = 0; i < 3; i += 1) {
         p1[i] = pn[i] + w * (ehn[i] - pde * pn[i]);
     }
 
     /* Aberration (normalization omitted) */
-    var p1dv = sla.dvdv(p1, abv);
+    let p1dv = sla.dvdv(p1, abv);
     w = 1 + p1dv / (ab1 + 1);
     for (i = 0; i < 3; i += 1) {
         p2[i] = ab1 * p1[i] + w * abv[i];
     }
 
     /* Precession and nutation */
-    var p3 = sla.dmxv([
+    let p3 = sla.dmxv([
         amprms.slice(12, 15),
         amprms.slice(15, 18),
         amprms.slice(18, 21)
@@ -4643,8 +4658,8 @@ sla.mapqk = function (rm, dm, pr, pd, px, rv, amprms) {
     /* Geocentric apparent RA,Dec */
     ret = sla.dcc2s(p3);
     return {
-        ra: sla.dranrm(ret.a),
-        da: ret.b
+        "ra": sla.dranrm(ret.a),
+        "da": ret.b
     };
 };
 
@@ -4680,11 +4695,11 @@ sla.dvxv = function (va, vb) {
 sla.dsepv = function (v1, v2) {
     "use strict";
     /* Modulus of cross product = sine multiplied by the two moduli. */
-    var v1xv2 = sla.dvxv(v1, v2);
-    var ret = sla.dvn(v1xv2);
+    let v1xv2 = sla.dvxv(v1, v2);
+    let ret = sla.dvn(v1xv2);
 
     /* Dot product = cosine multiplied by the two moduli. */
-    var c = sla.dvdv(v1, v2);
+    let c = sla.dvdv(v1, v2);
 
     /* Angle between the vectors. */
     if (ret.vm !== 0 || c !== 0) {
@@ -4708,8 +4723,8 @@ sla.dsepv = function (v1, v2) {
 sla.dsep = function (a1, b1, a2, b2) {
     "use strict";
     /* Convert coordinates from spherical to Cartesian. */
-    var v1 = sla.dcs2c(a1, b1);
-    var v2 = sla.dcs2c(a2, b2);
+    let v1 = sla.dcs2c(a1, b1);
+    let v2 = sla.dcs2c(a2, b2);
 
     /* Angle between the vectors. */
     return sla.dsepv(v1, v2);
@@ -4720,7 +4735,8 @@ sla.dsep = function (a1, b1, a2, b2) {
  * @param {Number} date - TDB (formerly ET) as Modified Julian Date
  *                        (JD-2400000.5)
  * @returns {Array} 3x3 rotation matrix
- * @description Form the equatorial to ecliptic rotation matrix (IAU 1980 theory).
+ * @description Form the equatorial to ecliptic rotation matrix (IAU 1980
+ *              theory).
  * 1. RMAT is matrix **M** in the expression **v**_ecl = **M**⋅**v**_equ.
  * 2. The equator, equinox and ecliptic are mean of date.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss76.html}
@@ -4728,10 +4744,10 @@ sla.dsep = function (a1, b1, a2, b2) {
 sla.ecmat = function (date) {
     "use strict";
     /* Interval between basic epoch J2000.0 and current epoch (JC) */
-    var t = (date - 51544.5) / 36525;
+    let t = (date - 51544.5) / 36525;
 
     /* Mean obliquity */
-    var eps0 = sla.das2r * (84381.448 + (-46.8150 + (-0.00059 + 0.001813 *
+    let eps0 = sla.das2r * (84381.448 + (-46.8150 + (-0.00059 + 0.001813 *
             t) * t) * t);
 
     /* Matrix */
@@ -4752,23 +4768,23 @@ sla.ecmat = function (date) {
 sla.eqecl = function (dr, dd, date) {
     "use strict";
     /* Spherical to Cartesian */
-    var v1 = sla.dcs2c(dr, dd);
+    let v1 = sla.dcs2c(dr, dd);
 
     /* Mean J2000 to mean of date */
-    var rmat = sla.prec(2000, sla.epj(date));
-    var v2 = sla.dmxv(rmat, v1);
+    let rmat = sla.prec(2000, sla.epj(date));
+    let v2 = sla.dmxv(rmat, v1);
 
     /* Equatorial to ecliptic */
     rmat = sla.ecmat(date);
     v1 = sla.dmxv(rmat, v2);
 
     /* Cartesian to spherical */
-    var ret = sla.dcc2s(v1);
+    let ret = sla.dcc2s(v1);
 
     /* Express in conventional ranges */
     return {
-        dl: sla.dranrm(ret.a),
-        db: sla.drange(ret.b)
+        "dl": sla.dranrm(ret.a),
+        "db": sla.drange(ret.b)
     };
 };
 
@@ -4798,15 +4814,15 @@ sla.eqecl = function (dr, dd, date) {
  */
 sla.zd = function (ha, dec, phi) {
     "use strict";
-    var sh = Math.sin(ha);
-    var ch = Math.cos(ha);
-    var sd = Math.sin(dec);
-    var cd = Math.cos(dec);
-    var sp = Math.sin(phi);
-    var cp = Math.cos(phi);
-    var x = ch * cd * sp - sd * cp;
-    var y = sh * cd;
-    var z = ch * cd * cp + sd * sp;
+    let sh = Math.sin(ha);
+    let ch = Math.cos(ha);
+    let sd = Math.sin(dec);
+    let cd = Math.cos(dec);
+    let sp = Math.sin(phi);
+    let cp = Math.cos(phi);
+    let x = ch * cd * sp - sd * cp;
+    let y = sh * cd;
+    let z = ch * cd * cp + sd * sp;
     return Math.atan2(Math.sqrt(x * x + y * y), z);
 };
 
@@ -4862,7 +4878,7 @@ function assertAlmostEqual(val, ref, tol) {
  */
 sla.performUnitTests = function () {
     "use strict";
-    var ret;
+    let ret;
     console.log("Performing slalib unit tests...");
 
     /* sla_AIRMAS */
@@ -5013,13 +5029,13 @@ sla.performUnitTests = function () {
     assertAlmostEqual(ret[2][2], -0.1136384607117296, 12);
 
     /* sla_DIMXV */
-    var dav1 = [-0.123, 0.0987, 0.0654];
-    var drm1 = sla.dav2m(dav1);
-    var drm2 = sla.deuler("YZY", 2.345, -0.333, 2.222);
-    var drm = sla.dmxm(drm2, drm1);
-    var dv1a = sla.dcs2c(3.0123, -0.999);
-    var dv2a = sla.dmxv(drm1, dv1a);
-    var dv3 = sla.dmxv(drm2, dv2a);
+    let dav1 = [-0.123, 0.0987, 0.0654];
+    let drm1 = sla.dav2m(dav1);
+    let drm2 = sla.deuler("YZY", 2.345, -0.333, 2.222);
+    let drm = sla.dmxm(drm2, drm1);
+    let dv1a = sla.dcs2c(3.0123, -0.999);
+    let dv2a = sla.dmxv(drm1, dv1a);
+    let dv3 = sla.dmxv(drm2, dv2a);
     ret = sla.dimxv(drm, dv3);
     assertAlmostEqual(ret[0], -0.5366267667260526, 12);
     assertAlmostEqual(ret[1], 0.06977111097651445, 12);
@@ -5035,11 +5051,11 @@ sla.performUnitTests = function () {
     assertAlmostEqual(ret[5], -2.1588349421568112e-9, 15);
 
     /* sla_DMXV */
-    var dav = [-0.123, 0.0987, 0.0654];
-    var drm1a = sla.dav2m(dav);
-    var drm2a = sla.deuler("YZY", 2.345, -0.333, 2.222);
-    var dv1 = sla.dcs2c(3.0123, -0.999);
-    var dv2 = sla.dmxv(drm1a, dv1);
+    let dav = [-0.123, 0.0987, 0.0654];
+    let drm1a = sla.dav2m(dav);
+    let drm2a = sla.deuler("YZY", 2.345, -0.333, 2.222);
+    let dv1 = sla.dcs2c(3.0123, -0.999);
+    let dv2 = sla.dmxv(drm1a, dv1);
     ret = sla.dmxv(drm2a, dv2);
     assertAlmostEqual(ret[0], -0.7267487768696160, 12);
     assertAlmostEqual(ret[1], 0.5011537352639822, 12);
@@ -5077,8 +5093,8 @@ sla.performUnitTests = function () {
     assertAlmostEqual(ret[5], 2.568431853930293e-6, 12);
 
     /* sla_DSEP */
-    var v1 = sla.dcc2s([1, 0.1, 0.2]);
-    var v2 = sla.dcc2s([-3, 1e-3, 0.2]);
+    let v1 = sla.dcc2s([1, 0.1, 0.2]);
+    let v2 = sla.dcc2s([-3, 1e-3, 0.2]);
     assertAlmostEqual(sla.dsep(v1.a, v1.b, v2.a, v2.b), 2.8603919190246608, 7);
 
     /* sla_DSEPV */
