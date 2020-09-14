@@ -10,6 +10,8 @@
 
 var driver;
 $(document).ready(function () {
+    sla.performUnitTests();
+    
     driver = new Driver();
     helper.LogDebug("Drawing plot background...");
     driver.graph.drawBackground();

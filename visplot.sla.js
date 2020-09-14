@@ -4870,16 +4870,15 @@ function assertAlmostEqual(val, ref, tol) {
 }
 
 /**
- * @summary Perform all unit tests.
+ * @summary Perform all unit tests (wrapped function that does the work).
  * @description The values are taken from the original unit tests in SLALIB
  *              (sla_test.f). The desired precision is typically the same,
  *              although for some tests it can be lower by a few orders of
  *              magnitude.
  */
-sla.performUnitTests = function () {
+sla._performUnitTests = function () {
     "use strict";
     let ret;
-    console.log("Performing slalib unit tests...");
 
     /* sla_AIRMAS */
     assertAlmostEqual(sla.airmas(1.2354), 3.015698990074724, 12);
@@ -5351,7 +5350,23 @@ sla.performUnitTests = function () {
     /* sla_ZD */
     assertAlmostEqual(sla.zd(-1.023, -0.876, -0.432), 0.8963914139430839, 12);
 
-    console.log("Done.");
+    
 };
 
-sla.performUnitTests();
+/**
+ * @summary Perform all unit tests.
+ * @description This is merely a wrapper for {@link sla._performUnitTests},
+ *              which encloses the function in call in a try..catch construct
+ *              and informs the user if anything goes wrong.
+ */
+sla.performUnitTests = function () {
+    "use strict";
+    try {
+        helper.LogEntry("Performing slalib unit tests...");
+        sla._performUnitTests();
+        helper.LogSuccess("slalib unit tests completed - everything OK");
+    } catch (error) {
+        helper.LogError("slalib unit tests failed");
+        helper.LogError(error);
+    }
+};
