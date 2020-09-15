@@ -2270,6 +2270,27 @@ sla.dc62s = function (v) {
  *                         year)
  * @description Transform an FK5 (J2000) position and proper motion into the
  *              frame of the Hipparcos catalogue.
+ * 1. The α proper motions are α̇  rather than α̇ cosδ, and are per year rather
+ *    than per century.
+ * 2. The FK5 to Hipparcos transformation consists of a pure rotation and spin;
+ *    zonal errors in the FK5 catalogue are not taken into account.
+ * 3. The adopted epoch J2000.0 FK5 to Hipparcos orientation and spin values
+ *    are as follows (see reference):
+ *
+ *      | orientation | spin
+ *    -----------------------
+ *    x | -19.9       | -0.30
+ *    y |  -9.1       | +0.60
+ *    z | +22.9       | +0.70
+ *      | mas         | mas/y
+ *
+ *    These orientation and spin components are interpreted as axial vectors.
+ *    An axial vector points at the pole of the rotation and its length is the
+ *    amount of rotation in radians.
+ * 4. See also {@link sla.fk5hz}, {@link sla.h2fk5}, {@link sla.hfk5z}.
+ * ----------
+ * References:
+ * - Feissel, M. & Mignard, F., 1998., *Astron.Astrophys.* 331, L33-L36.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss96.html}
  */
 sla.fk52h = function (r5, d5, dr5, dd5) {
@@ -3058,6 +3079,75 @@ sla.planel = function (date, jform, epoch, orbinc, anode, perih,
  * @returns {Array} Heliocentric [x,y,z,\dot x,\dot y,\dot z], equatorial,
  *                  J2000 (AU, AU/s)
  * @description Approximate heliocentric position and velocity of a planet.
+ * 1. The epoch, DATE, is in the TDB time scale and is in the form of a
+ *    Modified Julian Date (JD−2400000.5).
+ * 2. The reference frame is equatorial and is with respect to the mean equinox
+ *    and ecliptic of epoch J2000.
+ * 3. If a planet number, NP, outside the range 1-9 is supplied, an error
+ *    status is returned (JSTAT = −1) and the PV vector is set to zeroes.
+ * 4. The algorithm for obtaining the mean elements of the planets from Mercury
+ *    to Neptune is due to J. L. Simon, P. Bretagnon, J. Chapront,
+ *    M. Chapront-Touze, G. Francou and J. Laskar (Bureau des Longitudes,
+ *    Paris, France). The (completely different) algorithm for calculating the
+ *    ecliptic coordinates of Pluto is by Meeus.
+ * 5. Comparisons of the present routine with the JPL DE200 ephemeris give the
+ *    following RMS errors over the interval 1960-2025:
+ *                | position (km) | speed (metre/sec)
+ *        Mercury | 334           | 0.437
+ *        Venus   | 1060          | 0.855
+ *        EMB     | 2010          | 0.815
+ *        Mars    | 7690          | 1.98
+ *        Jupiter | 71700         | 7.70
+ *        Saturn  | 199000        | 19.4
+ *        Uranus  | 564000        | 16.4
+ *        Neptune | 158000        | 14.4
+ *        Pluto   | 36400         | 0.137
+ *    From comparisons with DE102, Simon et al. quote the following longitude
+ *    accuracies over the interval 1800-2200:
+ *        Mercury | 4′′
+ *        Venus   | 5′′
+ *        EMB     | 6′′
+ *        Mars    | 17′′
+ *        Jupiter | 71′′
+ *        Saturn  | 81′′
+ *        Uranus  | 86′′
+ *        Neptune | 11′′
+ *    In the case of Pluto, Meeus quotes an accuracy of ′′06 in longitude and
+ *    ′′02 in latitude for the period 1885-2099.
+ *    For all except Pluto, over the period 1000-3000, the accuracy is better
+ *    than 1.5 times that over 1800-2200. Outside the interval 1000-3000 the
+ *    accuracy declines. For Pluto the accuracy declines rapidly outside the
+ *    period 1885-2099. Outside these ranges (1885-2099 for Pluto, 1000-3000
+ *    for the rest) a “date out of range” warning status (JSTAT=+1) is
+ *    returned.
+ * 6. The algorithms for (i) Mercury through Neptune and (ii) Pluto are
+ *    completely independent. In the Mercury through Neptune case, the present
+ *    SLALIB implementation differs from the original Simon et al. Fortran code
+ *    in the following respects:
+ *    - The date is supplied as a Modified Julian Date rather a Julian Date
+ *      MJD=(JD−2400000.5).
+ *    - The result is returned only in equatorial Cartesian form; the ecliptic
+ *      longitude, latitude and radius vector are not returned.
+ *    - The velocity is in AU per second, not AU per day.
+ *    - Different error/warning status values are used.
+ *    - Kepler’s Equation is not solved inline.
+ *    - Polynomials in T are nested to minimize rounding errors.
+ *    - Explicit double-precision constants are used to avoid mixed-mode
+ *      expressions.
+ *    - There are other, cosmetic, changes to comply with Starlink/SLALIB style
+ *      guidelines.
+ *    None of the above changes affects the result significantly.
+ * 7. For NP = 3 the result is for the Earth-Moon Barycentre. To obtain the
+ *    heliocentric position and velocity of the Earth, either use the SLALIB
+ *    routine {@link sla.evp} (or {@link sla.epv}) or call {@link sla.dmoon}
+ *    and subtract 0.012150581 times the geocentric Moon vector from the EMB
+ *    vector produced by the present routine. (The Moon vector should be
+ *    precessed to J2000 first, but this can be omitted for modern epochs
+ *    without introducing significant inaccuracy.)
+ * ----------
+ * References:
+ * 1. Simon et al., *Astron. Astrophys.* 282, 663 (1994).
+ * 2. Meeus, J., *Astronomical Algorithms*, Willmann-Bell (1991).
  * @throws {RangeError} If np or date are out of range.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss137.html}
  */
@@ -3228,6 +3318,7 @@ sla.planet = function (date, np) {
  * @returns {Array} [x,y,z,\dot x,\dot y,\dot z] (AU, AU/s, true equator
  *                  and equinox of date)
  * @description Position and velocity of an observing station.
+ * - IAU 1976 constants are used.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss149.html}
  */
 sla.pvobs = function (p, h, stl) {
@@ -3390,6 +3481,12 @@ sla.prec = function (ep0, ep1) {
  *                        true coordinates
  * @returns {Array} Combined 3x3 precession-nutation matrix
  * @description Form the matrix of precession and nutation (SF2001).
+ * 1. The epoch and date are TDB. TT (or even UTC) will do.
+ * 2. The matrix is in the sense:
+ *    **v**_true = **M**×**v**_mean
+ *    where **v**_true is the star vector relative to the true equator and
+ *    equinox of epoch DATE, **M** is the 3×3 matrix RMATPN and **v**_mean is
+ *    the star vector relative to the mean equator and equinox of epoch EPOCH.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss146.html}
  */
 sla.prenut = function (epoch, date) {
@@ -3417,6 +3514,31 @@ sla.prenut = function (epoch, date) {
  *                  [2] angular diameter (equatorial, radians)
  * @description Approximate topocentric apparent [α,δ] and angular size of
  *              a planet.
+ * 1. The date is in a dynamical time scale (TDB, formerly ET) and is in the
+ *    form of a Modified Julian Date (JD−2400000.5). For all practical
+ *    purposes, TT can be used instead of TDB, and for many applications UT
+ *    will do (except for the Moon).
+ * 2. The longitude and latitude allow correction for geocentric parallax. This
+ *    is a major effect for the Moon, but in the context of the limited
+ *    accuracy of the present routine its effect on planetary positions is
+ *    small (negligible for the outer planets). Geocentric positions can be
+ *    generated by appropriate use of the routines {@link sla.dmoon} and
+ *    {@link sla.planet}.
+ * 3. The direction accuracy (arcsec, 1000-3000 AD) is of order:
+ *        Sun     | 5
+ *        Mercury | 2
+ *        Venus   | 10
+ *        Moon    | 30
+ *        Mars    | 50
+ *        Jupiter | 90
+ *        Saturn  | 90
+ *        Uranus  | 90
+ *        Neptune | 10
+ *        Pluto   | 1 (1885-2099 AD only)
+ *    The angular diameter accuracy is about 0.4% for the Moon, and 0.01% or
+ *    better for the Sun and planets. For more information on accuracy, refer
+ *    to the routines {@link sla.planet} and {@link sla.dmoon}, which the
+ *    present routine uses.
  * @throws {RangeError} If np is out of range.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss155.html}
  */
@@ -3575,7 +3697,7 @@ sla.atms = function (rt, tt, dnt, gamal, r) {
  * @summary **Refraction**
  * @param {Number} zobs - Observed zenith distance of the source (radians)
  * @param {Number} hm - Height of the observer above sea level (metre)
- * @param {Number} tdk - Ambient temperature at the observer K)
+ * @param {Number} tdk - Ambient temperature at the observer (K)
  * @param {Number} pmb - Pressure at the observer (mb)
  * @param {Number} rh - Relative humidity at the observer (range 0-1)
  * @param {Number} wl - Effective wavelength of the source (μm)
@@ -3584,6 +3706,84 @@ sla.atms = function (rt, tt, dnt, gamal, r) {
  * @param {Number} eps - Precision required to terminate iteration (radian)
  * @returns {Number} Refraction: in vacuo ZD minus observed ZD (radians)
  * @description Atmospheric refraction, for radio or optical/IR wavelengths.
+ * 1.  A suggested value for the TLR argument is 0.0065D0 (sign immaterial).
+ *     The refraction is significantly affected by TLR, and if studies of the
+ *     local atmosphere have been carried out a better TLR value may be
+ *     available.
+ * 2.  A suggested value for the EPS argument is 1D−8. The result is usually at
+ *     least two orders of magnitude more computationally precise than the
+ *     supplied EPS value.
+ * 3.  The routine computes the refraction for zenith distances up to and a
+ *     little beyond 90∘ using the method of Hohenkerk & Sinclair (NAO
+ *     Technical Notes 59 and 63, subsequently adopted in the *Explanatory
+ *     Supplement to the Astronomical Almanac*, 1992 – see section 3.281).
+ * 4.  The code is based on the AREF optical/IR refraction subroutine (HMNAO,
+ *     September 1984, RGO: Hohenkerk 1985), with extensions to support the
+ *     radio case. The modifications to the original HMNAO optical/IR
+ *     refraction code which affect the results are:
+ *     - The angle arguments have been changed to radians, any value of ZOBS is
+ *       allowed (see Note 6, below) and other argument values have been
+ *       limited to safe values.
+ *     - Revised values for the gas constants are used, from Murray (1983).
+ *     - A better model for P_s(T) has been adopted, from Gill (1982).
+ *     - More accurate expressions for P_{w_o} have been adopted (again from
+ *       Gill 1982).
+ *     - The formula for the water vapour pressure, given the saturation
+ *       pressure and the relative humidity, is from Crane (1976), expression
+ *       2.5.5.
+ *     - Provision for radio wavelengths has been added using expressions
+ *       devised by A. T. Sinclair, RGO (Sinclair 1989). The refractivity model
+ *       is from Rueger (2002).
+ *     - The optical refractivity for dry air is from IAG (1999).
+ * 5.  The radio refraction is chosen by specifying WL >100 μm. Because the
+ *     algorithm takes no account of the ionosphere, the accuracy deteriorates
+ *     at low frequencies, below about 30 MHz.
+ * 6.  Before use, the value of ZOBS is expressed in the range ±π. If this
+ *     ranged ZOBS is negative, the result REF is computed from its absolute
+ *     value before being made negative to match. In addition, if it has an
+ *     absolute value greater than 93∘, a fixed REF value equal to the result
+ *     for ZOBS =93∘ is returned, appropriately signed.
+ * 7.  As in the original Hohenkerk & Sinclair algorithm, fixed values of the
+ *     water vapour polytrope exponent, the height of the tropopause, and the
+ *     height at which refraction is negligible are used.
+ * 8.  The radio refraction has been tested against work done by Iain Coulson,
+ *     JACH, (private communication 1995) for the James Clerk Maxwell
+ *     Telescope, Mauna Kea. For typical conditions, agreement at the ′′01
+ *     level is achieved for moderate ZD, worsening to perhaps ′′05 – ′′10 at
+ *     ZD 80∘. At hot and humid sea-level sites the accuracy will not be as
+ *     good.
+ * 9.  It should be noted that the relative humidity RH is formally defined in
+ *     terms of “mixing ratio” rather than pressures or densities as is often
+ *     stated. It is the mass of water per unit mass of dry air divided by that
+ *     for saturated air at the same temperature and pressure (see Gill 1982).
+ *     The familiar ν=pw/ps or ν=ρw/ρs expressions can differ from the formal
+ *     definition by several percent, significant in the radio case.
+ * 10. The algorithm is designed for observers in the troposphere. The supplied
+ *     temperature, pressure and lapse rate are assumed to be for a point in
+ *     the troposphere and are used to define a model atmosphere with the
+ *     tropopause at 11km altitude and a constant temperature above that.
+ *     However, in practice, the refraction values returned for stratospheric
+ *     observers, at altitudes up to 25km, are quite usable.
+ * ----------
+ * References:
+ * 1.  Coulsen, I. 1995, private communication.
+ * 2.  Crane, R.K., Meeks, M.L. (ed), 1976, “Refraction Effects in the Neutral
+ *     Atmosphere”, *Methods of Experimental Physics: Astrophysics 12B*,
+ *     Academic Press.
+ * 3.  Gill, Adrian E. 1982, *Atmosphere-Ocean Dynamics*, Academic Press.
+ * 4.  Hohenkerk, C.Y. 1985, private communication.
+ * 5.  Hohenkerk, C.Y., & Sinclair, A.T. 1985, *NAO Technical Note* No. 63,
+ *     Royal Greenwich Observatory.
+ * 6.  International Association of Geodesy, XXIIth General Assembly,
+ *     Birmingham, UK, 1999, Resolution 3.
+ * 7.  Murray, C.A. 1983, *Vectorial Astrometry*, Adam Hilger, Bristol.
+ * 8.  Seidelmann, P.K. et al. 1992, *Explanatory Supplement to the
+ *     Astronomical Almanac*, Chapter 3, University Science Books.
+ * 9.  Rueger, J.M. 2002, *Refractive Index Formulae for Electronic Distance
+ *     Measurement with Radio and Millimetre Waves*, in Unisurv Report S-68,
+ *     School of Surveying and Spatial Information Systems, University of New
+ *     South Wales, Sydney, Australia.
+ * 10. Sinclair, A.T. 1989, private communication.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss158.html}
  */
 sla.refro = function (zobs, hm, tdk, pmb, rh, wl, phi, tlr, eps) {
@@ -3872,6 +4072,15 @@ sla.refro = function (zobs, hm, tdk, pmb, rh, wl, phi, tlr, eps) {
  *              zenith distance (i.e. affected by refraction) and Δζ is what
  *              to add to ζ to give the topocentric (i.e. in vacuo) zenith
  *              distance.
+ * 1. Suggested values for the TLR and EPS arguments are 0.0065D0 and 1D−8
+ *    respectively. The signs of both are immaterial.
+ * 2. The radio refraction is chosen by specifying WL >100 μm.
+ * 3. The routine is a slower but more accurate alternative to the
+ *    {@link sla.refcoq} routine. The constants it produces give perfect
+ *    agreement with {@link sla.refro} at zenith distances tan−11 (45∘) and
+ *    tan−14 (∼76∘). At other zenith distances, the model achieves:
+ *    ′′05 accuracy for ζ<80∘, ′′001 accuracy for ζ<60∘, and
+ *    ′′0001 accuracy for ζ<45∘.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss156.html}
  */
 sla.refco = function (hm, tdk, pmb, rh, wl, phi, tlr, eps) {
@@ -3900,6 +4109,58 @@ sla.refco = function (hm, tdk, pmb, rh, wl, phi, tlr, eps) {
  * @description Adjust an unrefracted zenith distance to include the effect of
  *     atmospheric refraction, using the simple Δζ=a\tan ζ+b\tan^3 ζ
  *     model.
+ * 1. This routine applies the adjustment for refraction in the opposite sense
+ *    to the usual one – it takes an unrefracted (in vacuo) position and
+ *    produces an observed (refracted) position, whereas the Δζ=atanζ+btan3ζ
+ *    model strictly applies to the case where an observed position is to have
+ *    the refraction removed. The unrefracted to refracted case is harder, and
+ *    requires an inverted form of the text-book refraction models; the formula
+ *    used here is based on the Newton-Raphson method. For the utmost numerical
+ *    consistency with the refracted to unrefracted model, two iterations are
+ *    carried out, achieving agreement at the 10^−11 arcsecond level for ζ=80∘.
+ *    The inherent accuracy of the model is, of course, far worse than this –
+ *    see the documentation for {@link sla.refco} for more information.
+ * 2. At ζ=83∘, the rapidly-worsening Δζ=atanζ+btan3ζ model is abandoned and
+ *    an empirical formula takes over:
+ *
+ *        Δζ = F * (0∘.55445−0∘.01133*E+0∘.00202*E^2) /
+ *                 (1+0.28385*E+0.02390*E^2),
+ *
+ *    where E=90∘−ζ_true and F is a factor chosen to meet the Δζ=atanζ+btan3ζ
+ *    formula at ζ=83∘.
+ *    For optical/IR wavelengths, over a wide range of observer heights and
+ *    corresponding temperatures and pressures, the following levels of
+ *    accuracy (worst case) are achieved, relative to numerical integration
+ *    through a model atmosphere:
+ *        ζobs | error |
+ *        80∘  | ′′07  |
+ *        81∘  | ′′13  |
+ *        82∘  | ′′24  |
+ *        83∘  | ′′47  |
+ *        84∘  | ′′62  |
+ *        85∘  | ′′64  |
+ *        86∘  | 8′′   |
+ *        87∘  | 10′′  |
+ *        88∘  | 15′′  |
+ *        89∘  | 30′′  |
+ *        90∘  | 60′′  |
+ *        91∘  | 150′′ | <high-altitude
+ *        92∘  | 400′′ | <sites only
+ *    For radio wavelengths the errors are typically 50% larger than the
+ *    optical figures and by ζ=85∘ are twice as bad, worsening rapidly below
+ *    that. To maintain 1′′ accuracy down to ζ=85∘ at the Green Bank site,
+ *    Condon (2004) has suggested amplifying the amount of refraction predicted
+ *    by {@link sla.refz} below 10∘.8 elevation by the factor
+ *        (1+0.00195∗(10.8−E_topo)),
+ *    where E_topo is the unrefracted elevation in degrees.
+ *    The high-ZD model is scaled to match the normal model at the transition
+ *    point; there is no glitch.
+ * 3. See also the routine {@link sla.refv}, which performs the adjustment in
+ *    [x,y,z], and with the emphasis on speed rather than numerical accuracy.
+ * ----------
+ * References:
+ * - Condon, J.J., *Refraction Corrections for the GBT*, PTCS/PN/35.2, NRAO
+ *   Green Bank, 2004.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss160.html}
  */
 sla.refz = function (zu, refa, refb) {
@@ -4270,6 +4531,28 @@ sla.dvn = function (v) {
  *              parallax, light deflection, aberration, and precession-nutation
  *              parts of the mean/apparent transformations. The reference
  *              frames and time scales used are post IAU 1976.
+ * 1. For DATE, the distinction between the required TDB and TT is always
+ *    negligible. Moreover, for all but the most critical applications UTC is
+ *    adequate.
+ * 2. The vectors AMPRMS(2-4) and AMPRMS(5-7) are (in essence) referred to the
+ *    mean equinox and equator of epoch EQ. For EQ=2000D0, they are referred to
+ *    the ICRS.
+ * 3. The parameters produced by this routine are used by {@link sla.mapqk},
+ *    {@link sla.mapqkz} and {@link sla.ampqk}.
+ * 4. The accuracy, starting from ICRS star data, is limited to about 1 mas by
+ *    the precession-nutation model used, SF2001. A different
+ *    precession-nutation model can be introduced by first calling the present
+ *    routine and then replacing the precession-nutation matrix in
+ *    AMPRMS(13-21) directly.
+ * 5. A further limit to the accuracy of routines using the parameter array
+ *    AMPRMS is imposed by the routine {@link sla.evp}, used here to compute
+ *    the Earth position and velocity by the methods of Stumpff. The maximum
+ *    error in the resulting aberration corrections is about 0.3
+ *    milliarcsecond.
+ * ----------
+ * References:
+ * 1. 1984 *Astronomical Almanac*, pp B39-B41.
+ * 2. Lederle & Schwan, 1984. *Astr.Astrophys.* 134, 1-6.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss116.html}
  */
 sla.mappa = function (eq, date) {
@@ -4523,6 +4806,27 @@ sla.dvdv = function (va, vb) {
  *              star-independent parameters, and assuming zero parallax and FK5
  *              proper motion. The reference frames and time scales used are
  *              post IAU 1976.
+ * 1. Use of this routine is appropriate when efficiency is important and where
+ *    many star positions, all with parallax and proper motion either zero or
+ *    already allowed for, and all referred to the same equator and equinox,
+ *    are to be transformed for one epoch. The star-independent parameters can
+ *    be obtained by calling the {@link sla.mappa} routine.
+ * 2. The corresponding routine for the case of non-zero parallax and FK5
+ *    proper motion is {@link sla.mapqk}.
+ * 3. The vectors AMPRMS(2-4) and AMPRMS(5-7) are (in essence) referred to the
+ *    mean equinox and equator of epoch EQ. For EQ=2000D0, they are referred to
+ *    the ICRS.
+ * 4. Strictly speaking, the routine is not valid for solar-system sources,
+ *    though the error will usually be extremely small. However, to prevent
+ *    gross errors in the case where the position of the Sun is specified, the
+ *    gravitational deflection term is restrained within about 920′′ of the
+ *    centre of the Sun’s disc. The term has a maximum value of about ′′185 at
+ *    this radius, and decreases to zero as the centre of the disc is
+ *    approached.
+ * ----------
+ * References:
+ * 1. 1984 *Astronomical Almanac*, pp B39-B41.
+ * 2. Lederle & Schwan, 1984. *Astr.Astrophys.* 134, 1-6.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss118.html}
  */
 sla.mapqkz = function (rm, dm, amprms) {
@@ -4592,6 +4896,26 @@ sla.mapqkz = function (rm, dm, amprms) {
  * @description Quick mean to apparent place: transform a star RA,Dec from
  *              mean place to geocentric apparent place, given the
  *              star-independent parameters.
+ * 1. Use of this routine is appropriate when efficiency is important and where
+ *    many star positions, all referred to the same equator and equinox, are to
+ *    be transformed for one epoch. The star-independent parameters can be
+ *    obtained by calling the {@link sla.mappa} routine.
+ * 2. If the parallax and proper motions are zero the {@link sla.mapqkz}
+ *    routine can be used instead.
+ * 3. The vectors AMPRMS(2-4) and AMPRMS(5-7) are (in essence) referred to the
+ *    mean equinox and equator of epoch EQ. For EQ=2000D0, they are referred to
+ *    the ICRS.
+ * 4. Strictly speaking, the routine is not valid for solar-system sources,
+ *    though the error will usually be extremely small. However, to prevent
+ *    gross errors in the case where the position of the Sun is specified, the
+ *    gravitational deflection term is restrained within about 920′′ of the
+ *    centre of the Sun’s disc. The term has a maximum value of about ′′185 at
+ *    this radius, and decreases to zero as the centre of the disc is
+ *    approached.
+ * ----------
+ * References:
+ * 1. 1984 *Astronomical Almanac*, pp B39-B41.
+ * 2. Lederle & Schwan, 1984. *Astr.Astrophys.* 134, 1-6.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss117.html}
  */
 sla.mapqk = function (rm, dm, pr, pd, px, rv, amprms) {
@@ -4876,7 +5200,7 @@ function assertAlmostEqual(val, ref, tol) {
  *              although for some tests it can be lower by a few orders of
  *              magnitude.
  */
-sla._performUnitTests = function () {
+sla.performUnitTestsWrapped = function () {
     "use strict";
     let ret;
 
@@ -5349,8 +5673,6 @@ sla._performUnitTests = function () {
 
     /* sla_ZD */
     assertAlmostEqual(sla.zd(-1.023, -0.876, -0.432), 0.8963914139430839, 12);
-
-    
 };
 
 /**
@@ -5363,7 +5685,7 @@ sla.performUnitTests = function () {
     "use strict";
     try {
         helper.LogEntry("Performing slalib unit tests...");
-        sla._performUnitTests();
+        sla.performUnitTestsWrapped();
         helper.LogSuccess("slalib unit tests completed - everything OK");
     } catch (error) {
         helper.LogError("slalib unit tests failed");
