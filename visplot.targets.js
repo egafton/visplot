@@ -294,15 +294,6 @@ TargetList.prototype.warnUnobservable = function () {
     }
 };
 
-TargetList.prototype.plan = function () {
-    var scheduleorder = this.schedule_inOrderOfSetting(driver.night.Sunset);
-    this.optimize_interchangeNeighbours(scheduleorder);
-    this.optimize_moveToLaterTimesIfRising(scheduleorder, true);
-    this.optimize_interchangeNeighbours(scheduleorder);
-    //this.reorder_accordingToScheduling(scheduleorder);
-    this.display_scheduleStatistics();
-};
-
 TargetList.prototype.canSchedule = function (obj, start) {
     var end = start + obj.Exptime;
     var overlaps = false, i, other;
@@ -787,13 +778,31 @@ TargetList.prototype.prepareScheduleForUpdate = function () {
     }
 };
 
-TargetList.prototype.updateSchedule = function (Targets) {
-    var scheduleorder = this.schedule_inOrderOfSetting(this.StartingAt);
-    this.optimize_interchangeNeighbours(scheduleorder);
+TargetList.prototype.doSchedule = function (start, reorder) {
+    let scheduleorder;
+    let maintainorder = $('#opt_away_from_zenith').is(':checked');
+    if (maintainorder) {
+        scheduleorder = this.schedule_inOrderOfSetting(start);
+    } else {
+        scheduleorder = this.schedule_inOrderOfSetting(start);
+        this.optimize_interchangeNeighbours(scheduleorder);
+    }
     this.optimize_moveToLaterTimesIfRising(scheduleorder, true);
-    this.optimize_interchangeNeighbours(scheduleorder);
-    this.reorder_accordingToScheduling(scheduleorder);
+    if (!maintainorder) {
+        this.optimize_interchangeNeighbours(scheduleorder);
+    }
+    if (reorder) {
+        this.reorder_accordingToScheduling(scheduleorder);
+    }
     this.display_scheduleStatistics();
+};
+
+TargetList.prototype.plan = function () {
+    this.doSchedule(driver.night.Sunset, true);
+};
+
+TargetList.prototype.updateSchedule = function (Targets) {
+    this.doSchedule(this.StartingAt, false);
 };
 
 TargetList.prototype.inputHasChanged = function (_newinput, _oldinput) {
