@@ -6,6 +6,8 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. See LICENSE.md.
+ * @todo: Many of these functions can be rewritten in terms of slalib functions
+ * or replaced altogether.
  */
 
 function helper() {
@@ -17,7 +19,7 @@ function helper() {
  * @returns {double} Angle in radians
  */
 helper.deg2rad = function (angle) {
-    return angle * (Math.PI / 180);
+    return angle * sla.d2r;
 };
 
 /**
@@ -26,7 +28,7 @@ helper.deg2rad = function (angle) {
  * @returns {double} Angle in degrees
  */
 helper.rad2deg = function (angle) {
-    return angle * (180 / Math.PI);
+    return angle * sla.r2d;
 };
 
 /**
@@ -55,12 +57,10 @@ helper.AirmassToAltitude = function (airmass) {
 };
 
 /**
- * Convert altitude to airmass
- *
- * @todo Offer the choice of using more complex formulae than just AM=sec(z).
+ * Convert altitude to airmass using slalib.
  */
 helper.AltitudeToAirmass = function (altitude) {
-    return 1 / Math.cos(helper.deg2rad(90 - altitude));
+    return sla.airmas(helper.deg2rad(90 - altitude));
 };
 
 /**
