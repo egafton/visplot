@@ -47,10 +47,10 @@ $(document).ready(function () {
     driver.BindEvents();
     helper.LogEntry('Done.');
     
-    helper.LogDebug("Calling ParseOBInfoIfAny()...")
+    helper.LogDebug("Calling ParseOBInfoIfAny()...");
     driver.ParseOBInfoIfAny();
     
-    helper.LogDebug("Calling InitializeDate()...")
+    helper.LogDebug("Calling InitializeDate()...");
     driver.InitializeDate();
     
     setInterval(function() {
