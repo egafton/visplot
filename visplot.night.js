@@ -163,7 +163,6 @@ Night.prototype.setEphemerides = function (obj) {
     }
     this.Moonrise = 0;
     var lim = helper.rad2deg(- this.HorizonDip);
-    console.log(lim);
     if (this.ymoon[0] < lim-sla.r2d*this.rmoon[0]) {
         // will rise
         for (i = 1; i < this.Nx; i += 1) {
