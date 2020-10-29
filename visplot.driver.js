@@ -960,7 +960,7 @@ Object.defineProperties(Driver, {
                     this.obs_lat_deg.toFixed(4) + ', ' + this.obs_alt.toFixed(0) + ' m above sea level';
         }},
     'plotCopyright': {get: function () {
-            return '© EG (NOT/ING)';
+            return `© 2016-${new Date().getFullYear()} ega (NOT/ING)`;
         }},
     'defaultEpoch': {get: function () {
             return this._defaultEpoch || '2000';
