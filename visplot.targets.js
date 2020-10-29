@@ -387,7 +387,7 @@ TargetList.prototype.optimize_moveToLaterTimesIfRising = function (scheduleorder
         }
         var bestalt = obj.AltMidTime;
         var besttime = obj.ScheduledStartTime;
-        // Move to the right as much as possible Math.floor(this.Exptime/night.xstep)*night.xstep
+        // Move to the right as much as possible
         for (curtime = Math.min(((i == scheduleorder.length - 1 || crossOtherObjects) ? driver.night.Sunrise : this.Targets[scheduleorder[i + 1]].ScheduledStartTime), obj.LastPossibleTime, driver.night.Sunset + Math.floor((2 * obj.ZenithTime - obj.ScheduledMidTime - driver.night.Sunset) / driver.night.xstep) * driver.night.xstep);
                 curtime > obj.ScheduledStartTime;
                 curtime -= driver.night.xstep) {
@@ -539,6 +539,78 @@ TargetList.prototype.display_scheduleStatistics = function () {
     }
 };
 
+TargetList.prototype.schedule_inOriginalOrder = function (startingAt) {
+    var order = [];
+    var prevschedule = [];
+    var i, j = 0, k, obj;
+    for (i = 0; i < this.nTargets; i += 1) {
+        if (this.Targets[i].Observed) {
+            prevschedule.push(i);
+            continue;
+        }
+        this.Targets[i].Scheduled = false;
+        if (this.Targets[i].ObservableTonight === false) {
+            continue;
+        }
+        order[j++] = i;
+    }
+    var SchedulableObjects = j;
+
+    // Start the earliest possible
+    var firstSchedulableTime = driver.night.Sunrise;
+    var lastSchedulableTime = driver.night.Sunset;
+    for (i = 0; i < SchedulableObjects; i += 1) {
+        k = order[i];
+        if (this.Targets[k].FirstPossibleTime < firstSchedulableTime) {
+            firstSchedulableTime = this.Targets[k].FirstPossibleTime;
+        }
+        if (this.Targets[k].LastPossibleTime > lastSchedulableTime) {
+            lastSchedulableTime = this.Targets[k].LastPossibleTime;
+        }
+    }
+    if (firstSchedulableTime < startingAt) {
+        firstSchedulableTime = startingAt;
+    }
+    // Start scheduling
+    var scheduleorder = [];
+    // However, before anything else we schedule the monitoring programmes that have highest priority and MUST fill their entire time slot
+    for (i = 0; i < SchedulableObjects; i += 1) {
+        k = order[i];
+        if (this.Targets[k].FillSlot === true) {
+            obj = this.Targets[k];
+            obj.Schedule(obj.RestrictionMinUT);
+            scheduleorder.push(k);
+        }
+    }
+
+    // Now go through all the other objects
+    var curtime = firstSchedulableTime;
+    i = 0;
+    while (true) {
+        if ((scheduleorder.length >= SchedulableObjects) || (curtime >= lastSchedulableTime)) {
+            break;
+        }
+
+        k = order[i];
+        obj = this.Targets[k];
+        if (obj.Scheduled === true) {
+            i += 1;
+            continue;
+        }
+        if (this.canSchedule(obj, curtime)) {
+            obj.Schedule(curtime);
+            curtime += obj.Exptime;
+            scheduleorder.push(k);
+            i += 1;
+            continue;
+        } else {
+            curtime += driver.night.xstep;
+        }
+    }
+    console.log("inOriginalOrder: ", scheduleorder);
+    return prevschedule.concat(scheduleorder);
+};
+
 TargetList.prototype.schedule_inOrderOfSetting = function (startingAt) {
     var EndTimes = [];
     var temporder = [];
@@ -625,6 +697,7 @@ TargetList.prototype.schedule_inOrderOfSetting = function (startingAt) {
             break;
         }
     }
+    console.log("inOrderOfSetting: ", scheduleorder);
     return prevschedule.concat(scheduleorder);
 };
 
@@ -792,14 +865,14 @@ TargetList.prototype.prepareScheduleForUpdate = function () {
 
 TargetList.prototype.doSchedule = function (start, reorder) {
     let scheduleorder;
-    let maintainorder = $('#opt_away_from_zenith').is(':checked');
+    let maintainorder = $('#opt_maintain_order').is(':checked');
     if (maintainorder) {
-        scheduleorder = this.schedule_inOrderOfSetting(start);
+        scheduleorder = this.schedule_inOriginalOrder(start);
     } else {
         scheduleorder = this.schedule_inOrderOfSetting(start);
         this.optimize_interchangeNeighbours(scheduleorder);
     }
-    this.optimize_moveToLaterTimesIfRising(scheduleorder, true);
+    this.optimize_moveToLaterTimesIfRising(scheduleorder, !maintainorder);
     if (!maintainorder) {
         this.optimize_interchangeNeighbours(scheduleorder);
     }
@@ -986,8 +1059,8 @@ TargetList.prototype.ExportTCSCatalogue = function () {
  Extract one line of input from the input textarea; return an array containing the items
  */
 TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
-    // Split by white spaces
-    var words = linetext.split(/\s+/g);
+    // Split by white spaces and colons
+    var words = linetext.split(/[\s:]+/g);
     // Sanity check: minimum number of fields
     if (words.length <= 1) {
         helper.LogError('Error: Incorrect syntax on Line #' + linenumber + '; for each object you must provide at least the Name, RA and Dec!');
