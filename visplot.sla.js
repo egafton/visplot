@@ -1,11 +1,11 @@
 /**
  * @file SLALIB subroutines used by Visplot, ported to JavaScript.
  * @author Emanuel Gafton
- * @copyright 2016-2021 Emanuel Gafton, NOT/ING.
- *     This program is free software: you can redistribute it and/or modify
- *     it under the terms of the GNU General Public License as published by
- *     the Free Software Foundation, either version 3 of the License, or
- *     (at your option) any later version. See LICENSE.md.
+ * @copyright (c) 2016-2021 Emanuel Gafton, NOT/ING.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version. See LICENSE.md.
  */
 
 /* @constant {Number} Earth equatorial radius (metres) */
