@@ -64,15 +64,8 @@ $_DEBUG = TRUE;
                 <span class="middle"><label for="opt_reschedule_later"><input type='checkbox' name="opt_reschedule_later" id="opt_reschedule_later" checked="checked" /> Do not schedule in the past during an observing night</label></span><br/>
                 <span class="middle"><label for="opt_id_next_line"><input type='checkbox' name="opt_id_next_line" id="opt_id_next_line" checked="checked" /> Place object ID next to its line (not on top)</label></span><br/>
                 <span class="middle"><label for="opt_away_from_zenith"><input type='checkbox' name="opt_away_from_zenith" id="opt_away_from_zenith" checked="checked" /> Do not observe closer than 2° from zenith</label></span><br/>
-                <span class="middle"><label for="opt_maintain_order"><input type='checkbox' name="opt_maintain_order" id="opt_maintain_order" /> Always maintain order of input targets</label></span><br/>
+                <span class="middle"><label for="opt_maintain_order"><input type='checkbox' name="opt_maintain_order" id="opt_maintain_order" /> Always schedule targets in their input order</label></span><br/>
                 <span class="middle"><label for="opt_show_lastobstime"><input type='checkbox' name="opt_show_lastobstime" id="opt_show_lastobstime" /> Mark last possible starting time</label></span><br/>
-            <!--<span class="middle"><label for="opt_unicolor"><input type='checkbox' name="opt_unicolor" id="opt_unicolor" checked="checked" /> Use same colour for all targets</label></span><br/>-->
-            <!--<span class="middle"><label for="opt_color">Colour: 
-                <input type='radio' name="opt_color" id="opt_color" value="same" checked /> Uniform 
-                <input type='radio' name="opt_color" id="opt_color" value="type" /> Type
-                <input type='radio' name="opt_color" id="opt_color" value="proposal" /> Proposal
-                <input type='radio' name="opt_color" id="opt_color" value="individual" /> Individual
-            </label></span><br/><br/>-->
                 <div id="buttons">
                     <div id="lb_sched"><input type="button" value="Schedule observations" id="planNight" /></div>
                     <div id="lb_skycm"><input type="button" value="Show SkyCam" id="showSkyCam" /></div>
