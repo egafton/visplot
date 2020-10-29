@@ -525,7 +525,7 @@ helper.ExtractLSTRange = function (str) {
  *
  */
 helper.ExtractUTRange = function (str) {
-    if (str.startsWith("LST[") || str.startsWith("[")) {
+    if (str.startsWith("LST[")) {
         return helper.ExtractLSTRange(str);
     }
     if (str.slice(-1) !== ']' || str.indexOf('-') === -1) {

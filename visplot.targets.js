@@ -1137,9 +1137,9 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
         return false;
     }
     if (helper.notFloat(words[10])) {
-        if (!(words[10].startsWith("UT[") || words[10].startsWith("LST[") || words[10].startsWith("[")) ||
+        if (!(words[10].startsWith("UT[") || words[10].startsWith("LST[")) ||
             words[10].slice(-1) != ']' || words[10].indexOf('-') == -1) {
-            helper.LogError('Error: Incorrect syntax: [CONSTRAINTS] should either be a float (e.g., 2.0) or a UT range (e.g., [20:00-23:00]) on line #' + linenumber + '!');
+            helper.LogError('Error: Incorrect syntax: [CONSTRAINTS] should either be a float (e.g., 2.0), a UT range (e.g., UT[20:00-23:00]) or an LST range (e.g. LST[2-4:30]) on line #' + linenumber + '!');
             return false;
         }
         if (helper.notInt(words[8]) && words[8] != '*') {
