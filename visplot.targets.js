@@ -90,14 +90,27 @@ TargetList.prototype.targetStringToJSON = function (line) {
     var obj = {};
     obj.name = dat[0];
     obj.airmass = parseFloat(dat[10]);
-    obj.UTstart = night.ENauTwilight;
-    obj.UTend = night.MNauTwilight;
-    obj.fillslot = false;
+    if (isNaN(obj.airmass)) {
+        uts = helper.ExtractUTRange(dat[10]);
+        obj.UTstart = Math.max(night.ENauTwilight, uts[0]);
+        obj.UTend = Math.min(night.MNauTwilight, uts[1]);
+        obj.airmass = 9.9;
+        obj.fillslot = dat[8] == "*";
+        if (obj.fillslot) {
+            obj.exptime = obj.UTend - obj.UTstart;
+        } else {
+            obj.exptime = parseFloat(dat[8])/86400.0;
+        }
+    } else {
+        obj.UTstart = night.ENauTwilight;
+        obj.UTend = night.MNauTwilight;
+        obj.fillslot = false;
+        obj.exptime = parseFloat(dat[8])/86400.0;
+    }
     obj.project = dat[9];
     obj.epoch = parseFloat(dat[7]);
     obj.line = Array();
     obj.type = dat[11];
-    obj.exptime = parseFloat(dat[8])/86400.0;
     obj.constraints = dat[10];
     rax = dat[3].split('/');
     decx = dat[6]. split('/');
@@ -499,7 +512,7 @@ TargetList.prototype.display_scheduleStatistics = function () {
         }
     }
     var time_lost = 0, bwst, bwen;
-    for (i = 0; i < this.Offline; i += 1) {
+    for (i = 0; i < this.Offline.length; i += 1) {
         bwst = Math.min(Math.max(this.Offline[i].Start, driver.night.ENauTwilight), driver.night.MNauTwilight);
         bwen = Math.max(Math.min(this.Offline[i].End, driver.night.MNauTwilight), driver.night.ENauTwilight);
         time_lost += bwen - bwst;
@@ -966,7 +979,7 @@ TargetList.prototype.ExportTCSCatalogue = function () {
  */
 TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
     // Split by white spaces
-    var words = linetext.match(/(\[[0-9:-]+\]|[^\[\]\s:]+)/g);
+    var words = linetext.split(/\s+/g);
     // Sanity check: minimum number of fields
     if (words.length <= 1) {
         helper.LogError('Error: Incorrect syntax on Line #' + linenumber + '; for each object you must provide at least the Name, RA and Dec!');
@@ -1124,7 +1137,8 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
         return false;
     }
     if (helper.notFloat(words[10])) {
-        if (words[10].substr(0, 1) != '[' || words[10].slice(-1) != ']' || words[10].indexOf('-') == -1) {
+        if (!(words[10].startsWith("UT[") || words[10].startsWith("LST[") || words[10].startsWith("[")) ||
+            words[10].slice(-1) != ']' || words[10].indexOf('-') == -1) {
             helper.LogError('Error: Incorrect syntax: [CONSTRAINTS] should either be a float (e.g., 2.0) or a UT range (e.g., [20:00-23:00]) on line #' + linenumber + '!');
             return false;
         }
@@ -1319,8 +1333,8 @@ Target.prototype.Update = function (obj) {
         this.MaxAirmass = driver.defaultAM;
     } else {
         isUT = true;
-        ut1 = UTr[0];
-        ut2 = UTr[1];
+        ut1 = Math.max(night.ENauTwilight, UTr[0]);
+        ut2 = Math.min(night.MNauTwilight, UTr[1]);
     }
     if (isUT) {
         this.MaxAirmass = 9.9;
