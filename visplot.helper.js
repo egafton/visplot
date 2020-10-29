@@ -260,26 +260,73 @@ helper.EphemDateToHM = function (d) {
     return hh + ":" + helper.padTwoDigits(mm);
 };
 
+helper.LSTToAngle = function (text) {
+    let arr = text.split(':');
+    if (arr.length < 1 || arr.length > 3 || helper.notInt(arr[0])) {
+        return -1;
+    }
+    let hh = helper.filterInt(arr[0]);
+    let mm = (arr.length > 1) ? helper.filterInt(arr[1]) : 0;
+    let ss = (arr.length > 2) ? helper.filterInt(arr[2]) : 0;
+    if (hh < 0 || hh > 24 || mm < 0 || mm > 60 || ss < 0 || ss > 60) {
+        return -1;
+    }
+    return sla.dtf2r(hh, mm, ss);
+};
+
+/**
+ * 
+ */
+helper.LSTToEphemDate = function (str) {
+    let rad1 = helper.LSTToAngle(str[0]);
+    let rad2 = helper.LSTToAngle(str[1]);
+    if (rad1 === -1 || rad2 === -1) {
+        return false;
+    }
+    let sunset = driver.night.stlSunset;
+    if (rad1 > rad2) {
+        rad2 += sla.d2pi;
+    }
+    /* Sidereal day is not 86400 seconds, but 86164.1! */
+    let jdiff1 = (rad1-sunset)*86164.1/sla.d2pi;
+    let jdiff2 = (rad2-sunset)*86164.1/sla.d2pi;
+    let ut1 = driver.night.Sunset + jdiff1 / 86400;
+    let ut2 = driver.night.Sunset + jdiff2 / 86400;
+    if (ut1 < driver.night.Sunset) {
+        ut1 = driver.night.Sunset;
+    }
+    if (ut2 < driver.night.Sunset) {
+        ut2 = driver.night.Sunset;
+    }
+    if (ut1 > driver.night.Sunrise) {
+        ut1 = driver.night.Sunrise;
+    }
+    if (ut2 > driver.night.Sunrise) {
+        ut2 = driver.night.Sunrise;
+    }
+    return [ut1, ut2];
+};
+
 /**
  * Convert a H:MM or H:MM:SS format to a Python.ephem date.
  */
 helper.HMToEphemDate = function (text) {
-    var jsunset = driver.night.DateSunset;
-    var arr = text.split(':');
+    let jsunset = driver.night.DateSunset;
+    let arr = text.split(':');
     if (arr.length < 1 || arr.length > 3 || helper.notInt(arr[0])) {
         return -1;
     }
-    var hh = helper.filterInt(arr[0]);
-    var mm = (arr.length > 1) ? helper.filterInt(arr[1]) : 0;
-    var ss = (arr.length > 2) ? helper.filterInt(arr[2]) : 0;
+    let hh = helper.filterInt(arr[0]);
+    let mm = (arr.length > 1) ? helper.filterInt(arr[1]) : 0;
+    let ss = (arr.length > 2) ? helper.filterInt(arr[2]) : 0;
     if (hh < 0 || hh > 24 || mm < 0 || mm > 60 || ss < 0 || ss > 60) {
         return -1;
     }
     if (hh < driver.night.tSunset[3] - 1 && hh > driver.night.tSunrise[3] + 1) {
         return -1;
     }
-    var jtime = new Date(Date.UTC(driver.night.tSunset[0], driver.night.tSunset[1], driver.night.tSunset[2] + (hh > 12 ? 0 : 1), hh, mm, ss, 0));
-    var jdiff = (jtime - jsunset) / 8.64e7;
+    let jtime = new Date(Date.UTC(driver.night.tSunset[0], driver.night.tSunset[1]-1, driver.night.tSunset[2] + (hh > 12 ? 0 : 1), hh, mm, ss, 0));
+    let jdiff = (jtime - jsunset) / 8.64e7;
     return driver.night.Sunset + jdiff;
 };
 
@@ -458,11 +505,34 @@ helper.plural = function (num, what) {
 /**
  *
  */
-helper.ExtractUTRange = function (str) {
-    if (str.substr(0, 1) !== '[' || str.slice(-1) !== ']' || str.indexOf('-') === -1) {
+helper.ExtractLSTRange = function (str) {
+    if (str.startsWith("UT[")) {
+        return helper.ExtractUTRange(str);
+    }
+    if (str.slice(-1) !== ']' || str.indexOf('-') === -1) {
         return false;
     }
-    var inner = str.substr(1, str.length - 2);
+    let pos = str.indexOf("[");
+    var inner = str.substr(pos+1, str.length - pos - 2);
+    str = inner.split('-');
+    if (str.length !== 2) {
+        return false;
+    }
+    return helper.LSTToEphemDate(str);
+};
+
+/**
+ *
+ */
+helper.ExtractUTRange = function (str) {
+    if (str.startsWith("LST[")) {
+        return helper.ExtractLSTRange(str);
+    }
+    if (str.slice(-1) !== ']' || str.indexOf('-') === -1) {
+        return false;
+    }
+    let pos = str.indexOf("[");
+    var inner = str.substr(pos+1, str.length - pos - 2);
     str = inner.split('-');
     if (str.length !== 2) {
         return false;

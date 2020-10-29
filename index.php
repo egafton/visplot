@@ -155,10 +155,10 @@ $_DEBUG = TRUE;
             • <code>[DEC]</code>  is the declination, given in the same format as the RA; optionally, one can append to it a proper motion given in arcsec/year <code>[pmDEC]</code>, which is otherwise assumed to be <code>0.0</code>;<br/>
             • <code>[EPOCH]</code> is the epoch of the coordinates; the only valid options are <code>2000</code> (corresponding to J2000) and <code>1950</code> (corresponding to B1950);<br/>
             • <code>[OBSTIME]</code>  is the total observing time (<b>including overheads</b>) in seconds;<br/>
-                    Alternatively, <code>[OBSTIME]</code> can be <code>*</code> if <code>[CONSTRAINTS]</code> is a UT range, in which case the object will be scheduled with absolute
+                    Alternatively, <code>[OBSTIME]</code> can be <code>*</code> if <code>[CONSTRAINTS]</code> is a UT/LST range, in which case the object will be scheduled with absolute
                     priority for the entire time interval (useful for, e.g., time-critical monitoring);<br/>
             • <code>[PROJECT]</code> is the project number (used for accounting purposes, but also for priority-based scheduling);<br/>
-            • <code>[CONSTRAINTS]</code>  are the observing constraints, either airmass (a float, e.g., <code>2.0</code>) or a UT range (<code>[20:00-23:30]</code>);<br/>
+            • <code>[CONSTRAINTS]</code>  are the observing constraints, either airmass (a float, e.g., <code>2.0</code>), a UT range (<code>UT[20:00-23:30]</code>) or an LST range (<code>LST[2-4:30]</code>);<br/>
             • <code>[TYPE]</code> is the type of observation, and can be one of the following: <code>Monitor</code>, <code>ToO</code>, <code>SoftToO</code>, <code>Payback</code>, <code>Fast-Track</code>, <code>Service</code>, <code>Visitor</code>, and <code>Staff</code>.
             Iff <code>[TYPE]</code> is set to <code>Staff</code>, it is allowed to add a slash and 2-3 initials to identify for which member of the staff the observations are taken (e.g., <code>Staff/JHT</code>, <code>Staff/TP</code>, etc.).<br/><br/>
 
@@ -178,10 +178,10 @@ $_DEBUG = TRUE;
             • <code>HD84937 09:46:12.00/0.03 13:59:17.00/-0.79 1950 414 54-501 1.5 ToO</code><br/>
                 For this object the proper motion is appended to the RA and Dec values, and the coordinate epoch is given as B1950.<br/>
 
-            • <code>EQPsc 23 34 34.70 -01 19 36.01 2000 1800 54-321 [22:00-24:00] Staff</code><br/>
+            • <code>EQPsc 23 34 34.70 -01 19 36.01 2000 1800 54-321 UT[22:00-24:00] Staff</code><br/>
                 In this case the program will schedule EQPsc for 30 min between UT 22 and 24.<br/>
 
-            • <code>EQPsc 23:34:34.70 -01:19:36.01 2000 * 54-321 [20:00-20:30] Staff</code><br/>
+            • <code>EQPsc 23:34:34.70 -01:19:36.01 2000 * 54-321 UT[20:00-20:30] Staff</code><br/>
                 In this case EQPsc will be scheduled for the entire half hour between UT 20:00 and 20:30. Highest priority.<br/>
             <br/>
             Note: It is possible to separate groups of targets by blank lines, which will be ignored by the software.<br/>
@@ -194,8 +194,9 @@ $_DEBUG = TRUE;
             <span class="sh0">Alternative syntax for non-schedulable time</span>
             The software can avoid scheduling observations in a given interval (e.g., when the telescope is offline due to bad weather or technical problems, or for the visitor's half of a shared night, etc.).<br/>
             The syntax to add an offline period is:<br/>
-            • <code>Offline [20:30-22:30]</code><br/>
-            In this example, the system will not schedule any observations in the given UT range. One can define as many such intervals as desired.<br/>
+            • <code>Offline UT[20:30-22:30]</code><br/>
+            • <code>Offline LST[23-3]</code><br/>
+            In this example, the system will not schedule any observations in the given UT or LST range. One can define as many such intervals as desired.<br/>
             <br/>
             <span class="sh0">SkyCam</span>
             The button <i>Show SkyCam</i> will open a lightbox window showing SkyCam and the current UT and LST (these refresh automatically). 

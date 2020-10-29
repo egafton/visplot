@@ -79,6 +79,7 @@ Night.prototype.setEphemerides = function (obj) {
     this.moonra = mret.ra;
     this.moondec = mret.dec;
     this.MoonIllStart = (1 - Math.cos(sep)) * 0.5 * 100;
+    this.stlSunset = helper.stl(this.Sunset, this.eqeqx);
     
     // Next noon; sunrise; morning twilight
     stl = helper.stl(this.utcMidnight+0.5, this.eqeqx);
@@ -96,6 +97,7 @@ Night.prototype.setEphemerides = function (obj) {
     var mret = sla.rdplan(this.Sunrise + this.dut, "Moon", Driver.obs_lon_rad, Driver.obs_lat_rad);
     var sep = sla.dsep(sret.ra, sret.dec, mret.ra, mret.dec);
     this.MoonIllEnd = (1 - Math.cos(sep)) * 0.5 * 100;
+    this.stlSunrise = helper.stl(this.Sunrise, this.eqeqx);
     
     this.wnight = this.Sunrise - this.Sunset;   // Length of the night in days
     this.xstep = this.wnight / this.Nx;         // Resolution of the time array
@@ -161,7 +163,6 @@ Night.prototype.setEphemerides = function (obj) {
     }
     this.Moonrise = 0;
     var lim = helper.rad2deg(- this.HorizonDip);
-    console.log(lim);
     if (this.ymoon[0] < lim-sla.r2d*this.rmoon[0]) {
         // will rise
         for (i = 1; i < this.Nx; i += 1) {
@@ -183,7 +184,5 @@ Night.prototype.setEphemerides = function (obj) {
             }
         }
     }
-    this.BadWolfStart = [];
-    this.BadWolfEnd = [];
     driver.targets.StartingAt = this.Sunset;
 };

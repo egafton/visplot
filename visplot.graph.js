@@ -199,11 +199,11 @@ Graph.prototype.drawSchedule = function () {
         this.ctx.lineTo(this.xaxis[obj.iScheduledEndTime], this.yend + 2.6);
         this.ctx.stroke();
     }
-    for (i = 0; i < driver.night.BadWolfStart.length; i += 1) {
+    for (i = 0; i < driver.targets.BadWolfStart.length; i += 1) {
         this.ctx.strokeStyle = 'red';
         this.ctx.beginPath();
-        this.ctx.moveTo(this.transformXLocation(driver.night.BadWolfStart[i]), this.yend + 2.6);
-        this.ctx.lineTo(this.transformXLocation(driver.night.BadWolfEnd[i]), this.yend + 2.6);
+        this.ctx.moveTo(this.transformXLocation(driver.targets.BadWolfStart[i]), this.yend + 2.6);
+        this.ctx.lineTo(this.transformXLocation(driver.targets.BadWolfEnd[i]), this.yend + 2.6);
         this.ctx.stroke();
     }
 
@@ -443,10 +443,10 @@ Graph.prototype.drawEphemerides = function () {
     this.ctx.rect(this.xstart, this.yend, this.width, -this.degree * 30);
     this.ctx.fill();
     // ... and to offline time
-    for (i = 0; i < driver.night.BadWolfStart.length; i += 1) {
+    for (i = 0; i < driver.targets.BadWolfStart.length; i += 1) {
         this.ctx.beginPath();
         this.ctx.globalAlpha = 0.3;
-        this.ctx.rect(this.transformXLocation(driver.night.BadWolfStart[i]), this.ystart, this.transformXLocation(driver.night.BadWolfEnd[i]) - this.transformXLocation(driver.night.BadWolfStart[i]), this.degree * 60);
+        this.ctx.rect(this.transformXLocation(driver.targets.BadWolfStart[i]), this.ystart, this.transformXLocation(driver.targets.BadWolfEnd[i]) - this.transformXLocation(driver.targets.BadWolfStart[i]), this.degree * 60);
         this.ctx.fill();
     }
 
