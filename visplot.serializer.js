@@ -27,7 +27,7 @@ serializer.BindEvents = function () {
 serializer.saveDocument = function () {
     helper.Log('Exporting schedule in visplot format...');
     try {
-        var zip = new JSZip();
+        let zip = new JSZip();
         zip.file("visplot.txt", JSON.stringify({
             night: driver.night,
             graph: driver.graph,
@@ -52,19 +52,19 @@ serializer.saveDocument = function () {
 
 serializer.loadDocument = function (e) {
     helper.LogEntry('Importing schedule from the given file...');
-    var files = e.target.files; // FileList object
+    let files = e.target.files; // FileList object
     if (files === false || files === null || files === undefined || files.length != 1) {
         helper.LogError('Error: Failed to load the file.');
         return;
     }
-    var new_zip = new JSZip();
+    let new_zip = new JSZip();
     new_zip.loadAsync(files[0]).then(function (zip) {
         if (zip === false || zip === null || zip === undefined) {
             helper.LogError('Error: Could not open the file because it has an invalid format.');
             return;
         }
         new_zip.file("visplot.txt").async("string").then(function (txt) {
-            var obj = JSON.parse(txt), i;
+            let obj = JSON.parse(txt), i;
             if (obj === false || obj === null || obj === undefined || obj.night === null || obj.night === undefined || obj.graph === null || obj.graph === undefined || obj.driver === null || obj.driver === undefined || obj.targets === null || obj.targets === undefined) {
                 helper.LogError('Error: Could not open the file because it has an invalid format.');
                 return;
@@ -81,7 +81,7 @@ serializer.loadDocument = function (e) {
             Driver.defaultProject = obj.driver.defaultProject;
             Driver.defaultType = obj.driver.defaultType;
             Driver.defaultObstime = obj.driver.defaultObstime;
-            var k;
+            let k;
             for (k in Driver.FillColors) {
                 Driver.FillColors = [k, obj.driver.FillColors[k]];
                 Driver.TextColors = [k, obj.driver.TextColors[k]];
@@ -90,7 +90,7 @@ serializer.loadDocument = function (e) {
                 obj.__proto__ = proto;
                 return obj;
             };
-            var deserialize = function (object) {
+            let deserialize = function (object) {
                 Object.setPrototypeOf(object, window[object['#']].prototype);
                 return object;
             };
@@ -136,17 +136,17 @@ serializer.exportPNG = function () {
      */
     helper.LogEntry('Trying to export png file...');
     // Save context state
-    var w = driver.canvas.width;
-    var h = driver.canvas.height;
-    var data;
+    let w = driver.canvas.width;
+    let h = driver.canvas.height;
+    let data;
     data = driver.context.getImageData(0, 0, w, h);
-    var compositeOperation = driver.context.globalCompositeOperation;
+    let compositeOperation = driver.context.globalCompositeOperation;
     // Add a white background behind everything else that is already drawn
     driver.context.globalCompositeOperation = "destination-over";
     driver.context.fillStyle = "#fff";
     driver.context.fillRect(0, 0, w, h);
     // Save image
-    var imageData = driver.canvas.toDataURL("image/png");
+    let imageData = driver.canvas.toDataURL("image/png");
     // Restore context state
     driver.context.clearRect(0, 0, w, h);
     driver.context.putImageData(data, 0, 0);

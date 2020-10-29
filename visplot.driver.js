@@ -58,35 +58,6 @@ function Driver() {
     this.mouseInsideObject = -1;
 }
 
-Driver.prototype.AJAX_POST = function (url, data, fnSuccess) {
-    $.ajax({
-        url: url,
-        type: 'POST',
-        data: data,
-        dataType: 'json',
-        async: true,
-        success: fnSuccess,
-        error: function (msg) {
-            helper.LogError(msg);
-        }
-    });
-};
-
-Driver.prototype.AJAX_GET = function (url, fnSuccess) {
-    try {
-        $.ajax({
-            url: url,
-            type: 'GET',
-            async: true,
-            success: fnSuccess,
-            error: function () {
-            }
-        });
-    }
-    catch (e) {
-    }
-};
-
 Driver.prototype.ParseOBInfoIfAny = function () {
     if ($('#obinfo').length === 0) {
         helper.LogEntry('No OB info detected.');
@@ -116,9 +87,9 @@ Driver.prototype.Callback_SetDate = function (obj) {
 
     if (this.ob && !this.obprocessed) {
         helper.LogEntry('Processing the targets from the OB queue...');
-        var ntargets = this.obdata.nTargets;
+        let ntargets = this.obdata.nTargets;
         helper.LogEntry(helper.plural(ntargets, 'target') + ' found.');
-        var line, i;
+        let line, i;
         for (i = 1; i <= ntargets; i += 1) {
             obj = this.obdata.Targets['target' + i];
             line = obj.Name + ' ' + obj.RA + (parseFloat(obj.PM.RA) === 0.0 ? '' : '/' + parseFloat(obj.PM.RA)) + ' ' + obj.Dec + (parseFloat(obj.PM.Dec) === 0.0 ? '' : '/' + parseFloat(obj.PM.Dec)) + ' ' + parseInt(obj.Epoch) + ' ' + obj.ObsTime + ' ' + obj.Proposal + ' ' + obj.Constraint + ' ' + obj.Type;
@@ -169,9 +140,9 @@ Driver.prototype.Callback_UpdateSchedule = function () {
 };
 
 Driver.prototype.BtnEvt_SetDate = function () {
-    var year = helper.filterInt($('#dateY').val());
-    var month = helper.filterInt($('#dateM').val());
-    var day = helper.filterInt($('#dateD').val());
+    let year = helper.filterInt($('#dateY').val());
+    let month = helper.filterInt($('#dateM').val());
+    let day = helper.filterInt($('#dateD').val());
     if (isNaN(year) || isNaN(month) || isNaN(day)) {
         helper.LogError('Error: Invalid date (' + year + '-' + month + '-' + day + ').');
         return;
@@ -184,7 +155,7 @@ Driver.prototype.BtnEvt_SetDate = function () {
         helper.LogError('Error: Invalid month (' + month + ').');
         return;
     }
-    var dmax = helper.numberOfDays(year, month);
+    let dmax = helper.numberOfDays(year, month);
     if (day < 1 || day > dmax) {
         helper.LogError('Error: Invalid day (' + day + ') for ' + year + '-' + helper.padTwoDigits(month) + ". Please enter a number between 1 and " + dmax + ".");
         return;
@@ -212,7 +183,7 @@ Driver.prototype.BtnEvt_PlotTargets = function () {
         }
     }
     if (this.RequestedScheduleType === 1) {
-        var ret = this.targets.prepareScheduleForUpdate();
+        let ret = this.targets.prepareScheduleForUpdate();
         if (ret === '') { // nothing to do, since the input form has not been changed
             return;
         }
@@ -242,13 +213,14 @@ Driver.prototype.EvtFrame_MouseMove = function (e) {
     if (this.targets.Ntargets === 0) {
         return;
     }
-    var x = e.offsetX || e.layerX, y = e.offsetY || e.layerY, i, obj;
+    let x = e.offsetX || e.layerX;
+    let y = e.offsetY || e.layerY;
     x -= 12;
     y -= 12;
     if (this.rescheduling) {
         if (x > this.graph.targetsx) {
             for (i = 0; i < this.targets.nTargets; i += 1) {
-                obj = this.targets.Targets[i];
+                let obj = this.targets.Targets[i];
                 if (y >= obj.ystart && y <= obj.yend) {
                     this.reY = (y <= 0.5 * (obj.ystart + obj.yend) ? obj.ystart : obj.yend) + 1.5;
                     break;
@@ -260,8 +232,8 @@ Driver.prototype.EvtFrame_MouseMove = function (e) {
         this.graph.drawRHSofSchedule();
         return;
     }
-    for (i = 0; i < this.targets.nTargets; i += 1) {
-        obj = this.targets.Targets[i];
+    for (let i = 0; i < this.targets.nTargets; i += 1) {
+        let obj = this.targets.Targets[i];
         if (this.insideObject(x, y, obj)) {
             if (this.mouseInsideObject !== i) {
                 this.mouseInsideObject = i;
@@ -301,12 +273,12 @@ Driver.prototype.EvtFrame_MouseDown = function (e) {
     if (this.targets.Ntargets === 0 || !this.scheduleMode) {
         return;
     }
-    var x = e.offsetX || e.layerX, y = e.offsetY || e.layerY;
+    let x = e.offsetX || e.layerX;
+    let y = e.offsetY || e.layerY;
     x -= 12;
     y -= 12;
     if (x > this.graph.targetsx) {
-        var i;
-        for (i = 0; i < this.targets.nTargets; i += 1) {
+        for (let i = 0; i < this.targets.nTargets; i += 1) {
             if (y >= this.targets.Targets[i].ystart && y <= this.targets.Targets[i].yend) {
                 this.reObj = i;
                 this.rescheduling = true;
@@ -320,7 +292,8 @@ Driver.prototype.EvtFrame_MouseUp = function (e) {
     if (this.targets.Ntargets === 0 || !this.scheduleMode) {
         return;
     }
-    var x = e.offsetX || e.layerX, y = e.offsetY || e.layerY;
+    let x = e.offsetX || e.layerX;
+    let y = e.offsetY || e.layerY;
     x -= 12;
     y -= 12;
     if (x > this.graph.targetsx) {
@@ -329,7 +302,8 @@ Driver.prototype.EvtFrame_MouseUp = function (e) {
         } else {
             this.rescheduling = false;
             this.reY = null;
-            var dropped = false, i, le, ri, llim, rlim;
+            let dropped = false;
+            let i, le, ri, llim, rlim;
             for (i = 0; i < this.targets.nTargets; i += 1) {
                 llim = this.targets.Targets[i].ystart;
                 rlim = this.targets.Targets[i].yend;
@@ -355,7 +329,7 @@ Driver.prototype.EvtFrame_MouseUp = function (e) {
             }
             if (dropped) {
                 // reObj must come between le and ri
-                var newscheduleorder = [];
+                let newscheduleorder = [];
                 for (i = 0; i < this.targets.nTargets; i += 1) {
                     if (i == this.reObj) {
                         continue;
@@ -393,11 +367,12 @@ Driver.prototype.EvtFrame_Click = function (e) {
     if (this.targets.Ntargets === 0) {
         return;
     }
-    var x = e.offsetX || e.layerX, y = e.offsetY || e.layerY;
+    let x = e.offsetX || e.layerX;
+    let y = e.offsetY || e.layerY;
     x -= 12;
     y -= 12;
-    var i, obj, moonHasSet, LunarPhase, ra, dec;
-    for (i = 0; i < this.targets.nTargets; i += 1) {
+    let obj, moonHasSet, LunarPhase, ra, dec;
+    for (let i = 0; i < this.targets.nTargets; i += 1) {
         obj = this.targets.Targets[i];
         if (this.insideObject(x, y, obj)) {
             moonHasSet = obj.Scheduled ? (this.night.ymoon[helper.EphemTimeToIndex(obj.ScheduledMidTime)] < 0) : false;
@@ -434,7 +409,7 @@ Driver.prototype.EvtFrame_Click = function (e) {
             if (this.aladinInitialized) {
                 this.objAladin.gotoRaDec(ra, dec);
             } else {
-                var surveyName = "P/DSS2/color"; /*"P/2MASS/color";*/
+                let surveyName = "P/DSS2/color"; /*"P/2MASS/color";*/
                 $('#details_map_hang').html(surveyName);
                 this.objAladin = A.aladin('#details_map', {
                     target: ra + ' ' + dec,
@@ -460,9 +435,9 @@ Driver.prototype.EvtFrame_Drop = function (e) {
         return;
     }
     e.preventDefault();
-    var dropped = e.originalEvent.dataTransfer.getData('Text');
-    var numberPattern = /[+\-]?\d+(\.\d+)?/g;
-    var floats = dropped.match(numberPattern).map(function (v) {
+    let dropped = e.originalEvent.dataTransfer.getData('Text');
+    let numberPattern = /[+\-]?\d+(\.\d+)?/g;
+    let floats = dropped.match(numberPattern).map(function (v) {
         return parseFloat(v);
     });
     if (floats.length == 6) {
@@ -472,7 +447,7 @@ Driver.prototype.EvtFrame_Drop = function (e) {
 };
 
 Driver.prototype.InitializeDate = function () {
-    var year, month, day, datemsg;
+    let year, month, day, datemsg;
     if (this.ob) {
         helper.LogEntry('Date string provided by the OB queue: ' + this.obdata.Date);
         year = parseInt(this.obdata.Date.substr(0, 4));
@@ -480,14 +455,14 @@ Driver.prototype.InitializeDate = function () {
         day = parseInt(this.obdata.Date.substr(6, 2));
         datemsg = 'Date set to ' + year + '-' + helper.padTwoDigits(month) + '-' + helper.padTwoDigits(day) + ', as provided by the OB queue.';
     } else {
-        var now = new Date();
+        let now = new Date();
         helper.LogEntry('Today is ' + now.toUTCString());
         day = now.getUTCDate();
         month = now.getUTCMonth() + 1;
         year = now.getUTCFullYear();
         if (now.getUTCHours() < 12) {
             if (day == 1) {
-                var dd = helper.numberOfDays(year, month - 1);
+                let dd = helper.numberOfDays(year, month - 1);
                 if (month === 0) {
                     year = year - 1;
                     month = 11;
@@ -525,7 +500,7 @@ Driver.prototype.EvtSkycm_Click = function () {
 };
 
 Driver.prototype.EvtSkycm_MouseMove = function (e, jQthis) {
-    var pos_x, pos_y;
+    let pos_x, pos_y;
     if (e.pageX === undefined && e.pageY === undefined) {
         pos_x = 320;
         pos_y = 240;
@@ -537,7 +512,7 @@ Driver.prototype.EvtSkycm_MouseMove = function (e, jQthis) {
         this.skyGraph.display_coords(null);
         this.skyGraph.lastazalt = null;
     } else {
-        var azalt = helper.getCoordinates(320, 240, pos_x, pos_y, 280, this.skyGraph.lst);
+        let azalt = helper.getCoordinates(320, 240, pos_x, pos_y, 280, this.skyGraph.lst);
         this.skyGraph.display_coords(azalt);
         this.skyGraph.lastazalt = azalt;
     }
@@ -674,8 +649,7 @@ Driver.prototype.BindEvents = function () {
         driver.ToggleLineNumbers();
     });
 
-    var k;
-    for (k in Driver.FillColors) {
+    for (let k in Driver.FillColors) {
         $('#def_col_' + k.replace('-', '_')).addClass('inpshort');
         $('#def_tcol_' + k.replace('-', '_')).addClass('inpshort');
         $('#def_col_' + k.replace('-', '_')).keydown(function (e) {
@@ -703,8 +677,7 @@ Driver.prototype.EvtClick_SetDefaults = function () {
     $('#def_type').val(Driver.defaultType);
     $('#def_maxam').val(Driver.defaultAM);
     $('#def_obstime').val(Driver.defaultObstime);
-    var k;
-    for (k in Driver.FillColors) {
+    for (let k in Driver.FillColors) {
         $('#def_col_' + k.replace('-', '_')).val(Driver.FillColors[k]);
         $('#def_tcol_' + k.replace('-', '_')).val(Driver.TextColors[k]);
     }
@@ -723,7 +696,7 @@ Driver.prototype.CallbackUpdateDefaults = function () {
     if ($('#defsubmit').val() === 'false') {
         return;
     }
-    var re, k, resetTel = false, resetCol = false;
+    let re, k, resetTel = false, resetCol = false;
     helper.LogEntry('Updating default parameters...');
     re = $('input[name=def_telescope]:checked').val().trim();
     if (re !== Driver.telescopeName) {
@@ -755,9 +728,9 @@ Driver.prototype.CallbackUpdateDefaults = function () {
     }
     re = $('#def_type').val().trim();
     if (re !== Driver.defaultType) {
-        var reok = true;
+        let reok = true;
         if ($.inArray(re, ['Monitor', 'ToO', 'SoftToO', 'Payback', 'Fast-Track', 'Service', 'Visitor', 'Staff']) === -1) {
-            var wl = re.length;
+            let wl = re.length;
             if (re.indexOf('Staff/') !== 0 || (re.indexOf('Staff/') === 0 && (wl < 8 || wl > 9))) {
                 reok = false;
             }
@@ -825,7 +798,7 @@ Driver.prototype.Callback_ShowCurrentTime = function () {
     if (!this.nightInitialized) {
         return;
     }
-    var now = new Date();
+    let now = new Date();
     if (now < this.night.DateSunset || now > this.night.DateSunrise) {
         return;
     }
@@ -850,8 +823,8 @@ Driver.prototype.Refresh = function () {
 };
 
 Driver.prototype.markAsObserved = function (observed) {
-    var id_of_observed = $('#id_of_observed').val();
-    var obj = this.targets.Targets[id_of_observed];
+    let id_of_observed = $('#id_of_observed').val();
+    let obj = this.targets.Targets[id_of_observed];
     obj.Observed = observed;
     obj.ObservedStartTime = $('#actual_start').val();
     obj.ObservedEndTime = $('#actual_end').val();
@@ -864,18 +837,18 @@ Driver.prototype.markAsObserved = function (observed) {
 
 Driver.prototype.rescaleCanvas = function (cnv, ctx) {
     // Query the various pixel ratios
-    var devicePixelRatio = window.devicePixelRatio || 1;
-    var backingStoreRatio = ctx.webkitBackingStorePixelRatio ||
+    let devicePixelRatio = window.devicePixelRatio || 1;
+    let backingStoreRatio = ctx.webkitBackingStorePixelRatio ||
             ctx.mozBackingStorePixelRatio ||
             ctx.msBackingStorePixelRatio ||
             ctx.oBackingStorePixelRatio ||
             ctx.backingStorePixelRatio || 1;
-    var ratio = devicePixelRatio / backingStoreRatio;
+    let ratio = devicePixelRatio / backingStoreRatio;
 
     // Upscale the canvas if the two ratios don't match
     if ((typeof auto === 'undefined' ? true : auto) && devicePixelRatio !== backingStoreRatio) {
-        var oldWidth = cnv.width;
-        var oldHeight = cnv.height;
+        let oldWidth = cnv.width;
+        let oldHeight = cnv.height;
 
         cnv.width = oldWidth * ratio;
         cnv.height = oldHeight * ratio;
@@ -892,8 +865,8 @@ Driver.prototype.ToggleLineNumbers = function () {
     if (!this.scheduleMode) {
         return;
     }
-    var i, obj, xshift = 0, yshift = 0;
-    for (i = 0; i < this.targets.nTargets; i += 1) {
+    let obj, xshift = 0, yshift = 0;
+    for (let i = 0; i < this.targets.nTargets; i += 1) {
         obj = this.targets.Targets[i];
         obj.resetColours();
         obj.ComputePositionSchedLabel();

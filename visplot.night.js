@@ -44,12 +44,12 @@ Night.prototype.setEphemerides = function (obj) {
      * which is approximately equal to what SLALIB gives at sea-level.
      * However, at high altitude (low pressure) this can be smaller by about 10 arcminutes, so that
      * needs to be adjusted */
-    var stdPres = 1013.25; // hPa
-    var stdTemp = 298.15;  // K, 15 deg
-    var sitePres = stdPres * Math.exp(-9.80665 * 0.0289644 * Driver.obs_alt / stdTemp / 8.31447)
-    var siteTemp = stdTemp-0.0065*Driver.obs_alt; // 15 deg at sea level, use TLR to reduce temperature
-    var siteWvlen = 0.55;
-    var siteHum = 0.2;
+    let stdPres = 1013.25; // hPa
+    let stdTemp = 298.15;  // K, 15 deg
+    let sitePres = stdPres * Math.exp(-9.80665 * 0.0289644 * Driver.obs_alt / stdTemp / 8.31447)
+    let siteTemp = stdTemp-0.0065*Driver.obs_alt; // 15 deg at sea level, use TLR to reduce temperature
+    let siteWvlen = 0.55;
+    let siteHum = 0.2;
     this.ref = sla.refco(Driver.obs_alt, siteTemp, sitePres, siteHum, siteWvlen, Driver.obs_lat_rad, 0.0065);
     this.RefractionAtHorizon = sla.refro(0.5*Math.PI, Driver.obs_alt, siteTemp, sitePres, siteHum, siteWvlen,
                                          Driver.obs_lat_rad, 0.0065, 1e-8);
@@ -61,20 +61,20 @@ Night.prototype.setEphemerides = function (obj) {
      */
     
     // Previous noon; sunset; evening twilights
-    var stl = helper.stl(this.utcMidnight-0.5, this.eqeqx);
-    var ret = sla.rdplan(this.ttMidnight-0.5, "Sun", Driver.obs_lon_rad, Driver.obs_lat_rad);
-    var tsouth = 12 - sla.drange(stl - ret.ra) * sla.r2d / 15;
-    var ut1 = helper.utarc(-0.5*ret.diam - this.RefractionAtHorizon - this.HorizonDip, tsouth, ret.dec, "+");
-    var ut2 = helper.utarc(-12*sla.dd2r, tsouth, ret.dec, "+");
-    var ut3 = helper.utarc(-18*sla.dd2r, tsouth, ret.dec, "+");
+    let stl = helper.stl(this.utcMidnight-0.5, this.eqeqx);
+    let ret = sla.rdplan(this.ttMidnight-0.5, "Sun", Driver.obs_lon_rad, Driver.obs_lat_rad);
+    let tsouth = 12 - sla.drange(stl - ret.ra) * sla.r2d / 15;
+    let ut1 = helper.utarc(-0.5*ret.diam - this.RefractionAtHorizon - this.HorizonDip, tsouth, ret.dec, "+");
+    let ut2 = helper.utarc(-12*sla.dd2r, tsouth, ret.dec, "+");
+    let ut3 = helper.utarc(-18*sla.dd2r, tsouth, ret.dec, "+");
     this.Sunset = this.utcMidnight-1+sla.dtf2d(ut1[0], ut1[1], ut1[2]);
-    var next = sla.djcl(this.Sunset);
+    let next = sla.djcl(this.Sunset);
     this.tSunset = [next.iy, next.im, next.id, ut1[0], ut1[1], parseFloat(ut1[2]+"."+ut1[3])];
     this.ENauTwilight = this.utcMidnight-1+sla.dtf2d(ut2[0], ut2[1], ut2[2]);
     this.EAstTwilight = this.utcMidnight-1+sla.dtf2d(ut3[0], ut3[1], ut3[2]);
-    var sret = sla.rdplan(this.Sunset + this.dut, "Sun", Driver.obs_lon_rad, Driver.obs_lat_rad);
-    var mret = sla.rdplan(this.Sunset + this.dut, "Moon", Driver.obs_lon_rad, Driver.obs_lat_rad);
-    var sep = sla.dsep(sret.ra, sret.dec, mret.ra, mret.dec);
+    let sret = sla.rdplan(this.Sunset + this.dut, "Sun", Driver.obs_lon_rad, Driver.obs_lat_rad);
+    let mret = sla.rdplan(this.Sunset + this.dut, "Moon", Driver.obs_lon_rad, Driver.obs_lat_rad);
+    let sep = sla.dsep(sret.ra, sret.dec, mret.ra, mret.dec);
     this.moonra = mret.ra;
     this.moondec = mret.dec;
     this.MoonIllStart = (1 - Math.cos(sep)) * 0.5 * 100;
@@ -88,23 +88,23 @@ Night.prototype.setEphemerides = function (obj) {
     ut2 = helper.utarc(-12*sla.dd2r, tsouth, ret.dec, "-");
     ut3 = helper.utarc(-18*sla.dd2r, tsouth, ret.dec, "-");
     this.Sunrise = this.utcMidnight+sla.dtf2d(ut1[0], ut1[1], ut1[2]);
-    var next = sla.djcl(this.Sunrise);
+    next = sla.djcl(this.Sunrise);
     this.tSunrise = [next.iy, next.im, next.id, ut1[0], ut1[1], parseFloat(ut1[2]+"."+ut1[3])];
     this.MNauTwilight = this.utcMidnight+sla.dtf2d(ut2[0], ut2[1], ut2[2]);
     this.MAstTwilight = this.utcMidnight+sla.dtf2d(ut3[0], ut3[1], ut3[2]);
-    var sret = sla.rdplan(this.Sunrise + this.dut, "Sun", Driver.obs_lon_rad, Driver.obs_lat_rad);
-    var mret = sla.rdplan(this.Sunrise + this.dut, "Moon", Driver.obs_lon_rad, Driver.obs_lat_rad);
-    var sep = sla.dsep(sret.ra, sret.dec, mret.ra, mret.dec);
+    sret = sla.rdplan(this.Sunrise + this.dut, "Sun", Driver.obs_lon_rad, Driver.obs_lat_rad);
+    mret = sla.rdplan(this.Sunrise + this.dut, "Moon", Driver.obs_lon_rad, Driver.obs_lat_rad);
+    sep = sla.dsep(sret.ra, sret.dec, mret.ra, mret.dec);
     this.MoonIllEnd = (1 - Math.cos(sep)) * 0.5 * 100;
     this.stlSunrise = helper.stl(this.Sunrise, this.eqeqx);
     
     this.wnight = this.Sunrise - this.Sunset;   // Length of the night in days
     this.xstep = this.wnight / this.Nx;         // Resolution of the time array
-    var i;
-    var ut;
+    let i;
+    let ut;
     
-    var ell, diam, aop;
-    var moonra = [], moondec = [];
+    let ell, diam, aop;
+    let moonra = [], moondec = [];
 
     for (i = 0; i < this.Nx; i += 1) {          // ... and its initialization
         ut = this.Sunset + this.xstep * i;
@@ -132,13 +132,12 @@ Night.prototype.setEphemerides = function (obj) {
     this.DateSunrise = new Date(Date.UTC(this.tSunrise[0], this.tSunrise[1]-1, this.tSunrise[2], this.tSunrise[3], this.tSunrise[4], this.tSunrise[5], 0));
     this.DarkTime = (this.MAstTwilight - this.EAstTwilight);
     this.NightLength = (this.MNauTwilight - this.ENauTwilight);
-    var firstUT = this.tSunset[3]+1;
-    var stopUT = this.tSunrise[3];
+    let firstUT = this.tSunset[3]+1;
+    let stopUT = this.tSunrise[3];
     if (this.tSunrise[4] !== 0) {
         stopUT += 1;
     }
-    var djutc = sla.cldj(this.year, this.month, this.day) + sla.dtf2d(firstUT, 0, 0);
-    var stl;
+    let djutc = sla.cldj(this.year, this.month, this.day) + sla.dtf2d(firstUT, 0, 0);
     while (firstUT != stopUT) {
         if (firstUT == 25) {
             firstUT = 1;
@@ -161,7 +160,7 @@ Night.prototype.setEphemerides = function (obj) {
         this.MoonIlluminationString = this.MoonIllMin + ' – ' + this.MoonIllMax + '%';
     }
     this.Moonrise = 0;
-    var lim = helper.rad2deg(- this.HorizonDip);
+    let lim = helper.rad2deg(- this.HorizonDip);
     if (this.ymoon[0] < lim-sla.r2d*this.rmoon[0]) {
         // will rise
         for (i = 1; i < this.Nx; i += 1) {

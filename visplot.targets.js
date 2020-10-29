@@ -39,8 +39,8 @@ function Target(k, obj) {
     this.Exptime = obj.exptime;
     this.ExptimeSeconds = Math.round(this.Exptime * 86400);
     this.Exptime = Math.floor(this.Exptime / driver.night.xstep) * driver.night.xstep;
-    var hrs = Math.floor(this.ExptimeSeconds / 3600);
-    var min = Math.round((this.ExptimeSeconds - hrs * 3600) / 60);
+    let hrs = Math.floor(this.ExptimeSeconds / 3600);
+    let min = Math.round((this.ExptimeSeconds - hrs * 3600) / 60);
     this.ExptimeHM = (hrs > 0 ? hrs.toFixed(0) + 'h ' : '') + min.toFixed(0) + 'm';
     this.ZenithTime = obj.zenithtime;
     this.Graph = obj.line;
@@ -84,9 +84,9 @@ function Target(k, obj) {
 
 TargetList.prototype.targetStringToJSON = function (line) {
     // Parse an input string into a Target object
-    var night = driver.night;
+    let night = driver.night;
     dat = line.split(/\s+/);
-    var obj = {};
+    let obj = {};
     obj.name = dat[0];
     obj.airmass = parseFloat(dat[10]);
     if (isNaN(obj.airmass)) {
@@ -117,15 +117,15 @@ TargetList.prototype.targetStringToJSON = function (line) {
     obj.dec = `${dat[4]}:${dat[5]}:${decx[0]}`;
     obj.inputRA = obj.ra.replaceAll(":", " ");
     obj.inputDec = obj.dec.replaceAll(":", " ");
-    var ra = sla.dtf2r(parseInt(dat[1]), parseInt(dat[2]), parseFloat(rax[0]));
-    var decdeg = Math.abs(parseInt(dat[4]));
-    var decneg = dat[4].substring(0, 1) === '-';
-    var dec = sla.daf2r(decdeg, parseInt(dat[5]), parseFloat(decx[0]));
+    let ra = sla.dtf2r(parseInt(dat[1]), parseInt(dat[2]), parseFloat(rax[0]));
+    let decdeg = Math.abs(parseInt(dat[4]));
+    let decneg = dat[4].substring(0, 1) === '-';
+    let dec = sla.daf2r(decdeg, parseInt(dat[5]), parseFloat(decx[0]));
     if (decneg) {
         dec *= -1;
     }
     obj.mdist = sla.r2d * sla.dsep(night.moonra, night.moondec, ra, dec);
-    var pmra, pmdec;
+    let pmra, pmdec;
     if (rax.length === 1) {
         pmra = 0;
     } else {
@@ -145,7 +145,7 @@ TargetList.prototype.targetStringToJSON = function (line) {
     if (obj.epoch > 1984) {
         obj.J2000 = [ra, dec];
     } else {
-        var j2000;
+        let j2000;
         /* No proper motion */
         if (pmra == 0 && pmdec == 0) {
             j2000 = sla.fk45z(ra, dec, obj.epoch);
@@ -156,12 +156,12 @@ TargetList.prototype.targetStringToJSON = function (line) {
         }
     }
     
-    var stl = helper.stl(night.utcMidnight, night.eqeqx);
-    var ret = sla.mapqk(ra, dec, pmra, pmdec, 0, 0, night.amprms[0]);
-    var tsouth = - sla.drange(stl - ret.ra) * sla.r2d / 15;
-    var retap, retob;
-    var imax = 0;
-    var altmax = 0;
+    let stl = helper.stl(night.utcMidnight, night.eqeqx);
+    let ret = sla.mapqk(ra, dec, pmra, pmdec, 0, 0, night.amprms[0]);
+    let tsouth = - sla.drange(stl - ret.ra) * sla.r2d / 15;
+    let retap, retob;
+    let imax = 0;
+    let altmax = 0;
     for (i=0; i<night.Nx; i+=1) {
         retap = sla.mapqk(ra, dec, pmra, pmdec, 0, 0, night.amprms[i]);
         retob = sla.aopqk(retap.ra, retap.da, night.aoprms[i]);
@@ -178,8 +178,8 @@ TargetList.prototype.targetStringToJSON = function (line) {
 };
 
 TargetList.prototype.setTargets = function (obj) {
-    var i, o, res = Array();
-    var nobj = obj.length;
+    let i, o, res = Array();
+    let nobj = obj.length;
     for (i = 0; i < nobj; i += 1) {
         res[i] = this.targetStringToJSON (obj[i]);
     }
@@ -197,8 +197,8 @@ TargetList.prototype.setTargets = function (obj) {
 };
 
 TargetList.prototype.addTargets = function (obj) {
-    var i, o, res, oldNobjects = this.nTargets;
-    var nobj = obj.length;
+    let i, o, res, oldNobjects = this.nTargets;
+    let nobj = obj.length;
     this.nTargets += res.len;
     this.resetWarnings();
     this.processOfflineTime();
@@ -210,7 +210,7 @@ TargetList.prototype.addTargets = function (obj) {
 };
 
 TargetList.prototype.processTarget = function (i, obj, checkOB) {
-    var target = new Target(i, obj);
+    let target = new Target(i, obj);
     target.preCompute();
     target.LabelX = target.ZenithTime;
     if (target.LabelX < driver.night.ENauTwilight) {
@@ -230,7 +230,7 @@ TargetList.prototype.processTarget = function (i, obj, checkOB) {
 };
 
 Target.prototype.intersectingChain = function (Targets, checked) {
-    var len, iIntersect = [], i, j, chain = [this.Index], rc;
+    let len, iIntersect = [], i, j, chain = [this.Index], rc;
     if (checked.indexOf(this.Index) > -1) {
         return [];
     }
@@ -255,7 +255,7 @@ Target.prototype.intersectingChain = function (Targets, checked) {
 };
 
 TargetList.prototype.removeClusters = function () {
-    var checked = [], i, cluster, hasclusters, nIter = 0;
+    let checked = [], i, cluster, hasclusters, nIter = 0;
     do {
         hasclusters = false;
         for (i = 0; i < this.nTargets; i += 1) {
@@ -270,7 +270,7 @@ TargetList.prototype.removeClusters = function () {
 };
 
 TargetList.prototype.spaceOutCluster = function (cluster) {
-    var i, obj, prev;
+    let i, obj, prev;
     for (i = 1; i < cluster.length; i += 1) {
         prev = this.Targets[cluster[i - 1]];
         obj = this.Targets[cluster[i]];
@@ -285,7 +285,7 @@ TargetList.prototype.spaceOutCluster = function (cluster) {
 };
 
 TargetList.prototype.processOfflineTime = function () {
-    var i, len = this.BadWolfStart.length;
+    let i, len = this.BadWolfStart.length;
     this.Offline = [];
     for (i = 0; i < len; i += 1) {
         this.Offline.push({Start: this.BadWolfStart[i], End: this.BadWolfEnd[i]});
@@ -307,8 +307,8 @@ TargetList.prototype.warnUnobservable = function () {
 };
 
 TargetList.prototype.canSchedule = function (obj, start) {
-    var end = start + obj.Exptime;
-    var overlaps = false, i, other;
+    let end = start + obj.Exptime;
+    let overlaps = false, i, other;
     for (i = 0; i < this.nTargets; i += 1) {
         if (i === this.Index) {
             continue;
@@ -336,7 +336,7 @@ TargetList.prototype.canSchedule = function (obj, start) {
 };
 
 TargetList.prototype.optimize_interchangeNeighbours = function (scheduleorder) {
-    var i, obj1, obj2, am1now, am2now, am1if, am2if, exchange, t1, c;
+    let i, obj1, obj2, am1now, am2now, am1if, am2if, exchange, t1, c;
     for (i = 0; i < scheduleorder.length - 1; i += 1) {
         obj1 = this.Targets[scheduleorder[i]];
         obj2 = this.Targets[scheduleorder[i + 1]];
@@ -373,7 +373,7 @@ TargetList.prototype.optimize_interchangeNeighbours = function (scheduleorder) {
 };
 
 TargetList.prototype.optimize_moveToLaterTimesIfRising = function (scheduleorder, crossOtherObjects) {
-    var i, obj, j, kj, curtime, overlaps, amif;
+    let i, obj, j, kj, curtime, overlaps, amif;
     for (i = scheduleorder.length - 1; i >= 0; i -= 1) {
         obj = this.Targets[scheduleorder[i]];
         if (obj.Observed) {
@@ -385,8 +385,8 @@ TargetList.prototype.optimize_moveToLaterTimesIfRising = function (scheduleorder
         if (obj.ZenithTime <= obj.ScheduledStartTime) {
             continue;
         }
-        var bestalt = obj.AltMidTime;
-        var besttime = obj.ScheduledStartTime;
+        let bestalt = obj.AltMidTime;
+        let besttime = obj.ScheduledStartTime;
         // Move to the right as much as possible
         for (curtime = Math.min(((i == scheduleorder.length - 1 || crossOtherObjects) ? driver.night.Sunrise : this.Targets[scheduleorder[i + 1]].ScheduledStartTime), obj.LastPossibleTime, driver.night.Sunset + Math.floor((2 * obj.ZenithTime - obj.ScheduledMidTime - driver.night.Sunset) / driver.night.xstep) * driver.night.xstep);
                 curtime > obj.ScheduledStartTime;
@@ -425,7 +425,7 @@ TargetList.prototype.optimize_moveToLaterTimesIfRising = function (scheduleorder
 };
 
 TargetList.prototype.reorder_accordingToScheduling = function (scheduleorder) {
-    var newtargets = [], i, j, k, imin, tmin, tj;
+    let newtargets = [], i, j, k, imin, tmin, tj;
     for (i = 0; i < scheduleorder.length - 1; i += 1) {
         imin = i;
         tmin = this.Targets[scheduleorder[i]].ScheduledStartTime;
@@ -442,7 +442,7 @@ TargetList.prototype.reorder_accordingToScheduling = function (scheduleorder) {
             scheduleorder[imin] = k;
         }
     }
-    var running = 0;
+    let running = 0;
     for (i = 0; i < scheduleorder.length; i += 1) {
         k = scheduleorder[i];
         this.Targets[k].rxmid = driver.graph.targetsx;
@@ -464,11 +464,11 @@ TargetList.prototype.reorder_accordingToScheduling = function (scheduleorder) {
 };
 
 TargetList.prototype.display_scheduleStatistics = function () {
-    var projtime = [];
-    var time_dark = driver.night.DarkTime * 86400;
-    var time_night = driver.night.NightLength * 86400;
-    var time_sched = 0;
-    var i, obj, j, k, inserted, minproj, minloc, exch;
+    let projtime = [];
+    let time_dark = driver.night.DarkTime * 86400;
+    let time_night = driver.night.NightLength * 86400;
+    let time_sched = 0;
+    let i, obj, j, k, inserted, minproj, minloc, exch;
     for (i = 0; i < this.nTargets; i += 1) {
         obj = this.Targets[i];
         if (obj.Scheduled) {
@@ -501,17 +501,17 @@ TargetList.prototype.display_scheduleStatistics = function () {
             projtime[minloc] = exch;
         }
     }
-    var time_lost = 0, bwst, bwen;
+    let time_lost = 0, bwst, bwen;
     for (i = 0; i < this.Offline.length; i += 1) {
         bwst = Math.min(Math.max(this.Offline[i].Start, driver.night.ENauTwilight), driver.night.MNauTwilight);
         bwen = Math.max(Math.min(this.Offline[i].End, driver.night.MNauTwilight), driver.night.ENauTwilight);
         time_lost += bwen - bwst;
     }
     time_lost *= 86400;
-    var time_free = time_night - time_sched - time_lost;
-    var ratio_sched = Math.round(time_sched * 100 / time_night);
-    var ratio_lost = Math.round(time_lost * 100 / time_night);
-    var ratio_free = time_free > 0 ? Math.round(time_free * 100 / time_night) : 0;
+    let time_free = time_night - time_sched - time_lost;
+    let ratio_sched = Math.round(time_sched * 100 / time_night);
+    let ratio_lost = Math.round(time_lost * 100 / time_night);
+    let ratio_free = time_free > 0 ? Math.round(time_free * 100 / time_night) : 0;
     if (ratio_sched + ratio_lost + ratio_free !== 100) {
         if (time_free > 0) {
             ratio_free = 100 - ratio_sched - ratio_lost;
@@ -540,9 +540,9 @@ TargetList.prototype.display_scheduleStatistics = function () {
 };
 
 TargetList.prototype.schedule_inOriginalOrder = function (startingAt) {
-    var order = [];
-    var prevschedule = [];
-    var i, j = 0, k, obj;
+    let order = [];
+    let prevschedule = [];
+    let i, j = 0, k, obj;
     for (i = 0; i < this.nTargets; i += 1) {
         if (this.Targets[i].Observed) {
             prevschedule.push(i);
@@ -554,11 +554,11 @@ TargetList.prototype.schedule_inOriginalOrder = function (startingAt) {
         }
         order[j++] = i;
     }
-    var SchedulableObjects = j;
+    let SchedulableObjects = j;
 
     // Start the earliest possible
-    var firstSchedulableTime = driver.night.Sunrise;
-    var lastSchedulableTime = driver.night.Sunset;
+    let firstSchedulableTime = driver.night.Sunrise;
+    let lastSchedulableTime = driver.night.Sunset;
     for (i = 0; i < SchedulableObjects; i += 1) {
         k = order[i];
         if (this.Targets[k].FirstPossibleTime < firstSchedulableTime) {
@@ -572,7 +572,7 @@ TargetList.prototype.schedule_inOriginalOrder = function (startingAt) {
         firstSchedulableTime = startingAt;
     }
     // Start scheduling
-    var scheduleorder = [];
+    let scheduleorder = [];
     // However, before anything else we schedule the monitoring programmes that have highest priority and MUST fill their entire time slot
     for (i = 0; i < SchedulableObjects; i += 1) {
         k = order[i];
@@ -584,7 +584,7 @@ TargetList.prototype.schedule_inOriginalOrder = function (startingAt) {
     }
 
     // Now go through all the other objects
-    var curtime = firstSchedulableTime;
+    let curtime = firstSchedulableTime;
     i = 0;
     while (true) {
         if ((scheduleorder.length >= SchedulableObjects) || (curtime >= lastSchedulableTime)) {
@@ -612,10 +612,10 @@ TargetList.prototype.schedule_inOriginalOrder = function (startingAt) {
 };
 
 TargetList.prototype.schedule_inOrderOfSetting = function (startingAt) {
-    var EndTimes = [];
-    var temporder = [];
-    var prevschedule = [];
-    var i, j = 0, k, obj;
+    let EndTimes = [];
+    let temporder = [];
+    let prevschedule = [];
+    let i, j = 0, k, obj;
     for (i = 0; i < this.nTargets; i += 1) {
         if (this.Targets[i].Observed) {
             prevschedule.push(i);
@@ -628,25 +628,25 @@ TargetList.prototype.schedule_inOrderOfSetting = function (startingAt) {
         temporder[j] = i;
         EndTimes[j++] = this.Targets[i].LastPossibleTime;
     }
-    var SchedulableObjects = j;
+    let SchedulableObjects = j;
     // Sort object by end time (argsort in python...)
-    var mapped = EndTimes.map(function (el, i) {
+    let mapped = EndTimes.map(function (el, i) {
         return {index: i, value: el};
     });
     mapped.sort(function (a, b) {
         return +(a.value > b.value) || +(a.value === b.value) - 1;
     });
-    var maporder = mapped.map(function (el) {
+    let maporder = mapped.map(function (el) {
         return el.index;
     });
-    var order = [];
+    let order = [];
     for (i = 0; i < SchedulableObjects; i += 1) {
         order[i] = temporder[maporder[i]];
     }
 
     // Start the earliest possible
-    var firstSchedulableTime = driver.night.Sunrise;
-    var lastSchedulableTime = driver.night.Sunset;
+    let firstSchedulableTime = driver.night.Sunrise;
+    let lastSchedulableTime = driver.night.Sunset;
     for (i = 0; i < SchedulableObjects; i += 1) {
         k = order[i];
         if (this.Targets[k].FirstPossibleTime < firstSchedulableTime) {
@@ -660,7 +660,7 @@ TargetList.prototype.schedule_inOrderOfSetting = function (startingAt) {
         firstSchedulableTime = startingAt;
     }
     // Start scheduling
-    var scheduleorder = [];
+    let scheduleorder = [];
     // However, before anything else we schedule the monitoring programmes that have highest priority and MUST fill their entire time slot
     for (i = 0; i < SchedulableObjects; i += 1) {
         k = order[i];
@@ -672,7 +672,7 @@ TargetList.prototype.schedule_inOrderOfSetting = function (startingAt) {
     }
 
     // Now go through all the other objects
-    var curtime = firstSchedulableTime;
+    let curtime = firstSchedulableTime;
     while (true) {
         i = 0;
         while (i < SchedulableObjects) {
@@ -702,7 +702,7 @@ TargetList.prototype.schedule_inOrderOfSetting = function (startingAt) {
 };
 
 TargetList.prototype.scheduleAndOptimize_givenOrder = function (newscheduleorder) {
-    var scheduleorder = [], i, k, obj;
+    let scheduleorder = [], i, k, obj;
     for (i = 0; i < this.nTargets; i += 1) {
         if (this.Targets[i].Observed) { // attention here. more work to be done!
             continue;
@@ -716,7 +716,7 @@ TargetList.prototype.scheduleAndOptimize_givenOrder = function (newscheduleorder
             //helper.LogSuccess('Rescheduling @ '+obj.RestrictionMinUT);
         }
     }
-    var curtime = driver.night.Sunset;
+    let curtime = driver.night.Sunset;
     i = 0;
     while (i < this.nTargets && curtime <= driver.night.Sunrise) {
         k = newscheduleorder[i];
@@ -749,10 +749,10 @@ TargetList.prototype.scheduleAndOptimize_givenOrder = function (newscheduleorder
 TargetList.prototype.prepareScheduleForUpdate = function () {
     helper.LogEntry('Preparing schedule for update...');
     helper.LogEntry('Checking existing targets against input...');
-    var i, bFound, k;
-    var unchanged = [], updated = [], updateText = [], reinserting = [], deleting = [], adding = [];
-    var lines_original = helper.extractLines($('#targets_actual').val());
-    var lines = lines_original.map(function (obj) {
+    let i, bFound, k;
+    let unchanged = [], updated = [], updateText = [], reinserting = [], deleting = [], adding = [];
+    let lines_original = helper.extractLines($('#targets_actual').val());
+    let lines = lines_original.map(function (obj) {
         return obj.replace(/\s\s+/g, ' ').trim();
     });
     for (i = 0; i < this.nTargets; i += 1) {
@@ -803,8 +803,7 @@ TargetList.prototype.prepareScheduleForUpdate = function () {
     }
 
     if ($('#opt_reschedule_later').is(':checked')) {
-        var now = new Date();
-        //now = new Date(Date.UTC(2017, 2, 16, 20, 0, 0)); // debug!!!
+        let now = new Date();
         helper.LogEntry('Current time: ' + now.toUTCString());
         if (now > driver.night.DateSunset && now < driver.night.DateSunrise) {
             helper.LogWarning('Attention: the night has already started, so we will only reschedule after the current time. The previously observed objects will NOT be affected, but objects scheduled in the past that have not yet been observed may only be rescheduled in the future, if there is enough free time.');
@@ -817,7 +816,7 @@ TargetList.prototype.prepareScheduleForUpdate = function () {
         this.StartingAt = driver.night.Sunset;
     }
 
-    var fnn = function (idx) {
+    let fnn = function (idx) {
         return driver.targets.Targets[idx].Name;
     };
     helper.LogSuccess('Status report:');
@@ -835,7 +834,7 @@ TargetList.prototype.prepareScheduleForUpdate = function () {
     // Then update the existing targets (no need to call the ajax script for that)
     if (updated.length > 0) {
         this.resetWarnings();
-        var newdata, obj; // change: first do badwolf
+        let newdata, obj; // change: first do badwolf
         for (i = 0; i < updated.length; i += 1) {
             newdata = updateText[i].trim().split(' ');
             obj = this.Targets[updated[i]];
@@ -846,7 +845,7 @@ TargetList.prototype.prepareScheduleForUpdate = function () {
     // Then, leave the targets that must be "added back" as they are
     // Then, remove the targets that need to be removed
     if (deleting.length > 0) {
-        var newTargets = [];
+        let newTargets = [];
         for (i = 0; i < this.nTargets; i += 1) {
             if (deleting.indexOf(i) == -1) {
                 newTargets.push(this.Targets[i]);
@@ -900,8 +899,7 @@ TargetList.prototype.inputHasChanged = function (_newinput, _oldinput) {
  */
 TargetList.prototype.validateAndFormatTargets = function () {
     // Retrieve content of #targets textarea
-    //var tgts = $('#targets').val().trim();
-    var tgts = driver.CMeditor.getValue();
+    let tgts = driver.CMeditor.getValue();
     if (!this.inputHasChanged(tgts, this.InputText) && this.InputValid) {
         helper.LogEntry('Target input list has not changed, no need to revalidate.');
         return true;
@@ -915,7 +913,7 @@ TargetList.prototype.validateAndFormatTargets = function () {
         return false;
     }
     // Split it into lines
-    var lines = helper.extractLines(tgts);
+    let lines = helper.extractLines(tgts);
     this.VisibleLines = [];
     this.TargetsLines = [];
     this.FormattedLines = [];
@@ -923,7 +921,7 @@ TargetList.prototype.validateAndFormatTargets = function () {
     this.MaxLen = {Name: 0, RA: 0, Dec: 0, Exp: 0, AM: 0, Type: 0, TCSpmra: 0, TCSpmdec: 0};
     this.BadWolfStart = [];
     this.BadWolfEnd = [];
-    var words, i, j, len;
+    let words, i, j, len;
     for (i = 0, len = lines.length; i < len; i += 1) {
         if (lines[i].trim() === '') {
             this.FormattedLines.push(null);
@@ -933,7 +931,7 @@ TargetList.prototype.validateAndFormatTargets = function () {
         if (words === false) {
             return false; // Does not validate
         }
-        var mLTN = driver.graph.maxLenTgtName + (words[0][0] == '#' ? 1 : 0);
+        let mLTN = driver.graph.maxLenTgtName + (words[0][0] == '#' ? 1 : 0);
         if (words[0].length > mLTN) {
             words[0] = words[0].substr(0, mLTN);
         }
@@ -966,7 +964,7 @@ TargetList.prototype.validateAndFormatTargets = function () {
         this.FormattedLines.push(words);
     }
     this.InputStats = {Empty: 0, Commented: 0, Actual: 0};
-    var padded, badwolf;
+    let padded, badwolf;
     this.TCSlines = [];
     for (i = 0, len = this.FormattedLines.length; i < len; i += 1) {
         if (this.FormattedLines[i] === null) {
@@ -1026,7 +1024,7 @@ TargetList.prototype.validateAndFormatTargets = function () {
     //$('#targets').val(newlines.join("\n"));
     driver.CMeditor.setValue(this.VisibleLines.join("\n"));
     $('#targets_actual').val(this.TargetsLines.join("\n"));
-    var nt = this.TargetsLines.length;
+    let nt = this.TargetsLines.length;
     helper.LogEntry('Done. Target list looks properly formatted (' + helper.plural(this.InputStats.Actual, 'target') + ').');
     this.InputText = driver.CMeditor.getValue();
     this.InputValid = true;
@@ -1060,7 +1058,7 @@ TargetList.prototype.ExportTCSCatalogue = function () {
  */
 TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
     // Split by white spaces and colons
-    var words = linetext.split(/[\s:]+/g);
+    let words = linetext.split(/[\s:]+/g);
     // Sanity check: minimum number of fields
     if (words.length <= 1) {
         helper.LogError('Error: Incorrect syntax on Line #' + linenumber + '; for each object you must provide at least the Name, RA and Dec!');
@@ -1077,8 +1075,8 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
                 return false;
             }
         }
-        var q = (words.length == 2) ? 1 : 2;
-        var UTr = helper.ExtractUTRange(words[q]), ut1, ut2;
+        let q = (words.length == 2) ? 1 : 2;
+        let UTr = helper.ExtractUTRange(words[q]), ut1, ut2;
         if (UTr === false) {
             helper.LogError('Error: Incorrect syntax in [CONSTRAINTS] on line #' + linenumber + ': the UT range must be a valid interval (e.g., [20:00-23:00] or [1-2])!');
             return false;
@@ -1115,7 +1113,7 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
         helper.LogError('Error: Incorrect syntax: the number of entries on line #' + linenumber + ' is incorrect!');
         return false;
     }
-    var rax;
+    let rax;
     // Sanity check: input syntax for all parameters
     /* RA hours, minutes must be integer */
     if (helper.notInt(words[1]) || helper.notInt(words[2])) {
@@ -1234,7 +1232,7 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
         }
     }
     if ($.inArray(words[11], ['Monitor', 'ToO', 'SoftToO', 'Payback', 'Fast-Track', 'Service', 'Visitor', 'Staff']) === -1) {
-        var wl = words[11].length;
+        let wl = words[11].length;
         if (words[11].indexOf('Staff/') !== 0 || (words[11].indexOf('Staff/') === 0 && (wl < 8 || wl > 9))) {
             helper.LogError('Error: Incorrect syntax: [TYPE] must be one of the following: <i>Monitor</i>, <i>ToO</i>, <i>SoftToO</i>, <i>Payback</i>, <i>Fast-Track</i>, <i>Service</i>, <i>Visitor</i>, <i>Staff</i>, on line #' + linenumber + '!');
             return false;
@@ -1244,8 +1242,8 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
 };
 
 TargetList.prototype.checkForDuplicates = function () {
-    var alreadyChecked = [], duplicateList = [];
-    var i, j, len, found, duplString;
+    let alreadyChecked = [], duplicateList = [];
+    let i, j, len, found, duplString;
 
     len = this.FormattedLines.length;
     for (i = 0; i < len; i += 1) {
@@ -1278,7 +1276,7 @@ Target.prototype.canObserve = function (time, altitude) {
             this.RestrictionMinAlt <= altitude && this.RestrictionMaxAlt >= altitude) === false) {
         return false;
     }
-    var i;
+    let i;
     for (i = 0; i < driver.targets.Offline.length; i += 1) {
         if (time >= driver.targets.Offline[i].Start && time <= driver.targets.Offline[i].End) {
             return false;
@@ -1293,7 +1291,7 @@ Target.prototype.preCompute = function () {
     this.endAllowed = [];
     this.beginForbidden = [];
     this.endForbidden = [];
-    var nyobj = this.Graph.length, obs, i;
+    let nyobj = this.Graph.length, obs, i;
     obs = (this.canObserve(driver.night.xaxis[0], this.Graph[0]));
     this.observable[0] = obs;
     if (!obs) {
@@ -1336,7 +1334,7 @@ Target.prototype.preCompute = function () {
         return;
     }
     this.FirstPossibleTime = this.beginAllowed[0];
-    var lpt;
+    let lpt;
     for (i = this.nAllowed; i >= 0; i--) {
         if (this.beginAllowed[i] + this.Exptime <= this.endAllowed[i]) {
             lpt = this.endAllowed[i] - this.Exptime;
@@ -1350,7 +1348,7 @@ Target.prototype.preCompute = function () {
 };
 
 Target.prototype.getAltitude = function (time) {
-    var ii = helper.EphemTimeToIndex(time);
+    let ii = helper.EphemTimeToIndex(time);
     return this.Graph[ii];
 };
 
@@ -1373,11 +1371,11 @@ Target.prototype.resetColours = function () {
 };
 
 Target.prototype.ComputePositionSchedLabel = function () {
-    var xshift, yshift;
+    let xshift, yshift;
     if ($('#opt_id_next_line').is(':checked')) {
-        var slope = driver.graph.degree * (this.AltEndTime - this.AltStartTime) / driver.graph.transformXWidth(this.Exptime);
-        var angle = Math.atan(slope);
-        var dist = driver.graph.CircleSize * 1.2;
+        let slope = driver.graph.degree * (this.AltEndTime - this.AltStartTime) / driver.graph.transformXWidth(this.Exptime);
+        let angle = Math.atan(slope);
+        let dist = driver.graph.CircleSize * 1.2;
         xshift = dist * Math.sin(angle);
         yshift = dist * Math.cos(angle);
     } else {
@@ -1408,7 +1406,7 @@ Target.prototype.Update = function (obj) {
     this.Type = (obj[3].indexOf('/') === -1 ? obj[3] : obj[3].substring(0, obj[3].indexOf('/')));
     this.ProjectNumber = obj[1];
     this.Constraints = obj[2];
-    var isUT, UTr = helper.ExtractUTRange(obj[2]), ut1, ut2;
+    let isUT, UTr = helper.ExtractUTRange(obj[2]), ut1, ut2;
     if (UTr === false) {
         isUT = false;
         this.MaxAirmass = driver.defaultAM;
@@ -1436,8 +1434,8 @@ Target.prototype.Update = function (obj) {
         this.ExptimeSeconds = Math.round(this.Exptime * 86400);
         this.Exptime = Math.floor(this.Exptime / driver.night.xstep) * driver.night.xstep;
     }
-    var hrs = Math.floor(this.ExptimeSeconds / 3600);
-    var min = Math.round((this.ExptimeSeconds - hrs * 3600) / 60);
+    let hrs = Math.floor(this.ExptimeSeconds / 3600);
+    let min = Math.round((this.ExptimeSeconds - hrs * 3600) / 60);
     this.ExptimeHM = (hrs > 0 ? hrs.toFixed(0) + 'h ' : '') + min.toFixed(0) + 'm';
     if (this.FillSlot) {
         helper.LogEntry('Attention: object <i>' + this.Name + '</i> will fill its entire time slot.');

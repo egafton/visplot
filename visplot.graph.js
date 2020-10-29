@@ -82,13 +82,13 @@ Graph.prototype.transformXWidth = function (wnight) {
 };
 
 Graph.prototype.drawRHSofSchedule = function () {
-    var i, obj;
+    let obj;
     this.ctx.clearRect(this.targetsx - 15, this.targetsy - this.targetsyskip - 5, this.canvas.width - this.targetsx + 15, this.canvas.height);
     this.ctx.strokeStyle = 'black';
     this.ctx.lineWidth = 1.2;
-    var y = this.targetsy;
+    let y = this.targetsy;
     this.ctx.setLineDash([]);
-    for (i = 0; i < driver.targets.nTargets; i += 1) {
+    for (let i = 0; i < driver.targets.nTargets; i += 1) {
         obj = driver.targets.Targets[i];
         obj.ystart = y - this.targetsyskip - 1;
         if (obj.Scheduled) {
@@ -141,7 +141,7 @@ Graph.prototype.drawRHSofSchedule = function () {
 };
 
 Graph.prototype.drawSchedule = function () {
-    var i, j, obj;
+    let i, j, obj;
     this.ctx.setLineDash([]);
     this.ctx.save();
     this.ctx.rect(this.xstart, this.ystart, this.width, this.height);
@@ -214,7 +214,7 @@ Graph.prototype.setTargetsSize = function (ntargets) {
     this.targetsy = this.ystart + 15;
     this.targetsx = this.xend + 35;
     this.targetsyskip = 15;
-    var totalheight = (this.targetsyskip * (this.doubleTargets ? 2 : 1) + 2) * ntargets;
+    let totalheight = (this.targetsyskip * (this.doubleTargets ? 2 : 1) + 2) * ntargets;
     if (this.targetsy + totalheight > this.yend + 55) {
         this.targetsy = this.ystart - 25;
         totalheight = (this.targetsyskip * (this.doubleTargets ? 2 : 1) + 2) * ntargets;
@@ -227,7 +227,7 @@ Graph.prototype.setTargetsSize = function (ntargets) {
     }
     this.individualheight = (this.targetsyskip * (this.doubleTargets ? 2 : 1) + 2) * 2;
     if (this.individualheight < this.CircleSize * 2) {
-        var circlesize = Math.floor(this.individualheight / 2);
+        let circlesize = Math.floor(this.individualheight / 2);
         this.CircleSize = circlesize;
         this.CircleSizeSq = circlesize * circlesize;
     }
@@ -240,7 +240,7 @@ Graph.prototype.setTargetsSize = function (ntargets) {
 };
 
 Graph.prototype.highlightTarget = function (target) {
-    var j;
+    let j;
     this.ctx.save();
     this.ctx.strokeStyle = 'black';
     this.ctx.beginPath();
@@ -253,7 +253,7 @@ Graph.prototype.highlightTarget = function (target) {
     this.ctx.strokeStyle = target.LabelStrokeColor;
     this.ctx.lineWidth = 2;
     this.ctx.moveTo(this.xaxis[0], this.transformYLocation(target.Graph[0]));
-    var nyobj = target.Graph.length;
+    let nyobj = target.Graph.length;
     for (j = 1; j < nyobj; j += 1) {
         this.ctx.lineTo(this.xaxis[j], this.transformYLocation(target.Graph[j]));
     }
@@ -271,7 +271,7 @@ Graph.prototype.highlightTarget = function (target) {
 };
 
 Graph.prototype.drawTargets = function (Targets) {
-    var i, j, obj, Nobjects = Targets.length;
+    let i, j, obj, Nobjects = Targets.length;
     this.ctx.save();
     this.ctx.strokeStyle = 'black';
     this.ctx.beginPath();
@@ -280,7 +280,7 @@ Graph.prototype.drawTargets = function (Targets) {
     this.ctx.clip();
     this.ctx.setLineDash([]);
     this.ctx.lineWidth = 1.2;
-    var strokes = [], obs, nyobj;
+    let strokes = [], obs, nyobj;
     strokes[true] = '#000';
     strokes[false] = '#aaa';
 
@@ -317,7 +317,7 @@ Graph.prototype.drawTargets = function (Targets) {
 };
 
 Graph.prototype.drawTargetNames = function (Targets) {
-    var i, obj, Nobjects = Targets.length;
+    let i, obj, Nobjects = Targets.length;
     this.ctx.setLineDash([]);
     this.ctx.save();
     this.ctx.strokeStyle = 'black';
@@ -336,7 +336,7 @@ Graph.prototype.drawTargetNames = function (Targets) {
         this.plotText((i + 1), '8pt', 'black', obj.xlab, obj.ylab, 'center', 'middle');
     }
     this.ctx.restore();
-    var y = this.targetsy;
+    let y = this.targetsy;
     for (i = 0; i < Nobjects; i += 1) {
         obj = Targets[i];
         obj.rxmid = this.targetsx;
@@ -360,7 +360,7 @@ Graph.prototype.drawTargetNames = function (Targets) {
 };
 
 Graph.prototype.drawEphemerides = function () {
-    var i;
+    let i;
     /*
      Convert the night.axis array (which is in units of ephem.Date) to a graph.axis array
      (containing the corresponding HTML5 canvas positions, in (sub)pixels
@@ -372,12 +372,12 @@ Graph.prototype.drawEphemerides = function () {
     this.ctx.strokeStyle = 'black';
     this.ctx.fillStyle = 'black';
     // Plot the full hour UT and ST labels (8UT, 9UT, etc) below and above the plot, respectively
-    var nHours = driver.night.UTtimes.length;
+    let nHours = driver.night.UTtimes.length;
     this.ctx.textAlign = 'center';
     this.ctx.textBaseline = 'middle';
     for (i = 0; i < nHours; i += 1) {
-        var xnight = driver.night.UTtimes[i];
-        var xplot = this.transformXLocation(xnight);
+        let xnight = driver.night.UTtimes[i];
+        let xplot = this.transformXLocation(xnight);
         if (driver.night.UTlabels[i] != '24') {
             this.plotVerticalLine(this.ystart, this.yend, xplot, [1, 2], 1);
         } else {
@@ -397,8 +397,8 @@ Graph.prototype.drawEphemerides = function () {
     this.ctx.fillText(driver.night.tSunset[3] + ':' + helper.padTwoDigits(driver.night.tSunset[4]), this.xstart, this.ystart - 10);
     this.ctx.fillText(driver.night.tSunrise[3] + ':' + helper.padTwoDigits(driver.night.tSunrise[4]), this.xend, this.ystart - 10);
     // Plot the twilights labels and corresponding dashed vertical lines
-    var twiStyle = [6, 5];
-    var xtemp;
+    let twiStyle = [6, 5];
+    let xtemp;
     xtemp = this.transformXLocation(driver.night.ENauTwilight);
     this.ctx.fillText('Nau', xtemp, this.ystart - 22);
     this.ctx.fillText(helper.EphemDateToHM(driver.night.ENauTwilight), xtemp - 3.5, this.ystart - 10);
@@ -427,8 +427,8 @@ Graph.prototype.drawEphemerides = function () {
     this.ctx.beginPath();
     this.ctx.globalAlpha = 0.2;
     this.ctx.fillStyle = "gray";
-    var wENT = this.transformXWidth(driver.night.ENauTwilight - driver.night.Sunset);
-    var wMNT = this.transformXWidth(driver.night.Sunrise - driver.night.MNauTwilight);
+    let wENT = this.transformXWidth(driver.night.ENauTwilight - driver.night.Sunset);
+    let wMNT = this.transformXWidth(driver.night.Sunrise - driver.night.MNauTwilight);
     this.ctx.rect(this.xstart, this.ystart, this.transformXWidth(driver.night.EAstTwilight - driver.night.Sunset), this.height);
     this.ctx.rect(this.xend, this.ystart, -this.transformXWidth(driver.night.Sunrise - driver.night.MAstTwilight), this.height);
     this.ctx.fill();
@@ -459,7 +459,7 @@ Graph.prototype.drawEphemerides = function () {
     this.ctx.beginPath();
     this.ctx.lineWidth = 1.2;
     this.ctx.moveTo(this.xaxis[0], this.transformYLocation(driver.night.ymoon[0]));
-    var nymoon = driver.night.ymoon.length;
+    let nymoon = driver.night.ymoon.length;
     for (i = 1; i < nymoon; i += 1) {
         this.ctx.lineTo(this.xaxis[i], this.transformYLocation(driver.night.ymoon[i]));
     }
@@ -503,8 +503,8 @@ Graph.prototype.drawCurrentTime = function (now) {
         return false;
     }
     // Current time marker
-    var xnow = this.transformXLocation(driver.night.Sunset + (now - driver.night.DateSunset) / 8.64e7);
-    var klen = 5;
+    let xnow = this.transformXLocation(driver.night.Sunset + (now - driver.night.DateSunset) / 8.64e7);
+    let klen = 5;
     this.ctx.beginPath();
     this.ctx.moveTo(xnow, this.ystart);
     this.ctx.lineTo(xnow - 0.6 * klen, this.ystart - klen);
@@ -517,7 +517,7 @@ Graph.prototype.drawCurrentTime = function (now) {
 };
 
 Graph.prototype.drawBackground = function () {
-    var i;
+    let i;
     // Draw main rectangle that contains the visibility plot
     this.ctx.save();
     this.ctx.beginPath();
@@ -532,7 +532,7 @@ Graph.prototype.drawBackground = function () {
 
     // Draw dotted horizontal lines and tick marks every 10 degrees
     for (i = 10; i < 90; i += 10) {
-        var y = this.transformYLocation(i);
+        let y = this.transformYLocation(i);
         // Dotted horizontal lines
         if (i !== 20 || Driver.telescopeName !== 'INT')
             this.plotHorizontalLine(this.xstart, this.xend, y, [1, 2], 1);

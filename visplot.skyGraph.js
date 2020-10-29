@@ -52,11 +52,11 @@ SkyGraph.prototype.stopTimer = function () {
 };
 
 SkyGraph.prototype.processImage = function () {
-    var imgdata = this.ctx.getImageData(0, 0, this.imx, this.imy).data;
-    var i, j, r, g, b, gray, black = 0, count = 0, row;
-    var cx = 0.53 * this.imx;
-    var cy = 0.52 * this.imy;
-    var rad = 270;
+    let imgdata = this.ctx.getImageData(0, 0, this.imx, this.imy).data;
+    let i, j, r, g, b, gray, black = 0, count = 0, row;
+    let cx = 0.53 * this.imx;
+    let cy = 0.52 * this.imy;
+    let rad = 270;
     for (i = 0; i < this.imy; i++) {
         row = this.imx * i;
         for (j = 0; j < this.imx; j++) {
@@ -80,7 +80,6 @@ SkyGraph.prototype.setup = function (triggered) {
     if (triggered) {
         this.processImage();
     }
-    //this.remap();
     this.drawaxes();
     this.drawtics();
     this.drawpointing();
@@ -89,13 +88,25 @@ SkyGraph.prototype.setup = function (triggered) {
     }
     this.display_coords(this.lastazalt);
     this.display_time();
-    /*driver.AJAX_GET('tcs.php', function (obj) {
-        if (helper.notFloat(obj.alt) || helper.notFloat(obj.az)) {
-            driver.skyGraph.setPointing(null);
-        } else {
-            driver.skyGraph.setPointing(driver.skyGraph.aatrans([obj.alt, obj.az]));
-        }
-    });*/
+    try {
+        $.get({
+            url: 'pointing.php',
+            data: {telescope: Driver.telescopeName},
+            success: function (obj) {
+                if (helper.notFloat(obj.alt) || helper.notFloat(obj.az)) {
+                    driver.skyGraph.setPointing(null);
+                } else {
+                    driver.skyGraph.setPointing(driver.skyGraph.aatrans([obj.alt, obj.az]));
+                }
+            },
+            error: function (msg) {
+                helper.LogError(msg);
+            }
+        });
+    }
+    catch (e) {
+        helper.LogError(e.message);
+    }
 };
 
 SkyGraph.prototype.setPointing = function (xy) {
@@ -112,23 +123,15 @@ SkyGraph.prototype.reload = function () {
     this.skyImg.src = 'skycam.php';
 };
 
-SkyGraph.prototype.remap = function () {
-    this.imx = this.skyImg.width;
-    this.imy = this.skyImg.height;
-    this.cx = 0.51 * this.imx;
-    this.cy = 0.52 * this.imy;
-    this.cr = this.imx * 0.5;
-};
-
 SkyGraph.prototype.distort = function (zd) {
     return Math.pow(zd, 1.07);
 };
 
 SkyGraph.prototype.aatrans = function (altaz) { // convert from alt,az to ix,iy
-    var ang = (this.south + 12 + altaz[1] / 15) * Math.PI / 12;   // rotate to display
-    var dd = this.cr * this.distort((90 - altaz[0]) / 90);    // zenith distance in pixels
-    var ix = this.cx + dd * Math.sin(ang);
-    var iy = this.cy + dd * Math.cos(ang);
+    let ang = (this.south + 12 + altaz[1] / 15) * Math.PI / 12;   // rotate to display
+    let dd = this.cr * this.distort((90 - altaz[0]) / 90);    // zenith distance in pixels
+    let ix = this.cx + dd * Math.sin(ang);
+    let iy = this.cy + dd * Math.cos(ang);
     return [ix, iy];
 };
 
@@ -171,17 +174,17 @@ SkyGraph.prototype.xhair = function (x, y, name, color) {
 };
 
 SkyGraph.prototype.drawaxes = function () {
-    var i;
+    let i;
     this.ctx.strokeStyle = "gray";
     for (i = 90; i > 0; i -= 30) {
-        var r = this.cr * this.distort(i / 90);
+        let r = this.cr * this.distort(i / 90);
         this.ctx.beginPath();
         this.ctx.arc(this.cx, this.cy, r, 0, 2 * Math.PI, false);
         this.ctx.stroke();
     }
     this.ctx.beginPath();                    // 24 spokes
     for (i = 0; i < 24; i += 1) {
-        var az = (this.south + 12 + i) * Math.PI / 12;
+        let az = (this.south + 12 + i) * Math.PI / 12;
         this.ctx.moveTo(this.cx, this.cy);
         this.ctx.lineTo(this.cx + this.cr * Math.sin(az), this.cy + this.cr * Math.cos(az));
     }
@@ -189,15 +192,14 @@ SkyGraph.prototype.drawaxes = function () {
 };
 
 SkyGraph.prototype.drawtics = function () {
-    var i;
     this.ctx.textBaseline = 'alphabetic';
     this.ctx.textAlign = 'start';
     this.ctx.font = "10pt " + this.fontFamily;
-    for (i = 0; i < 4; i += 1) {
-        var ang = this.pang[i] * Math.PI / 12;
-        var xx1 = this.cx + this.cr * Math.sin(ang);
-        var yy1 = this.cy + this.cr * Math.cos(ang);
-        var xl = [-7, -5, -2, 1], yl = [-2, +4, +7, 0];
+    for (let i = 0; i < 4; i += 1) {
+        let ang = this.pang[i] * Math.PI / 12;
+        let xx1 = this.cx + this.cr * Math.sin(ang);
+        let yy1 = this.cy + this.cr * Math.cos(ang);
+        let xl = [-7, -5, -2, 1], yl = [-2, +4, +7, 0];
         this.ctx.beginPath();
         this.ctx.arc(this.cx, this.cy, 0.85 * this.cr, Math.PI / 2 - ang - 0.05, Math.PI / 2 - ang + 0.05, false);
         this.ctx.lineTo(xx1, yy1);
@@ -222,14 +224,14 @@ SkyGraph.prototype.drawstars = function () {
     if (driver.targets.nTargets === 0) {
         return;
     }
-    var i, obj, last = null;
-    for (i = 0; i < driver.targets.nTargets; i += 1) {
+    let obj, last = null;
+    for (let i = 0; i < driver.targets.nTargets; i += 1) {
         obj = driver.targets.Targets[i];
-        var radeg = helper.dmstodeg(obj.RA);
-        var decdeg = helper.dmstodeg(obj.Dec);
-        var altaz = helper.altaz(radeg, decdeg, this.lst);
+        let radeg = helper.dmstodeg(obj.RA);
+        let decdeg = helper.dmstodeg(obj.Dec);
+        let altaz = helper.altaz(radeg, decdeg, this.lst);
         if (altaz[0] > 0) {
-            var xy = this.aatrans(altaz);
+            let xy = this.aatrans(altaz);
             if (this.tcsx !== null && this.tcsy !== null && Math.abs(this.tcsx - xy[0]) <= 2 && Math.abs(this.tcsy - xy[1]) <= 2) {
                 last = [xy[0], xy[1], obj.Name, '#9f3'];
             } else {
@@ -264,19 +266,19 @@ SkyGraph.prototype.display_coords = function (azalt) {
 };
 
 SkyGraph.prototype.display_time = function () {
-    var tim = new Date();
+    let tim = new Date();
     this.lst = helper.LM_Sidereal_Time(helper.julianDate(tim));
-    var ut = helper.utc(tim) * 24;
-    var mm = (tim.getUTCMonth() + 1).toFixed();
+    let ut = helper.utc(tim) * 24;
+    let mm = (tim.getUTCMonth() + 1).toFixed();
     if (mm.length < 2) {
         mm = "0" + mm;
     }
-    var dd = tim.getUTCDate().toFixed();
+    let dd = tim.getUTCDate().toFixed();
     if (dd.length < 2) {
         dd = "0" + dd;
     }
-    var UTtext = "UTC " + tim.getUTCFullYear() + "-" + mm + "-" + dd + " " + helper.HMS(ut, false, '', '', '');
-    var STtext = "LST " + helper.HMS(this.lst, false, '', '', '');
+    let UTtext = "UTC " + tim.getUTCFullYear() + "-" + mm + "-" + dd + " " + helper.HMS(ut, false, '', '', '');
+    let STtext = "LST " + helper.HMS(this.lst, false, '', '', '');
     this.ctx.clearRect(this.canvasWidth / 2, this.imy, this.canvasWidth / 2, this.canvasHeight - this.imy);
     this.ctx.font = "10pt " + this.fontFamily + " Mono";
     this.ctx.fillStyle = 'gray';
