@@ -87,16 +87,14 @@ Driver.prototype.Callback_SetDate = function (obj) {
 
     if (this.ob && !this.obprocessed) {
         helper.LogEntry('Processing the targets from the OB queue...');
-        let ntargets = this.obdata.nTargets;
+        const ntargets = this.obdata.nTargets;
         helper.LogEntry(helper.plural(ntargets, 'target') + ' found.');
-        let line, i;
-        for (i = 1; i <= ntargets; i += 1) {
+        for (let i = 1; i <= ntargets; i += 1) {
             obj = this.obdata.Targets['target' + i];
-            line = obj.Name + ' ' + obj.RA + (parseFloat(obj.PM.RA) === 0.0 ? '' : '/' + parseFloat(obj.PM.RA)) + ' ' + obj.Dec + (parseFloat(obj.PM.Dec) === 0.0 ? '' : '/' + parseFloat(obj.PM.Dec)) + ' ' + parseInt(obj.Epoch) + ' ' + obj.ObsTime + ' ' + obj.Proposal + ' ' + obj.Constraint + ' ' + obj.Type;
+            const line = obj.Name + ' ' + obj.RA + (parseFloat(obj.PM.RA) === 0.0 ? '' : '/' + parseFloat(obj.PM.RA)) + ' ' + obj.Dec + (parseFloat(obj.PM.Dec) === 0.0 ? '' : '/' + parseFloat(obj.PM.Dec)) + ' ' + parseInt(obj.Epoch) + ' ' + obj.ObsTime + ' ' + obj.Proposal + ' ' + obj.Constraint + ' ' + obj.Type;
             this.obLines.push(line);
             this.obLinks.push('http://www.not.iac.es/intranot/ob/ob_update.php?period=' + parseInt(obj.Proposal.substring(0, 2)) + '&propID=' + parseInt(obj.Proposal.substring(3)) + '&groupID=' + obj.GroupID + '&blockID=' + obj.BlockID);
             this.obExtraInfo.push(obj.Instrument + ' / ' + obj.Mode);
-            //helper.LogEntry(line);
         }
         this.obprocessed = true;
         this.CMeditor.setValue(this.obLines.join("\n"));
@@ -140,9 +138,9 @@ Driver.prototype.Callback_UpdateSchedule = function () {
 };
 
 Driver.prototype.BtnEvt_SetDate = function () {
-    let year = helper.filterInt($('#dateY').val());
-    let month = helper.filterInt($('#dateM').val());
-    let day = helper.filterInt($('#dateD').val());
+    const year = helper.filterInt($('#dateY').val());
+    const month = helper.filterInt($('#dateM').val());
+    const day = helper.filterInt($('#dateD').val());
     if (isNaN(year) || isNaN(month) || isNaN(day)) {
         helper.LogError('Error: Invalid date (' + year + '-' + month + '-' + day + ').');
         return;
@@ -155,7 +153,7 @@ Driver.prototype.BtnEvt_SetDate = function () {
         helper.LogError('Error: Invalid month (' + month + ').');
         return;
     }
-    let dmax = helper.numberOfDays(year, month);
+    const dmax = helper.numberOfDays(year, month);
     if (day < 1 || day > dmax) {
         helper.LogError('Error: Invalid day (' + day + ') for ' + year + '-' + helper.padTwoDigits(month) + ". Please enter a number between 1 and " + dmax + ".");
         return;
@@ -183,7 +181,7 @@ Driver.prototype.BtnEvt_PlotTargets = function () {
         }
     }
     if (this.RequestedScheduleType === 1) {
-        let ret = this.targets.prepareScheduleForUpdate();
+        const ret = this.targets.prepareScheduleForUpdate();
         if (ret === '') { // nothing to do, since the input form has not been changed
             return;
         }
@@ -219,8 +217,8 @@ Driver.prototype.EvtFrame_MouseMove = function (e) {
     y -= 12;
     if (this.rescheduling) {
         if (x > this.graph.targetsx) {
-            for (i = 0; i < this.targets.nTargets; i += 1) {
-                let obj = this.targets.Targets[i];
+            for (let i = 0; i < this.targets.nTargets; i += 1) {
+                const obj = this.targets.Targets[i];
                 if (y >= obj.ystart && y <= obj.yend) {
                     this.reY = (y <= 0.5 * (obj.ystart + obj.yend) ? obj.ystart : obj.yend) + 1.5;
                     break;
@@ -233,7 +231,7 @@ Driver.prototype.EvtFrame_MouseMove = function (e) {
         return;
     }
     for (let i = 0; i < this.targets.nTargets; i += 1) {
-        let obj = this.targets.Targets[i];
+        const obj = this.targets.Targets[i];
         if (this.insideObject(x, y, obj)) {
             if (this.mouseInsideObject !== i) {
                 this.mouseInsideObject = i;
@@ -303,10 +301,10 @@ Driver.prototype.EvtFrame_MouseUp = function (e) {
             this.rescheduling = false;
             this.reY = null;
             let dropped = false;
-            let i, le, ri, llim, rlim;
-            for (i = 0; i < this.targets.nTargets; i += 1) {
-                llim = this.targets.Targets[i].ystart;
-                rlim = this.targets.Targets[i].yend;
+            let le, ri;
+            for (let i = 0; i < this.targets.nTargets; i += 1) {
+                let llim = this.targets.Targets[i].ystart;
+                let rlim = this.targets.Targets[i].yend;
                 if (i === 0) {
                     llim -= 20;
                 }
@@ -330,7 +328,7 @@ Driver.prototype.EvtFrame_MouseUp = function (e) {
             if (dropped) {
                 // reObj must come between le and ri
                 let newscheduleorder = [];
-                for (i = 0; i < this.targets.nTargets; i += 1) {
+                for (let i = 0; i < this.targets.nTargets; i += 1) {
                     if (i == this.reObj) {
                         continue;
                     }
@@ -435,9 +433,9 @@ Driver.prototype.EvtFrame_Drop = function (e) {
         return;
     }
     e.preventDefault();
-    let dropped = e.originalEvent.dataTransfer.getData('Text');
-    let numberPattern = /[+\-]?\d+(\.\d+)?/g;
-    let floats = dropped.match(numberPattern).map(function (v) {
+    const dropped = e.originalEvent.dataTransfer.getData('Text');
+    const numberPattern = /[+\-]?\d+(\.\d+)?/g;
+    const floats = dropped.match(numberPattern).map(function (v) {
         return parseFloat(v);
     });
     if (floats.length == 6) {
@@ -512,7 +510,7 @@ Driver.prototype.EvtSkycm_MouseMove = function (e, jQthis) {
         this.skyGraph.display_coords(null);
         this.skyGraph.lastazalt = null;
     } else {
-        let azalt = helper.getCoordinates(320, 240, pos_x, pos_y, 280, this.skyGraph.lst);
+        const azalt = helper.getCoordinates(320, 240, pos_x, pos_y, 280, this.skyGraph.lst);
         this.skyGraph.display_coords(azalt);
         this.skyGraph.lastazalt = azalt;
     }

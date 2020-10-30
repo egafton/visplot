@@ -97,7 +97,7 @@ sla.tiny = 1e-30;
  */
 sla.airmas = function (zd) {
     "use strict";
-    let seczm1 = 1 / (Math.cos(Math.min(1.52, Math.abs(zd)))) - 1;
+    const seczm1 = 1 / (Math.cos(Math.min(1.52, Math.abs(zd)))) - 1;
     return 1 + seczm1 * (0.9981833 - seczm1 * (0.002875 + 0.0008083 * seczm1));
 };
 
@@ -219,7 +219,7 @@ sla.aop = function (rap, dap, date, dut, elongm, phim, hm, xp, yp,
         tdk, pmb, rh, wl, tlr) {
     "use strict";
     /* Star-independent parameters */
-    let aoprms = sla.aoppa(date, dut, elongm, phim, hm, xp, yp, tdk, pmb, rh,
+    const aoprms = sla.aoppa(date, dut, elongm, phim, hm, xp, yp, tdk, pmb, rh,
         wl, tlr);
     /* Apparent to observed */
     return sla.aopqk(rap, dap, aoprms);
@@ -304,28 +304,22 @@ sla.aoppa = function (date, dut, elongm, phim, hm, xp, yp,
     "use strict";
 
     /* Observer's location corrected for polar motion */
-    let cphim = Math.cos(phim);
-    let xt = Math.cos(elongm) * cphim;
-    let yt = Math.sin(elongm) * cphim;
-    let zt = Math.sin(phim);
-    let xc = xt - xp * zt;
-    let yc = yt + yp * zt;
-    let zc = xp * xt - yp * yt + zt;
-    let elong;
-    if (xc === 0 && yc === 0) {
-        elong = 0;
-    } else {
-        elong = Math.atan2(yc, xc);
-    }
-    let phi = Math.atan2(zc, Math.sqrt(xc * xc + yc * yc));
+    const cphim = Math.cos(phim);
+    const xt = Math.cos(elongm) * cphim;
+    const yt = Math.sin(elongm) * cphim;
+    const zt = Math.sin(phim);
+    const xc = xt - xp * zt;
+    const yc = yt + yp * zt;
+    const zc = xp * xt - yp * yt + zt;
+    const elong = (xc === 0 && yc === 0) ? 0 : Math.atan2(yc, xc);
+    const phi = Math.atan2(zc, Math.sqrt(xc * xc + yc * yc));
     let aoprms = [];
     aoprms[0] = phi;
     aoprms[1] = Math.sin(phi);
     aoprms[2] = Math.cos(phi);
 
     /* Magnitude of the diurnal aberration vector */
-    let ret = sla.geoc(phi, hm);
-    aoprms[3] = sla.d2pi * ret.r * sla.solsid / sla.c;
+    aoprms[3] = sla.d2pi * sla.geoc(phi, hm).r * sla.solsid / sla.c;
 
     /* Copy the refraction parameters and compute the A & B constants */
     aoprms[4] = hm;
@@ -334,7 +328,7 @@ sla.aoppa = function (date, dut, elongm, phim, hm, xp, yp,
     aoprms[7] = rh;
     aoprms[8] = wl;
     aoprms[9] = tlr;
-    ret = sla.refco(hm, tdk, pmb, rh, wl, phi, tlr, 1e-10);
+    const ret = sla.refco(hm, tdk, pmb, rh, wl, phi, tlr, 1e-10);
     aoprms[10] = ret.refa;
     aoprms[11] = ret.refb;
 
@@ -447,42 +441,37 @@ sla.aoppat = function (date, aoprms) {
  */
 sla.aopqk = function (rap, dap, aoprms) {
     "use strict";
-    let zbreak = 0.242535625;
+    const zbreak = 0.242535625;
     /* Sin, cos of latitude */
-    let sphi = aoprms[1];
-    let cphi = aoprms[2];
+    const sphi = aoprms[1];
+    const cphi = aoprms[2];
 
     /* Local apparent sidereal time */
-    let st = aoprms[13];
+    const st = aoprms[13];
 
     /* Apparent RA,Dec to Cartesian -HA,Dec */
     let v = sla.dcs2c(rap - st, dap);
-    let xhd = v[0];
-    let yhd = v[1];
-    let zhd = v[2];
+    const xhd = v[0];
+    const yhd = v[1];
+    const zhd = v[2];
 
     /* Diurnal aberration */
-    let diurab = aoprms[3];
-    let f = (1 - diurab * yhd);
-    let xhdt = f * xhd;
-    let yhdt = f * (yhd + diurab);
-    let zhdt = f * zhd;
+    const diurab = aoprms[3];
+    const f = (1 - diurab * yhd);
+    const xhdt = f * xhd;
+    const yhdt = f * (yhd + diurab);
+    const zhdt = f * zhd;
 
     /* Cartesian -HA,Dec to Cartesian Az,El (S=0,E=90) */
-    let xaet = sphi * xhdt - cphi * zhdt;
-    let yaet = yhdt;
-    let zaet = cphi * xhdt + sphi * zhdt;
+    const xaet = sphi * xhdt - cphi * zhdt;
+    const yaet = yhdt;
+    const zaet = cphi * xhdt + sphi * zhdt;
 
     /* Azimuth (N=0,E=90) */
-    let azobs;
-    if (xaet === 0 && yaet === 0) {
-        azobs = 0;
-    } else {
-        azobs = Math.atan2(yaet, -xaet);
-    }
+    const azobs = (xaet === 0 && yaet === 0) ? 0 : Math.atan2(yaet, -xaet);
 
     /* Topocentric zenith distance */
-    let zdt = Math.atan2(Math.sqrt(xaet * xaet + yaet * yaet), zaet);
+    const zdt = Math.atan2(Math.sqrt(xaet * xaet + yaet * yaet), zaet);
     /* Refraction */
     let zdobs = sla.refz(zdt, aoprms[10], aoprms[11]);
 
@@ -507,10 +496,10 @@ sla.aopqk = function (rap, dap, aoprms) {
     }
 
     /* To Cartesian Az/ZD */
-    let ce = Math.sin(zdobs);
-    let xaeo = -Math.cos(azobs) * ce;
-    let yaeo = Math.sin(azobs) * ce;
-    let zaeo = Math.cos(zdobs);
+    const ce = Math.sin(zdobs);
+    const xaeo = -Math.cos(azobs) * ce;
+    const yaeo = Math.sin(azobs) * ce;
+    const zaeo = Math.cos(zdobs);
 
     /* Cartesian Az/ZD to Cartesian -HA,Dec */
     v[0] = sphi * xaeo + cphi * zaeo;
@@ -518,12 +507,12 @@ sla.aopqk = function (rap, dap, aoprms) {
     v[2] = -cphi * xaeo + sphi * zaeo;
 
     /* To spherical -HA,Dec */
-    let ret = sla.dcc2s(v);
-    let hmobs = ret.a;
-    let dcobs = ret.b;
+    const ret = sla.dcc2s(v);
+    const hmobs = ret.a;
+    const dcobs = ret.b;
 
     /* Right Ascension */
-    let raobs = sla.dranrm(st + hmobs);
+    const raobs = sla.dranrm(st + hmobs);
 
     /* Return the results */
     return {
@@ -596,20 +585,20 @@ sla.atmdsp = function (tdk, pmb, rh, wl1, a1, b1, wl2) {
         };
     }
     /* Optical: keep arguments within safe bounds */
-    let tdkok = Math.min(Math.max(tdk, 100), 500);
-    let pmbok = Math.min(Math.max(pmb, 0), 10000);
-    let rhok = Math.min(Math.max(rh, 0), 1);
+    const tdkok = Math.min(Math.max(tdk, 100), 500);
+    const pmbok = Math.min(Math.max(pmb, 0), 10000);
+    const rhok = Math.min(Math.max(rh, 0), 1);
 
     /* Atmosphere parameters at the observer */
-    let psat = Math.pow(10, -8.7115 + 0.03477 * tdkok);
-    let pw0 = rhok * psat;
-    let w1 = 11.2684e-6 * pw0;
+    const psat = Math.pow(10, -8.7115 + 0.03477 * tdkok);
+    const pw0 = rhok * psat;
+    const w1 = 11.2684e-6 * pw0;
 
     /* Refractivity at the observer for first wavelength */
     let wlok = Math.max(wl1, 0.1);
     let wlsq = wlok * wlok;
     let w2 = 77.5317e-6 + (0.43909e-6 + 0.00367e-6 / wlsq) / wlsq;
-    let dn1 = (w2 * pmbok - w1) / tdkok;
+    const dn1 = (w2 * pmbok - w1) / tdkok;
     if (dn1 === 0) {
         return {
             "a2": a1,
@@ -621,11 +610,11 @@ sla.atmdsp = function (tdk, pmb, rh, wl1, a1, b1, wl2) {
     wlok = Math.max(wl2, 0.1);
     wlsq = wlok * wlok;
     w2 = 77.5317e-6 + (0.43909e-6 + 0.00367e-6 / wlsq) / wlsq;
-    let dn2 = (w2 * pmbok - w1) / tdkok;
+    const dn2 = (w2 * pmbok - w1) / tdkok;
 
     /* Scale the refraction coefficients (see Green 4.31, p.93) */
-    let f = dn2 / dn1;
-    let a2 = a1 * f;
+    const f = dn2 / dn1;
+    const a2 = a1 * f;
     let b2 = b1 * f;
     if (dn1 !== a1) {
         b2 = b2 * (1 + dn1 * (dn1 - dn2) / (2 * (dn1 - a1)));
@@ -701,24 +690,24 @@ sla.djcal = function (ndp, djm) {
     }
 
     /* Denominator of fraction. */
-    let fd = Math.pow(10, Math.max(ndp, 0));
+    const fd = Math.pow(10, Math.max(ndp, 0));
 
     /* Round date and express in units of fraction. */
-    let df = Math.round(djm * fd);
+    const df = Math.round(djm * fd);
 
     /* Separate day and fraction. */
     let f = df % fd;
     if (f < 0) {
         f += fd;
     }
-    let d = (df - f) / fd;
+    const d = (df - f) / fd;
 
     /* Express day in Gregorian calendar. */
-    let jd = Math.round(d) + 2400001;
+    const jd = Math.round(d) + 2400001;
 
-    let n4 = 4 * (Math.floor(jd + (Math.floor((2 * Math.floor((4 * jd -
+    const n4 = 4 * (Math.floor(jd + (Math.floor((2 * Math.floor((4 * jd -
             17918) / 146097) * 3) / 4) + 1) / 2) - 37);
-    let nd10 = 10 * Math.floor(((n4 - 237) % 1461) / 4) + 5;
+    const nd10 = 10 * Math.floor(((n4 - 237) % 1461) / 4) + 5;
 
     return [
         Math.floor(n4 / 1461) - 4712,
@@ -754,14 +743,14 @@ sla.djcl = function (djm) {
     if (f < 0) {
         f += 1;
     }
-    let d = Math.round(djm - f);
+    const d = Math.round(djm - f);
 
     /* Express day in Gregorian calendar. */
-    let jd = Math.round(d) + 2400001;
+    const jd = Math.round(d) + 2400001;
 
-    let n4 = 4 * (Math.floor(jd + (Math.floor((6 * Math.floor((4 * jd -
+    const n4 = 4 * (Math.floor(jd + (Math.floor((6 * Math.floor((4 * jd -
             17918) / 146097)) / 4) + 1) / 2) - 37);
-    let nd10 = 10 * Math.floor(((n4 - 237) % 1461) / 4) + 5;
+    const nd10 = 10 * Math.floor(((n4 - 237) % 1461) / 4) + 5;
 
     return {
         "iy": Math.floor(n4 / 1461) - 4712,
@@ -947,10 +936,10 @@ sla.dav2m = function (axvec) {
     let x = axvec[0];
     let y = axvec[1];
     let z = axvec[2];
-    let phi = Math.sqrt(x * x + y * y + z * z);
-    let s = Math.sin(phi);
-    let c = Math.cos(phi);
-    let w = 1 - c;
+    const phi = Math.sqrt(x * x + y * y + z * z);
+    const s = Math.sin(phi);
+    const c = Math.cos(phi);
+    const w = 1 - c;
 
     /* Euler axis - direction of axial vector (perhaps null) */
     if (phi !== 0) {
@@ -982,10 +971,10 @@ sla.dav2m = function (axvec) {
  */
 sla.dcc2s = function (v) {
     "use strict";
-    let x = v[0];
-    let y = v[1];
-    let z = v[2];
-    let r = Math.sqrt(x * x + y * y);
+    const x = v[0];
+    const y = v[1];
+    const z = v[2];
+    const r = Math.sqrt(x * x + y * y);
     let a = 0;
     if (r !== 0) {
         a = Math.atan2(y, x);
@@ -1028,16 +1017,16 @@ sla.dcc2s = function (v) {
  */
 sla.de2h = function (ha, dec, phi) {
     "use strict";
-    let sh = Math.sin(ha);
-    let ch = Math.cos(ha);
-    let sd = Math.sin(dec);
-    let cd = Math.cos(dec);
-    let sp = Math.sin(phi);
-    let cp = Math.cos(phi);
-    let x = -ch * cd * sp + sd * cp;
-    let y = -sh * cd;
-    let z = ch * cd * cp + sd * sp;
-    let r = Math.sqrt(x * x + y * y);
+    const sh = Math.sin(ha);
+    const ch = Math.cos(ha);
+    const sd = Math.sin(dec);
+    const cd = Math.cos(dec);
+    const sp = Math.sin(phi);
+    const cp = Math.cos(phi);
+    const x = -ch * cd * sp + sd * cp;
+    const y = -sh * cd;
+    const z = ch * cd * cp + sd * sp;
+    const r = Math.sqrt(x * x + y * y);
     let a = 0;
     if (r !== 0) {
         a = Math.atan2(y, x);
@@ -1092,11 +1081,10 @@ sla.deuler = function (order, phi, theta, psi) {
         [0, 0, 0]
     ];
     /* Establish length of axis string */
-    let l = order.length;
+    const l = order.length;
 
     /* Look at each character of axis string until finished */
-    let n;
-    for (n = 0; n < 3; n += 1) {
+    for (let n = 0; n < 3; n += 1) {
         if (n > l) {
             break;
         }
@@ -1109,11 +1097,11 @@ sla.deuler = function (order, phi, theta, psi) {
         } else {
             angle = psi;
         }
-        let s = Math.sin(angle);
-        let c = Math.cos(angle);
+        const s = Math.sin(angle);
+        const c = Math.cos(angle);
 
         /* Identify the axis */
-        let axis = order.substring(n, n + 1);
+        const axis = order.substring(n, n + 1);
         let rotn;
         if (axis === "X" || axis === "x" || axis === "1") {
             rotn = [[1, 0, 0],
@@ -1131,21 +1119,18 @@ sla.deuler = function (order, phi, theta, psi) {
             break;
         }
 
-        let i;
-        let j;
-        for (i = 0; i < 3; i += 1) {
-            for (j = 0; j < 3; j += 1) {
+        for (let i = 0; i < 3; i += 1) {
+            for (let j = 0; j < 3; j += 1) {
                 let w = 0;
-                let k;
-                for (k = 0; k < 3; k += 1) {
+                for (let k = 0; k < 3; k += 1) {
                     w += rotn[i][k] * result[k][j];
                 }
                 wm[i][j] = w;
             }
         }
 
-        for (i = 0; i < 3; i += 1) {
-            for (j = 0; j < 3; j += 1) {
+        for (let i = 0; i < 3; i += 1) {
+            for (let j = 0; j < 3; j += 1) {
                 result[i][j] = wm[i][j];
             }
         }
@@ -1301,7 +1286,6 @@ sla.dmoon = function (date) {
     let nl = 50;
     let nb = 45;
     let np = 31;
-    let n;
     let coeff;
     let emn;
     let empn;
@@ -1317,7 +1301,7 @@ sla.dmoon = function (date) {
     let v = 0;
     let dv = 0;
     let n5;
-    for (n = 0; n < nl; n += 1) {
+    for (let n = 0; n < nl; n += 1) {
         n5 = n * 5;
         coeff = sla.tl[n];
         emn = sla.itl[n5];
@@ -1347,7 +1331,7 @@ sla.dmoon = function (date) {
     /* Latitude */
     v = 0;
     dv = 0;
-    for (n = 0; n < nb; n += 1) {
+    for (let n = 0; n < nb; n += 1) {
         n5 = n * 5;
         coeff = sla.tb[n];
         emn = sla.itb[n5];
@@ -1379,7 +1363,7 @@ sla.dmoon = function (date) {
     /* Parallax */
     v = 0;
     dv = 0;
-    for (n = 0; n < np; n += 1) {
+    for (let n = 0; n < np; n += 1) {
         n5 = n * 5;
         coeff = sla.tp[n];
         emn = sla.itp[n5];
@@ -1473,12 +1457,10 @@ sla.dmoon = function (date) {
  */
 sla.dmxv = function (dm, va) {
     "use strict";
-    let vb = [];
-    let i;
-    let j;
-    for (i = 0; i < 3; i += 1) {
+    const vb = [];
+    for (let i = 0; i < 3; i += 1) {
         let w = 0;
-        for (j = 0; j < 3; j += 1) {
+        for (let j = 0; j < 3; j += 1) {
             w += dm[i][j] * va[j];
         }
         vb[i] = w;
@@ -1509,29 +1491,23 @@ sla.dmxv = function (dm, va) {
 sla.dd2tf = function (ndp, days) {
     "use strict";
     let rs = 1;
-    let n;
-    for (n = 0; n < ndp; n += 1) {
+    for (let n = 0; n < ndp; n += 1) {
         rs *= 10;
     }
-    let rm = rs * 60;
-    let rh = rm * 60;
+    const rm = rs * 60;
+    const rh = rm * 60;
 
     /* Round interval and express in smallest units required */
     let a = Math.round(rs * sla.d2s * Math.abs(days));
 
     /* Separate into fields */
-    let ah = Math.floor(a / rh);
+    const ah = Math.floor(a / rh);
     a -= ah * rh;
-    let am = Math.floor(a / rm);
+    const am = Math.floor(a / rm);
     a -= am * rm;
-    let as = Math.floor(a / rs);
+    const as = Math.floor(a / rs);
     a -= as * rs;
-    let sign;
-    if (days >= 0) {
-        sign = "+";
-    } else {
-        sign = "-";
-    }
+    const sign = (days >= 0) ? "+" : "-";
 
     return {
         "sign": sign,
@@ -1567,7 +1543,7 @@ sla.dd2tf = function (ndp, days) {
  */
 sla.dr2af = function (ndp, angle) {
     "use strict";
-    let ret = sla.dd2tf(ndp, angle * sla.f);
+    const ret = sla.dd2tf(ndp, angle * sla.f);
     return {
         "sign": ret.sign,
         "idmsf": ret.ihmsf
@@ -1689,7 +1665,6 @@ sla.dtf2r = function (ihour, imin, sec) {
  */
 sla.daf2r = function (ideg, iamin, asec) {
     "use strict";
-
     /* Validate arcsec, arcmin, deg */
     if (asec < 0 || asec >= 60) {
         throw new RangeError("ASEC outside of range 0-59.999... (j=3).");
@@ -1761,10 +1736,10 @@ sla.epb2d = function (epb) {
  */
 sla.eqeqx = function (date) {
     "use strict";
-    let t = (date - 51544.5) / 36525;
-    let om = sla.das2r * (450160.280 + (-5 * sla.t2as - 482890.539 +
+    const t = (date - 51544.5) / 36525;
+    const om = sla.das2r * (450160.280 + (-5 * sla.t2as - 482890.539 +
             (7.455 + 0.008 * t) * t) * t);
-    let ret = sla.nutc(date);
+    const ret = sla.nutc(date);
     return ret.dpsi * Math.cos(ret.eps0) + sla.das2r * (0.00264 * Math.sin(om) +
            0.000063 * Math.sin(om + om));
 };
@@ -2077,7 +2052,7 @@ sla.gmsta = function (date, ut) {
         d1 = ut;
         d2 = date;
     }
-    let t = (d1 + (d2 - 51544.5)) / 36525;
+    const t = (d1 + (d2 - 51544.5)) / 36525;
     return sla.dranrm(sla.ds2r * (24110.54841 + (8640184.812866 + (0.093104 -
            6.2e-6 * t) * t) * t + sla.d2s * (d1 % 1 + d2 % 1)));
 };
@@ -2095,10 +2070,10 @@ sla.gmsta = function (date, ut) {
  */
 sla.geoc = function (p, h) {
     "use strict";
-    let sp = Math.sin(p);
-    let cp = Math.cos(p);
-    let c = 1 / Math.sqrt(cp * cp + sla.sb * sp * sp);
-    let s = sla.sb * c;
+    const sp = Math.sin(p);
+    const cp = Math.cos(p);
+    const c = 1 / Math.sqrt(cp * cp + sla.sb * sp * sp);
+    const s = sla.sb * c;
     return {
         "r": (sla.a0 * c + h) * cp / sla.au,
         "z": (sla.a0 * s + h) * sp / sla.au
@@ -2121,15 +2096,15 @@ sla.geoc = function (p, h) {
 sla.ds2c6 = function (a, b, r, ad, bd, rd) {
     "use strict";
     /* Useful functions */
-    let sa = Math.sin(a);
-    let ca = Math.cos(a);
-    let sb = Math.sin(b);
-    let cb = Math.cos(b);
-    let rcb = r * cb;
-    let x = rcb * ca;
-    let y = rcb * sa;
-    let rbd = r * bd;
-    let w = rbd * sb - cb * rd;
+    const sa = Math.sin(a);
+    const ca = Math.cos(a);
+    const sb = Math.sin(b);
+    const cb = Math.cos(b);
+    const rcb = r * cb;
+    const x = rcb * ca;
+    const y = rcb * sa;
+    const rbd = r * bd;
+    const w = rbd * sb - cb * rd;
 
     /* Position and velocity */
     return [
@@ -2162,12 +2137,10 @@ sla.ds2c6 = function (a, b, r, ad, bd, rd) {
 sla.dimxv = function (dm, va) {
     "use strict";
     let vb = [];
-    let i;
-    let j;
     /* Inverse of matrix DM * vector VA -> vector VW */
-    for (i = 0; i < 3; i += 1) {
+    for (let i = 0; i < 3; i += 1) {
         let w = 0;
-        for (j = 0; j < 3; j += 1) {
+        for (let j = 0; j < 3; j += 1) {
             w += dm[j][i] * va[j];
         }
         vb[i] = w;
@@ -2296,30 +2269,29 @@ sla.dc62s = function (v) {
 sla.fk52h = function (r5, d5, dr5, dd5) {
     "use strict";
     /* FK5 to Hipparcos orientation and spin (radians, radians/year) */
-    let epx = -19.9e-3 * sla.das2r;
-    let epy = -9.1e-3 * sla.das2r;
-    let epz = 22.9e-3 * sla.das2r;
-    let omx = -0.30e-3 * sla.das2r;
-    let omy = 0.60e-3 * sla.das2r;
-    let omz = 0.70e-3 * sla.das2r;
+    const epx = -19.9e-3 * sla.das2r;
+    const epy = -9.1e-3 * sla.das2r;
+    const epz = 22.9e-3 * sla.das2r;
+    const omx = -0.30e-3 * sla.das2r;
+    const omy = 0.60e-3 * sla.das2r;
+    const omz = 0.70e-3 * sla.das2r;
 
     /* FK5 barycentric position/velocity 6-vector (normalized) */
-    let pv5 = sla.ds2c6(r5, d5, 1, dr5, dd5, 0);
+    const pv5 = sla.ds2c6(r5, d5, 1, dr5, dd5, 0);
 
     /* FK5 to Hipparcos orientation matrix. */
-    let r5h = sla.dav2m([epx, epy, epz]);
+    const r5h = sla.dav2m([epx, epy, epz]);
 
     /* Orient & spin the 6-vector into the Hipparcos frame. */
-    let pvh = sla.dmxv(r5h, pv5);
+    const pvh = sla.dmxv(r5h, pv5);
     let vv = sla.dvxv(pv5, [omx, omy, omz]);
-    let i;
-    for (i = 0; i < 3; i += 1) {
+    for (let i = 0; i < 3; i += 1) {
         vv[i] += pv5[i + 3];
     }
-    let pvhd = sla.dmxv(r5h, vv);
+    const pvhd = sla.dmxv(r5h, vv);
 
     /* Hipparcos 6-vector to spherical. */
-    let ret = sla.dc62s(pvh.concat(pvhd));
+    const ret = sla.dc62s(pvh.concat(pvhd));
     return {
         "rh": sla.dranrm(ret.a),
         "dh": ret.b,
@@ -2368,33 +2340,32 @@ sla.fk52h = function (r5, d5, dr5, dd5) {
 sla.h2fk5 = function (rh, dh, drh, ddh) {
     "use strict";
     /* FK5 to Hipparcos orientation and spin (radians, radians/year) */
-    let epx = -19.9e-3 * sla.das2r;
-    let epy = -9.1e-3 * sla.das2r;
-    let epz = 22.9e-3 * sla.das2r;
-    let omx = -0.30e-3 * sla.das2r;
-    let omy = 0.60e-3 * sla.das2r;
-    let omz = 0.70e-3 * sla.das2r;
+    const epx = -19.9e-3 * sla.das2r;
+    const epy = -9.1e-3 * sla.das2r;
+    const epz = 22.9e-3 * sla.das2r;
+    const omx = -0.30e-3 * sla.das2r;
+    const omy = 0.60e-3 * sla.das2r;
+    const omz = 0.70e-3 * sla.das2r;
 
     /* Hipparcos barycentric position/velocity 6-vector (normalized). */
-    let pvh = sla.ds2c6(rh, dh, 1, drh, ddh, 0);
+    const pvh = sla.ds2c6(rh, dh, 1, drh, ddh, 0);
 
     /* FK5 to Hipparcos orientation matrix. */
-    let r5h = sla.dav2m([epx, epy, epz]);
+    const r5h = sla.dav2m([epx, epy, epz]);
 
     /* Rotate the spin vector into the Hipparcos frame. */
-    let sh = sla.dmxv(r5h, [omx, omy, omz]);
+    const sh = sla.dmxv(r5h, [omx, omy, omz]);
 
     /* De-orient & de-spin the 6-vector into FK5 J2000. */
-    let pv5 = sla.dimxv(r5h, pvh);
+    const pv5 = sla.dimxv(r5h, pvh);
     let vv = sla.dvxv(pvh, sh);
-    let i;
-    for (i = 0; i < 3; i += 1) {
+    for (let i = 0; i < 3; i += 1) {
         vv[i] = pvh[i + 3] - vv[i];
     }
-    let pv5d = sla.dimxv(r5h, vv);
+    const pv5d = sla.dimxv(r5h, vv);
 
     /* FK5 6-vector to spherical. */
-    let ret = sla.dc62s(pv5.concat(pv5d));
+    const ret = sla.dc62s(pv5.concat(pv5d));
     return {
         "r5": sla.dranrm(ret.a),
         "d5": ret.b,
@@ -2429,7 +2400,7 @@ sla.h2fk5 = function (rh, dh, drh, ddh) {
  */
 sla.nut = function (date) {
     "use strict";
-    let ret = sla.nutc(date);
+    const ret = sla.nutc(date);
     return sla.deuler("XZX", ret.eps0, -ret.dpsi, -(ret.eps0 + ret.deps));
 };
 
@@ -3463,13 +3434,13 @@ sla.epj = function (date) {
  */
 sla.prec = function (ep0, ep1) {
     "use strict";
-    let t0 = (ep0 - 2000) / 100;
-    let t = (ep1 - ep0) / 100;
-    let tas2r = t * sla.das2r;
-    let w = 2306.2181 + (1.39656 - 0.000139 * t0) * t0;
-    let zeta = (w + ((0.30188 - 0.000344 * t0) + 0.017998 * t) * t) * tas2r;
-    let z = (w + ((1.09468 + 0.000066 * t0) + 0.018203 * t) * t) * tas2r;
-    let theta = ((2004.3109 + (-0.85330 - 0.000217 * t0) * t0) +
+    const t0 = (ep0 - 2000) / 100;
+    const t = (ep1 - ep0) / 100;
+    const tas2r = t * sla.das2r;
+    const w = 2306.2181 + (1.39656 - 0.000139 * t0) * t0;
+    const zeta = (w + ((0.30188 - 0.000344 * t0) + 0.017998 * t) * t) * tas2r;
+    const z = (w + ((1.09468 + 0.000066 * t0) + 0.018203 * t) * t) * tas2r;
+    const theta = ((2004.3109 + (-0.85330 - 0.000217 * t0) * t0) +
                 ((-0.42665 - 0.000217 * t0) - 0.041833 * t) * t) * tas2r;
     return sla.deuler("ZYZ", -zeta, theta, -z);
 };
@@ -3665,10 +3636,10 @@ sla.rdplan = function (date, np, elong, phi) {
  */
 sla.atmt = function (r0, t0, alpha, gamm2, delm2, c1, c2, c3, c4, c5, c6, r) {
     "use strict";
-    let t = Math.max(Math.min(t0 - alpha * (r - r0), 320), 100);
-    let tt0 = t / t0;
-    let tt0gm2 = Math.pow(tt0, gamm2);
-    let tt0dm2 = Math.pow(tt0, delm2);
+    const t = Math.max(Math.min(t0 - alpha * (r - r0), 320), 100);
+    const tt0 = t / t0;
+    const tt0gm2 = Math.pow(tt0, gamm2);
+    const tt0dm2 = Math.pow(tt0, delm2);
     return {
         "t": t,
         "dn": 1 + (c1 * tt0gm2 - (c2 - c5 / t) * tt0dm2) * tt0,
@@ -3685,8 +3656,8 @@ sla.atmt = function (r0, t0, alpha, gamm2, delm2, c1, c2, c3, c4, c5, c6, r) {
  */
 sla.atms = function (rt, tt, dnt, gamal, r) {
     "use strict";
-    let b = gamal / tt;
-    let w = (dnt - 1) * Math.exp(-b * (r - rt));
+    const b = gamal / tt;
+    const w = (dnt - 1) * Math.exp(-b * (r - rt));
     return {
         "dn": 1 + w,
         "rdndr": -r * b * w
@@ -3789,23 +3760,23 @@ sla.atms = function (rt, tt, dnt, gamal, r) {
 sla.refro = function (zobs, hm, tdk, pmb, rh, wl, phi, tlr, eps) {
     "use strict";
     /* 93 degrees in radians */
-    let d93 = 1.623156204;
+    const d93 = 1.623156204;
     /* Universal gas constant */
-    let gcr = 8314.32;
+    const gcr = 8314.32;
     /* Molecular weight of dry air */
-    let dmd = 28.9644;
+    const dmd = 28.9644;
     /* Molecular weight of water vapour */
-    let dmw = 18.0152;
+    const dmw = 18.0152;
     /* Mean Earth radius (metre) */
-    let s = 6378120;
+    const s = 6378120;
     /* Exponent of temperature dependence of water vapour pressure */
-    let delta = 18.36;
+    const delta = 18.36;
     /* Height of tropopause (metre) */
-    let ht = 11000;
+    const ht = 11000;
     /* Upper limit for refractive effects (metre) */
-    let hs = 80000;
+    const hs = 80000;
     /* Numerical integration: maximum number of strips. */
-    let ismax = 16384;
+    const ismax = 16384;
 
     /* The refraction integrand */
     let refi = function (dn, rdndr) {
@@ -4493,9 +4464,8 @@ sla.evp = function (date, deqx) {
 sla.dvn = function (v) {
     "use strict";
     let w1 = 0;
-    let i;
     let w2;
-    for (i = 0; i < 3; i += 1) {
+    for (let i = 0; i < 3; i += 1) {
         w2 = v[i];
         w1 += w2 * w2;
     }
@@ -4557,39 +4527,38 @@ sla.dvn = function (v) {
  */
 sla.mappa = function (eq, date) {
     "use strict";
-    let amprms = [];
+    const amprms = [];
 
     /* Time interval for proper motion correction */
     amprms[0] = sla.epj(date) - eq;
 
     /* Get Earth barycentric and heliocentric position and velocity */
     let ret = sla.evp(date, eq);
-    let ebd = ret.dvb;
+    const ebd = ret.dvb;
     amprms[1] = ret.dpb[0];
     amprms[2] = ret.dpb[1];
     amprms[3] = ret.dpb[2];
-    let eh = ret.dph;
+    const eh = ret.dph;
 
     /* Heliocentric direction of earth (normalized) and modulus */
     ret = sla.dvn(eh);
     amprms[4] = ret.uv[0];
     amprms[5] = ret.uv[1];
     amprms[6] = ret.uv[2];
-    let e = ret.vm;
+    const e = ret.vm;
 
     /* Light deflection parameter */
     amprms[7] = sla.gr2 / e;
 
     /* Aberration parameters */
-    let i;
-    for (i = 0; i < 3; i += 1) {
+    for (let i = 0; i < 3; i += 1) {
         amprms[i + 8] = ebd[i] * sla.tau;
     }
     ret = sla.dvn(amprms.slice(8, 11));
     amprms[11] = Math.sqrt(1 - ret.vm * ret.vm);
 
     /* Precession/nutation matrix */
-    let p13 = sla.prenut(eq, date);
+    const p13 = sla.prenut(eq, date);
     return amprms.concat(p13[0], p13[1], p13[2]);
 };
 
@@ -4636,7 +4605,7 @@ sla.mappa = function (eq, date) {
 sla.map = function (rm, dm, pr, pd, px, rv, eq, date) {
     "use strict";
     /* Star-independent parameters */
-    let amprms = sla.mappa(eq, date);
+    const amprms = sla.mappa(eq, date);
     /* Mean to apparent */
     return sla.mapqk(rm, dm, pr, pd, px, rv, amprms);
 };
@@ -4832,46 +4801,45 @@ sla.dvdv = function (va, vb) {
 sla.mapqkz = function (rm, dm, amprms) {
     "use strict";
     /* Unpack scalar and vector parameters */
-    let gr2e = amprms[7];
-    let ab1 = amprms[11];
-    let ehn = [];
-    let abv = [];
-    let i;
-    for (i = 0; i < 3; i += 1) {
+    const gr2e = amprms[7];
+    const ab1 = amprms[11];
+    const ehn = [];
+    const abv = [];
+    for (let i = 0; i < 3; i += 1) {
         ehn[i] = amprms[i + 4];
         abv[i] = amprms[i + 8];
     }
 
     /* Spherical to x,y,z */
-    let p = sla.dcs2c(rm, dm);
+    const p = sla.dcs2c(rm, dm);
 
     /* Light deflection */
-    let p1 = [];
-    let p2 = [];
-    let pde = sla.dvdv(p, ehn);
-    let pdep1 = pde + 1;
+    const p1 = [];
+    const p2 = [];
+    const pde = sla.dvdv(p, ehn);
+    const pdep1 = pde + 1;
     let w = gr2e / Math.max(pdep1, 1e-5);
-    for (i = 0; i < 3; i += 1) {
+    for (let i = 0; i < 3; i += 1) {
         p1[i] = p[i] + w * (ehn[i] - pde * p[i]);
     }
 
     /* Aberration */
-    let p1dv = sla.dvdv(p1, abv);
-    let p1dvp1 = p1dv + 1;
+    const p1dv = sla.dvdv(p1, abv);
+    const p1dvp1 = p1dv + 1;
     w = 1 + p1dv / (ab1 + 1);
-    for (i = 0; i < 3; i += 1) {
+    for (let i = 0; i < 3; i += 1) {
         p2[i] = (ab1 * p1[i] + w * abv[i]) / p1dvp1;
     }
 
     /* Precession and nutation */
-    let p3 = sla.dmxv([
+    const p3 = sla.dmxv([
         amprms.slice(12, 15),
         amprms.slice(15, 18),
         amprms.slice(18, 21)
     ], p2);
 
     /* Geocentric apparent RA,Dec */
-    let ret = sla.dcc2s(p3);
+    const ret = sla.dcc2s(p3);
     return {
         "ra": sla.dranrm(ret.a),
         "da": ret.b
@@ -5019,11 +4987,11 @@ sla.dvxv = function (va, vb) {
 sla.dsepv = function (v1, v2) {
     "use strict";
     /* Modulus of cross product = sine multiplied by the two moduli. */
-    let v1xv2 = sla.dvxv(v1, v2);
-    let ret = sla.dvn(v1xv2);
+    const v1xv2 = sla.dvxv(v1, v2);
+    const ret = sla.dvn(v1xv2);
 
     /* Dot product = cosine multiplied by the two moduli. */
-    let c = sla.dvdv(v1, v2);
+    const c = sla.dvdv(v1, v2);
 
     /* Angle between the vectors. */
     if (ret.vm !== 0 || c !== 0) {
@@ -5047,8 +5015,8 @@ sla.dsepv = function (v1, v2) {
 sla.dsep = function (a1, b1, a2, b2) {
     "use strict";
     /* Convert coordinates from spherical to Cartesian. */
-    let v1 = sla.dcs2c(a1, b1);
-    let v2 = sla.dcs2c(a2, b2);
+    const v1 = sla.dcs2c(a1, b1);
+    const v2 = sla.dcs2c(a2, b2);
 
     /* Angle between the vectors. */
     return sla.dsepv(v1, v2);
@@ -5068,10 +5036,10 @@ sla.dsep = function (a1, b1, a2, b2) {
 sla.ecmat = function (date) {
     "use strict";
     /* Interval between basic epoch J2000.0 and current epoch (JC) */
-    let t = (date - 51544.5) / 36525;
+    const t = (date - 51544.5) / 36525;
 
     /* Mean obliquity */
-    let eps0 = sla.das2r * (84381.448 + (-46.8150 + (-0.00059 + 0.001813 *
+    const eps0 = sla.das2r * (84381.448 + (-46.8150 + (-0.00059 + 0.001813 *
             t) * t) * t);
 
     /* Matrix */
@@ -5096,14 +5064,14 @@ sla.eqecl = function (dr, dd, date) {
 
     /* Mean J2000 to mean of date */
     let rmat = sla.prec(2000, sla.epj(date));
-    let v2 = sla.dmxv(rmat, v1);
+    const v2 = sla.dmxv(rmat, v1);
 
     /* Equatorial to ecliptic */
     rmat = sla.ecmat(date);
     v1 = sla.dmxv(rmat, v2);
 
     /* Cartesian to spherical */
-    let ret = sla.dcc2s(v1);
+    const ret = sla.dcc2s(v1);
 
     /* Express in conventional ranges */
     return {
@@ -5138,15 +5106,15 @@ sla.eqecl = function (dr, dd, date) {
  */
 sla.zd = function (ha, dec, phi) {
     "use strict";
-    let sh = Math.sin(ha);
-    let ch = Math.cos(ha);
-    let sd = Math.sin(dec);
-    let cd = Math.cos(dec);
-    let sp = Math.sin(phi);
-    let cp = Math.cos(phi);
-    let x = ch * cd * sp - sd * cp;
-    let y = sh * cd;
-    let z = ch * cd * cp + sd * sp;
+    const sh = Math.sin(ha);
+    const ch = Math.cos(ha);
+    const sd = Math.sin(dec);
+    const cd = Math.cos(dec);
+    const sp = Math.sin(phi);
+    const cp = Math.cos(phi);
+    const x = ch * cd * sp - sd * cp;
+    const y = sh * cd;
+    const z = ch * cd * cp + sd * sp;
     return Math.atan2(Math.sqrt(x * x + y * y), z);
 };
 

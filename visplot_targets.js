@@ -178,17 +178,14 @@ TargetList.prototype.targetStringToJSON = function (line) {
 };
 
 TargetList.prototype.setTargets = function (obj) {
-    let i, o, res = Array();
-    let nobj = obj.length;
-    for (i = 0; i < nobj; i += 1) {
-        res[i] = this.targetStringToJSON (obj[i]);
-    }
-
+    const res = obj.map(function (x) {
+        return this.targetStringToJSON (x);
+    }, this);
     this.nTargets = res.length;
     this.Targets = [];
     this.resetWarnings();
     this.processOfflineTime();
-    for (i = 0; i < this.nTargets; i += 1) {
+    for (let i = 0; i < this.nTargets; i += 1) {
         this.Targets[i] = this.processTarget(i, res[i], true);
     }
     this.warnUnobservable();
@@ -197,12 +194,14 @@ TargetList.prototype.setTargets = function (obj) {
 };
 
 TargetList.prototype.addTargets = function (obj) {
-    let i, o, res, oldNobjects = this.nTargets;
-    let nobj = obj.length;
-    this.nTargets += res.len;
+    const res = obj.map(function (x) {
+        return this.targetStringToJSON (x);
+    }, this);
+    let oldNobjects = this.nTargets;
+    this.nTargets += res.length;
     this.resetWarnings();
     this.processOfflineTime();
-    for (i = oldNobjects; i < this.nTargets; i += 1) {
+    for (let i = oldNobjects; i < this.nTargets; i += 1) {
         this.Targets[i] = this.processTarget(i, res[i], false);
     }
     this.warnUnobservable();
@@ -210,7 +209,7 @@ TargetList.prototype.addTargets = function (obj) {
 };
 
 TargetList.prototype.processTarget = function (i, obj, checkOB) {
-    let target = new Target(i, obj);
+    const target = new Target(i, obj);
     target.preCompute();
     target.LabelX = target.ZenithTime;
     if (target.LabelX < driver.night.ENauTwilight) {

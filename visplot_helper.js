@@ -35,12 +35,10 @@ helper.rad2deg = function (angle) {
  * Pad a two digit number with zeroes ('6'->'06', '13'->'13').
  */
 helper.padTwoDigits = function (_num) {
-    let num = parseFloat(_num);
+    const num = parseFloat(_num);
     if (num === 0) {
         // handle -0 and +0 (for degrees of Dec, for instance)
-        return 1/num < 0 ?
-            "-00" :
-            "00";
+        return 1/num < 0 ? "-00" : "00";
     }
     return num > 0 ?
             (num < 10 ? ('0' + num.toString()) : num.toString()) :
@@ -143,10 +141,10 @@ helper.julianDate = function (now)
  * Calculate the Greenwich mean sidereal time from a Julian date.
  */
 helper.GM_Sidereal_Time = function (jd) {
-    let MJD = jd - 2400000.5;
-    let MJD0 = Math.floor(MJD);
-    let ut = (MJD - MJD0) * 24.0;
-    let t_eph = (MJD0 - 51544.5) / 36525.0;
+    const MJD = jd - 2400000.5;
+    const MJD0 = Math.floor(MJD);
+    const ut = (MJD - MJD0) * 24.0;
+    const t_eph = (MJD0 - 51544.5) / 36525.0;
     let gmst = 6.697374558 + 1.0027379093 * ut + (8640184.812866 + (0.093104 - 0.0000062 * t_eph) * t_eph) * t_eph / 3600.0;
     while (gmst > 24) {
         gmst -= 24;
@@ -176,24 +174,21 @@ helper.LM_Sidereal_Time = function (jd) {
  * Convert Altitude, Azimuth and Local Apparent Sidereal Time to RA and Dec.
  */
 helper.radec = function (alt, az, lst) {
-    let val = new Array(2);
-    let radeg = Math.PI / 180;
-    let a = alt * radeg, p = Driver.obs_lat_deg * radeg, A = az * radeg;
-    let sin_dec = Math.sin(a) * Math.sin(p) + Math.cos(a) * Math.cos(p) * Math.cos(A);
+    const radeg = Math.PI / 180;
+    const a = alt * radeg, p = Driver.obs_lat_deg * radeg, A = az * radeg;
+    const sin_dec = Math.sin(a) * Math.sin(p) + Math.cos(a) * Math.cos(p) * Math.cos(A);
     let dec = Math.asin(sin_dec);
-    let cos_ha = (Math.sin(a) - Math.sin(p) * sin_dec) / (Math.cos(p) * Math.cos(dec));
-    let ha = 12 * Math.acos(cos_ha) / Math.PI;
+    const cos_ha = (Math.sin(a) - Math.sin(p) * sin_dec) / (Math.cos(p) * Math.cos(dec));
+    const ha = 12 * Math.acos(cos_ha) / Math.PI;
     let ra = (az < 180 ? lst + ha : lst - ha);
     if (ra < 0) {
         ra += 24;
     }
-    if (ra > 24) {
+    if (ra >= 24) {
         ra -= 24;
     }
     dec *= 180 / Math.PI;
-    val[0] = ra;
-    val[1] = dec;
-    return val;
+    return [ra, dec];
 };
 
 /**
@@ -204,10 +199,10 @@ helper.altaz = function (ra, dec, lst) {
     if (ha < 0) {
         ha += 24;
     }
-    let p = Driver.obs_lat_rad, d = helper.deg2rad(dec), h = ha * Math.PI / 12;
-    let sin_alt = Math.sin(d) * Math.sin(p) + Math.cos(d) * Math.cos(p) * Math.cos(h);
+    const p = Driver.obs_lat_rad, d = helper.deg2rad(dec), h = ha * Math.PI / 12;
+    const sin_alt = Math.sin(d) * Math.sin(p) + Math.cos(d) * Math.cos(p) * Math.cos(h);
     let alt = Math.asin(sin_alt);
-    let cos_alt = (Math.sin(d) - sin_alt * Math.sin(p)) / (Math.cos(alt) * Math.cos(p));
+    const cos_alt = (Math.sin(d) - sin_alt * Math.sin(p)) / (Math.cos(alt) * Math.cos(p));
     let az = helper.rad2deg(Math.acos(cos_alt));
     alt = helper.rad2deg(alt);
     if (Math.sin(h) > 0) {
@@ -222,10 +217,11 @@ helper.altaz = function (ra, dec, lst) {
 helper.HMS = function (time, sign, sep1, sep2, sep3) {
     return helper.degtosex(time, sign, 0, sep1, sep2, sep3);
 };
+
 helper.degtosex = function (time, sign, prec, sep1, sep2, sep3) {
     let h = Math.floor(time);
-    let min = Math.floor(60.0 * helper.frac(time));
-    let sec = (60.0 * (60.0 * helper.frac(time) - min)).toFixed(prec);
+    const min = Math.floor(60.0 * helper.frac(time));
+    const sec = (60.0 * (60.0 * helper.frac(time) - min)).toFixed(prec);
     let str = (sign ? (h < 0 ? "-" : "+") : "");
     h = Math.abs(h);
     str += (h < 10 ? "0" + h : h) + sep1 + ":";
@@ -240,7 +236,7 @@ helper.degtosex = function (time, sign, prec, sep1, sep2, sep3) {
 helper.EphemDateToHM = function (d) {
     let t = new Date(driver.night.DateSunset);
     t.setSeconds(t.getUTCSeconds() + (d - driver.night.Sunset) * 86400);
-    let ss = t.getUTCSeconds();
+    const ss = t.getUTCSeconds();
     let mm = t.getUTCMinutes();
     let hh = t.getUTCHours();
     // Round up if necessary
@@ -258,13 +254,13 @@ helper.EphemDateToHM = function (d) {
 };
 
 helper.LSTToAngle = function (text) {
-    let arr = text.split(':');
+    const arr = text.split(':');
     if (arr.length < 1 || arr.length > 3 || helper.notInt(arr[0])) {
         return -1;
     }
-    let hh = helper.filterInt(arr[0]);
-    let mm = (arr.length > 1) ? helper.filterInt(arr[1]) : 0;
-    let ss = (arr.length > 2) ? helper.filterInt(arr[2]) : 0;
+    const hh = helper.filterInt(arr[0]);
+    const mm = (arr.length > 1) ? helper.filterInt(arr[1]) : 0;
+    const ss = (arr.length > 2) ? helper.filterInt(arr[2]) : 0;
     if (hh < 0 || hh > 24 || mm < 0 || mm > 60 || ss < 0 || ss > 60) {
         return -1;
     }
@@ -308,22 +304,22 @@ helper.LSTToEphemDate = function (str) {
  * Convert a H:MM or H:MM:SS format to a Python.ephem date.
  */
 helper.HMToEphemDate = function (text) {
-    let jsunset = driver.night.DateSunset;
-    let arr = text.split(':');
+    const jsunset = driver.night.DateSunset;
+    const arr = text.split(':');
     if (arr.length < 1 || arr.length > 3 || helper.notInt(arr[0])) {
         return -1;
     }
-    let hh = helper.filterInt(arr[0]);
-    let mm = (arr.length > 1) ? helper.filterInt(arr[1]) : 0;
-    let ss = (arr.length > 2) ? helper.filterInt(arr[2]) : 0;
+    const hh = helper.filterInt(arr[0]);
+    const mm = (arr.length > 1) ? helper.filterInt(arr[1]) : 0;
+    const ss = (arr.length > 2) ? helper.filterInt(arr[2]) : 0;
     if (hh < 0 || hh > 24 || mm < 0 || mm > 60 || ss < 0 || ss > 60) {
         return -1;
     }
     if (hh < driver.night.tSunset[3] - 1 && hh > driver.night.tSunrise[3] + 1) {
         return -1;
     }
-    let jtime = new Date(Date.UTC(driver.night.tSunset[0], driver.night.tSunset[1]-1, driver.night.tSunset[2] + (hh > 12 ? 0 : 1), hh, mm, ss, 0));
-    let jdiff = (jtime - jsunset) / 8.64e7;
+    const jtime = new Date(Date.UTC(driver.night.tSunset[0], driver.night.tSunset[1]-1, driver.night.tSunset[2] + (hh > 12 ? 0 : 1), hh, mm, ss, 0));
+    const jdiff = (jtime - jsunset) / 8.64e7;
     return driver.night.Sunset + jdiff;
 };
 
@@ -455,7 +451,7 @@ helper.LogSuccess = function (msg) {
  *
  */
 helper.Log = function (msg, cls) {
-    let cd = new Date();
+    const cd = new Date();
     $('#logger').append('<span class="' + cls + '">' +
             '[' + cd.getUTCFullYear() + '-' +
             helper.pad((cd.getUTCMonth()+1).toString(), 2, true, '0') + '-' +
@@ -488,7 +484,7 @@ helper.LunarPhaseExplanation = function (phase) {
  *
  */
 helper.numberOfDays = function (year, month) {
-    let d = new Date(Date.UTC(year, month, 0));
+    const d = new Date(Date.UTC(year, month, 0));
     return d.getDate();
 };
 
@@ -509,8 +505,8 @@ helper.ExtractLSTRange = function (str) {
     if (str.slice(-1) !== ']' || str.indexOf('-') === -1) {
         return false;
     }
-    let pos = str.indexOf("[");
-    let inner = str.substr(pos+1, str.length - pos - 2);
+    const pos = str.indexOf("[");
+    const inner = str.substr(pos+1, str.length - pos - 2);
     str = inner.split('-');
     if (str.length !== 2) {
         return false;
@@ -528,8 +524,8 @@ helper.ExtractUTRange = function (str) {
     if (str.slice(-1) !== ']' || str.indexOf('-') === -1) {
         return false;
     }
-    let pos = str.indexOf("[");
-    let inner = str.substr(pos+1, str.length - pos - 2);
+    const pos = str.indexOf("[");
+    const inner = str.substr(pos+1, str.length - pos - 2);
     str = inner.split('-');
     if (str.length !== 2) {
         return false;
@@ -561,9 +557,9 @@ helper.stl = function(utc, eqeqx) {
 };
 
 helper.utarc = function(altitude, tsouth, dec, pm) {
-    let cost = (Math.sin(altitude) - Math.sin(Driver.obs_lat_rad) * Math.sin(dec)) /
+    const cost = (Math.sin(altitude) - Math.sin(Driver.obs_lat_rad) * Math.sin(dec)) /
             (Math.cos(Driver.obs_lat_rad) * Math.cos(dec));
-    let t = sla.r2d * Math.acos(cost) / 15;
+    const t = sla.r2d * Math.acos(cost) / 15;
     if (pm === "+") {
         return sla.dr2tf(6, (tsouth + t) / 24 * sla.d2pi).ihmsf;
     } else {
@@ -575,12 +571,12 @@ helper.utarc = function(altitude, tsouth, dec, pm) {
  *
  */
 helper.validColour = function(stringToTest) {
-    //Alter the following conditions according to your need.
+    /* Exclude valid CSS colour properties that are not colours */
     if (stringToTest === "") { return false; }
     if (stringToTest === "inherit") { return false; }
     if (stringToTest === "transparent") { return false; }
 
-    let dummy = document.createElement("img");
+    const dummy = document.createElement("img");
     dummy.style.color = "rgb(0, 0, 0)";
     dummy.style.color = stringToTest;
     if (dummy.style.color !== "rgb(0, 0, 0)") { return true; }

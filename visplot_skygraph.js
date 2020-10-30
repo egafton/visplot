@@ -52,20 +52,21 @@ SkyGraph.prototype.stopTimer = function () {
 };
 
 SkyGraph.prototype.processImage = function () {
-    let imgdata = this.ctx.getImageData(0, 0, this.imx, this.imy).data;
-    let i, j, r, g, b, gray, black = 0, count = 0, row;
-    let cx = 0.53 * this.imx;
-    let cy = 0.52 * this.imy;
-    let rad = 270;
-    let radsq = rad * rad;
-    for (i = 0; i < this.imy; i++) {
-        row = this.imx * i;
-        for (j = 0; j < this.imx; j++) {
+    const imgdata = this.ctx.getImageData(0, 0, this.imx, this.imy).data;
+    const cx = 0.53 * this.imx;
+    const cy = 0.52 * this.imy;
+    const rad = 270;
+    const radsq = rad * rad;
+    let black = 0;
+    let count = 0;
+    for (let i = 0; i < this.imy; i++) {
+        const row = this.imx * i;
+        for (let j = 0; j < this.imx; j++) {
             if ((i - cy) * (i - cy) + (j - cx) * (j - cx) < radsq) {
-                r = imgdata[(row + j) * 4];
-                g = imgdata[(row + j) * 4 + 1];
-                b = imgdata[(row + j) * 4 + 2];
-                gray = (r + g + b) / 3;
+                const r = imgdata[(row + j) * 4];
+                const g = imgdata[(row + j) * 4 + 1];
+                const b = imgdata[(row + j) * 4 + 2];
+                const gray = (r + g + b) / 3;
                 black += gray > 90 ? 0 : 1;
                 count += 1;
             }
@@ -129,10 +130,10 @@ SkyGraph.prototype.distort = function (zd) {
 };
 
 SkyGraph.prototype.aatrans = function (altaz) { // convert from alt,az to ix,iy
-    let ang = (this.south + 12 + altaz[1] / 15) * Math.PI / 12;   // rotate to display
-    let dd = this.cr * this.distort((90 - altaz[0]) / 90);    // zenith distance in pixels
-    let ix = this.cx + dd * Math.sin(ang);
-    let iy = this.cy + dd * Math.cos(ang);
+    const ang = (this.south + 12 + altaz[1] / 15) * Math.PI / 12;   // rotate to display
+    const dd = this.cr * this.distort((90 - altaz[0]) / 90);    // zenith distance in pixels
+    const ix = this.cx + dd * Math.sin(ang);
+    const iy = this.cy + dd * Math.cos(ang);
     return [ix, iy];
 };
 
@@ -175,17 +176,16 @@ SkyGraph.prototype.xhair = function (x, y, name, color) {
 };
 
 SkyGraph.prototype.drawaxes = function () {
-    let i;
     this.ctx.strokeStyle = "gray";
-    for (i = 90; i > 0; i -= 30) {
-        let r = this.cr * this.distort(i / 90);
+    for (let i = 90; i > 0; i -= 30) {
+        const r = this.cr * this.distort(i / 90);
         this.ctx.beginPath();
         this.ctx.arc(this.cx, this.cy, r, 0, 2 * Math.PI, false);
         this.ctx.stroke();
     }
     this.ctx.beginPath();                    // 24 spokes
-    for (i = 0; i < 24; i += 1) {
-        let az = (this.south + 12 + i) * Math.PI / 12;
+    for (let i = 0; i < 24; i += 1) {
+        const az = (this.south + 12 + i) * Math.PI / 12;
         this.ctx.moveTo(this.cx, this.cy);
         this.ctx.lineTo(this.cx + this.cr * Math.sin(az), this.cy + this.cr * Math.cos(az));
     }
@@ -197,10 +197,10 @@ SkyGraph.prototype.drawtics = function () {
     this.ctx.textAlign = 'start';
     this.ctx.font = "10pt " + this.fontFamily;
     for (let i = 0; i < 4; i += 1) {
-        let ang = this.pang[i] * Math.PI / 12;
+        const ang = this.pang[i] * Math.PI / 12;
         let xx1 = this.cx + this.cr * Math.sin(ang);
         let yy1 = this.cy + this.cr * Math.cos(ang);
-        let xl = [-7, -5, -2, 1], yl = [-2, +4, +7, 0];
+        const xl = [-7, -5, -2, 1], yl = [-2, +4, +7, 0];
         this.ctx.beginPath();
         this.ctx.arc(this.cx, this.cy, 0.85 * this.cr, Math.PI / 2 - ang - 0.05, Math.PI / 2 - ang + 0.05, false);
         this.ctx.lineTo(xx1, yy1);
@@ -225,9 +225,9 @@ SkyGraph.prototype.drawstars = function () {
     if (driver.targets.nTargets === 0) {
         return;
     }
-    let obj, last = null;
+    let last = null;
     for (let i = 0; i < driver.targets.nTargets; i += 1) {
-        obj = driver.targets.Targets[i];
+        const obj = driver.targets.Targets[i];
         let radeg = helper.dmstodeg(obj.RA);
         let decdeg = helper.dmstodeg(obj.Dec);
         let altaz = helper.altaz(radeg, decdeg, this.lst);
@@ -267,19 +267,13 @@ SkyGraph.prototype.display_coords = function (azalt) {
 };
 
 SkyGraph.prototype.display_time = function () {
-    let tim = new Date();
+    const tim = new Date();
     this.lst = helper.LM_Sidereal_Time(helper.julianDate(tim));
-    let ut = helper.utc(tim) * 24;
-    let mm = (tim.getUTCMonth() + 1).toFixed();
-    if (mm.length < 2) {
-        mm = "0" + mm;
-    }
-    let dd = tim.getUTCDate().toFixed();
-    if (dd.length < 2) {
-        dd = "0" + dd;
-    }
-    let UTtext = "UTC " + tim.getUTCFullYear() + "-" + mm + "-" + dd + " " + helper.HMS(ut, false, '', '', '');
-    let STtext = "LST " + helper.HMS(this.lst, false, '', '', '');
+    const ut = helper.utc(tim) * 24;
+    const mm = helper.padTwoDigits(tim.getUTCMonth() + 1);
+    const dd = helper.padTwoDigits(tim.getUTCDate());
+    const UTtext = "UTC " + tim.getUTCFullYear() + "-" + mm + "-" + dd + " " + helper.HMS(ut, false, '', '', '');
+    const STtext = "LST " + helper.HMS(this.lst, false, '', '', '');
     this.ctx.clearRect(this.canvasWidth / 2, this.imy, this.canvasWidth / 2, this.canvasHeight - this.imy);
     this.ctx.font = "10pt " + this.fontFamily + " Mono";
     this.ctx.fillStyle = 'gray';

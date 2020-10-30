@@ -7,11 +7,11 @@
  * (at your option) any later version. See LICENSE.md.
  */
 
-var driver;
 $(document).ready(function () {
     sla.performUnitTests();
     
-    driver = new Driver();
+    /* The one and only global variable */
+    window.driver = new Driver();
     helper.LogDebug("Drawing plot background...");
     driver.graph.drawBackground();
  

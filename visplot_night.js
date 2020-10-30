@@ -44,12 +44,12 @@ Night.prototype.setEphemerides = function (obj) {
      * which is approximately equal to what SLALIB gives at sea-level.
      * However, at high altitude (low pressure) this can be smaller by about 10 arcminutes, so that
      * needs to be adjusted */
-    let stdPres = 1013.25; // hPa
-    let stdTemp = 298.15;  // K, 15 deg
-    let sitePres = stdPres * Math.exp(-9.80665 * 0.0289644 * Driver.obs_alt / stdTemp / 8.31447)
-    let siteTemp = stdTemp-0.0065*Driver.obs_alt; // 15 deg at sea level, use TLR to reduce temperature
-    let siteWvlen = 0.55;
-    let siteHum = 0.2;
+    const stdPres = 1013.25; // hPa
+    const stdTemp = 298.15;  // K, 15 deg
+    const sitePres = stdPres * Math.exp(-9.80665 * 0.0289644 * Driver.obs_alt / stdTemp / 8.31447)
+    const siteTemp = stdTemp-0.0065*Driver.obs_alt; // 15 deg at sea level, use TLR to reduce temperature
+    const siteWvlen = 0.55;
+    const siteHum = 0.2;
     this.ref = sla.refco(Driver.obs_alt, siteTemp, sitePres, siteHum, siteWvlen, Driver.obs_lat_rad, 0.0065);
     this.RefractionAtHorizon = sla.refro(0.5*Math.PI, Driver.obs_alt, siteTemp, sitePres, siteHum, siteWvlen,
                                          Driver.obs_lat_rad, 0.0065, 1e-8);
@@ -99,15 +99,11 @@ Night.prototype.setEphemerides = function (obj) {
     this.stlSunrise = helper.stl(this.Sunrise, this.eqeqx);
     
     this.wnight = this.Sunrise - this.Sunset;   // Length of the night in days
-    this.xstep = this.wnight / this.Nx;         // Resolution of the time array
-    let i;
-    let ut;
-    
-    let ell, diam, aop;
-    let moonra = [], moondec = [];
+    this.xstep = this.wnight / this.Nx;         // Resolution of the time array    
+    let aop;
 
-    for (i = 0; i < this.Nx; i += 1) {          // ... and its initialization
-        ut = this.Sunset + this.xstep * i;
+    for (let i = 0; i < this.Nx; i += 1) {          // ... and its initialization
+        const ut = this.Sunset + this.xstep * i;
         this.xaxis.push(ut);
         if (i === 0) {
             aop = sla.aoppa(ut, this.dut*sla.d2s, Driver.obs_lon_rad, Driver.obs_lat_rad,
@@ -119,12 +115,11 @@ Night.prototype.setEphemerides = function (obj) {
         this.amprms[i] = sla.mappa(2000, ut + this.dut);
         // Apparent RA, Dec of Moon
         ret = sla.rdplan(ut + this.dut, "Moon", Driver.obs_lon_rad, Driver.obs_lat_rad);
-        diam = ret.diam;
+        const diam = ret.diam;
         // Topocentric zd of Moon WITHOUT refraction
         ret = sla.aopqk(ret.ra, ret.dec, aop);
         // Approximate refracted alt
-        ell = 0.5*Math.PI - sla.refz(ret.zob, this.ref.refa, this.ref.refb);//+ diam;
-        //ell = 0.5*Math.PI - ret.zob;
+        const ell = 0.5*Math.PI - sla.refz(ret.zob, this.ref.refa, this.ref.refb);
         this.ymoon.push(helper.rad2deg(ell));
         this.rmoon.push(0.5*diam);
     }
@@ -147,7 +142,7 @@ Night.prototype.setEphemerides = function (obj) {
         stl = sla.dr2tf(1, sla.dranrm(sla.gmst(djutc) + Driver.obs_lon_rad) + this.eqeqx);
         this.STlabels.push(stl.ihmsf[0] + ':' + stl.ihmsf[1]);
         firstUT += 1;
-        djutc += 1./24;
+        djutc += 1/24;
     }
     this.BestEvBlank = "";
     this.BestMoBlank = "";
@@ -160,10 +155,10 @@ Night.prototype.setEphemerides = function (obj) {
         this.MoonIlluminationString = this.MoonIllMin + ' – ' + this.MoonIllMax + '%';
     }
     this.Moonrise = 0;
-    let lim = helper.rad2deg(- this.HorizonDip);
+    const lim = helper.rad2deg(- this.HorizonDip);
     if (this.ymoon[0] < lim-sla.r2d*this.rmoon[0]) {
         // will rise
-        for (i = 1; i < this.Nx; i += 1) {
+        for (let i = 1; i < this.Nx; i += 1) {
             if (this.ymoon[i] > lim-sla.r2d*this.rmoon[i]) {
                 // secant method
                 this.Moonrise = this.xaxis[i-1];
@@ -174,7 +169,7 @@ Night.prototype.setEphemerides = function (obj) {
     }
     if (this.ymoon[this.Nx-1] < lim) {
         // will set
-        for (i = this.Nx-2; i>=0; i--) {
+        for (let i = this.Nx-2; i>=0; i--) {
             if (this.ymoon[i] > lim) {
                 this.Moonset = this.xaxis[i+1];
                 this.Moonset = this.xaxis[i+1] + (lim-sla.r2d*this.rmoon[i]- this.ymoon[i+1])*(this.xaxis[i+1]-this.xaxis[i])/(this.ymoon[i+1]-this.ymoon[i]);
