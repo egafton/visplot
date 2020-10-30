@@ -208,16 +208,16 @@ $_DEBUG = TRUE;
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.3/FileSaver.min.js"></script>
     <script src="http://aladin.u-strasbg.fr/AladinLite/api/v2/latest/aladin.min.js" type="text/javascript" charset="utf-8"></script>
-    <script src="visplot.js" type="text/javascript"></script>
-    <script src="visplot_driver.js" type="text/javascript"></script>
-    <script src="visplot_slacoeffs.js" type="text/javascript"></script>
-    <script src="visplot_sla.js" type="text/javascript"></script>
-    <script src="visplot_night.js" type="text/javascript"></script>
-    <script src="visplot_graph.js" type="text/javascript"></script>
-    <script src="visplot_targets.js" type="text/javascript"></script>
-    <script src="visplot_helper.js" type="text/javascript"></script>
-    <script src="visplot_serializer.js" type="text/javascript"></script>
-    <script src="visplot_skygraph.js" type="text/javascript"></script>
+    <script src="js/visplot.js" type="text/javascript"></script>
+    <script src="js/visplot_driver.js" type="text/javascript"></script>
+    <script src="js/visplot_slacoeffs.js" type="text/javascript"></script>
+    <script src="js/visplot_sla.js" type="text/javascript"></script>
+    <script src="js/visplot_night.js" type="text/javascript"></script>
+    <script src="js/visplot_graph.js" type="text/javascript"></script>
+    <script src="js/visplot_targets.js" type="text/javascript"></script>
+    <script src="js/visplot_helper.js" type="text/javascript"></script>
+    <script src="js/visplot_serializer.js" type="text/javascript"></script>
+    <script src="js/visplot_skygraph.js" type="text/javascript"></script>
     <?php if ($obpost) { echo '<input type="hidden" id="obinfo" value="'.rawurlencode($obinfo).'" /> '; } ?>
 </body>
 </html>

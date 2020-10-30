@@ -1,1 +1,1 @@
-jsdoc --destination . --access all --configure conf.js ../*.js
+jsdoc --destination . --access all --configure conf.js ../js/*.js
