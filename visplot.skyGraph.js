@@ -57,10 +57,11 @@ SkyGraph.prototype.processImage = function () {
     let cx = 0.53 * this.imx;
     let cy = 0.52 * this.imy;
     let rad = 270;
+    let radsq = rad * rad;
     for (i = 0; i < this.imy; i++) {
         row = this.imx * i;
         for (j = 0; j < this.imx; j++) {
-            if ((i - cy) * (i - cy) + (j - cx) * (j - cx) < rad * rad) {
+            if ((i - cy) * (i - cy) + (j - cx) * (j - cx) < radsq) {
                 r = imgdata[(row + j) * 4];
                 g = imgdata[(row + j) * 4 + 1];
                 b = imgdata[(row + j) * 4 + 2];
