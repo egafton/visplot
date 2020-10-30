@@ -15,23 +15,22 @@ function get_NOT_pointing() {
         die("Access denied");
     }
     $s = file_get_contents("/tmp/tcs.json");
-    $tcs = json_decode($s,true);
-
-    header('Content-Type: application/json');
+    $tcs = json_decode($s, true);
     return json_encode(array(
         'alt' => floatval($tcs['AltitudePosDeg']),
         'az' => -180.0 + floatval($tcs['AzimuthPosDeg'])
     ));
 }
 
-if ($telescope === "NOT") {
-    try {
-        $pointing = get_NOT_pointing();
-        header('Content-Type: application/json');
-        echo $pointing;
-    } catch (\Throwable $e) {
-        die($e->getMessage());
-    }
-} else {
-    die ("Unknown telescope");
+function get_WHT_pointing() {
+    $s = file_get_contents("http://egapc.ing.iac.es/ega/pointing.php");
+    return $s;
+}
+
+try {
+    $pointing = call_user_func("get_${telescope}_pointing");
+    header('Content-Type: application/json');
+    echo $pointing;
+} catch (\Throwable $e) {
+    die($e->getMessage());
 }
