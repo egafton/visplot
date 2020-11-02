@@ -523,7 +523,8 @@ Graph.prototype.drawBackground = function () {
     // Draw dotted horizontal lines and tick marks every 10 degrees
     for (let i = 10; i < 90; i += 10) {
         const y = this.transformYLocation(i);
-        // Dotted horizontal lines
+        /* Dotted horizontal lines; the INT has its limit at 20 deg, so don't
+         * draw the usual horizontal lines there. */
         if (i !== 20 || Driver.telescopeName !== 'INT')
             this.plotHorizontalLine(this.xstart, this.xend, y, [1, 2], 1);
         // Tick marks

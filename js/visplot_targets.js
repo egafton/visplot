@@ -898,7 +898,7 @@ TargetList.prototype.inputHasChanged = function (_newinput, _oldinput) {
  */
 TargetList.prototype.validateAndFormatTargets = function () {
     // Retrieve content of #targets textarea
-    let tgts = driver.CMeditor.getValue();
+    const tgts = driver.CMeditor.getValue();
     if (!this.inputHasChanged(tgts, this.InputText) && this.InputValid) {
         helper.LogEntry('Target input list has not changed, no need to revalidate.');
         return true;
@@ -912,7 +912,7 @@ TargetList.prototype.validateAndFormatTargets = function () {
         return false;
     }
     // Split it into lines
-    let lines = helper.extractLines(tgts);
+    const lines = helper.extractLines(tgts);
     this.VisibleLines = [];
     this.TargetsLines = [];
     this.FormattedLines = [];
@@ -920,17 +920,16 @@ TargetList.prototype.validateAndFormatTargets = function () {
     this.MaxLen = {Name: 0, RA: 0, Dec: 0, Exp: 0, AM: 0, Type: 0, TCSpmra: 0, TCSpmdec: 0};
     this.BadWolfStart = [];
     this.BadWolfEnd = [];
-    let words, i, j, len;
-    for (i = 0, len = lines.length; i < len; i += 1) {
+    for (let i = 0; i < lines.length; i += 1) {
         if (lines[i].trim() === '') {
             this.FormattedLines.push(null);
             continue;
         }
-        words = this.extractLineInfo(i + 1, lines[i].trim());
+        const words = this.extractLineInfo(i + 1, lines[i].trim());
         if (words === false) {
             return false; // Does not validate
         }
-        let mLTN = driver.graph.maxLenTgtName + (words[0][0] == '#' ? 1 : 0);
+        const mLTN = driver.graph.maxLenTgtName + (words[0][0] == '#' ? 1 : 0);
         if (words[0].length > mLTN) {
             words[0] = words[0].substr(0, mLTN);
         }
@@ -952,6 +951,7 @@ TargetList.prototype.validateAndFormatTargets = function () {
         if (words[11].length > this.MaxLen.Type) {
             this.MaxLen.Type = words[11].length;
         }
+        let j;
         j = (parseInt(words[13]) + '').length + (words[13] < 0 && words[13] > -1 ? 1 : 0);
         if (j > this.MaxLen.TCSpmra) {
             this.MaxLen.TCSpmra = j;
@@ -963,17 +963,17 @@ TargetList.prototype.validateAndFormatTargets = function () {
         this.FormattedLines.push(words);
     }
     this.InputStats = {Empty: 0, Commented: 0, Actual: 0};
-    let padded, badwolf;
     this.TCSlines = [];
-    for (i = 0, len = this.FormattedLines.length; i < len; i += 1) {
+    for (i = 0; i < this.FormattedLines.length; i += 1) {
         if (this.FormattedLines[i] === null) {
             this.VisibleLines.push('');
             this.InputStats.Empty += 1;
             continue;
         }
-        words = this.FormattedLines[i];
-        badwolf = (words[0] == 'BadWolf' || words[0] == 'Offline');
-        padded = [helper.pad(words[0], this.MaxLen.Name, false, ' '),
+        const words = this.FormattedLines[i];
+        const badwolf = (words[0] == 'BadWolf' || words[0] == 'Offline');
+        const padded = [
+            helper.pad(words[0], this.MaxLen.Name, false, ' '),
             helper.pad(words[1], 2, true, badwolf ? ' ' : '0'),
             helper.pad(words[2], 2, true, badwolf ? ' ' : '0'),
             helper.pad(words[3], this.MaxLen.RA, false, ' '),
@@ -984,7 +984,8 @@ TargetList.prototype.validateAndFormatTargets = function () {
             helper.pad(words[8], this.MaxLen.Exp, true, ' '),
             helper.pad(words[9], 6, false, ' '),
             helper.pad(words[10], this.MaxLen.AM, false, ' '),
-            helper.pad(words[11], this.MaxLen.Type, false, ' ')];
+            helper.pad(words[11], this.MaxLen.Type, false, ' ')
+        ];
         this.VisibleLines.push(padded.join(" "));
         if (words[0][0] == '#') {
             this.InputStats.Commented += 1;
@@ -1241,11 +1242,11 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
 };
 
 TargetList.prototype.checkForDuplicates = function () {
-    let alreadyChecked = [], duplicateList = [];
-    let i, j, len, found, duplString;
+    const alreadyChecked = [];
+    const duplicateList = [];
+    let found;
 
-    len = this.FormattedLines.length;
-    for (i = 0; i < len; i += 1) {
+    for (let i = 0; i < this.FormattedLines.length; i += 1) {
         if (alreadyChecked.indexOf(i) > -1) {
             continue;
         }
@@ -1253,8 +1254,8 @@ TargetList.prototype.checkForDuplicates = function () {
             continue;
         }
         found = false;
-        duplString = '';
-        for (j = i + 1; j < len; j += 1) {
+        let duplString = '';
+        for (let j = i + 1; j < this.FormattedLines.length; j += 1) {
             if (this.VisibleLines[i] === this.VisibleLines[j]) {
                 found = true;
                 duplString += ', #' + (j + 1);
@@ -1275,8 +1276,7 @@ Target.prototype.canObserve = function (time, altitude) {
             this.RestrictionMinAlt <= altitude && this.RestrictionMaxAlt >= altitude) === false) {
         return false;
     }
-    let i;
-    for (i = 0; i < driver.targets.Offline.length; i += 1) {
+    for (let i = 0; i < driver.targets.Offline.length; i += 1) {
         if (time >= driver.targets.Offline[i].Start && time <= driver.targets.Offline[i].End) {
             return false;
         }
@@ -1290,15 +1290,14 @@ Target.prototype.preCompute = function () {
     this.endAllowed = [];
     this.beginForbidden = [];
     this.endForbidden = [];
-    let nyobj = this.Graph.length, obs, i;
-    obs = (this.canObserve(driver.night.xaxis[0], this.Graph[0]));
+    let obs = (this.canObserve(driver.night.xaxis[0], this.Graph[0]));
     this.observable[0] = obs;
     if (!obs) {
         this.beginForbidden.push(driver.night.xaxis[0]);
     } else {
         this.beginAllowed.push(driver.night.xaxis[0]);
     }
-    for (i = 1; i < nyobj - 1; i += 1) {
+    for (let i = 1; i < this.Graph.length - 1; i += 1) {
         if (this.canObserve(driver.night.xaxis[i], this.Graph[i])) {
             if (!obs) {
                 obs = true;
@@ -1333,10 +1332,9 @@ Target.prototype.preCompute = function () {
         return;
     }
     this.FirstPossibleTime = this.beginAllowed[0];
-    let lpt;
-    for (i = this.nAllowed; i >= 0; i--) {
+    for (let i = this.nAllowed; i >= 0; i--) {
         if (this.beginAllowed[i] + this.Exptime <= this.endAllowed[i]) {
-            lpt = this.endAllowed[i] - this.Exptime;
+            const lpt = this.endAllowed[i] - this.Exptime;
             this.iLastPossibleTime = helper.EphemTimeToIndex(lpt);
             this.LastPossibleTime = driver.night.Sunset + this.iLastPossibleTime * driver.night.xstep + this.ZenithTime / 1e9;
             this.ObservableTonight = true;
@@ -1372,9 +1370,9 @@ Target.prototype.resetColours = function () {
 Target.prototype.ComputePositionSchedLabel = function () {
     let xshift, yshift;
     if ($('#opt_id_next_line').is(':checked')) {
-        let slope = driver.graph.degree * (this.AltEndTime - this.AltStartTime) / driver.graph.transformXWidth(this.Exptime);
-        let angle = Math.atan(slope);
-        let dist = driver.graph.CircleSize * 1.2;
+        const slope = driver.graph.degree * (this.AltEndTime - this.AltStartTime) / driver.graph.transformXWidth(this.Exptime);
+        const angle = Math.atan(slope);
+        const dist = driver.graph.CircleSize * 1.2;
         xshift = dist * Math.sin(angle);
         yshift = dist * Math.cos(angle);
     } else {
@@ -1405,23 +1403,22 @@ Target.prototype.Update = function (obj) {
     this.Type = (obj[3].indexOf('/') === -1 ? obj[3] : obj[3].substring(0, obj[3].indexOf('/')));
     this.ProjectNumber = obj[1];
     this.Constraints = obj[2];
-    let isUT, UTr = helper.ExtractUTRange(obj[2]), ut1, ut2;
+    let isUT;
+    const UTr = helper.ExtractUTRange(obj[2]);
+    let ut1, ut2;
     if (UTr === false) {
         isUT = false;
         this.MaxAirmass = driver.defaultAM;
+        this.MaxAirmass = parseFloat(obj[2]);
+        this.RestrictionMinUT = driver.night.ENauTwilight;
+        this.RestrictionMaxUT = driver.night.MNauTwilight;
     } else {
         isUT = true;
         ut1 = Math.max(night.ENauTwilight, UTr[0]);
         ut2 = Math.min(night.MNauTwilight, UTr[1]);
-    }
-    if (isUT) {
         this.MaxAirmass = 9.9;
         this.RestrictionMinUT = ut1;
         this.RestrictionMaxUT = ut2;
-    } else {
-        this.MaxAirmass = parseFloat(obj[2]);
-        this.RestrictionMinUT = driver.night.ENauTwilight;
-        this.RestrictionMaxUT = driver.night.MNauTwilight;
     }
     this.RestrictionMinAlt = helper.AirmassToAltitude(this.MaxAirmass);
     this.FillSlot = isUT && (obj[0] === '*');
@@ -1433,8 +1430,8 @@ Target.prototype.Update = function (obj) {
         this.ExptimeSeconds = Math.round(this.Exptime * 86400);
         this.Exptime = Math.floor(this.Exptime / driver.night.xstep) * driver.night.xstep;
     }
-    let hrs = Math.floor(this.ExptimeSeconds / 3600);
-    let min = Math.round((this.ExptimeSeconds - hrs * 3600) / 60);
+    const hrs = Math.floor(this.ExptimeSeconds / 3600);
+    const min = Math.round((this.ExptimeSeconds - hrs * 3600) / 60);
     this.ExptimeHM = (hrs > 0 ? hrs.toFixed(0) + 'h ' : '') + min.toFixed(0) + 'm';
     if (this.FillSlot) {
         helper.LogEntry('Attention: object <i>' + this.Name + '</i> will fill its entire time slot.');

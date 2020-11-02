@@ -75,7 +75,8 @@ helper.dmstodeg = function (a) {
     if (!a) {
         return 0;
     }
-    let d = a.replace(/^\s+/, "").split(/[:\s]/), sign = 1;
+    const d = a.replace(/^\s+/, "").split(/[:\s]/);
+    let sign = 1;
     if (d[0].match(/-/)) {
         sign = -1;
         d[0].replace(/\-/, "");
@@ -94,14 +95,14 @@ helper.extractLines = function (str) {
  * Convert pixel coordinates in SkyCam image to Az/Alt and RA/Dec
  */
 helper.getCoordinates = function (xcent, ycent, x, y, r, lst) {
-    let myArray = new Array(4);
+    const myArray = new Array(4); /* Exception to Google style rule 5.2.2 */
     x = x - xcent;
     y = y - ycent;
     let newR = Math.sqrt(x * x + y * y);
     let newTeta = helper.rad2deg(Math.atan2(y, x) - helper.deg2rad(90) + helper.deg2rad(35));
     r = Math.max(r, newR);
     newR = newR - 3;
-    let n = (r - newR) / r;
+    const n = (r - newR) / r;
     newR = 6.686 + 47.324 * n + 135.465 * n * n - 187.185 * n * n * n + 87.754 * n * n * n * n;
     if (newR > r) {
         myArray[0] = "low";
@@ -116,7 +117,7 @@ helper.getCoordinates = function (xcent, ycent, x, y, r, lst) {
         newTeta = newTeta - 360;
     }
     myArray[1] = Math.round(newTeta);
-    let val = helper.radec(newR, newTeta, lst);
+    const val = helper.radec(newR, newTeta, lst);
     myArray[2] = helper.HMS(val[0], false, "h", "m", "s");
     myArray[3] = helper.HMS(val[1], true, "°", "'", '"');
     return myArray;
