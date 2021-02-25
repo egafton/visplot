@@ -140,7 +140,7 @@ Night.prototype.setEphemerides = function (obj) {
         this.UTtimes.push(djutc);
         this.UTlabels.push(firstUT.toString());
         stl = sla.dr2tf(1, sla.dranrm(sla.gmst(djutc) + Driver.obs_lon_rad) + this.eqeqx);
-        this.STlabels.push(stl.ihmsf[0] + ':' + stl.ihmsf[1]);
+        this.STlabels.push(stl.ihmsf[0] + ':' + (stl.ihmsf[1] < 10 ? '0' : '') + stl.ihmsf[1].toFixed(0));
         firstUT += 1;
         djutc += 1/24;
     }

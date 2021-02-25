@@ -255,6 +255,10 @@ helper.EphemDateToHM = function (d) {
 };
 
 helper.LSTToAngle = function (text) {
+    const easy = parseFloat(text);
+    if (!isNaN(easy)) {
+        return easy * sla.htor;
+    }
     const arr = text.split(':');
     if (arr.length < 1 || arr.length > 3 || helper.notInt(arr[0])) {
         return -1;

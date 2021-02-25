@@ -89,9 +89,15 @@ Driver.prototype.Callback_SetDate = function (obj) {
         helper.LogEntry('Processing the targets from the OB queue...');
         const ntargets = this.obdata.nTargets;
         helper.LogEntry(helper.plural(ntargets, 'target') + ' found.');
+        let constraint;
         for (let i = 1; i <= ntargets; i += 1) {
             obj = this.obdata.Targets['target' + i];
-            const line = obj.Name + ' ' + obj.RA + (parseFloat(obj.PM.RA) === 0.0 ? '' : '/' + parseFloat(obj.PM.RA)) + ' ' + obj.Dec + (parseFloat(obj.PM.Dec) === 0.0 ? '' : '/' + parseFloat(obj.PM.Dec)) + ' ' + parseInt(obj.Epoch) + ' ' + obj.ObsTime + ' ' + obj.Proposal + ' ' + obj.Constraint + ' ' + obj.Type;
+            if ("LST1" in obj && "LST2" in obj) {
+                constraint = `LST[${obj.LST1}-${obj.LST2}]`;
+            } else {
+                constraint = obj.Constraint;
+            }
+            const line = obj.Name + ' ' + obj.RA + (parseFloat(obj.PM.RA) === 0.0 ? '' : '/' + parseFloat(obj.PM.RA)) + ' ' + obj.Dec + (parseFloat(obj.PM.Dec) === 0.0 ? '' : '/' + parseFloat(obj.PM.Dec)) + ' ' + parseInt(obj.Epoch) + ' ' + obj.ObsTime + ' ' + obj.Proposal + ' ' + constraint + ' ' + obj.Type;
             this.obLines.push(line);
             this.obLinks.push('http://www.not.iac.es/intranot/ob/ob_update.php?period=' + parseInt(obj.Proposal.substring(0, 2)) + '&propID=' + parseInt(obj.Proposal.substring(3)) + '&groupID=' + obj.GroupID + '&blockID=' + obj.BlockID);
             this.obExtraInfo.push(obj.Instrument + ' / ' + obj.Mode);

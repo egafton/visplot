@@ -1108,9 +1108,17 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
     } else if (words.length == 11) {
         words = words.concat([Driver.defaultType]);
     }
+    // If we had colons in the UT/LST descriptions, put them back
+    if ((words[10].startsWith("UT[") || words[10].startsWith("LST[")) && words.length > 12) {
+        let newwords = words.slice(0, 10);
+        newwords.push(words.slice(10, -1).join(":"))
+        newwords.push(words.pop());
+        words = newwords;
+    }
     // Sanity check: there must now be exactly 12 entries in the array
     if (words.length !== 12) {
         helper.LogError('Error: Incorrect syntax: the number of entries on line #' + linenumber + ' is incorrect!');
+        helper.LogError(words);
         return false;
     }
     let rax;

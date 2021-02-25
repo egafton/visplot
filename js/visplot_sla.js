@@ -70,6 +70,8 @@ sla.c = 173.14463331;
 sla.vf = 0.21094502;
 /* @constant {Number} Small number to avoid arithmetic problems */
 sla.tiny = 1e-30;
+/* @constant {Number} Hours to radians */
+sla.htor = sla.d2pi / 24;
 
 /**
  * @summary **Air Mass**
