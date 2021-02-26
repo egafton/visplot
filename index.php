@@ -85,8 +85,10 @@ $_DEBUG = TRUE;
     <div style="display:none">
         <div id="details">
             <div id="details_title"></div>
-            <div id="details_info"></div>
-            <div id="details_map"><span id="details_map_hang"></span></div>
+            <div id="details_container">
+                <div id="details_info"></div>
+                <div id="details_map"><span id="details_map_hang"></span></div>
+            </div>
         </div>
         <div id="skycamblock">
             <canvas id="canvasSkycam" width="640" height="518"></canvas>
