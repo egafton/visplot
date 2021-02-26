@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: visplot.driver.js</title>
+    <title>JSDoc: Source: visplot_driver.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: visplot.driver.js</h1>
+    <h1 class="page-title">Source: visplot_driver.js</h1>
 
     
 
@@ -34,9 +34,14 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. See LICENSE.md.
  */
+"use strict";
 
+/**
+ * @class
+ * @constructor
+ */
 function Driver() {
-    // HTML5 canvas, context and Graph class - related variables
+    /* HTML5 canvas, context and Graph class - related variables */
     this.canvas = document.getElementById('canvasFrame');
     this.context = this.canvas.getContext('2d');
     this.graph = new Graph(this.canvas, this.context);
@@ -48,16 +53,13 @@ function Driver() {
     this.rescaleCanvas(this.canvas, this.context);
     this.rescaleCanvas(this.skyCanvas, this.skyContext);
 
-    // Aladin object
+    /* Aladin object */
     this.objAladin = null;
     this.aladinInitialized = false;
 
-    // OB queue - related
+    /* OB queue - related */
     this.ob = false;            // Whether or not the page is a referral from the OB queue
     this.obdata = null;         // Actual JSON-decoded object containing OB info
-    this.obLines = [];          // Lines with target info, serving as input for the textarea
-    this.obLinks = [];          // Backlinks to the OB queue (not visible in the textarea)
-    this.obExtraInfo = [];      // Extra information only available to the OBs
     this.obprocessed = false;   // OB info is processed automatically only once, upon page load
 
     // Night, targets, planning
@@ -86,6 +88,9 @@ function Driver() {
     this.mouseInsideObject = -1;
 }
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.ParseOBInfoIfAny = function () {
     if ($('#obinfo').length === 0) {
         helper.LogEntry('No OB info detected.');
@@ -101,12 +106,15 @@ Driver.prototype.ParseOBInfoIfAny = function () {
                 Driver.telescopeName = this.obdata.Telescope;
             }
         } else {
-            helper.LogError('Error: Could not decode JSON object. Falling back to standard (non-OB) visplot...');
+            helper.LogError('Error 35: Could not decode JSON object. Falling back to standard (non-OB) visplot...');
             this.ob = false;
         }
     }
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.Callback_SetDate = function (obj) {
     this.night.setEphemerides();
     this.nightInitialized = true;
@@ -115,25 +123,31 @@ Driver.prototype.Callback_SetDate = function (obj) {
 
     if (this.ob &amp;&amp; !this.obprocessed) {
         helper.LogEntry('Processing the targets from the OB queue...');
-        let ntargets = this.obdata.nTargets;
+        const ntargets = this.obdata.nTargets;
         helper.LogEntry(helper.plural(ntargets, 'target') + ' found.');
-        let line, i;
-        for (i = 1; i &lt;= ntargets; i += 1) {
+        let constraint;
+        let lines = [];
+        for (let i = 1; i &lt;= ntargets; i += 1) {
             obj = this.obdata.Targets['target' + i];
-            line = obj.Name + ' ' + obj.RA + (parseFloat(obj.PM.RA) === 0.0 ? '' : '/' + parseFloat(obj.PM.RA)) + ' ' + obj.Dec + (parseFloat(obj.PM.Dec) === 0.0 ? '' : '/' + parseFloat(obj.PM.Dec)) + ' ' + parseInt(obj.Epoch) + ' ' + obj.ObsTime + ' ' + obj.Proposal + ' ' + obj.Constraint + ' ' + obj.Type;
-            this.obLines.push(line);
-            this.obLinks.push('http://www.not.iac.es/intranot/ob/ob_update.php?period=' + parseInt(obj.Proposal.substring(0, 2)) + '&amp;propID=' + parseInt(obj.Proposal.substring(3)) + '&amp;groupID=' + obj.GroupID + '&amp;blockID=' + obj.BlockID);
-            this.obExtraInfo.push(obj.Instrument + ' / ' + obj.Mode);
-            //helper.LogEntry(line);
+            if ("LST1" in obj &amp;&amp; "LST2" in obj) {
+                constraint = `LST[${obj.LST1}-${obj.LST2}]`;
+            } else {
+                constraint = obj.Constraint;
+            }
+            const line = obj.Name + ' ' + obj.RA + (parseFloat(obj.PM.RA) === 0.0 ? '' : '/' + parseFloat(obj.PM.RA)) + ' ' + obj.Dec + (parseFloat(obj.PM.Dec) === 0.0 ? '' : '/' + parseFloat(obj.PM.Dec)) + ' ' + parseInt(obj.Epoch) + ' ' + obj.ObsTime + ' ' + obj.Proposal + ' ' + constraint + ' ' + obj.Type + ' ' + `${obj.Instrument}:${obj.Mode}:${obj.GroupID}:${obj.BlockID}`;
+            lines.push(line);
         }
         this.obprocessed = true;
-        this.CMeditor.setValue(this.obLines.join("\n"));
+        this.CMeditor.setValue(lines.join("\n"));
         if (this.targets.validateAndFormatTargets()) {
             $('#plotTargets').trigger('click');
         }
     }
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.Callback_SetTargets = function (obj) {
     helper.LogEntry('Done.');
     if (this.RequestedScheduleType === 1) {
@@ -144,6 +158,9 @@ Driver.prototype.Callback_SetTargets = function (obj) {
     this.Callback_UpdateSchedule();
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.Callback_UpdateSchedule = function () {
     if (this.RequestedScheduleType === 1) {
         helper.LogEntry('Updating schedule. Please wait...');
@@ -167,25 +184,28 @@ Driver.prototype.Callback_UpdateSchedule = function () {
     this.Refresh();
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.BtnEvt_SetDate = function () {
-    let year = helper.filterInt($('#dateY').val());
-    let month = helper.filterInt($('#dateM').val());
-    let day = helper.filterInt($('#dateD').val());
+    const year = helper.filterInt($('#dateY').val());
+    const month = helper.filterInt($('#dateM').val());
+    const day = helper.filterInt($('#dateD').val());
     if (isNaN(year) || isNaN(month) || isNaN(day)) {
-        helper.LogError('Error: Invalid date (' + year + '-' + month + '-' + day + ').');
+        helper.LogError('Error 36: Invalid date (' + year + '-' + month + '-' + day + ').');
         return;
     }
     if (year &lt; 1988 || year > 2100) {
-        helper.LogError('Error: Invalid year (' + year + ').');
+        helper.LogError('Error 37: Invalid year (' + year + ').');
         return;
     }
     if (month &lt; 1 || month > 12) {
-        helper.LogError('Error: Invalid month (' + month + ').');
+        helper.LogError('Error 38: Invalid month (' + month + ').');
         return;
     }
-    let dmax = helper.numberOfDays(year, month);
+    const dmax = helper.numberOfDays(year, month);
     if (day &lt; 1 || day > dmax) {
-        helper.LogError('Error: Invalid day (' + day + ') for ' + year + '-' + helper.padTwoDigits(month) + ". Please enter a number between 1 and " + dmax + ".");
+        helper.LogError('Error 39: Invalid day (' + day + ') for ' + year + '-' + helper.padTwoDigits(month) + ". Please enter a number between 1 and " + dmax + ".");
         return;
     }
     this.night = new Night(year, month, day);
@@ -193,13 +213,16 @@ Driver.prototype.BtnEvt_SetDate = function () {
     driver.Callback_SetDate();
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.BtnEvt_PlotTargets = function () {
     if (this.RequestedScheduleType &lt; 1 || this.RequestedScheduleType > 3) {
-        helper.LogError('Error: Unknown value for Driver.ReqestedScheduleType.');
+        helper.LogError('Error 40: Unknown value for Driver.ReqestedScheduleType.');
         return;
     }
     if (!this.nightInitialized) {
-        helper.LogError('Error: Night not initialized. Click on "Set" first!');
+        helper.LogError('Error 41: Night not initialized. Click on "Set" first!');
         return;
     }
     if (!this.targets.validateAndFormatTargets()) {
@@ -211,7 +234,7 @@ Driver.prototype.BtnEvt_PlotTargets = function () {
         }
     }
     if (this.RequestedScheduleType === 1) {
-        let ret = this.targets.prepareScheduleForUpdate();
+        const ret = this.targets.prepareScheduleForUpdate();
         if (ret === '') { // nothing to do, since the input form has not been changed
             return;
         }
@@ -237,6 +260,9 @@ Driver.prototype.BtnEvt_PlotTargets = function () {
     }
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.EvtFrame_MouseMove = function (e) {
     if (this.targets.Ntargets === 0) {
         return;
@@ -247,8 +273,8 @@ Driver.prototype.EvtFrame_MouseMove = function (e) {
     y -= 12;
     if (this.rescheduling) {
         if (x > this.graph.targetsx) {
-            for (i = 0; i &lt; this.targets.nTargets; i += 1) {
-                let obj = this.targets.Targets[i];
+            for (let i = 0; i &lt; this.targets.nTargets; i += 1) {
+                const obj = this.targets.Targets[i];
                 if (y >= obj.ystart &amp;&amp; y &lt;= obj.yend) {
                     this.reY = (y &lt;= 0.5 * (obj.ystart + obj.yend) ? obj.ystart : obj.yend) + 1.5;
                     break;
@@ -261,7 +287,7 @@ Driver.prototype.EvtFrame_MouseMove = function (e) {
         return;
     }
     for (let i = 0; i &lt; this.targets.nTargets; i += 1) {
-        let obj = this.targets.Targets[i];
+        const obj = this.targets.Targets[i];
         if (this.insideObject(x, y, obj)) {
             if (this.mouseInsideObject !== i) {
                 this.mouseInsideObject = i;
@@ -287,6 +313,9 @@ Driver.prototype.EvtFrame_MouseMove = function (e) {
     }
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.insideObject = function (x, y, obj) {
     if (this.targets.nTargets === 0) {
         return false;
@@ -297,6 +326,9 @@ Driver.prototype.insideObject = function (x, y, obj) {
     return (this.scheduleMode &amp;&amp; obj.Scheduled &amp;&amp; helper.PointInsideCircle(x, y, obj.xmid, obj.ymid, this.graph.CircleSizeSq)) || ((!this.scheduleMode || (this.scheduleMode &amp;&amp; !obj.Scheduled)) &amp;&amp; helper.PointInsideCircle(x, y, obj.xlab, obj.ylab, this.graph.CircleSizeSq)) || (helper.PointInsideCircle(x, y, obj.rxmid, obj.rymid, this.graph.CircleSizeSq));
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.EvtFrame_MouseDown = function (e) {
     if (this.targets.Ntargets === 0 || !this.scheduleMode) {
         return;
@@ -316,6 +348,9 @@ Driver.prototype.EvtFrame_MouseDown = function (e) {
     }
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.EvtFrame_MouseUp = function (e) {
     if (this.targets.Ntargets === 0 || !this.scheduleMode) {
         return;
@@ -331,10 +366,10 @@ Driver.prototype.EvtFrame_MouseUp = function (e) {
             this.rescheduling = false;
             this.reY = null;
             let dropped = false;
-            let i, le, ri, llim, rlim;
-            for (i = 0; i &lt; this.targets.nTargets; i += 1) {
-                llim = this.targets.Targets[i].ystart;
-                rlim = this.targets.Targets[i].yend;
+            let le, ri;
+            for (let i = 0; i &lt; this.targets.nTargets; i += 1) {
+                let llim = this.targets.Targets[i].ystart;
+                let rlim = this.targets.Targets[i].yend;
                 if (i === 0) {
                     llim -= 20;
                 }
@@ -358,18 +393,27 @@ Driver.prototype.EvtFrame_MouseUp = function (e) {
             if (dropped) {
                 // reObj must come between le and ri
                 let newscheduleorder = [];
-                for (i = 0; i &lt; this.targets.nTargets; i += 1) {
-                    if (i == this.reObj) {
-                        continue;
-                    }
-                    if (ri == i) {
-                        newscheduleorder.push(this.reObj);
-                    }
-                    newscheduleorder.push(i);
-                    if (i == this.targets.nTargets - 1 &amp;&amp; le == i) {
-                        newscheduleorder.push(this.reObj);
+                for (let i = 0; i &lt; this.targets.nTargets; i += 1) {
+                    /* First come the observed objects; they have to stay at the beginning */
+                    if (this.targets.Targets[i].Observed) {
+                        newscheduleorder.push(i);
                     }
                 }
+                for (let i = 0; i &lt; this.targets.nTargets; i += 1) {
+                    if (!this.targets.Targets[i].Observed) {
+                        if (i == this.reObj) {
+                            continue;
+                        }
+                        if (ri == i) {
+                            newscheduleorder.push(this.reObj);
+                        }
+                        newscheduleorder.push(i);
+                        if (i == this.targets.nTargets - 1 &amp;&amp; le == i) {
+                            newscheduleorder.push(this.reObj);
+                        }
+                    }
+                }
+                console.log(newscheduleorder);
                 helper.LogEntry('Rescheduling the observing night. Please wait...');
                 this.targets.scheduleAndOptimize_givenOrder(newscheduleorder);
                 helper.LogEntry('Done.');
@@ -391,6 +435,9 @@ Driver.prototype.EvtFrame_MouseUp = function (e) {
     }
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.EvtFrame_Click = function (e) {
     if (this.targets.Ntargets === 0) {
         return;
@@ -458,14 +505,17 @@ Driver.prototype.EvtFrame_Click = function (e) {
     }
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.EvtFrame_Drop = function (e) {
     if (!this.nightInitialized) {
         return;
     }
     e.preventDefault();
-    let dropped = e.originalEvent.dataTransfer.getData('Text');
-    let numberPattern = /[+\-]?\d+(\.\d+)?/g;
-    let floats = dropped.match(numberPattern).map(function (v) {
+    const dropped = e.originalEvent.dataTransfer.getData('Text');
+    const numberPattern = /[+\-]?\d+(\.\d+)?/g;
+    const floats = dropped.match(numberPattern).map(function (v) {
         return parseFloat(v);
     });
     if (floats.length == 6) {
@@ -474,6 +524,9 @@ Driver.prototype.EvtFrame_Drop = function (e) {
     }
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.InitializeDate = function () {
     let year, month, day, datemsg;
     if (this.ob) {
@@ -515,6 +568,9 @@ Driver.prototype.InitializeDate = function () {
     $('#dateSet').trigger('click');
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.EvtSkycm_Click = function () {
     this.skyGraph.reload();
     this.skyGraph.startTimer();
@@ -527,6 +583,9 @@ Driver.prototype.EvtSkycm_Click = function () {
     this.skyGraph.setup(false);
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.EvtSkycm_MouseMove = function (e, jQthis) {
     let pos_x, pos_y;
     if (e.pageX === undefined &amp;&amp; e.pageY === undefined) {
@@ -540,17 +599,23 @@ Driver.prototype.EvtSkycm_MouseMove = function (e, jQthis) {
         this.skyGraph.display_coords(null);
         this.skyGraph.lastazalt = null;
     } else {
-        let azalt = helper.getCoordinates(320, 240, pos_x, pos_y, 280, this.skyGraph.lst);
+        const azalt = helper.getCoordinates(320, 240, pos_x, pos_y, 280, this.skyGraph.lst);
         this.skyGraph.display_coords(azalt);
         this.skyGraph.lastazalt = azalt;
     }
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.EvySkycm_MouseOut = function () {
     this.skyGraph.display_coords(null);
     this.skyGraph.lastazalt = null;
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.BindEvents = function () {
     // Allow the current date to be changed with a simple Enter key
     $('#dateD').keydown(function (e) {
@@ -698,6 +763,9 @@ Driver.prototype.BindEvents = function () {
     serializer.BindEvents();
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.EvtClick_SetDefaults = function () {
     $('#defsubmit').val('false');
     $('#def_epoch').val(Driver.defaultEpoch);
@@ -720,6 +788,9 @@ Driver.prototype.EvtClick_SetDefaults = function () {
     });
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.CallbackUpdateDefaults = function () {
     if ($('#defsubmit').val() === 'false') {
         return;
@@ -822,6 +893,9 @@ Driver.prototype.CallbackUpdateDefaults = function () {
     helper.LogEntry('Done.');
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.Callback_ShowCurrentTime = function () {
     if (!this.nightInitialized) {
         return;
@@ -833,6 +907,9 @@ Driver.prototype.Callback_ShowCurrentTime = function () {
     this.Refresh();
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.Refresh = function () {
     document.title = `${Driver.telescopeName}/Visplot`;
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -850,6 +927,9 @@ Driver.prototype.Refresh = function () {
     }
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.markAsObserved = function (observed) {
     let id_of_observed = $('#id_of_observed').val();
     let obj = this.targets.Targets[id_of_observed];
@@ -863,6 +943,9 @@ Driver.prototype.markAsObserved = function (observed) {
     $.fancybox.close();
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.rescaleCanvas = function (cnv, ctx) {
     // Query the various pixel ratios
     let devicePixelRatio = window.devicePixelRatio || 1;
@@ -889,6 +972,9 @@ Driver.prototype.rescaleCanvas = function (cnv, ctx) {
     }
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.ToggleLineNumbers = function () {
     if (!this.scheduleMode) {
         return;
@@ -902,9 +988,19 @@ Driver.prototype.ToggleLineNumbers = function () {
     this.Refresh();
 };
 
+/**
+ * @memberof Driver
+ */
 Driver._fillObj = {'Monitor': 'orange', 'ToO': '#FF9900', 'SoftToO': '#FFFF99', 'Payback': 'blue', 'Fast-Track': 'blue', 'Service': 'blue', 'Visitor': 'blue', 'Staff': 'blue'};
+
+/**
+ * @memberof Driver
+ */
 Driver._textObj = {'Monitor': 'black', 'ToO': 'black', 'SoftToO': 'black', 'Payback': 'white', 'Fast-Track': 'white', 'Service': 'white', 'Visitor': 'white', 'Staff': 'white'};
 
+/**
+ * @memberof Driver
+ */
 Object.defineProperties(Driver, {
     'telescopeName': {get: function() {
             return this._telescopeName || 'NOT';
@@ -988,6 +1084,11 @@ Object.defineProperties(Driver, {
         }, set: function (val) {
             this._defaultType = val;
         }},
+    'defaultOBInfo': {get: function () {
+        return this._defaultOBInfo || 'default';
+    }, set: function (val) {
+        this._defaultOBInfo = val;
+    }},
     'skyCamLink': {get: function () {
             return 'http://www.gtc.iac.es/multimedia/netcam/camaraAllSky.jpg?t=';
         }},
@@ -1050,13 +1151,13 @@ Object.defineProperties(Driver, {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="sla.html">sla</a></li></ul><h3>Global</h3><ul><li><a href="global.html#assertAlmostEqual">assertAlmostEqual</a></li><li><a href="global.html#assertEqual">assertEqual</a></li><li><a href="global.html#driver">driver</a></li><li><a href="global.html#Driver">Driver</a></li><li><a href="global.html#Graph">Graph</a></li><li><a href="global.html#Night">Night</a></li><li><a href="global.html#serializer">serializer</a></li><li><a href="global.html#SkyGraph">SkyGraph</a></li><li><a href="global.html#TargetList">TargetList</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="helper.html">helper</a></li><li><a href="serializer.html">serializer</a></li><li><a href="sla.html">sla</a></li></ul><h3>Classes</h3><ul><li><a href="Driver.html">Driver</a></li><li><a href="Graph.html">Graph</a></li><li><a href="Night.html">Night</a></li><li><a href="SkyGraph.html">SkyGraph</a></li><li><a href="Target.html">Target</a></li><li><a href="TargetList.html">TargetList</a></li></ul><h3>Global</h3><ul><li><a href="global.html#assertAlmostEqual">assertAlmostEqual</a></li><li><a href="global.html#assertEqual">assertEqual</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.5</a> on Thu Oct 29 2020 19:20:50 GMT+0000 (GMT)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.5</a> on Fri Feb 26 2021 15:52:38 GMT+0000 (GMT)
 </footer>
 
 <script> prettyPrint(); </script>

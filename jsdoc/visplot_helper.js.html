@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: visplot.helper.js</title>
+    <title>JSDoc: Source: visplot_helper.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: visplot.helper.js</h1>
+    <h1 class="page-title">Source: visplot_helper.js</h1>
 
     
 
@@ -37,7 +37,11 @@
  * @todo: Many of these functions can be rewritten in terms of slalib functions
  * or replaced altogether.
  */
+"use strict";
 
+/**
+ * @namespace
+ */
 function helper() {
 }
 
@@ -63,12 +67,10 @@ helper.rad2deg = function (angle) {
  * Pad a two digit number with zeroes ('6'->'06', '13'->'13').
  */
 helper.padTwoDigits = function (_num) {
-    let num = parseFloat(_num);
+    const num = parseFloat(_num);
     if (num === 0) {
         // handle -0 and +0 (for degrees of Dec, for instance)
-        return 1/num &lt; 0 ?
-            "-00" :
-            "00";
+        return 1/num &lt; 0 ? "-00" : "00";
     }
     return num > 0 ?
             (num &lt; 10 ? ('0' + num.toString()) : num.toString()) :
@@ -92,7 +94,7 @@ helper.AltitudeToAirmass = function (altitude) {
 };
 
 /**
- * Conver an ephem time to an index in the night array ("xaxis")
+ * Convert an ephem time to an index in the night array ("xaxis")
  */
 helper.EphemTimeToIndex = function (time) {
     return Math.round((time - driver.night.Sunset) / driver.night.xstep);
@@ -105,7 +107,8 @@ helper.dmstodeg = function (a) {
     if (!a) {
         return 0;
     }
-    let d = a.replace(/^\s+/, "").split(/[:\s]/), sign = 1;
+    const d = a.replace(/^\s+/, "").split(/[:\s]/);
+    let sign = 1;
     if (d[0].match(/-/)) {
         sign = -1;
         d[0].replace(/\-/, "");
@@ -124,14 +127,14 @@ helper.extractLines = function (str) {
  * Convert pixel coordinates in SkyCam image to Az/Alt and RA/Dec
  */
 helper.getCoordinates = function (xcent, ycent, x, y, r, lst) {
-    let myArray = new Array(4);
+    const myArray = new Array(4); /* Exception to Google style rule 5.2.2 */
     x = x - xcent;
     y = y - ycent;
     let newR = Math.sqrt(x * x + y * y);
     let newTeta = helper.rad2deg(Math.atan2(y, x) - helper.deg2rad(90) + helper.deg2rad(35));
     r = Math.max(r, newR);
     newR = newR - 3;
-    let n = (r - newR) / r;
+    const n = (r - newR) / r;
     newR = 6.686 + 47.324 * n + 135.465 * n * n - 187.185 * n * n * n + 87.754 * n * n * n * n;
     if (newR > r) {
         myArray[0] = "low";
@@ -146,7 +149,7 @@ helper.getCoordinates = function (xcent, ycent, x, y, r, lst) {
         newTeta = newTeta - 360;
     }
     myArray[1] = Math.round(newTeta);
-    let val = helper.radec(newR, newTeta, lst);
+    const val = helper.radec(newR, newTeta, lst);
     myArray[2] = helper.HMS(val[0], false, "h", "m", "s");
     myArray[3] = helper.HMS(val[1], true, "°", "'", '"');
     return myArray;
@@ -171,10 +174,10 @@ helper.julianDate = function (now)
  * Calculate the Greenwich mean sidereal time from a Julian date.
  */
 helper.GM_Sidereal_Time = function (jd) {
-    let MJD = jd - 2400000.5;
-    let MJD0 = Math.floor(MJD);
-    let ut = (MJD - MJD0) * 24.0;
-    let t_eph = (MJD0 - 51544.5) / 36525.0;
+    const MJD = jd - 2400000.5;
+    const MJD0 = Math.floor(MJD);
+    const ut = (MJD - MJD0) * 24.0;
+    const t_eph = (MJD0 - 51544.5) / 36525.0;
     let gmst = 6.697374558 + 1.0027379093 * ut + (8640184.812866 + (0.093104 - 0.0000062 * t_eph) * t_eph) * t_eph / 3600.0;
     while (gmst > 24) {
         gmst -= 24;
@@ -204,24 +207,21 @@ helper.LM_Sidereal_Time = function (jd) {
  * Convert Altitude, Azimuth and Local Apparent Sidereal Time to RA and Dec.
  */
 helper.radec = function (alt, az, lst) {
-    let val = new Array(2);
-    let radeg = Math.PI / 180;
-    let a = alt * radeg, p = Driver.obs_lat_deg * radeg, A = az * radeg;
-    let sin_dec = Math.sin(a) * Math.sin(p) + Math.cos(a) * Math.cos(p) * Math.cos(A);
+    const radeg = Math.PI / 180;
+    const a = alt * radeg, p = Driver.obs_lat_deg * radeg, A = az * radeg;
+    const sin_dec = Math.sin(a) * Math.sin(p) + Math.cos(a) * Math.cos(p) * Math.cos(A);
     let dec = Math.asin(sin_dec);
-    let cos_ha = (Math.sin(a) - Math.sin(p) * sin_dec) / (Math.cos(p) * Math.cos(dec));
-    let ha = 12 * Math.acos(cos_ha) / Math.PI;
+    const cos_ha = (Math.sin(a) - Math.sin(p) * sin_dec) / (Math.cos(p) * Math.cos(dec));
+    const ha = 12 * Math.acos(cos_ha) / Math.PI;
     let ra = (az &lt; 180 ? lst + ha : lst - ha);
     if (ra &lt; 0) {
         ra += 24;
     }
-    if (ra > 24) {
+    if (ra >= 24) {
         ra -= 24;
     }
     dec *= 180 / Math.PI;
-    val[0] = ra;
-    val[1] = dec;
-    return val;
+    return [ra, dec];
 };
 
 /**
@@ -232,10 +232,10 @@ helper.altaz = function (ra, dec, lst) {
     if (ha &lt; 0) {
         ha += 24;
     }
-    let p = Driver.obs_lat_rad, d = helper.deg2rad(dec), h = ha * Math.PI / 12;
-    let sin_alt = Math.sin(d) * Math.sin(p) + Math.cos(d) * Math.cos(p) * Math.cos(h);
+    const p = Driver.obs_lat_rad, d = helper.deg2rad(dec), h = ha * Math.PI / 12;
+    const sin_alt = Math.sin(d) * Math.sin(p) + Math.cos(d) * Math.cos(p) * Math.cos(h);
     let alt = Math.asin(sin_alt);
-    let cos_alt = (Math.sin(d) - sin_alt * Math.sin(p)) / (Math.cos(alt) * Math.cos(p));
+    const cos_alt = (Math.sin(d) - sin_alt * Math.sin(p)) / (Math.cos(alt) * Math.cos(p));
     let az = helper.rad2deg(Math.acos(cos_alt));
     alt = helper.rad2deg(alt);
     if (Math.sin(h) > 0) {
@@ -250,10 +250,11 @@ helper.altaz = function (ra, dec, lst) {
 helper.HMS = function (time, sign, sep1, sep2, sep3) {
     return helper.degtosex(time, sign, 0, sep1, sep2, sep3);
 };
+
 helper.degtosex = function (time, sign, prec, sep1, sep2, sep3) {
     let h = Math.floor(time);
-    let min = Math.floor(60.0 * helper.frac(time));
-    let sec = (60.0 * (60.0 * helper.frac(time) - min)).toFixed(prec);
+    const min = Math.floor(60.0 * helper.frac(time));
+    const sec = (60.0 * (60.0 * helper.frac(time) - min)).toFixed(prec);
     let str = (sign ? (h &lt; 0 ? "-" : "+") : "");
     h = Math.abs(h);
     str += (h &lt; 10 ? "0" + h : h) + sep1 + ":";
@@ -268,7 +269,7 @@ helper.degtosex = function (time, sign, prec, sep1, sep2, sep3) {
 helper.EphemDateToHM = function (d) {
     let t = new Date(driver.night.DateSunset);
     t.setSeconds(t.getUTCSeconds() + (d - driver.night.Sunset) * 86400);
-    let ss = t.getUTCSeconds();
+    const ss = t.getUTCSeconds();
     let mm = t.getUTCMinutes();
     let hh = t.getUTCHours();
     // Round up if necessary
@@ -286,13 +287,17 @@ helper.EphemDateToHM = function (d) {
 };
 
 helper.LSTToAngle = function (text) {
-    let arr = text.split(':');
+    const easy = helper.filterFloat(text);
+    if (!isNaN(easy)) {
+        return easy * sla.htor;
+    }
+    const arr = text.split(':');
     if (arr.length &lt; 1 || arr.length > 3 || helper.notInt(arr[0])) {
         return -1;
     }
-    let hh = helper.filterInt(arr[0]);
-    let mm = (arr.length > 1) ? helper.filterInt(arr[1]) : 0;
-    let ss = (arr.length > 2) ? helper.filterInt(arr[2]) : 0;
+    const hh = helper.filterInt(arr[0]);
+    const mm = (arr.length > 1) ? helper.filterInt(arr[1]) : 0;
+    const ss = (arr.length > 2) ? helper.filterInt(arr[2]) : 0;
     if (hh &lt; 0 || hh > 24 || mm &lt; 0 || mm > 60 || ss &lt; 0 || ss > 60) {
         return -1;
     }
@@ -309,8 +314,9 @@ helper.LSTToEphemDate = function (str) {
         return false;
     }
     let sunset = driver.night.stlSunset;
+    /* If LST1 is larger, then we have to go around 00:00 */
     if (rad1 > rad2) {
-        rad2 += sla.d2pi;
+        rad1 -= sla.d2pi;
     }
     /* Sidereal day is not 86400 seconds, but 86164.1! */
     let jdiff1 = (rad1-sunset)*86164.1/sla.d2pi;
@@ -329,29 +335,40 @@ helper.LSTToEphemDate = function (str) {
     if (ut2 > driver.night.Sunrise) {
         ut2 = driver.night.Sunrise;
     }
+    if (ut1 > ut2) {
+        ut1 -= 1;
+    }
     return [ut1, ut2];
 };
 
 /**
- * Convert a H:MM or H:MM:SS format to a Python.ephem date.
+ * Convert a H:MM or H:MM:SS or H.d format to a Python.ephem date.
  */
 helper.HMToEphemDate = function (text) {
-    let jsunset = driver.night.DateSunset;
-    let arr = text.split(':');
-    if (arr.length &lt; 1 || arr.length > 3 || helper.notInt(arr[0])) {
-        return -1;
+    const jsunset = driver.night.DateSunset;
+    const easy = helper.filterFloat(text);
+    let hh, mm, ss;
+    if (!isNaN(easy)) {
+        hh = Math.floor(easy);
+        mm = Math.floor((easy % 1) / (1/60));
+        ss = Math.floor((easy - hh - mm / 60) * 3600);
+    } else {
+        const arr = text.split(':');
+        if (arr.length &lt; 1 || arr.length > 3 || helper.notInt(arr[0])) {
+            return -1;
+        }
+        hh = helper.filterInt(arr[0]);
+        mm = (arr.length > 1) ? helper.filterInt(arr[1]) : 0;
+        ss = (arr.length > 2) ? helper.filterInt(arr[2]) : 0;
     }
-    let hh = helper.filterInt(arr[0]);
-    let mm = (arr.length > 1) ? helper.filterInt(arr[1]) : 0;
-    let ss = (arr.length > 2) ? helper.filterInt(arr[2]) : 0;
     if (hh &lt; 0 || hh > 24 || mm &lt; 0 || mm > 60 || ss &lt; 0 || ss > 60) {
         return -1;
     }
     if (hh &lt; driver.night.tSunset[3] - 1 &amp;&amp; hh > driver.night.tSunrise[3] + 1) {
         return -1;
     }
-    let jtime = new Date(Date.UTC(driver.night.tSunset[0], driver.night.tSunset[1]-1, driver.night.tSunset[2] + (hh > 12 ? 0 : 1), hh, mm, ss, 0));
-    let jdiff = (jtime - jsunset) / 8.64e7;
+    const jtime = new Date(Date.UTC(driver.night.tSunset[0], driver.night.tSunset[1]-1, driver.night.tSunset[2] + (hh > 12 ? 0 : 1), hh, mm, ss, 0));
+    const jdiff = (jtime - jsunset) / 8.64e7;
     return driver.night.Sunset + jdiff;
 };
 
@@ -483,7 +500,7 @@ helper.LogSuccess = function (msg) {
  *
  */
 helper.Log = function (msg, cls) {
-    let cd = new Date();
+    const cd = new Date();
     $('#logger').append('&lt;span class="' + cls + '">' +
             '[' + cd.getUTCFullYear() + '-' +
             helper.pad((cd.getUTCMonth()+1).toString(), 2, true, '0') + '-' +
@@ -516,7 +533,7 @@ helper.LunarPhaseExplanation = function (phase) {
  *
  */
 helper.numberOfDays = function (year, month) {
-    let d = new Date(Date.UTC(year, month, 0));
+    const d = new Date(Date.UTC(year, month, 0));
     return d.getDate();
 };
 
@@ -537,8 +554,8 @@ helper.ExtractLSTRange = function (str) {
     if (str.slice(-1) !== ']' || str.indexOf('-') === -1) {
         return false;
     }
-    let pos = str.indexOf("[");
-    let inner = str.substr(pos+1, str.length - pos - 2);
+    const pos = str.indexOf("[");
+    const inner = str.substr(pos+1, str.length - pos - 2);
     str = inner.split('-');
     if (str.length !== 2) {
         return false;
@@ -556,8 +573,8 @@ helper.ExtractUTRange = function (str) {
     if (str.slice(-1) !== ']' || str.indexOf('-') === -1) {
         return false;
     }
-    let pos = str.indexOf("[");
-    let inner = str.substr(pos+1, str.length - pos - 2);
+    const pos = str.indexOf("[");
+    const inner = str.substr(pos+1, str.length - pos - 2);
     str = inner.split('-');
     if (str.length !== 2) {
         return false;
@@ -589,9 +606,9 @@ helper.stl = function(utc, eqeqx) {
 };
 
 helper.utarc = function(altitude, tsouth, dec, pm) {
-    let cost = (Math.sin(altitude) - Math.sin(Driver.obs_lat_rad) * Math.sin(dec)) /
+    const cost = (Math.sin(altitude) - Math.sin(Driver.obs_lat_rad) * Math.sin(dec)) /
             (Math.cos(Driver.obs_lat_rad) * Math.cos(dec));
-    let t = sla.r2d * Math.acos(cost) / 15;
+    const t = sla.r2d * Math.acos(cost) / 15;
     if (pm === "+") {
         return sla.dr2tf(6, (tsouth + t) / 24 * sla.d2pi).ihmsf;
     } else {
@@ -603,12 +620,12 @@ helper.utarc = function(altitude, tsouth, dec, pm) {
  *
  */
 helper.validColour = function(stringToTest) {
-    //Alter the following conditions according to your need.
+    /* Exclude valid CSS colour properties that are not colours */
     if (stringToTest === "") { return false; }
     if (stringToTest === "inherit") { return false; }
     if (stringToTest === "transparent") { return false; }
 
-    let dummy = document.createElement("img");
+    const dummy = document.createElement("img");
     dummy.style.color = "rgb(0, 0, 0)";
     dummy.style.color = stringToTest;
     if (dummy.style.color !== "rgb(0, 0, 0)") { return true; }
@@ -616,7 +633,16 @@ helper.validColour = function(stringToTest) {
     dummy.style.color = stringToTest;
     return dummy.style.color !== "rgb(255, 255, 255)";
 };
-</code></pre>
+
+/**
+ * How to comment line start?
+ */
+helper.commentStrings = [
+    "Offline",
+    "BadWolf",
+    "#Offline",
+    "#BadWolf"
+];</code></pre>
         </article>
     </section>
 
@@ -626,13 +652,13 @@ helper.validColour = function(stringToTest) {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="sla.html">sla</a></li></ul><h3>Global</h3><ul><li><a href="global.html#assertAlmostEqual">assertAlmostEqual</a></li><li><a href="global.html#assertEqual">assertEqual</a></li><li><a href="global.html#driver">driver</a></li><li><a href="global.html#Driver">Driver</a></li><li><a href="global.html#Graph">Graph</a></li><li><a href="global.html#Night">Night</a></li><li><a href="global.html#serializer">serializer</a></li><li><a href="global.html#SkyGraph">SkyGraph</a></li><li><a href="global.html#TargetList">TargetList</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="helper.html">helper</a></li><li><a href="serializer.html">serializer</a></li><li><a href="sla.html">sla</a></li></ul><h3>Classes</h3><ul><li><a href="Driver.html">Driver</a></li><li><a href="Graph.html">Graph</a></li><li><a href="Night.html">Night</a></li><li><a href="SkyGraph.html">SkyGraph</a></li><li><a href="Target.html">Target</a></li><li><a href="TargetList.html">TargetList</a></li></ul><h3>Global</h3><ul><li><a href="global.html#assertAlmostEqual">assertAlmostEqual</a></li><li><a href="global.html#assertEqual">assertEqual</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.5</a> on Thu Oct 29 2020 19:20:50 GMT+0000 (GMT)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.5</a> on Fri Feb 26 2021 15:52:38 GMT+0000 (GMT)
 </footer>
 
 <script> prettyPrint(); </script>

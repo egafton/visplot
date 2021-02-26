@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: visplot.serializer.js</title>
+    <title>JSDoc: Source: visplot_serializer.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: visplot.serializer.js</h1>
+    <h1 class="page-title">Source: visplot_serializer.js</h1>
 
     
 
@@ -34,10 +34,17 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. See LICENSE.md.
  */
+"use strict";
 
+/**
+ * @namespace
+ */
 function serializer() {
 }
 
+/**
+ * Bind click events to HTML buttons.
+ */
 serializer.BindEvents = function () {
     $('#saveDoc').click(function () {
         serializer.saveDocument();
@@ -52,17 +59,20 @@ serializer.BindEvents = function () {
     });
 };
 
+/**
+ * Save the observing schedule to disk.
+ */
 serializer.saveDocument = function () {
     helper.Log('Exporting schedule in visplot format...');
     try {
-        let zip = new JSZip();
+        const zip = new JSZip();
         zip.file("visplot.txt", JSON.stringify({
             night: driver.night,
             graph: driver.graph,
             targets: driver.targets,
             ta: $('#targets_actual').val(),
             tgts: driver.CMeditor.getValue(),
-            driver: {ob: driver.ob, obdata: driver.obdata, obLines: driver.obLines, obLinks: driver.obLinks, obExtraInfo: driver.obExtraInfo, obprocessed: driver.obprocessed, nightInitialized: driver.nightInitialized, scheduleMode: driver.scheduleMode, defaultEpoch: Driver.defaultEpoch, defaultProject: Driver.defaultProject, defaultType: Driver.defaultType, defaultObstime: Driver.defaultObstime, FillColors: Driver.FillColors, TextColors: Driver.TextColors}
+            driver: {ob: driver.ob, obdata: driver.obdata, obprocessed: driver.obprocessed, nightInitialized: driver.nightInitialized, scheduleMode: driver.scheduleMode, defaultEpoch: Driver.defaultEpoch, defaultProject: Driver.defaultProject, defaultType: Driver.defaultType, defaultObstime: Driver.defaultObstime, FillColors: Driver.FillColors, TextColors: Driver.TextColors}
         }));
         zip.generateAsync({
             mimeType: "application/octet-stream",
@@ -74,34 +84,34 @@ serializer.saveDocument = function () {
         });
         helper.LogEntry('Done.');
     } catch (e) {
-        helper.LogError('Error: &lt;i>' + e + '&lt;/i>');
+        helper.LogError('Error 42: &lt;i>' + e + '&lt;/i>');
     }
 };
 
+/**
+ * Load an observing schedule from disk.
+ */
 serializer.loadDocument = function (e) {
     helper.LogEntry('Importing schedule from the given file...');
-    let files = e.target.files; // FileList object
+    const files = e.target.files; // FileList object
     if (files === false || files === null || files === undefined || files.length != 1) {
-        helper.LogError('Error: Failed to load the file.');
+        helper.LogError('Error 43: Failed to load the file.');
         return;
     }
-    let new_zip = new JSZip();
+    const new_zip = new JSZip();
     new_zip.loadAsync(files[0]).then(function (zip) {
         if (zip === false || zip === null || zip === undefined) {
-            helper.LogError('Error: Could not open the file because it has an invalid format.');
+            helper.LogError('Error 44: Could not open the file because it has an invalid format.');
             return;
         }
         new_zip.file("visplot.txt").async("string").then(function (txt) {
-            let obj = JSON.parse(txt), i;
+            const obj = JSON.parse(txt);
             if (obj === false || obj === null || obj === undefined || obj.night === null || obj.night === undefined || obj.graph === null || obj.graph === undefined || obj.driver === null || obj.driver === undefined || obj.targets === null || obj.targets === undefined) {
-                helper.LogError('Error: Could not open the file because it has an invalid format.');
+                helper.LogError('Error 45: Could not open the file because it has an invalid format.');
                 return;
             }
             driver.ob = obj.driver.ob;
             driver.obdata = obj.driver.obdata;
-            driver.obLines = obj.driver.obLines;
-            driver.obLinks = obj.driver.obLinks;
-            driver.obExtraInfo = obj.driver.obExtraInfo;
             driver.obprocessed = obj.driver.obprocessed;
             driver.nightInitialized = obj.driver.nightInitialized;
             driver.scheduleMode = obj.driver.scheduleMode;
@@ -109,8 +119,7 @@ serializer.loadDocument = function (e) {
             Driver.defaultProject = obj.driver.defaultProject;
             Driver.defaultType = obj.driver.defaultType;
             Driver.defaultObstime = obj.driver.defaultObstime;
-            let k;
-            for (k in Driver.FillColors) {
+            for (let k in Driver.FillColors) {
                 Driver.FillColors = [k, obj.driver.FillColors[k]];
                 Driver.TextColors = [k, obj.driver.TextColors[k]];
             }
@@ -125,7 +134,7 @@ serializer.loadDocument = function (e) {
             driver.night = Object.setPrototypeOf(obj.night, Night.prototype);
             driver.graph = Object.setPrototypeOf(obj.graph, Graph.prototype);
             driver.targets = Object.setPrototypeOf(obj.targets, TargetList.prototype);
-            for (i = 0; i &lt; obj.targets.nTargets; i += 1) {
+            for (let i = 0; i &lt; obj.targets.nTargets; i += 1) {
                 Object.setPrototypeOf(driver.targets.Targets[i], Target.prototype);
             }
             helper.LogEntry('Done.');
@@ -147,15 +156,18 @@ serializer.loadDocument = function (e) {
             $('#planNight').removeAttr('disabled');
             $('#saveDoc').removeAttr('disabled');
         }).catch(function (e) {
-            helper.LogError('Error: Could not open the file because it has an invalid format (' + e + ').');
+            helper.LogError('Error 46: Could not open the file because it has an invalid format (' + e + ').');
             return;
         });
     }).catch(function (e) {
-        helper.LogError('Error: Could not open the file because it has an invalid format (' + e + ').');
+        helper.LogError('Error 47: Could not open the file because it has an invalid format (' + e + ').');
         return;
     });
 };
 
+/**
+ * Export the canvas as a png file.
+ */
 serializer.exportPNG = function () {
     /* By default, HTML5 canvases are exported with a transparent background
      (which might be rendered improperly, i.e. with a black background, in some viewers).
@@ -164,17 +176,16 @@ serializer.exportPNG = function () {
      */
     helper.LogEntry('Trying to export png file...');
     // Save context state
-    let w = driver.canvas.width;
-    let h = driver.canvas.height;
-    let data;
-    data = driver.context.getImageData(0, 0, w, h);
-    let compositeOperation = driver.context.globalCompositeOperation;
+    const w = driver.canvas.width;
+    const h = driver.canvas.height;
+    const data = driver.context.getImageData(0, 0, w, h);
+    const compositeOperation = driver.context.globalCompositeOperation;
     // Add a white background behind everything else that is already drawn
     driver.context.globalCompositeOperation = "destination-over";
     driver.context.fillStyle = "#fff";
     driver.context.fillRect(0, 0, w, h);
     // Save image
-    let imageData = driver.canvas.toDataURL("image/png");
+    const imageData = driver.canvas.toDataURL("image/png");
     // Restore context state
     driver.context.clearRect(0, 0, w, h);
     driver.context.putImageData(data, 0, 0);
@@ -193,13 +204,13 @@ serializer.exportPNG = function () {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="sla.html">sla</a></li></ul><h3>Global</h3><ul><li><a href="global.html#assertAlmostEqual">assertAlmostEqual</a></li><li><a href="global.html#assertEqual">assertEqual</a></li><li><a href="global.html#driver">driver</a></li><li><a href="global.html#Driver">Driver</a></li><li><a href="global.html#Graph">Graph</a></li><li><a href="global.html#Night">Night</a></li><li><a href="global.html#serializer">serializer</a></li><li><a href="global.html#SkyGraph">SkyGraph</a></li><li><a href="global.html#TargetList">TargetList</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="helper.html">helper</a></li><li><a href="serializer.html">serializer</a></li><li><a href="sla.html">sla</a></li></ul><h3>Classes</h3><ul><li><a href="Driver.html">Driver</a></li><li><a href="Graph.html">Graph</a></li><li><a href="Night.html">Night</a></li><li><a href="SkyGraph.html">SkyGraph</a></li><li><a href="Target.html">Target</a></li><li><a href="TargetList.html">TargetList</a></li></ul><h3>Global</h3><ul><li><a href="global.html#assertAlmostEqual">assertAlmostEqual</a></li><li><a href="global.html#assertEqual">assertEqual</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.5</a> on Thu Oct 29 2020 19:20:50 GMT+0000 (GMT)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.5</a> on Fri Feb 26 2021 15:52:38 GMT+0000 (GMT)
 </footer>
 
 <script> prettyPrint(); </script>
