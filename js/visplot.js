@@ -18,7 +18,7 @@ $(document).ready(function () {
     /* Perform the unit tests for slalib */
     sla.performUnitTests();
     
-    /* The one and only global variable */
+    /* The global variables */
     window.driver = new Driver();
 
     /* Now that the driver is created, do some async stuff */

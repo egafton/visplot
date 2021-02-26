@@ -771,7 +771,7 @@ Driver.prototype.CallbackUpdateDefaults = function () {
     helper.LogEntry('Updating default parameters...');
     re = $('input[name=def_telescope]:checked').val().trim();
     if (re !== Driver.telescopeName) {
-        if (re === 'NOT' || re === 'WHT' || re === 'INT') {
+        if ($.inArray(re, Object.keys(config)) !== -1) {
             Driver.telescopeName = re;
             helper.LogSuccess('<i>Telescope name</i> set to <i>' + re + '</i>.');
             resetTel = true;
@@ -977,23 +977,20 @@ Object.defineProperties(Driver, {
     'telescopeName': {get: function() {
             return this._telescopeName || 'NOT';
         }, set: function(val) {
-            this._telescopeName = val;
-            $("input[name=def_telescope][value=" + val + "]").attr('checked', 'checked');
+            /* Only update if we have a config entry for the telescope */
+            if ($.inArray(val, Object.keys(config)) !== -1) {
+                this._telescopeName = val;
+                $("input[name=def_telescope][value=" + val + "]").attr('checked', 'checked');
+            }
         }},
     'updSchedText': {get: function () {
             return 'Update schedule';
         }},
     'obs_lat_deg': {get: function () {
-            // return 28.75722;
-            return this.telescopeName === 'NOT' ? 28.75723 : // NOT
-                  (this.telescopeName === 'WHT' ? 28.76062 : // WHT
-                                                  28.76209); // INT
+            return config[this.telescopeName].latitude;
         }},
     'obs_lon_deg': {get: function () {
-            //return -17.8851;
-            return this.telescopeName === 'NOT' ? -17.88510 : // NOT
-                  (this.telescopeName === 'WHT' ? -17.88166 : // WHT
-                                                  -17.87761); // INT
+            return config[this.telescopeName].longitude;
         }},
     'obs_lat_rad': {get: function () {
             return helper.deg2rad(Driver.obs_lat_deg);
@@ -1002,30 +999,22 @@ Object.defineProperties(Driver, {
             return helper.deg2rad(Driver.obs_lon_deg);
         }},
     'obs_alt': {get: function () {
-            //return 2326;
-            return this.telescopeName === 'NOT' ? 2382 : // NOT
-                  (this.telescopeName === 'WHT' ? 2344 : // WHT //2332
-                                                  2347); // INT //2336
+            return config[this.telescopeName].altitude;
         }},
     'current_dut': {get: function () {
             //reported in milliseconds -> Julian days
             return 68.9677 / (1000*sla.d2s);
         }},
     'obs_lowestLimit': {get: function () {
-            //return 2326;
-            return this.telescopeName === 'NOT' ? 6 :  // NOT
-                  (this.telescopeName === 'WHT' ? 12 : // WHT
-                                                  20); // INT
+            return config[this.telescopeName].lowestLimit;
         }},
     'obs_lowerHatch': {get: function () {
-            //return 2326;
-            return this.telescopeName === 'NOT' ? 35 : // NOT
-                  (this.telescopeName === 'WHT' ? 25 : // WHT
-                                                  33); // INT
+            return config[this.telescopeName].vignetteLimit;
         }},
     'plotTitle': {get: function () {
-            return 'Altitudes at ' + this.telescopeName + ', Roque de Los Muchachos, ' + 
-                    (360+this.obs_lon_deg).toFixed(4) + 'E +' +
+            return `Altitudes at ${this.telescopeName}, ` +
+                   config[this.telescopeName].site + ', ' + 
+                    (this.obs_lon_deg < 0 ? 360+this.obs_lon_deg : this.obs_lon_deg).toFixed(4) + 'E +' +
                     this.obs_lat_deg.toFixed(4) + ', ' + this.obs_alt.toFixed(0) + ' m above sea level';
         }},
     'plotCopyright': {get: function () {
