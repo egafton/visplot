@@ -8,6 +8,10 @@
  */
 "use strict";
 
+/**
+ * @class
+ * @constructor
+ */
 function Graph(_canvas, _context) {
     this.canvas = _canvas;
     this.ctx = _context;
@@ -29,6 +33,9 @@ function Graph(_canvas, _context) {
     this.doubleTargets = true;
 }
 
+/**
+ * @memberof Graph
+ */
 Graph.prototype.plotHorizontalLine = function (xstart, xend, y, dash, lw) {
     this.ctx.beginPath();
     this.ctx.lineWidth = lw;
@@ -38,6 +45,9 @@ Graph.prototype.plotHorizontalLine = function (xstart, xend, y, dash, lw) {
     this.ctx.stroke();
 };
 
+/**
+ * @memberof Graph
+ */
 Graph.prototype.plotVerticalLine = function (ystart, yend, x, dash, lw) {
     this.ctx.beginPath();
     this.ctx.lineWidth = lw;
@@ -47,6 +57,9 @@ Graph.prototype.plotVerticalLine = function (ystart, yend, x, dash, lw) {
     this.ctx.stroke();
 };
 
+/**
+ * @memberof Graph
+ */
 Graph.prototype.plotText = function (text, font, color, x, y, xalign, yalign) {
     this.ctx.font = font + ' ' + this.fontFamily;
     this.ctx.textAlign = xalign;
@@ -55,6 +68,9 @@ Graph.prototype.plotText = function (text, font, color, x, y, xalign, yalign) {
     this.ctx.fillText(text, x, y);
 };
 
+/**
+ * @memberof Graph
+ */
 Graph.prototype.plotRotatedText = function (text, font, x, y, xalign, yalign) {
     this.ctx.save();
     this.ctx.font = font + ' ' + this.fontFamily;
@@ -66,22 +82,37 @@ Graph.prototype.plotRotatedText = function (text, font, x, y, xalign, yalign) {
     this.ctx.restore();
 };
 
+/**
+ * @memberof Graph
+ */
 Graph.prototype.reverseTransformXLocation = function (xplot) {
     return driver.night.Sunset + (xplot - this.xstart) * driver.night.wnight / this.width;
 };
 
+/**
+ * @memberof Graph
+ */
 Graph.prototype.transformXLocation = function (xnight) {
     return this.xstart + this.width * (xnight - driver.night.Sunset) / driver.night.wnight;
 };
 
+/**
+ * @memberof Graph
+ */
 Graph.prototype.transformYLocation = function (ydegrees) {
     return this.yend - this.degree * ydegrees;
 };
 
+/**
+ * @memberof Graph
+ */
 Graph.prototype.transformXWidth = function (wnight) {
     return this.width * wnight / driver.night.wnight;
 };
 
+/**
+ * @memberof Graph
+ */
 Graph.prototype.drawRHSofSchedule = function () {
     this.ctx.clearRect(this.targetsx - 15, this.targetsy - this.targetsyskip - 5, this.canvas.width - this.targetsx + 15, this.canvas.height);
     this.ctx.strokeStyle = 'black';
@@ -140,6 +171,9 @@ Graph.prototype.drawRHSofSchedule = function () {
     }
 };
 
+/**
+ * @memberof Graph
+ */
 Graph.prototype.drawSchedule = function () {
     this.ctx.setLineDash([]);
     this.ctx.save();
@@ -208,6 +242,9 @@ Graph.prototype.drawSchedule = function () {
     this.drawRHSofSchedule();
 };
 
+/**
+ * @memberof Graph
+ */
 Graph.prototype.setTargetsSize = function (ntargets) {
     this.doubleTargets = (ntargets <= 18);
     this.targetsy = this.ystart + 15;
@@ -238,6 +275,9 @@ Graph.prototype.setTargetsSize = function (ntargets) {
     }
 };
 
+/**
+ * @memberof Graph
+ */
 Graph.prototype.highlightTarget = function (target) {
     this.ctx.save();
     this.ctx.strokeStyle = 'black';
@@ -267,6 +307,9 @@ Graph.prototype.highlightTarget = function (target) {
     this.ctx.restore();
 };
 
+/**
+ * @memberof Graph
+ */
 Graph.prototype.drawTargets = function (Targets) {
     this.ctx.save();
     this.ctx.strokeStyle = 'black';
@@ -312,6 +355,9 @@ Graph.prototype.drawTargets = function (Targets) {
     this.ctx.restore();
 };
 
+/**
+ * @memberof Graph
+ */
 Graph.prototype.drawTargetNames = function (Targets) {
     this.ctx.setLineDash([]);
     this.ctx.save();
@@ -354,6 +400,9 @@ Graph.prototype.drawTargetNames = function (Targets) {
     }
 };
 
+/**
+ * @memberof Graph
+ */
 Graph.prototype.drawEphemerides = function () {
     /*
      Convert the night.axis array (which is in units of ephem.Date) to a graph.axis array
@@ -490,6 +539,9 @@ Graph.prototype.drawEphemerides = function () {
     this.drawCurrentTime(new Date());
 };
 
+/**
+ * @memberof Graph
+ */
 Graph.prototype.drawCurrentTime = function (now) {
     if (now < driver.night.DateSunset || now > driver.night.DateSunrise) {
         return false;
@@ -508,6 +560,9 @@ Graph.prototype.drawCurrentTime = function (now) {
     this.plotVerticalLine(this.ystart, this.yend, xnow, [], 1);
 };
 
+/**
+ * @memberof Graph
+ */
 Graph.prototype.drawBackground = function () {
     // Draw main rectangle that contains the visibility plot
     this.ctx.save();

@@ -8,6 +8,10 @@
  */
 "use strict";
 
+/**
+ * @class
+ * @constructor
+ */
 function TargetList() {
     this.nTargets = 0;
     this.Targets = [];
@@ -28,6 +32,10 @@ function TargetList() {
     this.Warning2 = [];
 }
 
+/**
+ * @class
+ * @constructor
+ */
 function Target(k, obj) {
     this.Index = k;
     this.Name = obj.name;
@@ -90,6 +98,9 @@ function Target(k, obj) {
     this.Comments = null;
 }
 
+/**
+ * @memberof TargetList
+ */
 TargetList.prototype.targetStringToJSON = function (line) {
     // Parse an input string into a Target object
     let night = driver.night;
@@ -186,6 +197,9 @@ TargetList.prototype.targetStringToJSON = function (line) {
     return obj;
 };
 
+/**
+ * @memberof TargetList
+ */
 TargetList.prototype.setTargets = function (obj) {
     const res = obj.map(function (x) {
         return this.targetStringToJSON (x);
@@ -202,6 +216,9 @@ TargetList.prototype.setTargets = function (obj) {
     this.removeClusters();
 };
 
+/**
+ * @memberof TargetList
+ */
 TargetList.prototype.addTargets = function (obj) {
     const res = obj.map(function (x) {
         return this.targetStringToJSON (x);
@@ -217,6 +234,9 @@ TargetList.prototype.addTargets = function (obj) {
     driver.graph.setTargetsSize(this.nTargets);
 };
 
+/**
+ * @memberof TargetList
+ */
 TargetList.prototype.processTarget = function (i, obj) {
     const target = new Target(i, obj);
     target.preCompute();
@@ -232,6 +252,9 @@ TargetList.prototype.processTarget = function (i, obj) {
     return target;
 };
 
+/**
+ * @memberof TargetList
+ */
 Target.prototype.intersectingChain = function (Targets, checked) {
     let len, iIntersect = [], i, j, chain = [this.Index], rc;
     if (checked.indexOf(this.Index) > -1) {
@@ -257,6 +280,9 @@ Target.prototype.intersectingChain = function (Targets, checked) {
     return chain;
 };
 
+/**
+ * @memberof TargetList
+ */
 TargetList.prototype.removeClusters = function () {
     let checked = [], i, cluster, hasclusters, nIter = 0;
     do {
@@ -272,6 +298,9 @@ TargetList.prototype.removeClusters = function () {
     } while (hasclusters || nIter < 10);
 };
 
+/**
+ * @memberof TargetList
+ */
 TargetList.prototype.spaceOutCluster = function (cluster) {
     let i, obj, prev;
     for (i = 1; i < cluster.length; i += 1) {
@@ -287,6 +316,9 @@ TargetList.prototype.spaceOutCluster = function (cluster) {
     }
 };
 
+/**
+ * @memberof TargetList
+ */
 TargetList.prototype.processOfflineTime = function () {
     let i, len = this.BadWolfStart.length;
     this.Offline = [];
@@ -295,11 +327,17 @@ TargetList.prototype.processOfflineTime = function () {
     }
 };
 
+/**
+ * @memberof TargetList
+ */
 TargetList.prototype.resetWarnings = function () {
     this.Warning1 = [];
     this.Warning2 = [];
 };
 
+/**
+ * @memberof TargetList
+ */
 TargetList.prototype.warnUnobservable = function () {
     if (this.Warning1.length > 0) {
         helper.LogWarning('Warning: Target' + (this.Warning1.length === 1 ? '' : 's') + ' <i>' + this.Warning1.join(', ') + '</i> cannot possibly be scheduled for this night, as ' + (this.Warning1.length === 1 ? 'it' : 'they') + ' will never fit the airmass/UT constraints.');
@@ -309,6 +347,9 @@ TargetList.prototype.warnUnobservable = function () {
     }
 };
 
+/**
+ * @memberof TargetList
+ */
 TargetList.prototype.canSchedule = function (obj, start) {
     let end = start + obj.Exptime;
     let overlaps = false, i, other;
@@ -338,6 +379,9 @@ TargetList.prototype.canSchedule = function (obj, start) {
     return false;
 };
 
+/**
+ * @memberof TargetList
+ */
 TargetList.prototype.optimize_interchangeNeighbours = function (scheduleorder) {
     let i, obj1, obj2, am1now, am2now, am1if, am2if, exchange, t1, c;
     for (i = 0; i < scheduleorder.length - 1; i += 1) {
@@ -375,6 +419,9 @@ TargetList.prototype.optimize_interchangeNeighbours = function (scheduleorder) {
     }
 };
 
+/**
+ * @memberof TargetList
+ */
 TargetList.prototype.optimize_moveToLaterTimesIfRising = function (scheduleorder, crossOtherObjects) {
     let i, obj, j, kj, curtime, overlaps, amif;
     for (i = scheduleorder.length - 1; i >= 0; i -= 1) {
@@ -427,6 +474,9 @@ TargetList.prototype.optimize_moveToLaterTimesIfRising = function (scheduleorder
     }
 };
 
+/**
+ * @memberof TargetList
+ */
 TargetList.prototype.reorder_accordingToScheduling = function (scheduleorder) {
     let newtargets = [], i, j, k, imin, tmin, tj;
     for (i = 0; i < scheduleorder.length - 1; i += 1) {
@@ -466,6 +516,9 @@ TargetList.prototype.reorder_accordingToScheduling = function (scheduleorder) {
     this.Targets = newtargets;
 };
 
+/**
+ * @memberof TargetList
+ */
 TargetList.prototype.display_scheduleStatistics = function () {
     let projtime = [];
     let time_dark = driver.night.DarkTime * 86400;
@@ -542,6 +595,9 @@ TargetList.prototype.display_scheduleStatistics = function () {
     }
 };
 
+/**
+ * @memberof TargetList
+ */
 TargetList.prototype.schedule_inOriginalOrder = function (startingAt) {
     let order = [];
     let prevschedule = [];
@@ -614,6 +670,9 @@ TargetList.prototype.schedule_inOriginalOrder = function (startingAt) {
     return prevschedule.concat(scheduleorder);
 };
 
+/**
+ * @memberof TargetList
+ */
 TargetList.prototype.schedule_inOrderOfSetting = function (startingAt) {
     let EndTimes = [];
     let temporder = [];
@@ -704,6 +763,9 @@ TargetList.prototype.schedule_inOrderOfSetting = function (startingAt) {
     return prevschedule.concat(scheduleorder);
 };
 
+/**
+ * @memberof TargetList
+ */
 TargetList.prototype.scheduleAndOptimize_givenOrder = function (newscheduleorder) {
     let scheduleorder = [], i, k, obj;
     for (i = 0; i < this.nTargets; i += 1) {
@@ -749,6 +811,9 @@ TargetList.prototype.scheduleAndOptimize_givenOrder = function (newscheduleorder
     this.display_scheduleStatistics();
 };
 
+/**
+ * @memberof TargetList
+ */
 TargetList.prototype.prepareScheduleForUpdate = function () {
     helper.LogEntry('Preparing schedule for update...');
     helper.LogEntry('Checking existing targets against input...');
@@ -865,6 +930,9 @@ TargetList.prototype.prepareScheduleForUpdate = function () {
     }
 };
 
+/**
+ * @memberof TargetList
+ */
 TargetList.prototype.doSchedule = function (start, reorder) {
     let scheduleorder;
     let maintainorder = $('#opt_maintain_order').is(':checked');
@@ -886,21 +954,32 @@ TargetList.prototype.doSchedule = function (start, reorder) {
     }
 };
 
+/**
+ * @memberof TargetList
+ */
 TargetList.prototype.plan = function () {
     this.doSchedule(driver.night.Sunset, true);
 };
 
+/**
+ * @memberof TargetList
+ */
 TargetList.prototype.updateSchedule = function (Targets) {
     this.doSchedule(this.StartingAt, false);
 };
 
+/**
+ * @memberof TargetList
+ */
 TargetList.prototype.inputHasChanged = function (_newinput, _oldinput) {
     return (_newinput !== _oldinput);
 };
 
-/*
- Format the list of targets that already has the correct syntax by adding spaces
- so that the various columns fall nicely under each other.
+/**
+ * @memberof TargetList
+ * @description Format the list of targets that already has the correct syntax 
+ *     by adding spaces so that the various columns fall nicely under each
+ *     other.
  */
 TargetList.prototype.validateAndFormatTargets = function () {
     // Retrieve content of #targets textarea
@@ -1042,6 +1121,9 @@ TargetList.prototype.validateAndFormatTargets = function () {
     return true;
 };
 
+/**
+ * @memberof TargetList
+ */
 TargetList.prototype.ExportTCSCatalogue = function () {
     helper.LogEntry('Exporting catalogue in TCS format...');
     if (!this.InputValid) {
@@ -1063,8 +1145,10 @@ TargetList.prototype.ExportTCSCatalogue = function () {
     helper.LogEntry('Done.');
 };
 
-/*
- Extract one line of input from the input textarea; return an array containing the items
+/**
+ * @memberof TargetList
+ * @description Extract one line of input from the input textarea; return an
+ *     array containing the items.
  */
 TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
     // Split by white spaces and colons
@@ -1288,6 +1372,9 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
     return words;
 };
 
+/**
+ * @memberof TargetList
+ */
 TargetList.prototype.checkForDuplicates = function () {
     const alreadyChecked = [];
     const duplicateList = [];
@@ -1318,6 +1405,9 @@ TargetList.prototype.checkForDuplicates = function () {
     }
 };
 
+/**
+ * @memberof Target
+ */
 Target.prototype.canObserve = function (time, altitude) {
     if ((this.RestrictionMinUT <= time && this.RestrictionMaxUT >= time &&
             this.RestrictionMinAlt <= altitude && this.RestrictionMaxAlt >= altitude) === false) {
@@ -1331,6 +1421,9 @@ Target.prototype.canObserve = function (time, altitude) {
     return true;
 };
 
+/**
+ * @memberof Target
+ */
 Target.prototype.preCompute = function () {
     // First, determine when it is allowed to observe and when not
     this.beginAllowed = [];
@@ -1392,11 +1485,17 @@ Target.prototype.preCompute = function () {
     driver.targets.Warning2.push(this.Name);
 };
 
+/**
+ * @memberof Target
+ */
 Target.prototype.getAltitude = function (time) {
     let ii = helper.EphemTimeToIndex(time);
     return this.Graph[ii];
 };
 
+/**
+ * @memberof Target
+ */
 Target.prototype.resetColours = function () {
     if (this.Observed) {
         this.LabelFillColor = 'green';
@@ -1415,6 +1514,9 @@ Target.prototype.resetColours = function () {
     }
 };
 
+/**
+ * @memberof Target
+ */
 Target.prototype.ComputePositionSchedLabel = function () {
     let xshift, yshift;
     if ($('#opt_id_next_line').is(':checked')) {
@@ -1431,6 +1533,9 @@ Target.prototype.ComputePositionSchedLabel = function () {
     this.ymid = driver.graph.yend - driver.graph.degree * this.Graph[this.iScheduledMidTime] - yshift;
 };
 
+/**
+ * @memberof Target
+ */
 Target.prototype.Schedule = function (start) {
     this.Scheduled = true;
     this.ScheduledStartTime = start;
@@ -1445,6 +1550,9 @@ Target.prototype.Schedule = function (start) {
     this.ComputePositionSchedLabel();
 };
 
+/**
+ * @memberof Target
+ */
 Target.prototype.Update = function (obj) {
     // obj: (0=exptime, 1=project, 2=constraints, 3=type)
     this.FullType = obj[3];

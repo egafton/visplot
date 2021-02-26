@@ -11,6 +11,9 @@
  */
 "use strict";
 
+/**
+ * @namespace
+ */
 function helper() {
 }
 
@@ -63,7 +66,7 @@ helper.AltitudeToAirmass = function (altitude) {
 };
 
 /**
- * Conver an ephem time to an index in the night array ("xaxis")
+ * Convert an ephem time to an index in the night array ("xaxis")
  */
 helper.EphemTimeToIndex = function (time) {
     return Math.round((time - driver.night.Sunset) / driver.night.xstep);

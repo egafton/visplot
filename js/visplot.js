@@ -8,6 +8,9 @@
  */
 "use strict";
 
+/**
+ * @function
+ */
 $(document).ready(function () {
     /*
      * Current index for error IDs: 49

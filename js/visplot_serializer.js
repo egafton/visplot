@@ -8,9 +8,15 @@
  */
 "use strict";
 
+/**
+ * @namespace
+ */
 function serializer() {
 }
 
+/**
+ * Bind click events to HTML buttons.
+ */
 serializer.BindEvents = function () {
     $('#saveDoc').click(function () {
         serializer.saveDocument();
@@ -25,6 +31,9 @@ serializer.BindEvents = function () {
     });
 };
 
+/**
+ * Save the observing schedule to disk.
+ */
 serializer.saveDocument = function () {
     helper.Log('Exporting schedule in visplot format...');
     try {
@@ -51,6 +60,9 @@ serializer.saveDocument = function () {
     }
 };
 
+/**
+ * Load an observing schedule from disk.
+ */
 serializer.loadDocument = function (e) {
     helper.LogEntry('Importing schedule from the given file...');
     const files = e.target.files; // FileList object
@@ -125,6 +137,9 @@ serializer.loadDocument = function (e) {
     });
 };
 
+/**
+ * Export the canvas as a png file.
+ */
 serializer.exportPNG = function () {
     /* By default, HTML5 canvases are exported with a transparent background
      (which might be rendered improperly, i.e. with a black background, in some viewers).

@@ -8,6 +8,10 @@
  */
 "use strict";
 
+/**
+ * @class
+ * @constructor
+ */
 function Night(y, m, d) {
     this.day = d;
     this.month = m;
@@ -27,6 +31,9 @@ function Night(y, m, d) {
     this.STlabels = [];                     // ST labels corresponding to UTtimes
 }
 
+/**
+ * @memberof Night
+ */
 Night.prototype.setEphemerides = function (obj) {
     /**
      * First, pre-compute certain SLALIB parameters for this night

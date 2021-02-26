@@ -8,6 +8,10 @@
  */
 "use strict";
 
+/**
+ * @class
+ * @constructor
+ */
 function Driver() {
     /* HTML5 canvas, context and Graph class - related variables */
     this.canvas = document.getElementById('canvasFrame');
@@ -56,6 +60,9 @@ function Driver() {
     this.mouseInsideObject = -1;
 }
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.ParseOBInfoIfAny = function () {
     if ($('#obinfo').length === 0) {
         helper.LogEntry('No OB info detected.');
@@ -77,6 +84,9 @@ Driver.prototype.ParseOBInfoIfAny = function () {
     }
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.Callback_SetDate = function (obj) {
     this.night.setEphemerides();
     this.nightInitialized = true;
@@ -107,6 +117,9 @@ Driver.prototype.Callback_SetDate = function (obj) {
     }
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.Callback_SetTargets = function (obj) {
     helper.LogEntry('Done.');
     if (this.RequestedScheduleType === 1) {
@@ -117,6 +130,9 @@ Driver.prototype.Callback_SetTargets = function (obj) {
     this.Callback_UpdateSchedule();
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.Callback_UpdateSchedule = function () {
     if (this.RequestedScheduleType === 1) {
         helper.LogEntry('Updating schedule. Please wait...');
@@ -140,6 +156,9 @@ Driver.prototype.Callback_UpdateSchedule = function () {
     this.Refresh();
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.BtnEvt_SetDate = function () {
     const year = helper.filterInt($('#dateY').val());
     const month = helper.filterInt($('#dateM').val());
@@ -166,6 +185,9 @@ Driver.prototype.BtnEvt_SetDate = function () {
     driver.Callback_SetDate();
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.BtnEvt_PlotTargets = function () {
     if (this.RequestedScheduleType < 1 || this.RequestedScheduleType > 3) {
         helper.LogError('Error 40: Unknown value for Driver.ReqestedScheduleType.');
@@ -210,6 +232,9 @@ Driver.prototype.BtnEvt_PlotTargets = function () {
     }
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.EvtFrame_MouseMove = function (e) {
     if (this.targets.Ntargets === 0) {
         return;
@@ -260,6 +285,9 @@ Driver.prototype.EvtFrame_MouseMove = function (e) {
     }
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.insideObject = function (x, y, obj) {
     if (this.targets.nTargets === 0) {
         return false;
@@ -270,6 +298,9 @@ Driver.prototype.insideObject = function (x, y, obj) {
     return (this.scheduleMode && obj.Scheduled && helper.PointInsideCircle(x, y, obj.xmid, obj.ymid, this.graph.CircleSizeSq)) || ((!this.scheduleMode || (this.scheduleMode && !obj.Scheduled)) && helper.PointInsideCircle(x, y, obj.xlab, obj.ylab, this.graph.CircleSizeSq)) || (helper.PointInsideCircle(x, y, obj.rxmid, obj.rymid, this.graph.CircleSizeSq));
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.EvtFrame_MouseDown = function (e) {
     if (this.targets.Ntargets === 0 || !this.scheduleMode) {
         return;
@@ -289,6 +320,9 @@ Driver.prototype.EvtFrame_MouseDown = function (e) {
     }
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.EvtFrame_MouseUp = function (e) {
     if (this.targets.Ntargets === 0 || !this.scheduleMode) {
         return;
@@ -373,6 +407,9 @@ Driver.prototype.EvtFrame_MouseUp = function (e) {
     }
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.EvtFrame_Click = function (e) {
     if (this.targets.Ntargets === 0) {
         return;
@@ -440,6 +477,9 @@ Driver.prototype.EvtFrame_Click = function (e) {
     }
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.EvtFrame_Drop = function (e) {
     if (!this.nightInitialized) {
         return;
@@ -456,6 +496,9 @@ Driver.prototype.EvtFrame_Drop = function (e) {
     }
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.InitializeDate = function () {
     let year, month, day, datemsg;
     if (this.ob) {
@@ -497,6 +540,9 @@ Driver.prototype.InitializeDate = function () {
     $('#dateSet').trigger('click');
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.EvtSkycm_Click = function () {
     this.skyGraph.reload();
     this.skyGraph.startTimer();
@@ -509,6 +555,9 @@ Driver.prototype.EvtSkycm_Click = function () {
     this.skyGraph.setup(false);
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.EvtSkycm_MouseMove = function (e, jQthis) {
     let pos_x, pos_y;
     if (e.pageX === undefined && e.pageY === undefined) {
@@ -528,11 +577,17 @@ Driver.prototype.EvtSkycm_MouseMove = function (e, jQthis) {
     }
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.EvySkycm_MouseOut = function () {
     this.skyGraph.display_coords(null);
     this.skyGraph.lastazalt = null;
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.BindEvents = function () {
     // Allow the current date to be changed with a simple Enter key
     $('#dateD').keydown(function (e) {
@@ -680,6 +735,9 @@ Driver.prototype.BindEvents = function () {
     serializer.BindEvents();
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.EvtClick_SetDefaults = function () {
     $('#defsubmit').val('false');
     $('#def_epoch').val(Driver.defaultEpoch);
@@ -702,6 +760,9 @@ Driver.prototype.EvtClick_SetDefaults = function () {
     });
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.CallbackUpdateDefaults = function () {
     if ($('#defsubmit').val() === 'false') {
         return;
@@ -804,6 +865,9 @@ Driver.prototype.CallbackUpdateDefaults = function () {
     helper.LogEntry('Done.');
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.Callback_ShowCurrentTime = function () {
     if (!this.nightInitialized) {
         return;
@@ -815,6 +879,9 @@ Driver.prototype.Callback_ShowCurrentTime = function () {
     this.Refresh();
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.Refresh = function () {
     document.title = `${Driver.telescopeName}/Visplot`;
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -832,6 +899,9 @@ Driver.prototype.Refresh = function () {
     }
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.markAsObserved = function (observed) {
     let id_of_observed = $('#id_of_observed').val();
     let obj = this.targets.Targets[id_of_observed];
@@ -845,6 +915,9 @@ Driver.prototype.markAsObserved = function (observed) {
     $.fancybox.close();
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.rescaleCanvas = function (cnv, ctx) {
     // Query the various pixel ratios
     let devicePixelRatio = window.devicePixelRatio || 1;
@@ -871,6 +944,9 @@ Driver.prototype.rescaleCanvas = function (cnv, ctx) {
     }
 };
 
+/**
+ * @memberof Driver
+ */
 Driver.prototype.ToggleLineNumbers = function () {
     if (!this.scheduleMode) {
         return;
@@ -884,9 +960,19 @@ Driver.prototype.ToggleLineNumbers = function () {
     this.Refresh();
 };
 
+/**
+ * @memberof Driver
+ */
 Driver._fillObj = {'Monitor': 'orange', 'ToO': '#FF9900', 'SoftToO': '#FFFF99', 'Payback': 'blue', 'Fast-Track': 'blue', 'Service': 'blue', 'Visitor': 'blue', 'Staff': 'blue'};
+
+/**
+ * @memberof Driver
+ */
 Driver._textObj = {'Monitor': 'black', 'ToO': 'black', 'SoftToO': 'black', 'Payback': 'white', 'Fast-Track': 'white', 'Service': 'white', 'Visitor': 'white', 'Staff': 'white'};
 
+/**
+ * @memberof Driver
+ */
 Object.defineProperties(Driver, {
     'telescopeName': {get: function() {
             return this._telescopeName || 'NOT';

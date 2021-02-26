@@ -8,6 +8,10 @@
  */
 "use strict";
 
+/**
+ * @class
+ * @constructor
+ */
 function SkyGraph(_canvas, _context) {
     this.canvas = _canvas;
     this.ctx = _context;
@@ -33,12 +37,18 @@ function SkyGraph(_canvas, _context) {
     this.reload();
 }
 
+/**
+ * @memberof SkyGraph
+ */
 SkyGraph.prototype.startTimer = function () {
     this.timer = setInterval(function () {
         driver.skyGraph.reload();
     }, 5000);  // 5 second reload
 };
 
+/**
+ * @memberof SkyGraph
+ */
 SkyGraph.prototype.stopTimer = function () {
     if (this.timer !== null) {
         clearInterval(this.timer);
@@ -46,6 +56,9 @@ SkyGraph.prototype.stopTimer = function () {
     }
 };
 
+/**
+ * @memberof SkyGraph
+ */
 SkyGraph.prototype.processImage = function () {
     const imgdata = this.ctx.getImageData(0, 0, this.imx, this.imy).data;
     const cx = 0.53 * this.imx;
@@ -70,6 +83,9 @@ SkyGraph.prototype.processImage = function () {
     this.percentClearSky = Math.round(black * 100 / count).toFixed(0);
 };
 
+/**
+ * @memberof SkyGraph
+ */
 SkyGraph.prototype.setup = function (triggered) {
     this.ctx.clearRect(0, 0, this.imx, this.imy);
     this.ctx.drawImage(this.skyImg, 0, 0);
@@ -106,6 +122,9 @@ SkyGraph.prototype.setup = function (triggered) {
     }
 };
 
+/**
+ * @memberof SkyGraph
+ */
 SkyGraph.prototype.setPointing = function (xy) {
     if (xy === null) {
         this.tcsx = null;
@@ -116,14 +135,23 @@ SkyGraph.prototype.setPointing = function (xy) {
     }
 };
 
+/**
+ * @memberof SkyGraph
+ */
 SkyGraph.prototype.reload = function () {
     this.skyImg.src = 'skycam.php';
 };
 
+/**
+ * @memberof SkyGraph
+ */
 SkyGraph.prototype.distort = function (zd) {
     return Math.pow(zd, 1.07);
 };
 
+/**
+ * @memberof SkyGraph
+ */
 SkyGraph.prototype.aatrans = function (altaz) { // convert from alt,az to ix,iy
     const ang = (this.south + 12 + altaz[1] / 15) * Math.PI / 12;   // rotate to display
     const dd = this.cr * this.distort((90 - altaz[0]) / 90);    // zenith distance in pixels
@@ -132,6 +160,9 @@ SkyGraph.prototype.aatrans = function (altaz) { // convert from alt,az to ix,iy
     return [ix, iy];
 };
 
+/**
+ * @memberof SkyGraph
+ */
 SkyGraph.prototype.tcsxhair = function (x, y) {
     this.ctx.strokeStyle = '#9f3';
     this.ctx.lineWidth = 1;
@@ -150,6 +181,9 @@ SkyGraph.prototype.tcsxhair = function (x, y) {
     this.ctx.stroke();
 };
 
+/**
+ * @memberof SkyGraph
+ */
 SkyGraph.prototype.xhair = function (x, y, name, color) {
     //this.ctx.globalCompositeOperation = 'hue';
     this.ctx.strokeStyle = color;
@@ -170,6 +204,9 @@ SkyGraph.prototype.xhair = function (x, y, name, color) {
     //this.ctx.globalCompositeOperation = 'source-over';
 };
 
+/**
+ * @memberof SkyGraph
+ */
 SkyGraph.prototype.drawaxes = function () {
     this.ctx.strokeStyle = "gray";
     for (let i = 90; i > 0; i -= 30) {
@@ -187,6 +224,9 @@ SkyGraph.prototype.drawaxes = function () {
     this.ctx.stroke();
 };
 
+/**
+ * @memberof SkyGraph
+ */
 SkyGraph.prototype.drawtics = function () {
     this.ctx.textBaseline = 'alphabetic';
     this.ctx.textAlign = 'start';
@@ -209,6 +249,9 @@ SkyGraph.prototype.drawtics = function () {
     }
 };
 
+/**
+ * @memberof SkyGraph
+ */
 SkyGraph.prototype.drawpointing = function () {
     if (this.tcsx === null || this.tcsy === null) {
         return;
@@ -216,6 +259,9 @@ SkyGraph.prototype.drawpointing = function () {
     this.tcsxhair(this.tcsx, this.tcsy);
 };
 
+/**
+ * @memberof SkyGraph
+ */
 SkyGraph.prototype.drawstars = function () {
     if (driver.targets.nTargets === 0) {
         return;
@@ -240,6 +286,9 @@ SkyGraph.prototype.drawstars = function () {
     }
 };
 
+/**
+ * @memberof SkyGraph
+ */
 SkyGraph.prototype.display_coords = function (azalt) {
     this.ctx.clearRect(0, this.imy, this.canvasWidth / 2, this.canvasHeight - this.imy);
     if (azalt === null) {
@@ -261,6 +310,9 @@ SkyGraph.prototype.display_coords = function (azalt) {
     }
 };
 
+/**
+ * @memberof SkyGraph
+ */
 SkyGraph.prototype.display_time = function () {
     const tim = new Date();
     this.lst = helper.LM_Sidereal_Time(helper.julianDate(tim));
