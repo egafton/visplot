@@ -6,6 +6,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. See LICENSE.md.
  */
+"use strict";
 
 function Graph(_canvas, _context) {
     this.canvas = _canvas;
@@ -359,7 +360,7 @@ Graph.prototype.drawEphemerides = function () {
      (containing the corresponding HTML5 canvas positions, in (sub)pixels
      */
     this.xaxis = [];
-    for (i = 0; i < driver.night.Nx; i += 1) {
+    for (let i = 0; i < driver.night.Nx; i += 1) {
         this.xaxis.push(this.xstart + this.width * (driver.night.xaxis[i] - driver.night.Sunset) / driver.night.wnight);
     }
     this.ctx.strokeStyle = 'black';
@@ -531,7 +532,7 @@ Graph.prototype.drawBackground = function () {
         this.plotHorizontalLine(this.xstart, this.xstart + this.tickLength, y, [], 1.2);
     }
     // Draw tick marks on the right-hand side (airmass ticks)
-    for (i = 10; i <= 80; i += 5) {
+    for (let i = 10; i <= 80; i += 5) {
         this.plotHorizontalLine(this.xend - this.tickLength, this.xend, this.transformYLocation(i), [], 1.2);
     }
 

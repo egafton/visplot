@@ -6,13 +6,26 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. See LICENSE.md.
  */
+"use strict";
 
 $(document).ready(function () {
-    /** Current index for new errors: 48 */
+    /*
+     * Current index for error IDs: 49
+     */
+    /* Perform the unit tests for slalib */
     sla.performUnitTests();
     
     /* The one and only global variable */
     window.driver = new Driver();
+
+    /* Now that the driver is created, do some async stuff */
+    driver.skyGraph.skyImg.onload = function () {
+        driver.skyGraph.setup(true);
+    };
+    setInterval(function () {
+        driver.skyGraph.display_time();
+    }, 500);   // 0.5 second update times
+
     helper.LogDebug("Drawing plot background...");
     driver.graph.drawBackground();
  

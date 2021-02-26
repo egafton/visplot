@@ -7,6 +7,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. See LICENSE.md.
  */
+"use strict";
 
 /* @constant {Number} Earth equatorial radius (metres) */
 sla.a0 = 6378140;
@@ -98,7 +99,6 @@ sla.htor = sla.d2pi / 24;
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss3.html}
  */
 sla.airmas = function (zd) {
-    "use strict";
     const seczm1 = 1 / (Math.cos(Math.min(1.52, Math.abs(zd)))) - 1;
     return 1 + seczm1 * (0.9981833 - seczm1 * (0.002875 + 0.0008083 * seczm1));
 };
@@ -219,7 +219,6 @@ sla.airmas = function (zd) {
  */
 sla.aop = function (rap, dap, date, dut, elongm, phim, hm, xp, yp,
         tdk, pmb, rh, wl, tlr) {
-    "use strict";
     /* Star-independent parameters */
     const aoprms = sla.aoppa(date, dut, elongm, phim, hm, xp, yp, tdk, pmb, rh,
         wl, tlr);
@@ -303,8 +302,6 @@ sla.aop = function (rap, dap, date, dut, elongm, phim, hm, xp, yp,
  */
 sla.aoppa = function (date, dut, elongm, phim, hm, xp, yp,
         tdk, pmb, rh, wl, tlr) {
-    "use strict";
-
     /* Observer's location corrected for polar motion */
     const cphim = Math.cos(phim);
     const xt = Math.cos(elongm) * cphim;
@@ -360,7 +357,6 @@ sla.aoppa = function (date, dut, elongm, phim, hm, xp, yp,
  * - For more information, see {@link sla.aoppa}.
  */
 sla.aoppat = function (date, aoprms) {
-    "use strict";
     aoprms[13] = sla.gmst(date) + aoprms[12];
     return aoprms;
 };
@@ -442,7 +438,6 @@ sla.aoppat = function (date, aoprms) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss10.html}
  */
 sla.aopqk = function (rap, dap, aoprms) {
-    "use strict";
     const zbreak = 0.242535625;
     /* Sin, cos of latitude */
     const sphi = aoprms[1];
@@ -577,7 +572,6 @@ sla.aopqk = function (rap, dap, aoprms) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss11.html}
  */
 sla.atmdsp = function (tdk, pmb, rh, wl1, a1, b1, wl2) {
-    "use strict";
     /* Check for radio wavelengths */
     if (wl1 > 100 || wl2 > 100) {
         /* Radio: no dispersion */
@@ -649,7 +643,6 @@ sla.atmdsp = function (tdk, pmb, rh, wl1, a1, b1, wl2) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss20.html}
  */
 sla.cldj = function (iy, im, id) {
-    "use strict";
     if (iy < -4699) {
         throw new RangeError("Bad year (j=1).");
     }
@@ -685,7 +678,6 @@ sla.cldj = function (iy, im, id) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss45.html}
  */
 sla.djcal = function (ndp, djm) {
-    "use strict";
     /* Validate. */
     if (djm <= -2395520 || djm >= 1e9) {
         throw new RangeError("Date out of range (j=-1).");
@@ -734,7 +726,6 @@ sla.djcal = function (ndp, djm) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss46.html}
  */
 sla.djcl = function (djm) {
-    "use strict";
     /* Check if date is acceptable. */
     if (djm <= -2395520 || djm >= 1e9) {
         throw new RangeError("Date out of range (j=-1).");
@@ -786,7 +777,6 @@ sla.djcl = function (djm) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss31.html}
  */
 sla.dat = function (utc) {
-    "use strict";
     /* Add new code here on each occasion that a  *
        leap second is announced, and update the   *
        preamble comments appropriately. */
@@ -933,7 +923,6 @@ sla.dat = function (utc) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss32.html}
  */
 sla.dav2m = function (axvec) {
-    "use strict";
     /* Rotation angle - magnitude of axial vector - and functions */
     let x = axvec[0];
     let y = axvec[1];
@@ -972,7 +961,6 @@ sla.dav2m = function (axvec) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss36.html}
  */
 sla.dcc2s = function (v) {
-    "use strict";
     const x = v[0];
     const y = v[1];
     const z = v[2];
@@ -1018,7 +1006,6 @@ sla.dcc2s = function (v) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss40.html}
  */
 sla.de2h = function (ha, dec, phi) {
-    "use strict";
     const sh = Math.sin(ha);
     const ch = Math.cos(ha);
     const sd = Math.sin(dec);
@@ -1070,7 +1057,6 @@ sla.de2h = function (ha, dec, phi) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss41.html}
  */
 sla.deuler = function (order, phi, theta, psi) {
-    "use strict";
     /* Initialize result matrix */
     let result = [
         [1, 0, 0],
@@ -1171,7 +1157,6 @@ sla.deuler = function (order, phi, theta, psi) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss49.html}
  */
 sla.dmoon = function (date) {
-    "use strict";
     /* Moon's mean longitude */
     let elp0 = 270.434164;
     let elp1 = 481267.8831;
@@ -1458,7 +1443,6 @@ sla.dmoon = function (date) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss51.html}
  */
 sla.dmxv = function (dm, va) {
-    "use strict";
     const vb = [];
     for (let i = 0; i < 3; i += 1) {
         let w = 0;
@@ -1491,7 +1475,6 @@ sla.dmxv = function (dm, va) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss39.html}
  */
 sla.dd2tf = function (ndp, days) {
-    "use strict";
     let rs = 1;
     for (let n = 0; n < ndp; n += 1) {
         rs *= 10;
@@ -1544,7 +1527,6 @@ sla.dd2tf = function (ndp, days) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss53.html}
  */
 sla.dr2af = function (ndp, angle) {
-    "use strict";
     const ret = sla.dd2tf(ndp, angle * sla.f);
     return {
         "sign": ret.sign,
@@ -1574,7 +1556,6 @@ sla.dr2af = function (ndp, angle) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss54.html}
  */
 sla.dr2tf = function (ndp, angle) {
-    "use strict";
     return sla.dd2tf(ndp, angle / sla.t2r);
 };
 
@@ -1586,7 +1567,6 @@ sla.dr2tf = function (ndp, angle) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss55.html}
  */
 sla.drange = function (angle) {
-    "use strict";
     let ret = angle % sla.d2pi;
     if (Math.abs(ret) >= Math.PI) {
         ret -= Math.sign(angle) * sla.d2pi;
@@ -1602,7 +1582,6 @@ sla.drange = function (angle) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss56.html}
  */
 sla.dranrm = function (angle) {
-    "use strict";
     let ret = angle % sla.d2pi;
     if (ret < 0) {
         ret = ret + sla.d2pi;
@@ -1623,7 +1602,6 @@ sla.dranrm = function (angle) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss62.html}
  */
 sla.dtf2d = function (ihour, imin, sec) {
-    "use strict";
     if (sec < 0 || sec >= 60) {
         throw new RangeError("SEC outside range 0-59.999... (j=3).");
     }
@@ -1648,7 +1626,6 @@ sla.dtf2d = function (ihour, imin, sec) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss63.html}
  */
 sla.dtf2r = function (ihour, imin, sec) {
-    "use strict";
     /* Convert to turns then radians */
     return sla.dtf2d(ihour, imin, sec) * sla.t2r;
 };
@@ -1666,7 +1643,6 @@ sla.dtf2r = function (ihour, imin, sec) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss29.html}
  */
 sla.daf2r = function (ideg, iamin, asec) {
-    "use strict";
     /* Validate arcsec, arcmin, deg */
     if (asec < 0 || asec >= 60) {
         throw new RangeError("ASEC outside of range 0-59.999... (j=3).");
@@ -1699,7 +1675,6 @@ sla.daf2r = function (ideg, iamin, asec) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss68.html}
  */
 sla.dtt = function (utc) {
-    "use strict";
     return 32.184 + sla.dat(utc);
 };
 
@@ -1714,7 +1689,6 @@ sla.dtt = function (utc) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss81.html}
  */
 sla.epb2d = function (epb) {
-    "use strict";
     return 15019.81352 + (epb - 1900.0) * 365.242198781;
 };
 
@@ -1737,7 +1711,6 @@ sla.epb2d = function (epb) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss87.html}
  */
 sla.eqeqx = function (date) {
-    "use strict";
     const t = (date - 51544.5) / 36525;
     const om = sla.das2r * (450160.280 + (-5 * sla.t2as - 482890.539 +
             (7.455 + 0.008 * t) * t) * t);
@@ -1795,7 +1768,6 @@ sla.eqeqx = function (date) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss94.html}
  */
 sla.fk45z = function (r1950, d1950, bepoch) {
-    "use strict";
     const pmf = 100.0 * 60.0 * 60.0 * 360.0 / sla.d2pi;
     const r0 = sla.dcs2c(r1950, d1950);
 
@@ -1894,7 +1866,6 @@ sla.fk45z = function (r1950, d1950, bepoch) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss93.html}
  */
 sla.fk425 = function (r1950, d1950, dr1950, dd1950, p1950, v1950) {
-    "use strict";
     /* Radians per year to arcsec per century */
     let pmf = 100.0 * 60.0 * 60.0 * 360.0 / sla.d2pi;
 
@@ -2011,7 +1982,6 @@ sla.fk425 = function (r1950, d1950, dr1950, dd1950, p1950, v1950) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss104.html}
  */
 sla.gmst = function (ut1) {
-    "use strict";
     const tu = (ut1 - 51544.5) / 36525;
     return sla.dranrm((ut1 % 1) * sla.d2pi + (24110.54841 +
             (8640184.812866 + (0.093104 - 6.2e-6 * tu) * tu) * tu) * sla.ds2r);
@@ -2042,7 +2012,6 @@ sla.gmst = function (ut1) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss105.html}
  */
 sla.gmsta = function (date, ut) {
-    "use strict";
     let d1;
     let d2;
     if (date < ut) {
@@ -2069,7 +2038,6 @@ sla.gmsta = function (date, ut) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss103.html}
  */
 sla.geoc = function (p, h) {
-    "use strict";
     const sp = Math.sin(p);
     const cp = Math.cos(p);
     const c = 1 / Math.sqrt(cp * cp + sla.sb * sp * sp);
@@ -2094,7 +2062,6 @@ sla.geoc = function (p, h) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss57.html}
  */
 sla.ds2c6 = function (a, b, r, ad, bd, rd) {
-    "use strict";
     /* Useful functions */
     const sa = Math.sin(a);
     const ca = Math.cos(a);
@@ -2135,7 +2102,6 @@ sla.ds2c6 = function (a, b, r, ad, bd, rd) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss44.html}
  */
 sla.dimxv = function (dm, va) {
-    "use strict";
     const vb = [];
     /* Inverse of matrix DM * vector VA -> vector VW */
     for (let i = 0; i < 3; i += 1) {
@@ -2163,7 +2129,6 @@ sla.dimxv = function (dm, va) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss35.html}
  */
 sla.dc62s = function (v) {
-    "use strict";
     /* Components of position/velocity vector */
     let x = v[0];
     let y = v[1];
@@ -2267,7 +2232,6 @@ sla.dc62s = function (v) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss96.html}
  */
 sla.fk52h = function (r5, d5, dr5, dd5) {
-    "use strict";
     /* FK5 to Hipparcos orientation and spin (radians, radians/year) */
     const epx = -19.9e-3 * sla.das2r;
     const epy = -9.1e-3 * sla.das2r;
@@ -2338,7 +2302,6 @@ sla.fk52h = function (r5, d5, dr5, dd5) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss108.html}
  */
 sla.h2fk5 = function (rh, dh, drh, ddh) {
-    "use strict";
     /* FK5 to Hipparcos orientation and spin (radians, radians/year) */
     const epx = -19.9e-3 * sla.das2r;
     const epy = -9.1e-3 * sla.das2r;
@@ -2399,7 +2362,6 @@ sla.h2fk5 = function (rh, dh, drh, ddh) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss122.html}
  */
 sla.nut = function (date) {
-    "use strict";
     const ret = sla.nutc(date);
     return sla.deuler("XZX", ret.eps0, -ret.dpsi, -(ret.eps0 + ret.deps));
 };
@@ -2431,7 +2393,6 @@ sla.nut = function (date) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss123.html}
  */
 sla.nutc = function (date) {
-    "use strict";
     /* Number of terms in the nutation model */
     const nterms = 194;
 
@@ -2583,7 +2544,6 @@ sla.nutc = function (date) {
  */
 sla.el2ue = function (date, jform, epoch, orbinc, anode, perih,
         aorq, e, aorl, dm) {
-    "use strict";
     if (jform < 1 || jform > 3) {
         throw new RangeError("Illegal JFORM (j=-1).");
     }
@@ -2741,7 +2701,6 @@ sla.el2ue = function (date, jform, epoch, orbinc, anode, perih,
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss180.html}
  */
 sla.ue2pv = function (date, u) {
-    "use strict";
     /* Unpack the parameters. */
     let test = 1e-13;
     let nitmax = 25;
@@ -2908,7 +2867,6 @@ sla.ue2pv = function (date, u) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss148.html}
  */
 sla.pv2ue = function (pv, date, pmass) {
-    "use strict";
     const rmin = 1e-3;
     const vmin = 1e-3;
 
@@ -3025,7 +2983,6 @@ sla.pv2ue = function (pv, date, pmass) {
  */
 sla.planel = function (date, jform, epoch, orbinc, anode, perih,
         aorq, e, aorl, dm) {
-    "use strict";
     return sla.ue2pv(date, sla.el2ue(date, jform, epoch, orbinc, anode, perih,
             aorq, e, aorl, dm));
 };
@@ -3119,7 +3076,6 @@ sla.planel = function (date, jform, epoch, orbinc, anode, perih,
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss137.html}
  */
 sla.planet = function (date, np) {
-    "use strict";
     if (np < 1 || np > 9) {
         throw new RangeError("Unknown planet given as argument to planet.");
     }
@@ -3289,7 +3245,6 @@ sla.planet = function (date, np) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss149.html}
  */
 sla.pvobs = function (p, h, stl) {
-    "use strict";
     let ret = sla.geoc(p, h);
     /* Functions of ST */
     let s = Math.sin(stl);
@@ -3333,7 +3288,6 @@ sla.pvobs = function (p, h, stl) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss61.html}
  */
 sla.dt = function (epoch) {
-    "use strict";
     /* Centuries since 1800 */
     let t = (epoch - 1800) / 100;
     /* Select model */
@@ -3363,7 +3317,6 @@ sla.dt = function (epoch) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss50.html}
  */
 sla.dmxm = function (a, b) {
-    "use strict";
     let c = [
         [0, 0, 0],
         [0, 0, 0],
@@ -3395,7 +3348,6 @@ sla.dmxm = function (a, b) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss83.html}
  */
 sla.epj = function (date) {
-    "use strict";
     return 2000 + (date - 51544.5) / 365.25;
 };
 
@@ -3429,7 +3381,6 @@ sla.epj = function (date) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss143.html}
  */
 sla.prec = function (ep0, ep1) {
-    "use strict";
     const t0 = (ep0 - 2000) / 100;
     const t = (ep1 - ep0) / 100;
     const tas2r = t * sla.das2r;
@@ -3457,7 +3408,6 @@ sla.prec = function (ep0, ep1) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss146.html}
  */
 sla.prenut = function (epoch, date) {
-    "use strict";
     return sla.dmxm(sla.nut(date), sla.prec(epoch, sla.epj(date)));
 };
 
@@ -3510,7 +3460,6 @@ sla.prenut = function (epoch, date) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss155.html}
  */
 sla.rdplan = function (date, np, elong, phi) {
-    "use strict";
     const eqrau = [
         696000, 2439.7, 6051.9, 1738, 3397, 71492,
         60268, 25559, 24764, 1151
@@ -3631,7 +3580,6 @@ sla.rdplan = function (date, np, elong, phi) {
  *                  [2] R * rate the refractive index is changing at R
  */
 sla.atmt = function (r0, t0, alpha, gamm2, delm2, c1, c2, c3, c4, c5, c6, r) {
-    "use strict";
     const t = Math.max(Math.min(t0 - alpha * (r - r0), 320), 100);
     const tt0 = t / t0;
     const tt0gm2 = Math.pow(tt0, gamm2);
@@ -3651,7 +3599,6 @@ sla.atmt = function (r0, t0, alpha, gamm2, delm2, c1, c2, c3, c4, c5, c6, r) {
  *                  [1] R * rate the refractive index is changing at R
  */
 sla.atms = function (rt, tt, dnt, gamal, r) {
-    "use strict";
     const b = gamal / tt;
     const w = (dnt - 1) * Math.exp(-b * (r - rt));
     return {
@@ -3754,7 +3701,6 @@ sla.atms = function (rt, tt, dnt, gamal, r) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss158.html}
  */
 sla.refro = function (zobs, hm, tdk, pmb, rh, wl, phi, tlr, eps) {
-    "use strict";
     /* 93 degrees in radians */
     const d93 = 1.623156204;
     /* Universal gas constant */
@@ -4051,7 +3997,6 @@ sla.refro = function (zobs, hm, tdk, pmb, rh, wl, phi, tlr, eps) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss156.html}
  */
 sla.refco = function (hm, tdk, pmb, rh, wl, phi, tlr, eps) {
-    "use strict";
     /* Sample zenith distances: arctan(1) and arctan(4) */
     let atn1 = 0.7853981633974483;
     let atn4 = 1.325817663668033;
@@ -4131,7 +4076,6 @@ sla.refco = function (hm, tdk, pmb, rh, wl, phi, tlr, eps) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss160.html}
  */
 sla.refz = function (zu, refa, refb) {
-    "use strict";
     /* @constant {Number} Largest usable ZD (deg) */
     let d93 = 93;
 
@@ -4218,7 +4162,6 @@ sla.refz = function (zu, refa, refb) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss91.html}
  */
 sla.evp = function (date, deqx) {
-    "use strict";
     /* Control parameter IDEQ, and time arguments */
     let ideq = 0;
     if (deqx > 0) {
@@ -4458,7 +4401,6 @@ sla.evp = function (date, deqx) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss71.html}
  */
 sla.dvn = function (v) {
-    "use strict";
     let w1 = 0;
     let w2;
     for (let i = 0; i < 3; i += 1) {
@@ -4522,7 +4464,6 @@ sla.dvn = function (v) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss116.html}
  */
 sla.mappa = function (eq, date) {
-    "use strict";
     const amprms = [];
 
     /* Time interval for proper motion correction */
@@ -4599,7 +4540,6 @@ sla.mappa = function (eq, date) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss115.html}
  */
 sla.map = function (rm, dm, pr, pd, px, rv, eq, date) {
-    "use strict";
     /* Star-independent parameters */
     const amprms = sla.mappa(eq, date);
     /* Mean to apparent */
@@ -4661,7 +4601,6 @@ sla.map = function (rm, dm, pr, pd, px, rv, eq, date) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss141.html}
  */
 sla.polmo = function (elongm, phim, xp, yp) {
-    "use strict";
     /* Site mean longitude and mean geodetic latitude as a Cartesian vector */
     let sel = Math.sin(elongm);
     let cel = Math.cos(elongm);
@@ -4733,7 +4672,6 @@ sla.polmo = function (elongm, phim, xp, yp) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss38.html}
  */
 sla.dcs2c = function (a, b) {
-    "use strict";
     return [
         Math.cos(a) * Math.cos(b),
         Math.sin(a) * Math.cos(b),
@@ -4750,7 +4688,6 @@ sla.dcs2c = function (a, b) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss70.html}
  */
 sla.dvdv = function (va, vb) {
-    "use strict";
     return va[0] * vb[0] + va[1] * vb[1] + va[2] * vb[2];
 };
 
@@ -4795,7 +4732,6 @@ sla.dvdv = function (va, vb) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss118.html}
  */
 sla.mapqkz = function (rm, dm, amprms) {
-    "use strict";
     /* Unpack scalar and vector parameters */
     const gr2e = amprms[7];
     const ab1 = amprms[11];
@@ -4883,7 +4819,6 @@ sla.mapqkz = function (rm, dm, amprms) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss117.html}
  */
 sla.mapqk = function (rm, dm, pr, pd, px, rv, amprms) {
-    "use strict";
     /* Unpack scalar and vector parameters */
     const pmt = amprms[0];
     const gr2e = amprms[7];
@@ -4959,7 +4894,6 @@ sla.mapqk = function (rm, dm, pr, pd, px, rv, amprms) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss72.html}
  */
 sla.dvxv = function (va, vb) {
-    "use strict";
     /* Form the vector product VA cross VB */
     return [
         va[1] * vb[2] - va[2] * vb[1],
@@ -4980,7 +4914,6 @@ sla.dvxv = function (va, vb) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss60.html}
  */
 sla.dsepv = function (v1, v2) {
-    "use strict";
     /* Modulus of cross product = sine multiplied by the two moduli. */
     const v1xv2 = sla.dvxv(v1, v2);
     const ret = sla.dvn(v1xv2);
@@ -5008,7 +4941,6 @@ sla.dsepv = function (v1, v2) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss59.html}
  */
 sla.dsep = function (a1, b1, a2, b2) {
-    "use strict";
     /* Convert coordinates from spherical to Cartesian. */
     const v1 = sla.dcs2c(a1, b1);
     const v2 = sla.dcs2c(a2, b2);
@@ -5029,7 +4961,6 @@ sla.dsep = function (a1, b1, a2, b2) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss76.html}
  */
 sla.ecmat = function (date) {
-    "use strict";
     /* Interval between basic epoch J2000.0 and current epoch (JC) */
     const t = (date - 51544.5) / 36525;
 
@@ -5053,7 +4984,6 @@ sla.ecmat = function (date) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss86.html}
  */
 sla.eqecl = function (dr, dd, date) {
-    "use strict";
     /* Spherical to Cartesian */
     let v1 = sla.dcs2c(dr, dd);
 
@@ -5100,7 +5030,6 @@ sla.eqecl = function (dr, dd, date) {
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss188.html}
  */
 sla.zd = function (ha, dec, phi) {
-    "use strict";
     const sh = Math.sin(ha);
     const ch = Math.cos(ha);
     const sd = Math.sin(dec);
@@ -5124,7 +5053,6 @@ sla.zd = function (ha, dec, phi) {
  * @param {Object} ref - Reference value.
  */
 function assertEqual(val, ref) {
-    "use strict";
     if (val === ref) {
         return;
     }
@@ -5147,7 +5075,6 @@ function assertEqual(val, ref) {
  *                 the desired precision.
  */
 function assertAlmostEqual(val, ref, tol) {
-    "use strict";
     if (Number.isNaN(val)) {
         throw new TypeError("Assertion failed. NaN value passed.");
     }
@@ -5164,7 +5091,6 @@ function assertAlmostEqual(val, ref, tol) {
  *              magnitude.
  */
 sla.performUnitTestsWrapped = function () {
-    "use strict";
     let ret;
 
     /* sla_AIRMAS */
@@ -5645,7 +5571,6 @@ sla.performUnitTestsWrapped = function () {
  *              and informs the user if anything goes wrong.
  */
 sla.performUnitTests = function () {
-    "use strict";
     try {
         helper.LogEntry("Performing slalib unit tests...");
         sla.performUnitTestsWrapped();

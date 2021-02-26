@@ -6,6 +6,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. See LICENSE.md.
  */
+"use strict";
 
 function TargetList() {
     this.nTargets = 0;
@@ -75,22 +76,29 @@ function Target(k, obj) {
     this.ObservedStartTime = null;
     this.ObservedEndTime = null;
     this.ObservedTotalTime = null;
-    this.ReconstructedInput = this.Name + ' ' + this.inputRA + ' ' + this.inputDec + ' ' + this.Epoch + ' ' + this.ExptimeSeconds + ' ' + this.ProjectNumber + ' ' + this.Constraints + ' ' + this.FullType;
+    this.OBData = obj.obdata;
+    if (obj.obdata !== Driver.defaultOBInfo) {
+        let ob_arr = this.OBData.split(":");
+        this.BacklinkToOBQueue = 'http://www.not.iac.es/intranot/ob/ob_update.php?period=' + parseInt(this.ProjectNumber.substring(0, 2)) + '&propID=' + parseInt(this.ProjectNumber.substring(3)) + '&groupID=' + ob_arr[2] + '&blockID=' + ob_arr[3];
+        this.ExtraInfo = ob_arr[0] + "/" + ob_arr[1];
+    } else {
+        this.BacklinkToOBQueue = null;
+        this.ExtraInfo = null;
+    }
+    this.ReconstructedInput = this.Name + ' ' + this.inputRA + ' ' + this.inputDec + ' ' + this.Epoch + ' ' + this.ExptimeSeconds + ' ' + this.ProjectNumber + ' ' + this.Constraints + ' ' + this.FullType + ' ' + this.OBData;
     this.ReconstructedMinimumInput = this.Name + ' ' + this.inputRA + ' ' + this.inputDec + ' ' + this.Epoch;
-    this.ExtraInfo = null;
-    this.BacklinkToOBQueue = null;
     this.Comments = null;
 }
 
 TargetList.prototype.targetStringToJSON = function (line) {
     // Parse an input string into a Target object
     let night = driver.night;
-    dat = line.split(/\s+/);
+    let dat = line.split(/\s+/);
     let obj = {};
     obj.name = dat[0];
     obj.airmass = parseFloat(dat[10]);
     if (isNaN(obj.airmass)) {
-        uts = helper.ExtractUTRange(dat[10]);
+        let uts = helper.ExtractUTRange(dat[10]);
         obj.UTstart = Math.max(night.ENauTwilight, uts[0]);
         obj.UTend = Math.min(night.MNauTwilight, uts[1]);
         obj.airmass = 9.9;
@@ -110,9 +118,10 @@ TargetList.prototype.targetStringToJSON = function (line) {
     obj.epoch = parseFloat(dat[7]);
     obj.line = Array();
     obj.type = dat[11];
+    obj.obdata = dat[12];
     obj.constraints = dat[10];
-    rax = dat[3].split('/');
-    decx = dat[6]. split('/');
+    let rax = dat[3].split('/');
+    let decx = dat[6]. split('/');
     obj.ra = `${dat[1]}:${dat[2]}:${rax[0]}`;
     obj.dec = `${dat[4]}:${dat[5]}:${decx[0]}`;
     obj.inputRA = obj.ra.replaceAll(":", " ");
@@ -162,11 +171,11 @@ TargetList.prototype.targetStringToJSON = function (line) {
     let retap, retob;
     let imax = 0;
     let altmax = 0;
-    for (i=0; i<night.Nx; i+=1) {
+    for (let i=0; i<night.Nx; i+=1) {
         retap = sla.mapqk(ra, dec, pmra, pmdec, 0, 0, night.amprms[i]);
         retob = sla.aopqk(retap.ra, retap.da, night.aoprms[i]);
         // Approximate refracted alt
-        ell = 0.5*Math.PI - sla.refz(retob.zob, night.ref.refa, night.ref.refb);
+        let ell = 0.5*Math.PI - sla.refz(retob.zob, night.ref.refa, night.ref.refb);
         if (ell > altmax) {
             imax = i;
             altmax = ell;
@@ -186,7 +195,7 @@ TargetList.prototype.setTargets = function (obj) {
     this.resetWarnings();
     this.processOfflineTime();
     for (let i = 0; i < this.nTargets; i += 1) {
-        this.Targets[i] = this.processTarget(i, res[i], true);
+        this.Targets[i] = this.processTarget(i, res[i]);
     }
     this.warnUnobservable();
     driver.graph.setTargetsSize(this.nTargets);
@@ -202,13 +211,13 @@ TargetList.prototype.addTargets = function (obj) {
     this.resetWarnings();
     this.processOfflineTime();
     for (let i = oldNobjects; i < this.nTargets; i += 1) {
-        this.Targets[i] = this.processTarget(i, res[i], false);
+        this.Targets[i] = this.processTarget(i, res[i - oldNobjects]);
     }
     this.warnUnobservable();
     driver.graph.setTargetsSize(this.nTargets);
 };
 
-TargetList.prototype.processTarget = function (i, obj, checkOB) {
+TargetList.prototype.processTarget = function (i, obj) {
     const target = new Target(i, obj);
     target.preCompute();
     target.LabelX = target.ZenithTime;
@@ -218,11 +227,6 @@ TargetList.prototype.processTarget = function (i, obj, checkOB) {
         target.LabelX = driver.night.MNauTwilight;
     }
     target.LabelY = target.getAltitude(target.LabelX);
-    //if (checkOB && (driver.obLinks.length === this.nTargets)) {
-    if (checkOB && (i < driver.obLinks.length)) {
-        target.BacklinkToOBQueue = driver.obLinks[i];
-        target.ExtraInfo = driver.obExtraInfo[i];
-    }
     target.xlab = driver.graph.transformXLocation(target.LabelX);
     target.ylab = driver.graph.transformYLocation(target.LabelY);
     return target;
@@ -805,7 +809,7 @@ TargetList.prototype.prepareScheduleForUpdate = function () {
         let now = new Date();
         helper.LogEntry('Current time: ' + now.toUTCString());
         if (now > driver.night.DateSunset && now < driver.night.DateSunrise) {
-            helper.LogWarning('Attention: the night has already started, so we will only reschedule after the current time. The previously observed objects will NOT be affected, but objects scheduled in the past that have not yet been observed may only be rescheduled in the future, if there is enough free time.');
+            helper.LogWarning('Attention: the night has already started, so we will only reschedule after the current time. The previously observed objects will NOT be affected, but objects scheduled in the past that have not yet been observed may be rescheduled in the future, if there is enough free time.');
             this.StartingAt = driver.night.Sunset + (now - driver.night.DateSunset) / 1000 / 86400;
         } else {
             helper.LogWarning('We are not currently in the middle of the observing night. Scheduling as usual...');
@@ -870,14 +874,16 @@ TargetList.prototype.doSchedule = function (start, reorder) {
         scheduleorder = this.schedule_inOrderOfSetting(start);
         this.optimize_interchangeNeighbours(scheduleorder);
     }
-    this.optimize_moveToLaterTimesIfRising(scheduleorder, !maintainorder);
-    if (!maintainorder) {
-        this.optimize_interchangeNeighbours(scheduleorder);
-    }
     if (reorder) {
+        this.optimize_moveToLaterTimesIfRising(scheduleorder, !maintainorder);
+        if (!maintainorder) {
+            this.optimize_interchangeNeighbours(scheduleorder);
+        }
         this.reorder_accordingToScheduling(scheduleorder);
+        this.display_scheduleStatistics();
+    } else {
+        this.scheduleAndOptimize_givenOrder(scheduleorder);
     }
-    this.display_scheduleStatistics();
 };
 
 TargetList.prototype.plan = function () {
@@ -917,7 +923,7 @@ TargetList.prototype.validateAndFormatTargets = function () {
     this.TargetsLines = [];
     this.FormattedLines = [];
     // Determine maximum width of the various fields
-    this.MaxLen = {Name: 0, RA: 0, Dec: 0, Exp: 0, AM: 0, Type: 0, TCSpmra: 0, TCSpmdec: 0};
+    this.MaxLen = {Name: 0, RA: 0, Dec: 0, Exp: 0, AM: 0, Type: 0, OBData: 0, TCSpmra: 0, TCSpmdec: 0};
     this.BadWolfStart = [];
     this.BadWolfEnd = [];
     for (let i = 0; i < lines.length; i += 1) {
@@ -951,12 +957,15 @@ TargetList.prototype.validateAndFormatTargets = function () {
         if (words[11].length > this.MaxLen.Type) {
             this.MaxLen.Type = words[11].length;
         }
+        if (words[12].length > this.MaxLen.OBData) {
+            this.MaxLen.OBData = words[12].length;
+        }
         let j;
-        j = (parseInt(words[13]) + '').length + (words[13] < 0 && words[13] > -1 ? 1 : 0);
+        j = (parseInt(words[14]) + '').length + (words[14] < 0 && words[14] > -1 ? 1 : 0);
         if (j > this.MaxLen.TCSpmra) {
             this.MaxLen.TCSpmra = j;
         }
-        j = (parseInt(words[15]) + '').length + (words[15] < 0 && words[15] > -1 ? 1 : 0);
+        j = (parseInt(words[16]) + '').length + (words[16] < 0 && words[16] > -1 ? 1 : 0);
         if (j > this.MaxLen.TCSpmdec) {
             this.MaxLen.TCSpmdec = j;
         }
@@ -964,7 +973,7 @@ TargetList.prototype.validateAndFormatTargets = function () {
     }
     this.InputStats = {Empty: 0, Commented: 0, Actual: 0};
     this.TCSlines = [];
-    for (i = 0; i < this.FormattedLines.length; i += 1) {
+    for (let i = 0; i < this.FormattedLines.length; i += 1) {
         if (this.FormattedLines[i] === null) {
             this.VisibleLines.push('');
             this.InputStats.Empty += 1;
@@ -984,7 +993,8 @@ TargetList.prototype.validateAndFormatTargets = function () {
             helper.pad(words[8], this.MaxLen.Exp, true, ' '),
             helper.pad(words[9], 6, false, ' '),
             helper.pad(words[10], this.MaxLen.AM, false, ' '),
-            helper.pad(words[11], this.MaxLen.Type, false, ' ')
+            helper.pad(words[11], this.MaxLen.Type, false, ' '),
+            helper.pad(words[12], this.MaxLen.OBData, false, ' ')
         ];
         this.VisibleLines.push(padded.join(" "));
         if (words[0][0] == '#') {
@@ -995,13 +1005,13 @@ TargetList.prototype.validateAndFormatTargets = function () {
             this.TCSlines.push(helper.pad(words[0].replace(/[^A-Za-z0-9\_\+\-]+/g, ''), this.MaxLen.Name, false, ' ') + ' ' +
                     helper.padTwoDigits(words[1]) + ':' +
                     helper.padTwoDigits(words[2]) + ':' +
-                    helper.pad(parseFloat(words[12]).toFixed(2).toString(), 5, true, '0') + ' ' +
+                    helper.pad(parseFloat(words[13]).toFixed(2).toString(), 5, true, '0') + ' ' +
                     helper.pad(helper.padTwoDigits(words[4]), 3, true, ' ') + ':' +
                     helper.pad(words[5], 2, true, '0') + ':' +
-                    helper.pad(parseFloat(words[14]).toFixed(1).toString(), 4, true, '0') + ' ' +
+                    helper.pad(parseFloat(words[15]).toFixed(1).toString(), 4, true, '0') + ' ' +
                     helper.pad(words[7], 4, ' ') + ' ' +
-                    helper.pad(parseFloat(words[13]).toFixed(2).toString(), this.MaxLen.TCSpmra + 3, true, ' ') + ' ' +
-                    helper.pad(parseFloat(words[15]).toFixed(2).toString(), this.MaxLen.TCSpmdec + 3, true, ' ') + ' ' +
+                    helper.pad(parseFloat(words[14]).toFixed(2).toString(), this.MaxLen.TCSpmra + 3, true, ' ') + ' ' +
+                    helper.pad(parseFloat(words[16]).toFixed(2).toString(), this.MaxLen.TCSpmdec + 3, true, ' ') + ' ' +
                     '0.0');
             this.InputStats.Actual += 1;
             this.TargetsLines.push(padded.join(" "));
@@ -1087,7 +1097,7 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
                 this.BadWolfEnd.push(UTr[1]);
             }
         }
-        return [words[0], '', '', '', '', '', '', '', '*', '', words[q], ''];
+        return [words[0], '', '', '', '', '', '', '', '*', '', words[q], '', ''];
     }
     if (words.length == 6 && words[2].indexOf(':') == -1) {
         words = ['Object' + linenumber].concat(words);
@@ -1121,21 +1131,23 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
         return false;
     }
     if (words.length === 11 && (parseFloat(words[7]) == 2000 || parseFloat(words[7]) == 1950) && !helper.notFloat(words[8]) && !helper.notFloat(words[9]) && !helper.notFloat(words[10])) {
-        words = [words[0], words[1], words[2], words[3] + (parseFloat(words[8]) !== 0 ? '/' + words[8] : ''), words[4], words[5], words[6] + (parseFloat(words[9]) !== 0 ? '/' + words[9] : ''), words[7]].concat([Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType]);
+        words = [words[0], words[1], words[2], words[3] + (parseFloat(words[8]) !== 0 ? '/' + words[8] : ''), words[4], words[5], words[6] + (parseFloat(words[9]) !== 0 ? '/' + words[9] : ''), words[7]].concat([Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo]);
     }
     if (words.length == 7) {
-        words = words.concat([Driver.defaultEpoch, Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType]);
+        words = words.concat([Driver.defaultEpoch, Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo]);
     } else if (words.length == 8) {
-        words = words.concat([Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType]);
+        words = words.concat([Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo]);
     } else if (words.length == 9) {
-        words = words.concat([Driver.defaultProject, Driver.defaultAM, Driver.defaultType]);
+        words = words.concat([Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo]);
     } else if (words.length == 10) {
-        words = words.concat([Driver.defaultAM, Driver.defaultType]);
+        words = words.concat([Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo]);
     } else if (words.length == 11) {
-        words = words.concat([Driver.defaultType]);
+        words = words.concat([Driver.defaultType, Driver.defaultOBInfo]);
+    } else if (words.length == 12) {
+        words = words.concat([Driver.defaultOBInfo]);
     }
-    // Sanity check: there must now be exactly 12 entries in the array
-    if (words.length !== 12) {
+    // Sanity check: there must now be exactly 13 entries in the array
+    if (words.length !== 13) {
         helper.LogError('Error 13: Incorrect syntax: the number of entries on line #' + linenumber + ' is incorrect!');
         helper.LogError(words);
         return false;
@@ -1171,18 +1183,18 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
                 return false;
             }
         }
-        words[12] = parseFloat(rax[0]);
-        words[13] = parseFloat(rax[1]);
-        words[13] = Math.max(-1000, Math.min(1000, words[13]));
+        words[13] = parseFloat(rax[0]);
+        words[14] = parseFloat(rax[1]);
+        words[14] = Math.max(-1000, Math.min(1000, words[13]));
     } else if (helper.notFloat(words[3])) {
         helper.LogError('Error 19: Incorrect syntax: non-integer value detected in [RA] on line #' + linenumber + '!');
         return false;
     } else {
-        words[12] = parseFloat(words[3]);
-        words[13] = 0;
+        words[13] = parseFloat(words[3]);
+        words[14] = 0;
     }
     /* RA seconds, integer part between 0 and 59 */
-    if (parseInt(words[12]) < 0 || parseInt(words[12]) > 59) {
+    if (parseInt(words[13]) < 0 || parseInt(words[13]) > 59) {
         helper.LogError('Error 20: Incorrect syntax: the integer part of "seconds" in [RA] must be a number between 0 and 59 on line #' + linenumber + '!');
         return false;
     }
@@ -1215,18 +1227,18 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
                 return false;
             }
         }
-        words[14] = parseFloat(rax[0]);
-        words[15] = parseFloat(rax[1]);
-        words[15] = Math.max(-1000, Math.min(1000, words[15]));
+        words[15] = parseFloat(rax[0]);
+        words[16] = parseFloat(rax[1]);
+        words[16] = Math.max(-1000, Math.min(1000, words[15]));
     } else if (helper.notFloat(words[6])) {
         helper.LogError('Error 26: Incorrect syntax: non-integer value detected in [DEC] on line #' + linenumber + '!');
         return false;
     } else {
-        words[14] = parseFloat(words[6]);
-        words[15] = 0;
+        words[15] = parseFloat(words[6]);
+        words[16] = 0;
     }
     /* Dec arcseconds, integer part between 0 and 59 */
-    if (parseInt(words[14]) < 0 || parseInt(words[14]) > 59) {
+    if (parseInt(words[15]) < 0 || parseInt(words[15]) > 59) {
         helper.LogError('Error 27: Incorrect syntax: the integer part of "arcseconds" in [Dec] must be a number between 0 and 59 on line #' + linenumber + '!');
         return false;
     }
@@ -1262,6 +1274,14 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
         let wl = words[11].length;
         if (words[11].indexOf('Staff/') !== 0 || (words[11].indexOf('Staff/') === 0 && (wl < 8 || wl > 9))) {
             helper.LogError('Error 34: Incorrect syntax: [TYPE] must be one of the following: <i>Monitor</i>, <i>ToO</i>, <i>SoftToO</i>, <i>Payback</i>, <i>Fast-Track</i>, <i>Service</i>, <i>Visitor</i>, <i>Staff</i>, on line #' + linenumber + '!');
+            return false;
+        }
+    }
+    /* OB info must be valid, or default */
+    if (words[12] !== Driver.defaultOBInfo) {
+        let arr = words[12].split(":");
+        if (arr.length !== 4) {
+            helper.LogError(`Error 49: OB info is not valid on line #${linenumber}, it should be Instrument:Mode:GroupID:BlockID!`);
             return false;
         }
     }
@@ -1341,11 +1361,12 @@ Target.prototype.preCompute = function () {
             this.observable[i] = false;
         }
     }
-    this.observable[i] = this.canObserve(driver.night.xaxis[i], this.Graph[i]);
+    let last = this.Graph.length - 1;
+    this.observable[last] = this.canObserve(driver.night.xaxis[last], this.Graph[last]);
     if (this.beginForbidden.length !== this.endForbidden.length) {
-        this.endForbidden.push(driver.night.xaxis[i]);
+        this.endForbidden.push(driver.night.xaxis[last]);
     } else {
-        this.endAllowed.push(driver.night.axis[i]);
+        this.endAllowed.push(driver.night.axis[last]);
     }
     if (this.beginAllowed.length !== this.endAllowed.length || this.beginForbidden.length !== this.endForbidden.length) {
         helper.LogError('Bug report: safety check failed in @Target.prototype.preCompute. Please report this bug.');
@@ -1463,6 +1484,19 @@ Target.prototype.Update = function (obj) {
     if (this.FillSlot) {
         helper.LogEntry('Attention: object <i>' + this.Name + '</i> will fill its entire time slot.');
     }
+
+    this.OBData = obj[4];
+    if (this.OBData !== Driver.defaultOBInfo) {
+        let ob_arr = this.OBData.split(":");
+        this.BacklinkToOBQueue = 'http://www.not.iac.es/intranot/ob/ob_update.php?period=' + parseInt(this.ProjectNumber.substring(0, 2)) + '&propID=' + parseInt(this.ProjectNumber.substring(3)) + '&groupID=' + ob_arr[2] + '&blockID=' + ob_arr[3];
+        this.ExtraInfo = ob_arr[0] + "/" + ob_arr[1];
+    } else {
+        this.BacklinkToOBQueue = null;
+        this.ExtraInfo = null;
+    }
+    this.ReconstructedInput = this.Name + ' ' + this.inputRA + ' ' + this.inputDec + ' ' + this.Epoch + ' ' + this.ExptimeSeconds + ' ' + this.ProjectNumber + ' ' + this.Constraints + ' ' + this.FullType + ' ' + this.OBData;
+    this.ReconstructedMinimumInput = this.Name + ' ' + this.inputRA + ' ' + this.inputDec + ' ' + this.Epoch;
+
     this.preCompute();
     this.resetColours();
 };

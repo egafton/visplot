@@ -9,6 +9,7 @@
  * @todo: Many of these functions can be rewritten in terms of slalib functions
  * or replaced altogether.
  */
+"use strict";
 
 function helper() {
 }

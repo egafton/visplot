@@ -6,6 +6,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. See LICENSE.md.
  */
+"use strict";
 
 function SkyGraph(_canvas, _context) {
     this.canvas = _canvas;
@@ -29,13 +30,7 @@ function SkyGraph(_canvas, _context) {
     this.tcsy = null;
     this.percentClearSky = -1;
     this.skyImg = new Image();
-    this.skyImg.onload = function () {
-        driver.skyGraph.setup(true);
-    };
     this.reload();
-    setInterval(function () {
-        driver.skyGraph.display_time();
-    }, 500);   // 0.5 second update times
 }
 
 SkyGraph.prototype.startTimer = function () {

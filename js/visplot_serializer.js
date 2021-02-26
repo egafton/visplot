@@ -6,6 +6,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. See LICENSE.md.
  */
+"use strict";
 
 function serializer() {
 }
@@ -34,7 +35,7 @@ serializer.saveDocument = function () {
             targets: driver.targets,
             ta: $('#targets_actual').val(),
             tgts: driver.CMeditor.getValue(),
-            driver: {ob: driver.ob, obdata: driver.obdata, obLines: driver.obLines, obLinks: driver.obLinks, obExtraInfo: driver.obExtraInfo, obprocessed: driver.obprocessed, nightInitialized: driver.nightInitialized, scheduleMode: driver.scheduleMode, defaultEpoch: Driver.defaultEpoch, defaultProject: Driver.defaultProject, defaultType: Driver.defaultType, defaultObstime: Driver.defaultObstime, FillColors: Driver.FillColors, TextColors: Driver.TextColors}
+            driver: {ob: driver.ob, obdata: driver.obdata, obprocessed: driver.obprocessed, nightInitialized: driver.nightInitialized, scheduleMode: driver.scheduleMode, defaultEpoch: Driver.defaultEpoch, defaultProject: Driver.defaultProject, defaultType: Driver.defaultType, defaultObstime: Driver.defaultObstime, FillColors: Driver.FillColors, TextColors: Driver.TextColors}
         }));
         zip.generateAsync({
             mimeType: "application/octet-stream",
@@ -71,9 +72,6 @@ serializer.loadDocument = function (e) {
             }
             driver.ob = obj.driver.ob;
             driver.obdata = obj.driver.obdata;
-            driver.obLines = obj.driver.obLines;
-            driver.obLinks = obj.driver.obLinks;
-            driver.obExtraInfo = obj.driver.obExtraInfo;
             driver.obprocessed = obj.driver.obprocessed;
             driver.nightInitialized = obj.driver.nightInitialized;
             driver.scheduleMode = obj.driver.scheduleMode;

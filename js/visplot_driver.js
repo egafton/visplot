@@ -6,9 +6,10 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. See LICENSE.md.
  */
+"use strict";
 
 function Driver() {
-    // HTML5 canvas, context and Graph class - related variables
+    /* HTML5 canvas, context and Graph class - related variables */
     this.canvas = document.getElementById('canvasFrame');
     this.context = this.canvas.getContext('2d');
     this.graph = new Graph(this.canvas, this.context);
@@ -20,16 +21,13 @@ function Driver() {
     this.rescaleCanvas(this.canvas, this.context);
     this.rescaleCanvas(this.skyCanvas, this.skyContext);
 
-    // Aladin object
+    /* Aladin object */
     this.objAladin = null;
     this.aladinInitialized = false;
 
-    // OB queue - related
+    /* OB queue - related */
     this.ob = false;            // Whether or not the page is a referral from the OB queue
     this.obdata = null;         // Actual JSON-decoded object containing OB info
-    this.obLines = [];          // Lines with target info, serving as input for the textarea
-    this.obLinks = [];          // Backlinks to the OB queue (not visible in the textarea)
-    this.obExtraInfo = [];      // Extra information only available to the OBs
     this.obprocessed = false;   // OB info is processed automatically only once, upon page load
 
     // Night, targets, planning
@@ -90,6 +88,7 @@ Driver.prototype.Callback_SetDate = function (obj) {
         const ntargets = this.obdata.nTargets;
         helper.LogEntry(helper.plural(ntargets, 'target') + ' found.');
         let constraint;
+        let lines = [];
         for (let i = 1; i <= ntargets; i += 1) {
             obj = this.obdata.Targets['target' + i];
             if ("LST1" in obj && "LST2" in obj) {
@@ -97,13 +96,11 @@ Driver.prototype.Callback_SetDate = function (obj) {
             } else {
                 constraint = obj.Constraint;
             }
-            const line = obj.Name + ' ' + obj.RA + (parseFloat(obj.PM.RA) === 0.0 ? '' : '/' + parseFloat(obj.PM.RA)) + ' ' + obj.Dec + (parseFloat(obj.PM.Dec) === 0.0 ? '' : '/' + parseFloat(obj.PM.Dec)) + ' ' + parseInt(obj.Epoch) + ' ' + obj.ObsTime + ' ' + obj.Proposal + ' ' + constraint + ' ' + obj.Type;
-            this.obLines.push(line);
-            this.obLinks.push('http://www.not.iac.es/intranot/ob/ob_update.php?period=' + parseInt(obj.Proposal.substring(0, 2)) + '&propID=' + parseInt(obj.Proposal.substring(3)) + '&groupID=' + obj.GroupID + '&blockID=' + obj.BlockID);
-            this.obExtraInfo.push(obj.Instrument + ' / ' + obj.Mode);
+            const line = obj.Name + ' ' + obj.RA + (parseFloat(obj.PM.RA) === 0.0 ? '' : '/' + parseFloat(obj.PM.RA)) + ' ' + obj.Dec + (parseFloat(obj.PM.Dec) === 0.0 ? '' : '/' + parseFloat(obj.PM.Dec)) + ' ' + parseInt(obj.Epoch) + ' ' + obj.ObsTime + ' ' + obj.Proposal + ' ' + constraint + ' ' + obj.Type + ' ' + `${obj.Instrument}:${obj.Mode}:${obj.GroupID}:${obj.BlockID}`;
+            lines.push(line);
         }
         this.obprocessed = true;
-        this.CMeditor.setValue(this.obLines.join("\n"));
+        this.CMeditor.setValue(lines.join("\n"));
         if (this.targets.validateAndFormatTargets()) {
             $('#plotTargets').trigger('click');
         }
@@ -335,17 +332,26 @@ Driver.prototype.EvtFrame_MouseUp = function (e) {
                 // reObj must come between le and ri
                 let newscheduleorder = [];
                 for (let i = 0; i < this.targets.nTargets; i += 1) {
-                    if (i == this.reObj) {
-                        continue;
-                    }
-                    if (ri == i) {
-                        newscheduleorder.push(this.reObj);
-                    }
-                    newscheduleorder.push(i);
-                    if (i == this.targets.nTargets - 1 && le == i) {
-                        newscheduleorder.push(this.reObj);
+                    /* First come the observed objects; they have to stay at the beginning */
+                    if (this.targets.Targets[i].Observed) {
+                        newscheduleorder.push(i);
                     }
                 }
+                for (let i = 0; i < this.targets.nTargets; i += 1) {
+                    if (!this.targets.Targets[i].Observed) {
+                        if (i == this.reObj) {
+                            continue;
+                        }
+                        if (ri == i) {
+                            newscheduleorder.push(this.reObj);
+                        }
+                        newscheduleorder.push(i);
+                        if (i == this.targets.nTargets - 1 && le == i) {
+                            newscheduleorder.push(this.reObj);
+                        }
+                    }
+                }
+                console.log(newscheduleorder);
                 helper.LogEntry('Rescheduling the observing night. Please wait...');
                 this.targets.scheduleAndOptimize_givenOrder(newscheduleorder);
                 helper.LogEntry('Done.');
@@ -964,6 +970,11 @@ Object.defineProperties(Driver, {
         }, set: function (val) {
             this._defaultType = val;
         }},
+    'defaultOBInfo': {get: function () {
+        return this._defaultOBInfo || 'default';
+    }, set: function (val) {
+        this._defaultOBInfo = val;
+    }},
     'skyCamLink': {get: function () {
             return 'http://www.gtc.iac.es/multimedia/netcam/camaraAllSky.jpg?t=';
         }},
