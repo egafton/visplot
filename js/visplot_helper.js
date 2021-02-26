@@ -535,8 +535,12 @@ helper.ExtractUTRange = function (str) {
     if (str.length !== 2) {
         return false;
     }
-    let ut1 = helper.HMToEphemDate(str[0]);
-    let ut2 = helper.HMToEphemDate(str[1]);
+
+    // Convert decimal/d.dd to H:MM format
+    const str1 = helper.decimalToHHMM(str[0]);
+    const str2 = helper.decimalToHHMM(str[1]);
+    let ut1 = helper.HMToEphemDate(str1);
+    let ut2 = helper.HMToEphemDate(str2);
     if (ut1 === -1 || ut2 === -1) {
         return false;
     }
@@ -588,4 +592,14 @@ helper.validColour = function(stringToTest) {
     dummy.style.color = "rgb(255, 255, 255)";
     dummy.style.color = stringToTest;
     return dummy.style.color !== "rgb(255, 255, 255)";
+};
+
+/*
+ * convert string decimal d.dd to HH:MM
+*/
+helper.decimalToHHMM = function(text) {
+    if (text.includes(':') || !text.includes('.')) { return text; }
+    var parts = text.split('.');
+    parts[1] = helper.padTwoDigits(parseFloat(parts[1]) / 100 * 60.);
+    return parts[0] + ':' + parts[1];
 };

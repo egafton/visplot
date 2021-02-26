@@ -1065,26 +1065,27 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
         return false;
     }
     if (words[0] == 'BadWolf' || words[0] == 'Offline') {
-        if (words.length < 2 || words.length > 3) {
+        let words2 = linetext.split(/[\s]+/g);
+        if (words2.length < 2 || words2.length > 3) {
             helper.LogError('Error: Incorrect syntax on Line #' + linenumber + '; for offline time you must provide a valid UT range!');
             return false;
         }
-        if (words.length == 3) {
+        if (words2.length == 3) {
             if (words[1] != '*') {
                 helper.LogError('Error: Incorrect syntax on Line #' + linenumber + '; offline time must take "*" as [OBSTIME] argument!');
                 return false;
             }
         }
-        let q = (words.length == 2) ? 1 : 2;
-        let UTr = helper.ExtractUTRange(words[q]), ut1, ut2;
+        let q = (words2.length == 2) ? 1 : 2;
+        let UTr = helper.ExtractUTRange(words2[q]), ut1, ut2;
         if (UTr === false) {
-            helper.LogError('Error: Incorrect syntax in [CONSTRAINTS] on line #' + linenumber + ': the UT range must be a valid interval (e.g., [20:00-23:00] or [1-2])!');
+            helper.LogError('Error: Incorrect syntax in [CONSTRAINTS] on line #' + linenumber + ': the UT range must be a valid interval (e.g., [20:00-23:00], [1-2] or [4.5-6])!');
             return false;
         } else {
             this.BadWolfStart.push(UTr[0]);
             this.BadWolfEnd.push(UTr[1]);
         }
-        return [words[0], '', '', '', '', '', '', '', '*', '', words[q], ''];
+        return [words2[0], '', '', '', '', '', '', '', '*', '', words2[q], ''];
     }
     if (words.length == 6 && words[2].indexOf(':') == -1) {
         words = ['Object' + linenumber].concat(words);
