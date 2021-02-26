@@ -8,6 +8,7 @@
  */
 
 $(document).ready(function () {
+    /** Current index for new errors: 48 */
     sla.performUnitTests();
     
     /* The one and only global variable */

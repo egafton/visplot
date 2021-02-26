@@ -255,7 +255,7 @@ helper.EphemDateToHM = function (d) {
 };
 
 helper.LSTToAngle = function (text) {
-    const easy = parseFloat(text);
+    const easy = helper.filterFloat(text);
     if (!isNaN(easy)) {
         return easy * sla.htor;
     }
@@ -282,8 +282,9 @@ helper.LSTToEphemDate = function (str) {
         return false;
     }
     let sunset = driver.night.stlSunset;
+    /* If LST1 is larger, then we have to go around 00:00 */
     if (rad1 > rad2) {
-        rad2 += sla.d2pi;
+        rad1 -= sla.d2pi;
     }
     /* Sidereal day is not 86400 seconds, but 86164.1! */
     let jdiff1 = (rad1-sunset)*86164.1/sla.d2pi;
@@ -302,21 +303,32 @@ helper.LSTToEphemDate = function (str) {
     if (ut2 > driver.night.Sunrise) {
         ut2 = driver.night.Sunrise;
     }
+    if (ut1 > ut2) {
+        ut1 -= 1;
+    }
     return [ut1, ut2];
 };
 
 /**
- * Convert a H:MM or H:MM:SS format to a Python.ephem date.
+ * Convert a H:MM or H:MM:SS or H.d format to a Python.ephem date.
  */
 helper.HMToEphemDate = function (text) {
     const jsunset = driver.night.DateSunset;
-    const arr = text.split(':');
-    if (arr.length < 1 || arr.length > 3 || helper.notInt(arr[0])) {
-        return -1;
+    const easy = helper.filterFloat(text);
+    let hh, mm, ss;
+    if (!isNaN(easy)) {
+        hh = Math.floor(easy);
+        mm = Math.floor((easy % 1) / (1/60));
+        ss = Math.floor((easy - hh - mm / 60) * 3600);
+    } else {
+        const arr = text.split(':');
+        if (arr.length < 1 || arr.length > 3 || helper.notInt(arr[0])) {
+            return -1;
+        }
+        hh = helper.filterInt(arr[0]);
+        mm = (arr.length > 1) ? helper.filterInt(arr[1]) : 0;
+        ss = (arr.length > 2) ? helper.filterInt(arr[2]) : 0;
     }
-    const hh = helper.filterInt(arr[0]);
-    const mm = (arr.length > 1) ? helper.filterInt(arr[1]) : 0;
-    const ss = (arr.length > 2) ? helper.filterInt(arr[2]) : 0;
     if (hh < 0 || hh > 24 || mm < 0 || mm > 60 || ss < 0 || ss > 60) {
         return -1;
     }
@@ -589,3 +601,13 @@ helper.validColour = function(stringToTest) {
     dummy.style.color = stringToTest;
     return dummy.style.color !== "rgb(255, 255, 255)";
 };
+
+/**
+ * How to comment line start?
+ */
+helper.commentStrings = [
+    "Offline",
+    "BadWolf",
+    "#Offline",
+    "#BadWolf"
+];

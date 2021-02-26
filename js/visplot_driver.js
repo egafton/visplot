@@ -73,7 +73,7 @@ Driver.prototype.ParseOBInfoIfAny = function () {
                 Driver.telescopeName = this.obdata.Telescope;
             }
         } else {
-            helper.LogError('Error: Could not decode JSON object. Falling back to standard (non-OB) visplot...');
+            helper.LogError('Error 35: Could not decode JSON object. Falling back to standard (non-OB) visplot...');
             this.ob = false;
         }
     }
@@ -148,20 +148,20 @@ Driver.prototype.BtnEvt_SetDate = function () {
     const month = helper.filterInt($('#dateM').val());
     const day = helper.filterInt($('#dateD').val());
     if (isNaN(year) || isNaN(month) || isNaN(day)) {
-        helper.LogError('Error: Invalid date (' + year + '-' + month + '-' + day + ').');
+        helper.LogError('Error 36: Invalid date (' + year + '-' + month + '-' + day + ').');
         return;
     }
     if (year < 1988 || year > 2100) {
-        helper.LogError('Error: Invalid year (' + year + ').');
+        helper.LogError('Error 37: Invalid year (' + year + ').');
         return;
     }
     if (month < 1 || month > 12) {
-        helper.LogError('Error: Invalid month (' + month + ').');
+        helper.LogError('Error 38: Invalid month (' + month + ').');
         return;
     }
     const dmax = helper.numberOfDays(year, month);
     if (day < 1 || day > dmax) {
-        helper.LogError('Error: Invalid day (' + day + ') for ' + year + '-' + helper.padTwoDigits(month) + ". Please enter a number between 1 and " + dmax + ".");
+        helper.LogError('Error 39: Invalid day (' + day + ') for ' + year + '-' + helper.padTwoDigits(month) + ". Please enter a number between 1 and " + dmax + ".");
         return;
     }
     this.night = new Night(year, month, day);
@@ -171,11 +171,11 @@ Driver.prototype.BtnEvt_SetDate = function () {
 
 Driver.prototype.BtnEvt_PlotTargets = function () {
     if (this.RequestedScheduleType < 1 || this.RequestedScheduleType > 3) {
-        helper.LogError('Error: Unknown value for Driver.ReqestedScheduleType.');
+        helper.LogError('Error 40: Unknown value for Driver.ReqestedScheduleType.');
         return;
     }
     if (!this.nightInitialized) {
-        helper.LogError('Error: Night not initialized. Click on "Set" first!');
+        helper.LogError('Error 41: Night not initialized. Click on "Set" first!');
         return;
     }
     if (!this.targets.validateAndFormatTargets()) {
