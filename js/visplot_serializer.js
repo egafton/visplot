@@ -1,6 +1,6 @@
 /**
- * @author Emanuel Gafton
- * @copyright (c) 2016-2021 Emanuel Gafton, NOT/ING.
+ * @author ega
+ * @copyright (c) 2016-2021 ega, NOT/ING.
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -18,15 +18,15 @@ function serializer() {
  * Bind click events to HTML buttons.
  */
 serializer.BindEvents = function () {
-    $('#saveDoc').click(function () {
+    $("#saveDoc").click(function () {
         serializer.saveDocument();
     });
 
-    $('#loadDoc').change(function (e) {
+    $("#loadDoc").change(function (e) {
         serializer.loadDocument(e);
     });
 
-    $('#pngExport').click(function () {
+    $("#pngExport").click(function () {
         serializer.exportPNG();
     });
 };
@@ -35,14 +35,14 @@ serializer.BindEvents = function () {
  * Save the observing schedule to disk.
  */
 serializer.saveDocument = function () {
-    helper.Log('Exporting schedule in visplot format...');
+    helper.Log("Exporting schedule in visplot format...");
     try {
         const zip = new JSZip();
         zip.file("visplot.txt", JSON.stringify({
             night: driver.night,
             graph: driver.graph,
             targets: driver.targets,
-            ta: $('#targets_actual').val(),
+            ta: $("#targets_actual").val(),
             tgts: driver.CMeditor.getValue(),
             driver: {ob: driver.ob, obdata: driver.obdata, obprocessed: driver.obprocessed, nightInitialized: driver.nightInitialized, scheduleMode: driver.scheduleMode, defaultEpoch: Driver.defaultEpoch, defaultProject: Driver.defaultProject, defaultType: Driver.defaultType, defaultObstime: Driver.defaultObstime, FillColors: Driver.FillColors, TextColors: Driver.TextColors}
         }));
@@ -54,9 +54,9 @@ serializer.saveDocument = function () {
         }).then(function (content) {
             saveAs(content, "schedule.visplot");
         });
-        helper.LogEntry('Done.');
+        helper.LogEntry("Done.");
     } catch (e) {
-        helper.LogError('Error 42: <i>' + e + '</i>');
+        helper.LogError(`Error 42: <i>${e}</i>`);
     }
 };
 
@@ -64,22 +64,22 @@ serializer.saveDocument = function () {
  * Load an observing schedule from disk.
  */
 serializer.loadDocument = function (e) {
-    helper.LogEntry('Importing schedule from the given file...');
+    helper.LogEntry("Importing schedule from the given file...");
     const files = e.target.files; // FileList object
     if (files === false || files === null || files === undefined || files.length != 1) {
-        helper.LogError('Error 43: Failed to load the file.');
+        helper.LogError("Error 43: Failed to load the file.");
         return;
     }
     const new_zip = new JSZip();
     new_zip.loadAsync(files[0]).then(function (zip) {
         if (zip === false || zip === null || zip === undefined) {
-            helper.LogError('Error 44: Could not open the file because it has an invalid format.');
+            helper.LogError("Error 44: Could not open the file because it has an invalid format.");
             return;
         }
         new_zip.file("visplot.txt").async("string").then(function (txt) {
             const obj = JSON.parse(txt);
             if (obj === false || obj === null || obj === undefined || obj.night === null || obj.night === undefined || obj.graph === null || obj.graph === undefined || obj.driver === null || obj.driver === undefined || obj.targets === null || obj.targets === undefined) {
-                helper.LogError('Error 45: Could not open the file because it has an invalid format.');
+                helper.LogError("Error 45: Could not open the file because it has an invalid format.");
                 return;
             }
             driver.ob = obj.driver.ob;
@@ -100,7 +100,7 @@ serializer.loadDocument = function (e) {
                 return obj;
             };
             let deserialize = function (object) {
-                Object.setPrototypeOf(object, window[object['#']].prototype);
+                Object.setPrototypeOf(object, window[object["#"]].prototype);
                 return object;
             };
             driver.night = Object.setPrototypeOf(obj.night, Night.prototype);
@@ -109,11 +109,11 @@ serializer.loadDocument = function (e) {
             for (let i = 0; i < obj.targets.nTargets; i += 1) {
                 Object.setPrototypeOf(driver.targets.Targets[i], Target.prototype);
             }
-            helper.LogEntry('Done.');
-            $('#targets_actual').val(obj.ta);
-            $('#dateY').val(driver.night.year);
-            $('#dateM').val(helper.padTwoDigits(driver.night.month));
-            $('#dateD').val(helper.padTwoDigits(driver.night.day));
+            helper.LogEntry("Done.");
+            $("#targets_actual").val(obj.ta);
+            $("#dateY").val(driver.night.year);
+            $("#dateM").val(helper.padTwoDigits(driver.night.month));
+            $("#dateD").val(helper.padTwoDigits(driver.night.day));
             driver.CMeditor.setValue(obj.tgts);
             driver.graph.ctx = driver.context;
             driver.graph.canvas = driver.canvas;
@@ -121,18 +121,18 @@ serializer.loadDocument = function (e) {
             driver.Refresh();
             if (driver.scheduleMode) {
                 driver.targets.display_scheduleStatistics();
-                $('#pngExport').removeAttr('disabled');
-                $('#planNight').val(Driver.updSchedText);
+                $("#pngExport").removeAttr("disabled");
+                $("#planNight").val(Driver.updSchedText);
             }
-            $('#tcsExport').removeAttr('disabled');
-            $('#planNight').removeAttr('disabled');
-            $('#saveDoc').removeAttr('disabled');
+            $("#tcsExport").removeAttr("disabled");
+            $("#planNight").removeAttr("disabled");
+            $("#saveDoc").removeAttr("disabled");
         }).catch(function (e) {
-            helper.LogError('Error 46: Could not open the file because it has an invalid format (' + e + ').');
+            helper.LogError(`Error 46: Could not open the file because it has an invalid format (${e}).`);
             return;
         });
     }).catch(function (e) {
-        helper.LogError('Error 47: Could not open the file because it has an invalid format (' + e + ').');
+        helper.LogError(`Error 47: Could not open the file because it has an invalid format (${e}).`);
         return;
     });
 };
@@ -143,10 +143,10 @@ serializer.loadDocument = function (e) {
 serializer.exportPNG = function () {
     /* By default, HTML5 canvases are exported with a transparent background
      (which might be rendered improperly, i.e. with a black background, in some viewers).
-     This function automatically adds a white background to the image and opens 
+     This function automatically adds a white background to the image and opens
      the resulting, composited png file in a new tab/window.
      */
-    helper.LogEntry('Trying to export png file...');
+    helper.LogEntry("Trying to export png file...");
     // Save context state
     const w = driver.canvas.width;
     const h = driver.canvas.height;
@@ -162,7 +162,7 @@ serializer.exportPNG = function () {
     driver.context.clearRect(0, 0, w, h);
     driver.context.putImageData(data, 0, 0);
     driver.context.globalCompositeOperation = compositeOperation;
-    helper.LogSuccess('Done! The png file has been opened in a new tab.');
+    helper.LogSuccess("Done! The png file has been opened in a new tab.");
     // Open image in a new tab
     window.open(imageData, "_blank");
 };

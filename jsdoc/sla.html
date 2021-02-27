@@ -2246,7 +2246,7 @@ stratosphere.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line3601">line 3601</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line3646">line 3646</a>
     </li></ul></dd>
     
 
@@ -2360,7 +2360,7 @@ troposphere.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line3582">line 3582</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line3627">line 3627</a>
     </li></ul></dd>
     
 
@@ -2831,7 +2831,7 @@ with the century missing.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line1645">line 1645</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line1690">line 1690</a>
     </li></ul></dd>
     
 
@@ -3383,7 +3383,7 @@ spherical coordinates.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line2131">line 2131</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line2176">line 2176</a>
     </li></ul></dd>
     
 
@@ -3738,7 +3738,7 @@ the +ve latitude pole.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line4674">line 4674</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line4719">line 4719</a>
     </li></ul></dd>
     
 
@@ -3925,7 +3925,7 @@ the +ve latitude pole.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line1477">line 1477</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line1522">line 1522</a>
     </li></ul></dd>
     
 
@@ -4480,6 +4480,237 @@ RMAT.</li>
     
 
     
+    <h4 class="name" id=".dh2e"><span class="type-signature">(static) </span>dh2e<span class="signature">(az, el, phi)</span><span class="type-signature"> &rarr; {array}</span></h4>
+    
+
+    
+    <p class="summary"><p><strong>Az,El to h,δ</strong></p></p>
+    
+
+
+
+<div class="description">
+    <p>Horizon to equatorial coordinates.</p>
+<ol>
+<li>The sign convention for azimuth is north zero, east +π/2.</li>
+<li>HA is returned in the range ±π. Declination is returned in the range ±π/2.</li>
+<li>The latitude is (in principle) geodetic. In critical applications,
+corrections for polar motion should be applied (see <a href="sla.html#.polmo">sla.polmo</a>).</li>
+<li>In some applications it will be important to specify the correct type
+of elevantion in order to produce the required type of [h,δ].
+In particular, it may be important to distinguish between elevation as
+affected by refraction, which will yield the <em>observed</em> [h,δ], and the
+elevation <em>in vacuo</em>, which will yield the <em>topocentric</em> [h,δ]. If the
+effects of diurnal aberration can be neglected, the topocentric [h,δ]
+may be used instead of the <em>apparent</em> [h,δ].</li>
+<li>No range checking of arguments is carried out.</li>
+<li>In applications which involve many such calculations, rather than calling
+the present routine it will be more efficient to use inline code, having
+previously computed fixed terms such as sine and cosine of latitude.</li>
+</ol>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>az</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Azimuth in radians</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>el</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Elevation in radians</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>phi</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Observatory latitude in radians</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line1153">line 1153</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss40.html">http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss40.html</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>[ha,dec] - Hour angle and declionation in radians</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">array</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
     <h4 class="name" id=".dimxv"><span class="type-signature">(static) </span>dimxv<span class="signature">(dm, va)</span><span class="type-signature"> &rarr; {Array}</span></h4>
     
 
@@ -4617,7 +4848,7 @@ that is <em>not</em>, however, recommended.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line2104">line 2104</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line2149">line 2149</a>
     </li></ul></dd>
     
 
@@ -5249,7 +5480,7 @@ Meeus model.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line1159">line 1159</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line1204">line 1204</a>
     </li></ul></dd>
     
 
@@ -5447,7 +5678,7 @@ recommended.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line3319">line 3319</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line3364">line 3364</a>
     </li></ul></dd>
     
 
@@ -5648,7 +5879,7 @@ many Fortran compilers even if this rule is violated, something that is
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line1445">line 1445</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line1490">line 1490</a>
     </li></ul></dd>
     
 
@@ -5853,7 +6084,7 @@ setting IDMSF(1-4) to zero.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line1529">line 1529</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line1574">line 1574</a>
     </li></ul></dd>
     
 
@@ -6059,7 +6290,7 @@ setting IHMSF(1-4) to zero.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line1558">line 1558</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line1603">line 1603</a>
     </li></ul></dd>
     
 
@@ -6228,7 +6459,7 @@ setting IHMSF(1-4) to zero.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line1569">line 1569</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line1614">line 1614</a>
     </li></ul></dd>
     
 
@@ -6396,7 +6627,7 @@ setting IHMSF(1-4) to zero.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line1584">line 1584</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line1629">line 1629</a>
     </li></ul></dd>
     
 
@@ -6680,7 +6911,7 @@ Cartesian coordinates.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line2064">line 2064</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line2109">line 2109</a>
     </li></ul></dd>
     
 
@@ -6876,7 +7107,7 @@ and latitude, etc., in radians.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line4943">line 4943</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line4988">line 4988</a>
     </li></ul></dd>
     
 
@@ -7072,7 +7303,7 @@ and latitude, etc., in radians.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line4916">line 4916</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line4961">line 4961</a>
     </li></ul></dd>
     
 
@@ -7265,7 +7496,7 @@ used here.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line3290">line 3290</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line3335">line 3335</a>
     </li></ul></dd>
     
 
@@ -7483,7 +7714,7 @@ used here.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line1604">line 1604</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line1649">line 1649</a>
     </li></ul></dd>
     
 
@@ -7730,7 +7961,7 @@ used here.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line1628">line 1628</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line1673">line 1673</a>
     </li></ul></dd>
     
 
@@ -7910,7 +8141,7 @@ historical epochs.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line1677">line 1677</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line1722">line 1722</a>
     </li></ul></dd>
     
 
@@ -8101,7 +8332,7 @@ historical epochs.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line4690">line 4690</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line4735">line 4735</a>
     </li></ul></dd>
     
 
@@ -8272,7 +8503,7 @@ historical epochs.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line4403">line 4403</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line4448">line 4448</a>
     </li></ul></dd>
     
 
@@ -8464,7 +8695,7 @@ vm - modulus of V</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line4896">line 4896</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line4941">line 4941</a>
     </li></ul></dd>
     
 
@@ -8638,7 +8869,7 @@ theory).</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line4963">line 4963</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line5008">line 5008</a>
     </li></ul></dd>
     
 
@@ -9061,7 +9292,7 @@ JFORM=1,2 only)</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line2545">line 2545</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line2590">line 2590</a>
     </li></ul></dd>
     
 
@@ -9271,7 +9502,7 @@ JFORM=1,2 only)</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line1691">line 1691</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line1736">line 1736</a>
     </li></ul></dd>
     
 
@@ -9443,7 +9674,7 @@ JFORM=1,2 only)</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line3350">line 3350</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line3395">line 3395</a>
     </li></ul></dd>
     
 
@@ -9636,7 +9867,7 @@ longitude and latitude.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line4986">line 4986</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line5031">line 5031</a>
     </li></ul></dd>
     
 
@@ -9820,7 +10051,7 @@ to the new model officially took place on 1997 February 27.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line1713">line 1713</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line1758">line 1758</a>
     </li></ul></dd>
     
 
@@ -10041,7 +10272,7 @@ vectors are referred to the mean equator and equinox
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line4164">line 4164</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line4209">line 4209</a>
     </li></ul></dd>
     
 
@@ -10299,7 +10530,7 @@ Almanac</em>, ISBN 0-935702-68-7.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line1770">line 1770</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line1815">line 1815</a>
     </li></ul></dd>
     
 
@@ -10572,7 +10803,7 @@ year)</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line2234">line 2234</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line2279">line 2279</a>
     </li></ul></dd>
     
 
@@ -10901,7 +11132,7 @@ year)</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line1868">line 1868</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line1913">line 1913</a>
     </li></ul></dd>
     
 
@@ -11103,7 +11334,7 @@ year)</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line2040">line 2040</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line2085">line 2085</a>
     </li></ul></dd>
     
 
@@ -11286,7 +11517,7 @@ Julian Date (JD-2400000.5).</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line1984">line 1984</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line2029">line 2029</a>
     </li></ul></dd>
     
 
@@ -11495,7 +11726,7 @@ JD-2400000.5)</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line2014">line 2014</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line2059">line 2059</a>
     </li></ul></dd>
     
 
@@ -11763,7 +11994,7 @@ amount of rotation in radians.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line2304">line 2304</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line2349">line 2349</a>
     </li></ul></dd>
     
 
@@ -12083,7 +12314,7 @@ the methods of Stumpff. The maximum error is about 0.3 milliarcsecond.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line4542">line 4542</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line4587">line 4587</a>
     </li></ul></dd>
     
 
@@ -12305,7 +12536,7 @@ milliarcsecond.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line4466">line 4466</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line4511">line 4511</a>
     </li></ul></dd>
     
 
@@ -12605,7 +12836,7 @@ approached.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line4821">line 4821</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line4866">line 4866</a>
     </li></ul></dd>
     
 
@@ -12832,7 +13063,7 @@ approached.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line4734">line 4734</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line4779">line 4779</a>
     </li></ul></dd>
     
 
@@ -13021,7 +13252,7 @@ Moreover, for all but the most critical applications UTC is adequate.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line2364">line 2364</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line2409">line 2409</a>
     </li></ul></dd>
     
 
@@ -13210,7 +13441,7 @@ accurate, leading to errors as large as 350 mas over the interval
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line2395">line 2395</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line2440">line 2440</a>
     </li></ul></dd>
     
 
@@ -13333,7 +13564,7 @@ and informs the user if anything goes wrong.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line5573">line 5573</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line5623">line 5623</a>
     </li></ul></dd>
     
 
@@ -13426,7 +13657,7 @@ magnitude.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line5093">line 5093</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line5138">line 5138</a>
     </li></ul></dd>
     
 
@@ -13836,7 +14067,7 @@ JFORM=1,2 only)</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line2984">line 2984</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line3029">line 3029</a>
     </li></ul></dd>
     
 
@@ -14113,7 +14344,7 @@ without introducing significant inaccuracy.)</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line3078">line 3078</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line3123">line 3123</a>
     </li></ul></dd>
     
 
@@ -14426,7 +14657,7 @@ Almanac</em>, ISBN 0-935702-68-7, sections 3.27, 4.25, 4.52.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line4603">line 4603</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line4648">line 4648</a>
     </li></ul></dd>
     
 
@@ -14644,7 +14875,7 @@ is suitable for problems spanning several thousand years.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line3383">line 3383</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line3428">line 3428</a>
     </li></ul></dd>
     
 
@@ -14844,7 +15075,7 @@ true coordinates</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line3410">line 3410</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line3455">line 3455</a>
     </li></ul></dd>
     
 
@@ -15083,7 +15314,7 @@ J2000 (AU, AU/s; Note 1)</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line2869">line 2869</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line2914">line 2914</a>
     </li></ul></dd>
     
 
@@ -15338,7 +15569,7 @@ J2000 (AU, AU/s; Note 1)</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line3247">line 3247</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line3292">line 3292</a>
     </li></ul></dd>
     
 
@@ -15614,7 +15845,7 @@ else = Sun</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line3462">line 3462</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line3507">line 3507</a>
     </li></ul></dd>
     
 
@@ -15988,7 +16219,7 @@ tan−14 (∼76∘). At other zenith distances, the model achieves:
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line3999">line 3999</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line4044">line 4044</a>
     </li></ul></dd>
     
 
@@ -16426,7 +16657,7 @@ South Wales, Sydney, Australia.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line3703">line 3703</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line3748">line 3748</a>
     </li></ul></dd>
     
 
@@ -16703,7 +16934,7 @@ Green Bank, 2004.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line4078">line 4078</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line4123">line 4123</a>
     </li></ul></dd>
     
 
@@ -16946,7 +17177,7 @@ Universal Variables.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line2703">line 2703</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line2748">line 2748</a>
     </li></ul></dd>
     
 
@@ -17234,7 +17465,7 @@ latitude, and perhaps sine and cosine of declination.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line5032">line 5032</a>
+        <a href="visplot_sla.js.html">visplot_sla.js</a>, <a href="visplot_sla.js.html#line5077">line 5077</a>
     </li></ul></dd>
     
 
@@ -17309,13 +17540,13 @@ latitude, and perhaps sine and cosine of declination.</li>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="helper.html">helper</a></li><li><a href="serializer.html">serializer</a></li><li><a href="sla.html">sla</a></li></ul><h3>Classes</h3><ul><li><a href="Driver.html">Driver</a></li><li><a href="Graph.html">Graph</a></li><li><a href="Night.html">Night</a></li><li><a href="SkyGraph.html">SkyGraph</a></li><li><a href="Target.html">Target</a></li><li><a href="TargetList.html">TargetList</a></li></ul><h3>Global</h3><ul><li><a href="global.html#assertAlmostEqual">assertAlmostEqual</a></li><li><a href="global.html#assertEqual">assertEqual</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Namespaces</h3><ul><li><a href="helper.html">helper</a></li><li><a href="serializer.html">serializer</a></li><li><a href="sla.html">sla</a></li></ul><h3>Classes</h3><ul><li><a href="Driver.html">Driver</a></li><li><a href="Graph.html">Graph</a></li><li><a href="Night.html">Night</a></li><li><a href="SkyGraph.html">SkyGraph</a></li><li><a href="Target.html">Target</a></li><li><a href="TargetList.html">TargetList</a></li></ul><h3>Global</h3><ul><li><a href="global.html#assertAlmostEqual">assertAlmostEqual</a></li><li><a href="global.html#assertEqual">assertEqual</a></li><li><a href="global.html#config">config</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.5</a> on Fri Feb 26 2021 15:52:38 GMT+0000 (GMT)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.5</a> on Sat Feb 27 2021 17:04:13 GMT+0000 (GMT)
 </footer>
 
 <script> prettyPrint(); </script>

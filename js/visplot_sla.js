@@ -1,7 +1,7 @@
 /**
  * @file SLALIB subroutines used by Visplot, ported to JavaScript.
- * @author Emanuel Gafton
- * @copyright (c) 2016-2021 Emanuel Gafton, NOT/ING.
+ * @author ega
+ * @copyright (c) 2016-2021 ega, NOT/ING.
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -1124,6 +1124,51 @@ sla.deuler = function (order, phi, theta, psi) {
         }
     }
     return result;
+};
+
+/**
+ * @summary **Az,El to h,δ**
+ * @param {Number} az - Azimuth in radians
+ * @param {Number} el - Elevation in radians
+ * @param {Number} phi - Observatory latitude in radians
+ * @returns {array} [ha,dec] - Hour angle and declionation in radians
+ * @description Horizon to equatorial coordinates.
+ * 1. The sign convention for azimuth is north zero, east +π/2.
+ * 2. HA is returned in the range ±π. Declination is returned in the range ±π/2.
+ * 3. The latitude is (in principle) geodetic. In critical applications,
+ *    corrections for polar motion should be applied (see {@link sla.polmo}).
+ * 4. In some applications it will be important to specify the correct type
+ *    of elevantion in order to produce the required type of [h,δ].
+ *    In particular, it may be important to distinguish between elevation as
+ *    affected by refraction, which will yield the *observed* [h,δ], and the
+ *    elevation *in vacuo*, which will yield the *topocentric* [h,δ]. If the
+ *    effects of diurnal aberration can be neglected, the topocentric [h,δ]
+ *    may be used instead of the *apparent* [h,δ].
+ * 4. No range checking of arguments is carried out.
+ * 5. In applications which involve many such calculations, rather than calling
+ *    the present routine it will be more efficient to use inline code, having
+ *    previously computed fixed terms such as sine and cosine of latitude.
+ * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss40.html}
+ */
+sla.dh2e = function (az, el, phi) {
+    const sa = Math.sin(az);
+    const ca = Math.cos(az);
+    const se = Math.sin(el);
+    const ce = Math.cos(el);
+    const sp = Math.sin(phi);
+    const cp = Math.cos(phi);
+    const x = -ca * ce * sp + se * cp;
+    const y = -sa * ce;
+    const z = ca * ce * cp + se * sp;
+    const r = Math.sqrt(x * x + y * y);
+    let ha = 0;
+    if (r !== 0) {
+        ha = Math.atan2(y, x);
+    }
+    return {
+        "ha": ha,
+        "dec": Math.atan2(z, r)
+    };
 };
 
 /**
@@ -5240,6 +5285,11 @@ sla.performUnitTestsWrapped = function () {
     assertAlmostEqual(ret[2][1], -0.2599853247796050, 12);
     assertAlmostEqual(ret[2][2], -0.1136384607117296, 12);
 
+    /* sla_DH2E */
+    ret = sla.dh2e(2.820087515852369, 1.132711866443304, -0.7);
+    assertAlmostEqual(ret.ha, -0.3, 12);
+    assertAlmostEqual(ret.dec, -1.1, 12);
+
     /* sla_DIMXV */
     let dav1 = [-0.123, 0.0987, 0.0654];
     let drm1 = sla.dav2m(dav1);
@@ -5576,8 +5626,6 @@ sla.performUnitTests = function () {
         sla.performUnitTestsWrapped();
         helper.LogSuccess("slalib unit tests completed - everything OK");
     } catch (error) {
-        helper.LogError("slalib unit tests failed");
-        helper.LogError(error);
-        helper.LogError(error.stack);
+        helper.LogError(`Error 59: slalib unit tests failed: ${error}, ${error.stack}`);
     }
 };

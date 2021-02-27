@@ -1,6 +1,6 @@
 /**
- * @author Emanuel Gafton
- * @copyright (c) 2016-2021 Emanuel Gafton, NOT/ING.
+ * @author ega
+ * @copyright (c) 2016-2021 ega, NOT/ING.
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -27,7 +27,7 @@ function Night(y, m, d) {
     this.amprms = []; /* Mean to apparent parameters, SLALIB */
     /* Other arrays, not of length Nx */
     this.UTtimes = [];                      // Position of full hours (8UT, 9UT, etc) in terms of MJD-UTC
-    this.UTlabels = [];                     // UT labels corresponding to UTtimes ('8', '9', etc)
+    this.UTlabels = [];                     // UT labels corresponding to UTtimes ("8", "9", etc)
     this.STlabels = [];                     // ST labels corresponding to UTtimes
 }
 
@@ -46,7 +46,7 @@ Night.prototype.setEphemerides = function (obj) {
     this.dut = sla.dtt(this.utcMidnight) / sla.d2s;
     this.ttMidnight = this.utcMidnight + this.dut;
     this.eqeqx = sla.eqeqx(this.ttMidnight);
-    
+
     /* How is refraction handled? */
     /* For setting/rising: NAO uses a refraction value of 34 arcminutes at the horizon,
      * which is approximately equal to what SLALIB gives at sea-level.
@@ -67,7 +67,7 @@ Night.prototype.setEphemerides = function (obj) {
      * topocentric zds are computed without refraction. Then, sla.refz is called
      * and the zd is increased accordingly.
      */
-    
+
     // Previous noon; sunset; evening twilights
     let stl = helper.stl(this.utcMidnight-0.5, this.eqeqx);
     let ret = sla.rdplan(this.ttMidnight-0.5, "Sun", Driver.obs_lon_rad, Driver.obs_lat_rad);
@@ -87,7 +87,7 @@ Night.prototype.setEphemerides = function (obj) {
     this.moondec = mret.dec;
     this.MoonIllStart = (1 - Math.cos(sep)) * 0.5 * 100;
     this.stlSunset = helper.stl(this.Sunset, this.eqeqx);
-    
+
     // Next noon; sunrise; morning twilight
     stl = helper.stl(this.utcMidnight+0.5, this.eqeqx);
     ret = sla.rdplan(this.ttMidnight+0.5, "Sun", Driver.obs_lon_rad, Driver.obs_lat_rad);
@@ -105,9 +105,9 @@ Night.prototype.setEphemerides = function (obj) {
     sep = sla.dsep(sret.ra, sret.dec, mret.ra, mret.dec);
     this.MoonIllEnd = (1 - Math.cos(sep)) * 0.5 * 100;
     this.stlSunrise = helper.stl(this.Sunrise, this.eqeqx);
-    
+
     this.wnight = this.Sunrise - this.Sunset;   // Length of the night in days
-    this.xstep = this.wnight / this.Nx;         // Resolution of the time array    
+    this.xstep = this.wnight / this.Nx;         // Resolution of the time array
     let aop;
 
     for (let i = 0; i < this.Nx; i += 1) {          // ... and its initialization
@@ -148,7 +148,7 @@ Night.prototype.setEphemerides = function (obj) {
         this.UTtimes.push(djutc);
         this.UTlabels.push(firstUT.toString());
         stl = sla.dr2tf(1, sla.dranrm(sla.gmst(djutc) + Driver.obs_lon_rad) + this.eqeqx);
-        this.STlabels.push(stl.ihmsf[0] + ':' + (stl.ihmsf[1] < 10 ? '0' : '') + stl.ihmsf[1].toFixed(0));
+        this.STlabels.push(`${stl.ihmsf[0]}:${stl.ihmsf[1] < 10 ? "0" : ""}${stl.ihmsf[1].toFixed(0)}`);
         firstUT += 1;
         djutc += 1/24;
     }
@@ -158,9 +158,9 @@ Night.prototype.setEphemerides = function (obj) {
     this.MoonIllMax = Math.min(Math.ceil(Math.max(this.MoonIllStart, this.MoonIllEnd)), 100);
     this.MoonIllumination = Math.max(this.MoonIllStart, this.MoonIllEnd);   // Maximum moon illumination throughout the night
     if (this.MoonIllMin === this.MoonIllMax) {
-        this.MoonIlluminationString = this.MoonIllMin + '%';
+        this.MoonIlluminationString = `${this.MoonIllMin}%`;
     } else {
-        this.MoonIlluminationString = this.MoonIllMin + ' – ' + this.MoonIllMax + '%';
+        this.MoonIlluminationString = `${this.MoonIllMin} – ${this.MoonIllMax}%`;
     }
     this.Moonrise = 0;
     const lim = helper.rad2deg(- this.HorizonDip);

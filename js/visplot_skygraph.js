@@ -1,6 +1,6 @@
 /**
- * @author Emanuel Gafton
- * @copyright (c) 2016-2021 Emanuel Gafton, NOT/ING.
+ * @author ega
+ * @copyright (c) 2016-2021 ega, NOT/ING.
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -18,10 +18,10 @@ function SkyGraph(_canvas, _context) {
     this.canvasWidth = _canvas.width;
     this.canvasHeight = _canvas.height;
     this.xmid = this.canvasWidth / 2;
-    this.fontFamily = 'Ubuntu';
+    this.fontFamily = "Ubuntu";
     this.south = 2.3;
     this.pang = [this.south, this.south + 6, this.south + 12, this.south + 18];
-    this.plab = ['S', 'W', 'N', 'E'];
+    this.plab = ["S", "W", "N", "E"];
     this.lastazalt = null;
     this.lst = helper.LM_Sidereal_Time(helper.julianDate(new Date()));
     this.timer = null;
@@ -103,7 +103,7 @@ SkyGraph.prototype.setup = function (triggered) {
     this.display_time();
     try {
         $.get({
-            url: 'pointing.php',
+            url: "pointing.php",
             data: {telescope: Driver.telescopeName},
             success: function (obj) {
                 if (helper.notFloat(obj.alt) || helper.notFloat(obj.az)) {
@@ -113,12 +113,12 @@ SkyGraph.prototype.setup = function (triggered) {
                 }
             },
             error: function (msg) {
-                helper.LogError(msg);
+                helper.LogError(`Error 57: ${msg}`);
             }
         });
     }
     catch (e) {
-        helper.LogError(e.message);
+        helper.LogError(`Error 58: ${e.message}`);
     }
 };
 
@@ -139,7 +139,7 @@ SkyGraph.prototype.setPointing = function (xy) {
  * @memberof SkyGraph
  */
 SkyGraph.prototype.reload = function () {
-    this.skyImg.src = 'skycam.php';
+    this.skyImg.src = "skycam.php";
 };
 
 /**
@@ -152,7 +152,7 @@ SkyGraph.prototype.distort = function (zd) {
 /**
  * @memberof SkyGraph
  */
-SkyGraph.prototype.aatrans = function (altaz) { // convert from alt,az to ix,iy
+SkyGraph.prototype.aatrans = function (altaz) { // convert from alt, az to ix, iy
     const ang = (this.south + 12 + altaz[1] / 15) * Math.PI / 12;   // rotate to display
     const dd = this.cr * this.distort((90 - altaz[0]) / 90);    // zenith distance in pixels
     const ix = this.cx + dd * Math.sin(ang);
@@ -164,7 +164,7 @@ SkyGraph.prototype.aatrans = function (altaz) { // convert from alt,az to ix,iy
  * @memberof SkyGraph
  */
 SkyGraph.prototype.tcsxhair = function (x, y) {
-    this.ctx.strokeStyle = '#9f3';
+    this.ctx.strokeStyle = "#9f3";
     this.ctx.lineWidth = 1;
     this.ctx.beginPath();
     this.ctx.moveTo(x - 6, y - 6);
@@ -185,7 +185,6 @@ SkyGraph.prototype.tcsxhair = function (x, y) {
  * @memberof SkyGraph
  */
 SkyGraph.prototype.xhair = function (x, y, name, color) {
-    //this.ctx.globalCompositeOperation = 'hue';
     this.ctx.strokeStyle = color;
     this.ctx.lineWidth = 1;
     this.ctx.beginPath();
@@ -201,7 +200,6 @@ SkyGraph.prototype.xhair = function (x, y, name, color) {
     this.ctx.font = "8pt " + this.fontFamily;
     this.ctx.fillStyle = color;
     this.ctx.fillText(name, x + 5, y - 5);
-    //this.ctx.globalCompositeOperation = 'source-over';
 };
 
 /**
@@ -228,9 +226,9 @@ SkyGraph.prototype.drawaxes = function () {
  * @memberof SkyGraph
  */
 SkyGraph.prototype.drawtics = function () {
-    this.ctx.textBaseline = 'alphabetic';
-    this.ctx.textAlign = 'start';
-    this.ctx.font = "10pt " + this.fontFamily;
+    this.ctx.textBaseline = "alphabetic";
+    this.ctx.textAlign = "start";
+    this.ctx.font = `10pt ${this.fontFamily}`;
     for (let i = 0; i < 4; i += 1) {
         const ang = this.pang[i] * Math.PI / 12;
         let xx1 = this.cx + this.cr * Math.sin(ang);
@@ -240,9 +238,9 @@ SkyGraph.prototype.drawtics = function () {
         this.ctx.arc(this.cx, this.cy, 0.85 * this.cr, Math.PI / 2 - ang - 0.05, Math.PI / 2 - ang + 0.05, false);
         this.ctx.lineTo(xx1, yy1);
         this.ctx.closePath();
-        this.ctx.fillStyle = 'blue';
+        this.ctx.fillStyle = "blue";
         this.ctx.fill();
-        this.ctx.fillStyle = 'white';
+        this.ctx.fillStyle = "white";
         xx1 = this.cx + 0.9 * this.cr * Math.sin(ang);
         yy1 = this.cy + 0.9 * this.cr * Math.cos(ang);
         this.ctx.fillText(this.plab[i], xx1 + xl[i], yy1 + yl[i]);
@@ -275,7 +273,7 @@ SkyGraph.prototype.drawstars = function () {
         if (altaz[0] > 0) {
             let xy = this.aatrans(altaz);
             if (this.tcsx !== null && this.tcsy !== null && Math.abs(this.tcsx - xy[0]) <= 2 && Math.abs(this.tcsy - xy[1]) <= 2) {
-                last = [xy[0], xy[1], obj.Name, '#9f3'];
+                last = [xy[0], xy[1], obj.Name, "#9f3"];
             } else {
                 this.xhair(xy[0], xy[1], obj.Name, obj.LabelFillColor);
             }
@@ -294,15 +292,15 @@ SkyGraph.prototype.display_coords = function (azalt) {
     if (azalt === null) {
         return;
     } else {
-        this.ctx.fillStyle = 'black';
-        this.ctx.textBaseline = 'top';
-        this.ctx.textAlign = 'left';
-        this.ctx.font = "10pt " + this.fontFamily;
-        this.ctx.fillText('Az:', 0, this.imy + 6);
-        this.ctx.fillText('Alt:', 51, this.imy + 6);
-        this.ctx.fillText('RA', 100, this.imy + 6);
-        this.ctx.fillText('Dec', 208, this.imy + 6);
-        this.ctx.fillStyle = 'blue';
+        this.ctx.fillStyle = "black";
+        this.ctx.textBaseline = "top";
+        this.ctx.textAlign = "left";
+        this.ctx.font = `10pt ${this.fontFamily}`;
+        this.ctx.fillText("Az:", 0, this.imy + 6);
+        this.ctx.fillText("Alt:", 51, this.imy + 6);
+        this.ctx.fillText("RA", 100, this.imy + 6);
+        this.ctx.fillText("Dec", 208, this.imy + 6);
+        this.ctx.fillStyle = "blue";
         this.ctx.fillText(azalt[1], 20, this.imy + 6);
         this.ctx.fillText(azalt[0], 74, this.imy + 6);
         this.ctx.fillText(azalt[2], 121, this.imy + 6);
@@ -319,20 +317,20 @@ SkyGraph.prototype.display_time = function () {
     const ut = helper.utc(tim) * 24;
     const mm = helper.padTwoDigits(tim.getUTCMonth() + 1);
     const dd = helper.padTwoDigits(tim.getUTCDate());
-    const UTtext = "UTC " + tim.getUTCFullYear() + "-" + mm + "-" + dd + " " + helper.HMS(ut, false, '', '', '');
-    const STtext = "LST " + helper.HMS(this.lst, false, '', '', '');
+    const UTtext = `UTC ${tim.getUTCFullYear()}-${mm}-${dd} ${helper.HMS(ut, "", "", "")}`;
+    const STtext = `LST ${helper.HMS(this.lst, "", "", "")}`;
     this.ctx.clearRect(this.canvasWidth / 2, this.imy, this.canvasWidth / 2, this.canvasHeight - this.imy);
-    this.ctx.font = "10pt " + this.fontFamily + " Mono";
-    this.ctx.fillStyle = 'gray';
-    this.ctx.textBaseline = 'top';
-    this.ctx.textAlign = 'left';
+    this.ctx.font = `10pt ${this.fontFamily} Mono`;
+    this.ctx.fillStyle = "gray";
+    this.ctx.textBaseline = "top";
+    this.ctx.textAlign = "left";
     this.ctx.fillText(UTtext, this.imx / 2 + 75, this.imy + 6);
-    this.ctx.textAlign = 'right';
+    this.ctx.textAlign = "right";
     this.ctx.fillText(STtext, this.imx, this.imy + 6);
     if (this.percClearSky !== -1) {
-        this.ctx.fillStyle = 'black';
-        this.ctx.font = "10pt " + this.fontFamily;
-        this.ctx.textAlign = 'right';
-        this.ctx.fillText('Percentage of clear, dark sky (experimental): ' + this.percentClearSky + '%', this.imx, this.imy + 23);
+        this.ctx.fillStyle = "black";
+        this.ctx.font = `10pt ${this.fontFamily}`;
+        this.ctx.textAlign = "right";
+        this.ctx.fillText(`Percentage of clear, dark sky (experimental): ${this.percentClearSky}%`, this.imx, this.imy + 23);
     }
 };
