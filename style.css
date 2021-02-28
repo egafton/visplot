@@ -87,12 +87,14 @@ body {
     width: 895px;
     height: 720px;
 }
-#details_title {
+.fancyhead {
     font-size: 19px;
     font-weight: bold;
     width: 100%;
     text-align: center;
     padding: 0;
+}
+#details_title {
     padding-top: 15px;
     padding-bottom: 15px;
 }
@@ -152,11 +154,46 @@ span.rlbl {
     padding-left: 3px;
 }
 .inpshort {
-    width: 60px;
+    width: 70px;
     margin-right: 10px;
 }
-#defaultsdiv {
-    width: 480px;
+#help-container {
+    width: 95%;
+    max-width: 1300px;
+}
+#help {
+    display: flex;
+    flex-direction: row;
+}
+#help-left {
+    flex: 1;
+    padding-right: 10px;
+    border-right: 3px solid #ccc;
+}
+#help-right {
+    flex: 1;
+    padding-left: 10px;
+}
+#config-container {
+    width: 95%;
+    max-width: 1000px;
+}
+#config {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: row;
+}
+#config-left {
+    flex: 0 0 480px;
+    padding-right: 10px;
+    border-right: 3px solid #ccc;
+}
+#config-right {
+    flex: 1;
+    padding-left: 10px;
+}
+#upperBtnDiv {
+    float: right;
 }
 .defdetails {
     padding-left: 163px;
@@ -181,7 +218,7 @@ span#sc_Dec {
 }
 pre#logger {
     background-color: #eee;
-    height: 206px;
+    height: 260px;
     font-size: 9.5px;
     line-height: 11px;
     overflow-y: auto;
@@ -220,7 +257,9 @@ pre#logger span.loggerDebug {
 #left_lower {
     display: block;
     float: none;
+    margin: 8px 0;
 }
+#lb_plot,
 #lb_sched,
 #lb_skycm,
 #lb_exprt,
@@ -228,29 +267,6 @@ pre#logger span.loggerDebug {
 #lb_svdoc,
 #lb_lddoc {
     display: inline;
-}
-#help-container {
-    width: 95%;
-    max-width: 1300px;
-}
-#help {
-    display: flex;
-    flex-direction: row;
-}
-#help-left {
-    flex: 1;
-    padding-right: 10px;
-    border-right: 3px solid #ccc;
-}
-#help-right {
-    flex: 1;
-    padding-left: 10px;
-}
-#helpbtnDiv {
-    float: right;
-}
-#buttons {
-    margin: 8px 0;
 }
 a,
 a:visited {

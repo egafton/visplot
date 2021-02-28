@@ -45,8 +45,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
     <div id="container">
         <div id="leftblock">
             <div id="left_upper">
-                <div id="helpbtnDiv">
-                    <input type="button" value="Set defaults" id="setDefaults" />
+                <div id="upperBtnDiv">
+                    <input type="button" value="Configuration" id="configBtn" />
                     <input type="button" value="Help" id="helpBtn" />
                 </div>
                 Date:<br/>
@@ -57,15 +57,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
                 </span><br/>
                 <textarea id="targets"></textarea><br/>
                 <input type="hidden" id="targets_actual" /><input type="hidden" id="added_targets" />
-                <input type="button" value="Plot targets" id="plotTargets" /><br/><br/>
+                <input type="button" value="Plot targets" id="plotTargets" />
+                <input type="button" value="Schedule observations" id="planNight" /><br/><br/>
             </div> <!-- #left_upper -->
             <div id="left_lower">
-                <span class="middle"><label for="opt_reschedule_later"><input type="checkbox" name="opt_reschedule_later" id="opt_reschedule_later" checked="checked" /> Do not schedule in the past during an observing night</label></span><br/>
-                <span class="middle"><label for="opt_away_from_zenith"><input type="checkbox" name="opt_away_from_zenith" id="opt_away_from_zenith" checked="checked" /> Do not observe beyond the zenith limit</label></span><br/>
-                <span class="middle"><label for="opt_maintain_order"><input type="checkbox" name="opt_maintain_order" id="opt_maintain_order" /> Always schedule targets in their input order</label></span><br/>
-                <span class="middle"><label for="opt_show_lastobstime"><input type="checkbox" name="opt_show_lastobstime" id="opt_show_lastobstime" /> Mark last possible starting time</label></span><br/>
                 <div id="buttons">
-                    <div id="lb_sched"><input type="button" value="Schedule observations" id="planNight" /></div>
                     <div id="lb_skycm"><input type="button" value="Show SkyCam" id="showSkyCam" /></div>
                     <div id="lb_exprt"><input type="button" value="Export PNG" id="pngExport" /></div>
                     <div id="lb_tcsex"><input type="button" value="TCS format" id="tcsExport" /></div>
@@ -82,7 +78,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
     <a id="inline" href="#details" style="display:none"></a>
     <div style="display:none">
         <div id="details">
-            <div id="details_title"></div>
+            <div id="details_title" class="fancyhead"></div>
             <div id="details_info"></div>
             <div id="details_map"><span id="details_map_hang"></span></div>
         </div> <!-- #details -->
@@ -90,41 +86,54 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
             <canvas id="canvasSkycam" width="640" height="518"></canvas>
         </div> <!-- #skycamblock -->
         <div id="tcscat">
-            <h2>Targets in TCS catalogue format</h2>
+            <h2 class="fancyhead">Targets in TCS catalogue format</h2>
             <pre id="tcspre"></pre>
         </div> <!-- #tcscat -->
-        <div id="defaultsdiv"><h2>Change the default settings</h2>
-            <span class="middle"><span class="llbl">Telescope name:</span>
-                <select id="def_telescope" name="def_telescope"></select>
+        <div id="config-container">
+            <h2 class="fancyhead">Configure Visplot</h2>
+            <div id="config"><div id="config-left">
+                <span class="middle"><span class="llbl">Telescope name:</span>
+                    <select id="def_telescope" name="def_telescope"></select>
+                </span>
+                <br/>
+                <span class="middle"><span class="llbl">Default epoch:</span><input type="text" id="def_epoch"/></span><br/>
+                <span class="defdetails">Must be <code>1950</code> or <code>2000</code>.</span>
+
+                <span class="middle"><span class="llbl">Default proposal ID:</span><input type="text" id="def_project"/></span><br/>
+                <span class="defdetails">Must have the form <code>NN-NNN</code>.</span>
+
+                <span class="middle"><span class="llbl">Default observation type:</span><input type="text" id="def_type"/></span><br/>
+                <span class="defdetails">Must be one of the following: <code>Monitor</code>, <code>ToO</code>, <code>SoftToO</code>, <code>Payback</code>, <code>Fast-Track</code>, <code>Service</code>, <code>Visitor</code>, or <code>Staff</code>.</span>
+
+                <span class="middle"><span class="llbl">Default maximum airmass:</span><input type="text" id="def_maxam"/></span><br/>
+                <span class="defdetails">Must be a float.</span>
+
+                <span class="middle"><span class="llbl">Default observing time:</span><input type="text" id="def_obstime"/></span><br/>
+                <span class="defdetails">Must be an integer.</span>
+
+                <span class="middle"><span class="llbl">Default colours:</span><span class="rlbl">Monitor</span><input type="text" id="def_col_Monitor" /><input type="text" id="def_tcol_Monitor" /></span><br/>
+                <span class="middle"><span class="llbl"></span><span class="rlbl">ToO</span><input type="text" id="def_col_ToO" /><input type="text" id="def_tcol_ToO" /></span><br/>
+                <span class="middle"><span class="llbl"></span><span class="rlbl">SoftToO</span><input type="text" id="def_col_SoftToO" /><input type="text" id="def_tcol_SoftToO" /></span><br/>
+                <span class="middle"><span class="llbl"></span><span class="rlbl">Payback</span><input type="text" id="def_col_Payback" /><input type="text" id="def_tcol_Payback" /></span><br/>
+                <span class="middle"><span class="llbl"></span><span class="rlbl">Fast-Track</span><input type="text" id="def_col_Fast_Track" /><input type="text" id="def_tcol_Fast_Track" /></span><br/>
+                <span class="middle"><span class="llbl"></span><span class="rlbl">Service</span><input type="text" id="def_col_Service" /><input type="text" id="def_tcol_Service" /></span><br/>
+                <span class="middle"><span class="llbl"></span><span class="rlbl">Visitor</span><input type="text" id="def_col_Visitor" /><input type="text" id="def_tcol_Visitor" /></span><br/>
+                <span class="middle"><span class="llbl"></span><span class="rlbl">Staff</span><input type="text" id="def_col_Staff" /></span><input type="text" id="def_tcol_Staff" /></span><br/>
+                <span class="defdetails">First column: fill colour; second column: text colour. Input accepts any valid CSS colour specification (e.g., <code>blue</code>, <code>rgb(0, 0, 255)</code>, <code>#0000ff</code>, or <code>#00f</code>).</span>
+            </div> <!-- #config-left -->
+            <div id="config-right">
+                <h2 class="h2-instr">Scheduling algorithm</h2><br/>
+                <span class="middle"><label for="opt_reschedule_later"><input type="checkbox" name="opt_reschedule_later" id="opt_reschedule_later" checked="checked" /> Do not schedule in the past during an observing night</label></span><br/>
+                <span class="middle"><label for="opt_away_from_zenith"><input type="checkbox" name="opt_away_from_zenith" id="opt_away_from_zenith" checked="checked" /> Do not observe at altitudes higher than the zenith tracking limit</label></span><br/>
+                <span class="middle"><label for="opt_maintain_order"><input type="checkbox" name="opt_maintain_order" id="opt_maintain_order" /> Always schedule targets in their input order</label></span><br/>
+                <br/>
+                <h2 class="h2-instr">Display settings</h2><br/>
+                <span class="middle"><label for="opt_show_lastobstime"><input type="checkbox" name="opt_show_lastobstime" id="opt_show_lastobstime" /> Mark last possible starting time</label></span><br/>
+            </div></div> <!-- #config-right, #config -->
+            <span style="text-align: right; width: 100%; display: block">
+                <input type="hidden" id="configsubmit"/><input type="button" value="Apply settings" id="configapply" />
             </span>
-            <br/>
-            <span class="middle"><span class="llbl">Default epoch:</span><input type="text" id="def_epoch"/></span><br/>
-            <span class="defdetails">Must be <code>1950</code> or <code>2000</code>.</span>
-
-            <span class="middle"><span class="llbl">Default proposal ID:</span><input type="text" id="def_project"/></span><br/>
-            <span class="defdetails">Must have the form <code>NN-NNN</code>.</span>
-
-            <span class="middle"><span class="llbl">Default observation type:</span><input type="text" id="def_type"/></span><br/>
-            <span class="defdetails">Must be one of the following: <code>Monitor</code>, <code>ToO</code>, <code>SoftToO</code>, <code>Payback</code>, <code>Fast-Track</code>, <code>Service</code>, <code>Visitor</code>, or <code>Staff</code>.</span>
-
-            <span class="middle"><span class="llbl">Default maximum airmass:</span><input type="text" id="def_maxam"/></span><br/>
-            <span class="defdetails">Must be a float.</span>
-
-            <span class="middle"><span class="llbl">Default observing time:</span><input type="text" id="def_obstime"/></span><br/>
-            <span class="defdetails">Must be an integer.</span>
-
-            <span class="middle"><span class="llbl">Default colours:</span><span class="rlbl">Monitor</span><input type="text" id="def_col_Monitor" /><input type="text" id="def_tcol_Monitor" /></span><br/>
-            <span class="middle"><span class="llbl"></span><span class="rlbl">ToO</span><input type="text" id="def_col_ToO" /><input type="text" id="def_tcol_ToO" /></span><br/>
-            <span class="middle"><span class="llbl"></span><span class="rlbl">SoftToO</span><input type="text" id="def_col_SoftToO" /><input type="text" id="def_tcol_SoftToO" /></span><br/>
-            <span class="middle"><span class="llbl"></span><span class="rlbl">Payback</span><input type="text" id="def_col_Payback" /><input type="text" id="def_tcol_Payback" /></span><br/>
-            <span class="middle"><span class="llbl"></span><span class="rlbl">Fast-Track</span><input type="text" id="def_col_Fast_Track" /><input type="text" id="def_tcol_Fast_Track" /></span><br/>
-            <span class="middle"><span class="llbl"></span><span class="rlbl">Service</span><input type="text" id="def_col_Service" /><input type="text" id="def_tcol_Service" /></span><br/>
-            <span class="middle"><span class="llbl"></span><span class="rlbl">Visitor</span><input type="text" id="def_col_Visitor" /><input type="text" id="def_tcol_Visitor" /></span><br/>
-            <span class="middle"><span class="llbl"></span><span class="rlbl">Staff</span><input type="text" id="def_col_Staff" /></span><input type="text" id="def_tcol_Staff" /></span><br/>
-            <span class="defdetails">First column: fill colour; second column: text colour. Input accepts any valid CSS colour specification (e.g., <code>blue</code>, <code>rgb(0, 0, 255)</code>, <code>#0000ff</code>, or <code>#00f</code>).</span>
-
-            <input type="hidden" id="defsubmit"/><input type="button" value="Apply" id="defapply" />
-        </div> <!-- #defaultsdiv -->
+        </div> <!-- #config-container -->
         <div id="help-container"><div id="help">
             <div id="help-left">
                 <span class="sh0">Workflow</span>
@@ -163,19 +172,19 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
                 • <code>EQPsc 23 34 34 -01 19 36</code><br/>
                   This will fill the extra fields with the default values.<br/>
 
-                • <code>EQPsc 23 34 34.70 -01 19 36.01 2000 2600 54-321 2.0 Monitor</code><br/>
+                • <code>EQPsc 23 34 34.70 -01 19 36.01 2000 2600 54-321 2.0 Monitor default</code><br/>
                   This is the most frequent way of filling the input field, and is also used by the OB generator.<br/>
 
-                • <code>EQPsc 23:34:34.70 -01:19:36.01 2000 2600 54-321 2.0 Monitor</code><br/>
+                • <code>EQPsc 23:34:34.70 -01:19:36.01 2000 2600 54-321 2.0 Monitor default</code><br/>
                   Sometimes, observers prefer to use colon-separated RA and Dec, which is fine.<br/>
 
-                • <code>HD84937 09:46:12.00/0.03 13:59:17.00/-0.79 1950 414 54-501 1.5 ToO</code><br/>
+                • <code>HD84937 09 46 12.06/0.373 13 59 17.44/-0.774 1950 414 54-501 1.5 ToO</code><br/>
                   For this object the proper motion is appended to the RA and Dec values, and the coordinate epoch is given as B1950.<br/>
 
                 • <code>EQPsc 23 34 34.70 -01 19 36.01 2000 1800 54-321 UT[22:00-24:00] Staff</code><br/>
                   In this case the program will schedule EQPsc for 30 min between UT 22 and 24.<br/>
 
-                • <code>EQPsc 23:34:34.70 -01:19:36.01 2000 * 54-321 UT[20:00-20:30] Staff</code><br/>
+                • <code>EQPsc 23:34:34.70 -01:19:36.01 2000 * 54-321 UT[20:00-20:30] Staff default</code><br/>
                   In this case EQPsc will be scheduled for the entire half hour between UT 20:00 and 20:30. Highest priority.<br/>
                 <br/>
                 Note: It is possible to separate groups of targets by blank lines, which will be ignored by the software.<br/>

@@ -27,6 +27,7 @@ function Driver() {
      *     - Different Aladin surveys used for optical vs infrared instruments
      *     - Many bug fixes (part of them reported by NOT staff)
      *     - Syntax highlight for line comments
+     *     - Revamped Configuration and Help sections
      *     - Updated 3rd party libraries
      */
     this.version = "2.1";
@@ -71,6 +72,7 @@ function Driver() {
         },
         start: [{
             regex: /#.*/,
+            sol: true, /* only match at start of line; ^ in regex doesn't work */
             token: 'comment',
         }]
     });
@@ -654,37 +656,37 @@ Driver.prototype.BindEvents = function () {
     });
     $("#def_epoch").keydown(function (e) {
         if (e.which == 13) {
-            $("#defsubmit").val("true");
+            $("#configsubmit").val("true");
             $.fancybox.close();
         }
     });
     $("#def_project").keydown(function (e) {
         if (e.which == 13) {
-            $("#defsubmit").val("true");
+            $("#configsubmit").val("true");
             $.fancybox.close();
         }
     });
     $("#def_type").keydown(function (e) {
         if (e.which == 13) {
-            $("#defsubmit").val("true");
+            $("#configsubmit").val("true");
             $.fancybox.close();
         }
     });
     $("#def_maxam").keydown(function (e) {
         if (e.which == 13) {
-            $("#defsubmit").val("true");
+            $("#configsubmit").val("true");
             $.fancybox.close();
         }
     });
     $("#def_obstime").keydown(function (e) {
         if (e.which == 13) {
-            $("#defsubmit").val("true");
+            $("#configsubmit").val("true");
             $.fancybox.close();
         }
     });
     $("#def_telescope").on("keydown", function (e) {
         if (e.which == 13) {
-            $("#defsubmit").val("true");
+            $("#configsubmit").val("true");
             $.fancybox.close();
         }
     }).on("click", function (e) {
@@ -711,11 +713,11 @@ Driver.prototype.BindEvents = function () {
     $("#tcsExport").click(function () {
         driver.targets.ExportTCSCatalogue();
     });
-    $("#setDefaults").click(function () {
-        driver.EvtClick_SetDefaults();
+    $("#configBtn").click(function () {
+        driver.EvtClick_Config();
     });
-    $("#defapply").click(function () {
-        $("#defsubmit").val("true");
+    $("#configapply").click(function () {
+        $("#configsubmit").val("true");
         $.fancybox.close();
     });
 
@@ -762,13 +764,13 @@ Driver.prototype.BindEvents = function () {
         $(`#def_tcol_${k.replace("-", "_")}`).addClass("inpshort");
         $(`#def_col_${k.replace("-", "_")}`).keydown(function (e) {
             if (e.which == 13) {
-                $("#defsubmit").val("true");
+                $("#configsubmit").val("true");
                 $.fancybox.close();
             }
         });
         $(`#def_tcol_${k.replace("-", "_")}`).keydown(function (e) {
             if (e.which == 13) {
-                $("#defsubmit").val("true");
+                $("#configsubmit").val("true");
                 $.fancybox.close();
             }
         });
@@ -781,8 +783,8 @@ Driver.prototype.BindEvents = function () {
 /**
  * @memberof Driver
  */
-Driver.prototype.EvtClick_SetDefaults = function () {
-    $("#defsubmit").val("false");
+Driver.prototype.EvtClick_Config = function () {
+    $("#configsubmit").val("false");
     $("#def_epoch").val(Driver.defaultEpoch);
     $("#def_project").val(Driver.defaultProject);
     $("#def_type").val(Driver.defaultType);
@@ -793,7 +795,7 @@ Driver.prototype.EvtClick_SetDefaults = function () {
         $(`#def_tcol_${k.replace("-", "_")}`).val(Driver.TextColors[k]);
     }
     $.fancybox.open({
-        src: "#defaultsdiv",
+        src: "#config-container",
         type: "inline",
         touch: false,
         beforeClose: function () {
@@ -806,7 +808,7 @@ Driver.prototype.EvtClick_SetDefaults = function () {
  * @memberof Driver
  */
 Driver.prototype.CallbackUpdateDefaults = function () {
-    if ($("#defsubmit").val() === "false") {
+    if ($("#configsubmit").val() === "false") {
         return;
     }
     let re, k, resetTel = false, resetCol = false;

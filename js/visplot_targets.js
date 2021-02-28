@@ -1266,7 +1266,7 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
         }
         words[13] = parseFloat(rax[0]);
         words[14] = parseFloat(rax[1]);
-        words[14] = Math.max(-1000, Math.min(1000, words[13]));
+        words[14] = Math.max(-1000, Math.min(1000, words[14]));
     } else if (helper.notFloat(words[3])) {
         helper.LogError(`Error 19: Incorrect syntax: non-integer value detected in [RA] on line #${linenumber}!`);
         return false;
@@ -1310,7 +1310,7 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
         }
         words[15] = parseFloat(rax[0]);
         words[16] = parseFloat(rax[1]);
-        words[16] = Math.max(-1000, Math.min(1000, words[15]));
+        words[16] = Math.max(-1000, Math.min(1000, words[16]));
     } else if (helper.notFloat(words[6])) {
         helper.LogError(`Error 26: Incorrect syntax: non-integer value detected in [DEC] on line #${linenumber}!`);
         return false;
