@@ -400,26 +400,17 @@ Driver.prototype.EvtFrame_MouseUp = function (e) {
                 // reObj must come between le and ri
                 let newscheduleorder = [];
                 for (let i = 0; i < this.targets.nTargets; i += 1) {
-                    /* First come the observed objects; they have to stay at the beginning */
-                    if (this.targets.Targets[i].Observed) {
-                        newscheduleorder.push(i);
+                    if (i == this.reObj) {
+                        continue;
+                    }
+                    if (ri == i) {
+                        newscheduleorder.push(this.reObj);
+                    }
+                    newscheduleorder.push(i);
+                    if (i == this.targets.nTargets - 1 && le == i) {
+                        newscheduleorder.push(this.reObj);
                     }
                 }
-                for (let i = 0; i < this.targets.nTargets; i += 1) {
-                    if (!this.targets.Targets[i].Observed) {
-                        if (i == this.reObj) {
-                            continue;
-                        }
-                        if (ri == i) {
-                            newscheduleorder.push(this.reObj);
-                        }
-                        newscheduleorder.push(i);
-                        if (i == this.targets.nTargets - 1 && le == i) {
-                            newscheduleorder.push(this.reObj);
-                        }
-                    }
-                }
-                console.log(newscheduleorder);
                 helper.LogEntry("Rescheduling the observing night. Please wait...");
                 this.targets.scheduleAndOptimize_givenOrder(newscheduleorder);
                 helper.LogEntry("Done.");
