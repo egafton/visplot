@@ -305,6 +305,10 @@ helper.LSTToEphemDate = function (str) {
     let jdiff2 = (rad2-sunset)*86164.1/sla.d2pi;
     let ut1 = driver.night.Sunset + jdiff1 / 86400;
     let ut2 = driver.night.Sunset + jdiff2 / 86400;
+    if (ut2 < driver.night.Sunset) {
+        ut1 += 1;
+        ut2 += 1;
+    }
     if (ut1 < driver.night.Sunset) {
         ut1 = driver.night.Sunset;
     }
