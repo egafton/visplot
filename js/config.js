@@ -40,7 +40,34 @@ config["NOT"] = {
     lowestLimit: 6,
 
     // Lowest limit for unvignetted observations, in degrees; null if N/A
-    vignetteLimit: 35
+    vignetteLimit: 35,
+
+    // Instrument definitions; fov in arcminutes
+    instruments: {
+        "ALFOSC": {
+            type: "optical",
+            fov: 6.4
+        },
+        "NOTCAM": {
+            type: "infrared",
+            fov: 4
+        },
+        "MOSCA": {
+            type: "optical",
+            fov: 7.7
+        },
+        "STANCAM": {
+            type: "optical",
+            fov: 3
+        },
+        "FIES": {
+            type: "optical",
+            fov: 3 /* Uses STANCAM for acquisition */
+        }
+    },
+
+    // When all else fails, what to use?
+    defaultInstrument: "ALFOSC"
 };
 
 /**
@@ -69,7 +96,30 @@ config["WHT"] = {
     lowestLimit: 12,
 
     // Lowest limit for unvignetted observations, in degrees; null if N/A
-    vignetteLimit: 25
+    vignetteLimit: 25,
+
+    // Instrument definitions; fov in arcminutes
+    instruments: {
+        "ACAM": {
+            type: "optical",
+            fov: 8
+        },
+        "LIRIS": {
+            type: "infrared",
+            fov: 4.3
+        },
+        "ISIS": {
+            type: "optical",
+            fov: 15 /* Uses A&G unit for acquisition */
+        },
+        "WEAVE": {
+            type: "optical",
+            fov: 144 /* Field of view of the FPI camera */
+        }
+    },
+
+    // When all else fails, what to use?
+    defaultInstrument: "ACAM"
 };
 
 /**
@@ -98,5 +148,20 @@ config["INT"] = {
     lowestLimit: 20,
 
     // Lowest limit for unvignetted observations, in degrees; null if N/A
-    vignetteLimit: 33
+    vignetteLimit: 33,
+
+    // Instrument definitions; fov in arcminutes
+    instruments: {
+        "WFC": {
+            type: "optical",
+            fov: 33.8
+        },
+        "IDS": {
+            type: "optical",
+            fov: 1.2 /* Uses AG0 for acquisition */
+        }
+    },
+
+    // When all else fails, what to use?
+    defaultInstrument: "WFC"
 };

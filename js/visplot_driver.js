@@ -488,18 +488,25 @@ Driver.prototype.EvtFrame_Click = function (e) {
 
             let ra = obj.J2000[0] * sla.r2d;
             let dec = obj.J2000[1] * sla.r2d;
-            const surveyName = $.inArray(obj.Instrument, ["NOTCAM"]) == -1
+            let instrument = obj.Instrument;
+            if (!(instrument in config[Driver.telescopeName].instruments)) {
+                /* Got a weird instrument? Just show the default FoV*/
+                instrument = config[Driver.telescopeName].defaultInstrument;
+            }
+            const fov = config[Driver.telescopeName].instruments[instrument].fov / 60;
+            const surveyName = config[Driver.telescopeName].instruments[instrument].type == "optical"
                 ? "P/DSS2/color"
                 : "P/2MASS/color";
             $("#details_map_hang").html(surveyName);
             if (this.aladinInitialized) {
                 this.objAladin.setImageSurvey(surveyName);
+                this.objAladin.setFov(fov)
                 this.objAladin.gotoRaDec(ra, dec);
             } else {
                 this.objAladin = A.aladin("#details_map", {
                     target: `${ra} ${dec}`,
                     survey: surveyName,
-                    fov: 0.107,
+                    fov: fov,
                     reticle: true,
                     showZoomControl: true,
                     showFullscreenControl: false,
