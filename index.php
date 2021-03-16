@@ -37,7 +37,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" type="text/css" media="screen" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.59.4/codemirror.min.css" type="text/css" />
-    <link rel="stylesheet" href="http://aladin.u-strasbg.fr/AladinLite/api/v2/latest/aladin.min.css" type="text/css" />
+    <link rel="stylesheet" href="css/aladin.min.css" type="text/css" />
     <link rel="stylesheet" href="css/visplot.css" type="text/css" />
 </head>
 
@@ -221,7 +221,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.59.4/addon/mode/simple.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.5.0/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-    <script src="http://aladin.u-strasbg.fr/AladinLite/api/v2/latest/aladin.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/aladin.min.js" type="text/javascript" charset="utf-8"></script>
     <!-- Configuration files -->
     <script src="js/config.js" type="text/javascript"></script>
     <!-- Main JS code -->

@@ -29,8 +29,12 @@ function Driver() {
      *     - Syntax highlight for line comments
      *     - Revamped Configuration and Help sections
      *     - Updated 3rd party libraries
+     *
+     * 2.2 - Aladin is hosted locally, and allows arbitrary position angles
+     *     - Aladin FoV is now instrument-specific, as defined in config.js
+     *     - Many bug fixes (part of them reported by NOT staff)
      */
-    this.version = "2.1";
+    this.version = "2.2pre-alpha";
     helper.LogSuccess(`Hello, this is Visplot version ${this.version}`);
 
     /* HTML5 canvas, context and Graph class - related variables */
