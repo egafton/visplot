@@ -38,7 +38,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" type="text/css" media="screen" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.59.4/codemirror.min.css" type="text/css" />
     <link rel="stylesheet" href="http://aladin.u-strasbg.fr/AladinLite/api/v2/latest/aladin.min.css" type="text/css" />
-    <link rel="stylesheet" href="style.css" type="text/css" />
+    <link rel="stylesheet" href="css/visplot.css" type="text/css" />
 </head>
 
 <body>
