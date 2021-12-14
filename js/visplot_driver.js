@@ -33,8 +33,10 @@ function Driver() {
      * 2.2 - Aladin is hosted locally, and allows arbitrary position angles
      *     - Aladin FoV is now instrument-specific, as defined in config.js
      *     - Many bug fixes (part of them reported by NOT staff)
+     * 
+     * 2.3 - Added CATServer OB type
      */
-    this.version = "2.2pre-alpha";
+    this.version = "2.3";
     helper.LogSuccess(`Hello, this is Visplot version ${this.version}`);
 
     /* HTML5 canvas, context and Graph class - related variables */
