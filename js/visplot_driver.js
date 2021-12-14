@@ -846,7 +846,7 @@ Driver.prototype.CallbackUpdateDefaults = function () {
     re = $("#def_type").val().trim();
     if (re !== Driver.defaultType) {
         let reok = true;
-        if ($.inArray(re, ["Monitor", "ToO", "SoftToO", "Payback", "Fast-Track", "Service", "Visitor", "Staff"]) === -1) {
+        if ($.inArray(re, ["Monitor", "ToO", "SoftToO", "Payback", "Fast-Track", "Service", "CATService", "Visitor", "Staff"]) === -1) {
             let wl = re.length;
             if (re.indexOf("Staff/") !== 0 || (re.indexOf("Staff/") === 0 && (wl < 8 || wl > 9))) {
                 reok = false;
@@ -856,7 +856,7 @@ Driver.prototype.CallbackUpdateDefaults = function () {
             Driver.defaultType = re;
             helper.LogSuccess(`Default <i>Observation type</i> set to <i>${re}</i>.`);
         } else {
-            helper.LogError("Error 52: Default <i>Observation type</i> was not updated since the input was invalid (must be one of the following: <i>Monitor</i>, <i>ToO</i>, <i>SoftToO</i>, <i>Payback</i>, <i>Fast-Track</i>, <i>Service</i>, <i>Visitor</i>, <i>Staff</i>)");
+            helper.LogError("Error 52: Default <i>Observation type</i> was not updated since the input was invalid (must be one of the following: <i>Monitor</i>, <i>ToO</i>, <i>SoftToO</i>, <i>Payback</i>, <i>Fast-Track</i>, <i>Service</i>, <i>CATService</i>, <i>Visitor</i>, <i>Staff</i>)");
         }
     }
     re = $("#def_maxam").val().trim();
@@ -993,12 +993,32 @@ Driver.prototype.rescaleCanvas = function (cnv, ctx) {
 /**
  * @memberof Driver
  */
-Driver._fillObj = {"Monitor": "orange", "ToO": "#FF9900", "SoftToO": "#FFFF99", "Payback": "blue", "Fast-Track": "blue", "Service": "blue", "Visitor": "blue", "Staff": "blue"};
+Driver._fillObj = {
+    "Monitor": "orange",
+    "ToO": "#FF9900",
+    "SoftToO": "#FFFF99",
+    "Payback": "blue",
+    "Fast-Track": "blue",
+    "Service": "blue",
+    "CATService": "blue",
+    "Visitor": "blue",
+    "Staff": "blue"
+};
 
 /**
  * @memberof Driver
  */
-Driver._textObj = {"Monitor": "black", "ToO": "black", "SoftToO": "black", "Payback": "white", "Fast-Track": "white", "Service": "white", "Visitor": "white", "Staff": "white"};
+Driver._textObj = {
+    "Monitor": "black",
+    "ToO": "black",
+    "SoftToO": "black",
+    "Payback": "white",
+    "Fast-Track": "white",
+    "Service": "white",
+    "CATService": "white",
+    "Visitor": "white",
+    "Staff": "white"
+};
 
 /**
  * @memberof Driver
