@@ -57,8 +57,12 @@ function Driver() {
      *     - Syntax highlight for line comments
      *     - Revamped Configuration and Help sections
      *     - Updated 3rd party libraries
+     *
+     * 2.2 - Aladin is hosted locally, and allows arbitrary position angles
+     *     - Aladin FoV is now instrument-specific, as defined in config.js
+     *     - Many bug fixes (part of them reported by NOT staff)
      */
-    this.version = "2.1";
+    this.version = "2.2pre-alpha";
     helper.LogSuccess(`Hello, this is Visplot version ${this.version}`);
 
     /* HTML5 canvas, context and Graph class - related variables */
@@ -428,26 +432,17 @@ Driver.prototype.EvtFrame_MouseUp = function (e) {
                 // reObj must come between le and ri
                 let newscheduleorder = [];
                 for (let i = 0; i &lt; this.targets.nTargets; i += 1) {
-                    /* First come the observed objects; they have to stay at the beginning */
-                    if (this.targets.Targets[i].Observed) {
-                        newscheduleorder.push(i);
+                    if (i == this.reObj) {
+                        continue;
+                    }
+                    if (ri == i) {
+                        newscheduleorder.push(this.reObj);
+                    }
+                    newscheduleorder.push(i);
+                    if (i == this.targets.nTargets - 1 &amp;&amp; le == i) {
+                        newscheduleorder.push(this.reObj);
                     }
                 }
-                for (let i = 0; i &lt; this.targets.nTargets; i += 1) {
-                    if (!this.targets.Targets[i].Observed) {
-                        if (i == this.reObj) {
-                            continue;
-                        }
-                        if (ri == i) {
-                            newscheduleorder.push(this.reObj);
-                        }
-                        newscheduleorder.push(i);
-                        if (i == this.targets.nTargets - 1 &amp;&amp; le == i) {
-                            newscheduleorder.push(this.reObj);
-                        }
-                    }
-                }
-                console.log(newscheduleorder);
                 helper.LogEntry("Rescheduling the observing night. Please wait...");
                 this.targets.scheduleAndOptimize_givenOrder(newscheduleorder);
                 helper.LogEntry("Done.");
@@ -525,18 +520,25 @@ Driver.prototype.EvtFrame_Click = function (e) {
 
             let ra = obj.J2000[0] * sla.r2d;
             let dec = obj.J2000[1] * sla.r2d;
-            const surveyName = $.inArray(obj.Instrument, ["NOTCAM"]) == -1
+            let instrument = obj.Instrument;
+            if (!(instrument in config[Driver.telescopeName].instruments)) {
+                /* Got a weird instrument? Just show the default FoV*/
+                instrument = config[Driver.telescopeName].defaultInstrument;
+            }
+            const fov = config[Driver.telescopeName].instruments[instrument].fov / 60;
+            const surveyName = config[Driver.telescopeName].instruments[instrument].type == "optical"
                 ? "P/DSS2/color"
                 : "P/2MASS/color";
             $("#details_map_hang").html(surveyName);
             if (this.aladinInitialized) {
                 this.objAladin.setImageSurvey(surveyName);
+                this.objAladin.setFov(fov)
                 this.objAladin.gotoRaDec(ra, dec);
             } else {
                 this.objAladin = A.aladin("#details_map", {
                     target: `${ra} ${dec}`,
                     survey: surveyName,
-                    fov: 0.107,
+                    fov: fov,
                     reticle: true,
                     showZoomControl: true,
                     showFullscreenControl: false,
@@ -872,7 +874,7 @@ Driver.prototype.CallbackUpdateDefaults = function () {
     re = $("#def_type").val().trim();
     if (re !== Driver.defaultType) {
         let reok = true;
-        if ($.inArray(re, ["Monitor", "ToO", "SoftToO", "Payback", "Fast-Track", "Service", "Visitor", "Staff"]) === -1) {
+        if ($.inArray(re, ["Monitor", "ToO", "SoftToO", "Payback", "Fast-Track", "Service", "CATService", "Visitor", "Staff"]) === -1) {
             let wl = re.length;
             if (re.indexOf("Staff/") !== 0 || (re.indexOf("Staff/") === 0 &amp;&amp; (wl &lt; 8 || wl > 9))) {
                 reok = false;
@@ -882,7 +884,7 @@ Driver.prototype.CallbackUpdateDefaults = function () {
             Driver.defaultType = re;
             helper.LogSuccess(`Default &lt;i>Observation type&lt;/i> set to &lt;i>${re}&lt;/i>.`);
         } else {
-            helper.LogError("Error 52: Default &lt;i>Observation type&lt;/i> was not updated since the input was invalid (must be one of the following: &lt;i>Monitor&lt;/i>, &lt;i>ToO&lt;/i>, &lt;i>SoftToO&lt;/i>, &lt;i>Payback&lt;/i>, &lt;i>Fast-Track&lt;/i>, &lt;i>Service&lt;/i>, &lt;i>Visitor&lt;/i>, &lt;i>Staff&lt;/i>)");
+            helper.LogError("Error 52: Default &lt;i>Observation type&lt;/i> was not updated since the input was invalid (must be one of the following: &lt;i>Monitor&lt;/i>, &lt;i>ToO&lt;/i>, &lt;i>SoftToO&lt;/i>, &lt;i>Payback&lt;/i>, &lt;i>Fast-Track&lt;/i>, &lt;i>Service&lt;/i>, &lt;i>CATService&lt;/i>, &lt;i>Visitor&lt;/i>, &lt;i>Staff&lt;/i>)");
         }
     }
     re = $("#def_maxam").val().trim();
@@ -1019,12 +1021,32 @@ Driver.prototype.rescaleCanvas = function (cnv, ctx) {
 /**
  * @memberof Driver
  */
-Driver._fillObj = {"Monitor": "orange", "ToO": "#FF9900", "SoftToO": "#FFFF99", "Payback": "blue", "Fast-Track": "blue", "Service": "blue", "Visitor": "blue", "Staff": "blue"};
+Driver._fillObj = {
+    "Monitor": "orange",
+    "ToO": "#FF9900",
+    "SoftToO": "#FFFF99",
+    "Payback": "blue",
+    "Fast-Track": "blue",
+    "Service": "blue",
+    "CATService": "blue",
+    "Visitor": "blue",
+    "Staff": "blue"
+};
 
 /**
  * @memberof Driver
  */
-Driver._textObj = {"Monitor": "black", "ToO": "black", "SoftToO": "black", "Payback": "white", "Fast-Track": "white", "Service": "white", "Visitor": "white", "Staff": "white"};
+Driver._textObj = {
+    "Monitor": "black",
+    "ToO": "black",
+    "SoftToO": "black",
+    "Payback": "white",
+    "Fast-Track": "white",
+    "Service": "white",
+    "CATService": "white",
+    "Visitor": "white",
+    "Staff": "white"
+};
 
 /**
  * @memberof Driver
@@ -1199,7 +1221,7 @@ Object.defineProperties(Driver, {
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.5</a> on Sun Feb 28 2021 09:39:54 GMT+0000 (GMT)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.5</a> on Tue Dec 14 2021 11:01:17 GMT-0600 (Central Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>
