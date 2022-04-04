@@ -32,6 +32,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
 
 <head>
     <title>NOT/Visplot</title>
+    <link rel="icon" type="image/x-icon" href="img/favicon.ico">
     <meta name="description" content="Visibility plot and observation scheduling tool.">
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
