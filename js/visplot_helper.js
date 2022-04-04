@@ -611,9 +611,9 @@ helper.utarc = function(altitude, tsouth, dec, pm) {
             (Math.cos(Driver.obs_lat_rad) * Math.cos(dec));
     const t = sla.r2d * Math.acos(cost) / 15;
     if (pm === "+") {
-        return sla.dr2tf(6, (tsouth + t) / 24 * sla.d2pi).ihmsf;
+        return sla.dr2tf(6, ((tsouth + t) % 24) / 24 * sla.d2pi).ihmsf;
     } else {
-        return sla.dr2tf(6, (tsouth - t) / 24 * sla.d2pi).ihmsf;
+        return sla.dr2tf(6, ((tsouth - t) % 24) / 24 * sla.d2pi).ihmsf;
     }
 };
 

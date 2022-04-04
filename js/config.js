@@ -15,14 +15,14 @@
 var config = {};
 
 /**
- * Configuration for the Nordic Optical Telescope.
+ * Configuration for the 2.5m Nordic Optical Telescope.
  */
 config["NOT"] = {
     // Name of the observatory site
     site: "Roque de Los Muchachos",
 
     // Full name of the telescope
-    name: "Nordic Optical Telescope",
+    name: "Nordic Optical Telescope 2.5m",
 
     // Latitude in degrees, +North
     latitude: 28.75723,
@@ -67,18 +67,21 @@ config["NOT"] = {
     },
 
     // When all else fails, what to use?
-    defaultInstrument: "ALFOSC"
+    defaultInstrument: "ALFOSC",
+
+    // Time zone relative to UTC
+    timezone: 0
 };
 
 /**
- * Configuration for the William Herschel Telescope.
+ * Configuration for the 4.2m William Herschel Telescope.
  */
 config["WHT"] = {
     // Name of the observatory site
     site: "Roque de Los Muchachos",
 
     // Full name of the telescope
-    name: "William Herschel Telescope",
+    name: "William Herschel Telescope 4.2m",
 
     // Latitude in degrees, +North
     latitude: 28.76062,
@@ -119,18 +122,21 @@ config["WHT"] = {
     },
 
     // When all else fails, what to use?
-    defaultInstrument: "ACAM"
+    defaultInstrument: "ACAM",
+
+    // Time zone relative to UTC
+    timezone: 0
 };
 
 /**
- * Configuration for the Isaac Newton Telescope.
+ * Configuration for the 2.5m Isaac Newton Telescope.
  */
 config["INT"] = {
     // Name of the observatory site
     site: "Roque de Los Muchachos",
 
     // Full name of the telescope
-    name: "Isaac Newton Telescope",
+    name: "Isaac Newton Telescope 2.5m",
 
     // Latitude in degrees, +North
     latitude: 28.76209,
@@ -163,5 +169,94 @@ config["INT"] = {
     },
 
     // When all else fails, what to use?
-    defaultInstrument: "WFC"
+    defaultInstrument: "WFC",
+
+    // Time zone relative to UTC
+    timezone: 0
+};
+
+/**
+ * Configuration for the 2.7m Harlan J. Smith Telescope.
+ */
+ config["HJST"] = {
+    // Name of the observatory site
+    site: "McDonald Observatory",
+
+    // Full name of the telescope
+    name: "Harlan J. Smith Telescope 2.7m",
+
+    // Latitude in degrees, +North
+    latitude: 30.671583,
+
+    // Longitude in degrees, +East
+    longitude: -104.021561,
+
+    // Altitude above sea level, in metres
+    altitude: 2075,
+
+    // Lowest limit in zenith distance for observing, in degrees; null if N/A
+    zenithLimit: 1,
+
+    // Lowest limit in elevation for observing, in degrees
+    lowestLimit: 10,
+
+    // Lowest limit for unvignetted observations, in degrees; null if N/A
+    vignetteLimit: 20,
+
+    // Instrument definitions; fov in arcminutes
+    instruments: {
+        "DIAFI": {
+            type: "optical",
+            fov: 8.8
+        }
+    },
+
+    // When all else fails, what to use?
+    defaultInstrument: "DIAFI",
+
+    // Time zone relative to UTC
+    timezone: -6
+};
+
+/**
+ * Configuration for the 2.1m Otto Struve Telescope.
+ */
+ config["OST"] = {
+    // Name of the observatory site
+    site: "McDonald Observatory",
+
+    // Full name of the telescope
+    name: "Otto Struve Telescope 2.1m",
+
+    // Latitude in degrees, +North
+    latitude: 30.679709,
+
+    // Longitude in degrees, +East
+    longitude: -104.024823,
+
+    // Altitude above sea level, in metres
+    altitude: 2070,
+
+    // Lowest limit in zenith distance for observing, in degrees; null if N/A
+    zenithLimit: 1,
+
+    // Lowest limit in elevation for observing, in degrees
+    lowestLimit: 10,
+
+    // Lowest limit for unvignetted observations, in degrees; null if N/A
+    vignetteLimit: 20,
+
+    // Instrument definitions; fov in arcminutes
+    instruments: {
+        "CQUEAN": {
+            type: "optical",
+            fov: 4.7
+        }
+    },
+
+    // When all else fails, what to use?
+    defaultInstrument: "CQUEAN",
+
+    // Time zone relative to UTC
+    timezone: -6
 };

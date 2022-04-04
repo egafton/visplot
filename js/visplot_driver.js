@@ -564,7 +564,7 @@ Driver.prototype.InitializeDate = function () {
         day = now.getUTCDate();
         month = now.getUTCMonth() + 1;
         year = now.getUTCFullYear();
-        if (now.getUTCHours() < 12) {
+        if ((now.getUTCHours() - config[Driver.telescopeName].timezone) % 24 < 12) {
             if (day == 1) {
                 let dd = helper.numberOfDays(year, month - 1);
                 if (month === 0) {
@@ -821,6 +821,8 @@ Driver.prototype.CallbackUpdateDefaults = function () {
     if (re !== Driver.telescopeName) {
         if ($.inArray(re, Object.keys(config)) !== -1) {
             Driver.telescopeName = re;
+            // Recalculate ephemerides
+            driver.Callback_SetDate();
             helper.LogSuccess(`<i>Telescope name</i> set to <i>${re}</i>.`);
             resetTel = true;
         } else {
@@ -1055,6 +1057,10 @@ Object.defineProperties(Driver, {
     "obs_lon_rad": {
         get: function () {
             return helper.deg2rad(Driver.obs_lon_deg);
+        }},
+    "obs_timezone": {
+        get: function () {
+            return config[this.telescopeName].timezone;
         }},
     "obs_alt": {
         get: function () {

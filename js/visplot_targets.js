@@ -174,9 +174,6 @@ TargetList.prototype.targetStringToJSON = function (line) {
         }
     }
 
-    let stl = helper.stl(night.utcMidnight, night.eqeqx);
-    let ret = sla.mapqk(ra, dec, pmra, pmdec, 0, 0, night.amprms[0]);
-    let tsouth = - sla.drange(stl - ret.ra) * sla.r2d / 15;
     let retap, retob;
     let imax = 0;
     let altmax = 0;

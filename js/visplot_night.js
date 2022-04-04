@@ -41,7 +41,7 @@ Night.prototype.setEphemerides = function (obj) {
     // Compute UTC, UT1 and TT values (expressed in MJD format) of Midnight (UT);
     // Since we assume certain quantities to be constant throughout
     // the night (equation of equinoxes, TT-UTC, etc.), precompute them.
-    this.utcMidnight = sla.cldj(this.year, this.month, this.day) + 1;
+    this.utcMidnight = sla.cldj(this.year, this.month, this.day) + 1 - Driver.obs_timezone / 24;
     this.ut1Midnight = this.utcMidnight + Driver.current_dut;
     this.dut = sla.dtt(this.utcMidnight) / sla.d2s;
     this.ttMidnight = this.utcMidnight + this.dut;
@@ -71,15 +71,19 @@ Night.prototype.setEphemerides = function (obj) {
     // Previous noon; sunset; evening twilights
     let stl = helper.stl(this.utcMidnight-0.5, this.eqeqx);
     let ret = sla.rdplan(this.ttMidnight-0.5, "Sun", Driver.obs_lon_rad, Driver.obs_lat_rad);
-    let tsouth = 12 - sla.drange(stl - ret.ra) * sla.r2d / 15;
+    let tsouth = ((12 - Driver.obs_timezone) - sla.drange(stl - ret.ra) * sla.r2d / 15) % 24;
     let ut1 = helper.utarc(-0.5*ret.diam - this.RefractionAtHorizon - this.HorizonDip, tsouth, ret.dec, "+");
     let ut2 = helper.utarc(-12*sla.dd2r, tsouth, ret.dec, "+");
     let ut3 = helper.utarc(-18*sla.dd2r, tsouth, ret.dec, "+");
-    this.Sunset = this.utcMidnight-1+sla.dtf2d(ut1[0], ut1[1], ut1[2]);
+    let utczero = Math.floor(this.utcMidnight);
+    while (this.utcMidnight - (utczero + sla.dtf2d(ut1[0], ut1[1], ut1[2])) < 0) {
+        utczero -= 1;
+    }
+    this.Sunset = utczero + sla.dtf2d(ut1[0], ut1[1], ut1[2]);
     let next = sla.djcl(this.Sunset);
     this.tSunset = [next.iy, next.im, next.id, ut1[0], ut1[1], parseFloat(ut1[2]+"."+ut1[3])];
-    this.ENauTwilight = this.utcMidnight-1+sla.dtf2d(ut2[0], ut2[1], ut2[2]);
-    this.EAstTwilight = this.utcMidnight-1+sla.dtf2d(ut3[0], ut3[1], ut3[2]);
+    this.ENauTwilight = utczero + sla.dtf2d(ut2[0], ut2[1], ut2[2]);
+    this.EAstTwilight = utczero + sla.dtf2d(ut3[0], ut3[1], ut3[2]);
     let sret = sla.rdplan(this.Sunset + this.dut, "Sun", Driver.obs_lon_rad, Driver.obs_lat_rad);
     let mret = sla.rdplan(this.Sunset + this.dut, "Moon", Driver.obs_lon_rad, Driver.obs_lat_rad);
     let sep = sla.dsep(sret.ra, sret.dec, mret.ra, mret.dec);
@@ -91,15 +95,19 @@ Night.prototype.setEphemerides = function (obj) {
     // Next noon; sunrise; morning twilight
     stl = helper.stl(this.utcMidnight+0.5, this.eqeqx);
     ret = sla.rdplan(this.ttMidnight+0.5, "Sun", Driver.obs_lon_rad, Driver.obs_lat_rad);
-    tsouth = 12 - sla.drange(stl - ret.ra) * sla.r2d / 15;
+    tsouth = ((12 - Driver.obs_timezone) - sla.drange(stl - ret.ra) * sla.r2d / 15) % 24;
     ut1 = helper.utarc(-0.5*ret.diam - this.RefractionAtHorizon - this.HorizonDip, tsouth, ret.dec, "-");
     ut2 = helper.utarc(-12*sla.dd2r, tsouth, ret.dec, "-");
     ut3 = helper.utarc(-18*sla.dd2r, tsouth, ret.dec, "-");
-    this.Sunrise = this.utcMidnight+sla.dtf2d(ut1[0], ut1[1], ut1[2]);
+    utczero = Math.floor(this.utcMidnight);
+    while ((utczero + sla.dtf2d(ut1[0], ut1[1], ut1[2])) - this.utcMidnight < 0) {
+        utczero += 1;
+    }
+    this.Sunrise = utczero + sla.dtf2d(ut1[0], ut1[1], ut1[2]);
     next = sla.djcl(this.Sunrise);
     this.tSunrise = [next.iy, next.im, next.id, ut1[0], ut1[1], parseFloat(ut1[2]+"."+ut1[3])];
-    this.MNauTwilight = this.utcMidnight+sla.dtf2d(ut2[0], ut2[1], ut2[2]);
-    this.MAstTwilight = this.utcMidnight+sla.dtf2d(ut3[0], ut3[1], ut3[2]);
+    this.MNauTwilight = utczero + sla.dtf2d(ut2[0], ut2[1], ut2[2]);
+    this.MAstTwilight = utczero + sla.dtf2d(ut3[0], ut3[1], ut3[2]);
     sret = sla.rdplan(this.Sunrise + this.dut, "Sun", Driver.obs_lon_rad, Driver.obs_lat_rad);
     mret = sla.rdplan(this.Sunrise + this.dut, "Moon", Driver.obs_lon_rad, Driver.obs_lat_rad);
     sep = sla.dsep(sret.ra, sret.dec, mret.ra, mret.dec);
@@ -110,6 +118,9 @@ Night.prototype.setEphemerides = function (obj) {
     this.xstep = this.wnight / this.Nx;         // Resolution of the time array
     let aop;
 
+    this.xaxis = [];
+    this.ymoon = [];
+    this.rmoon = [];
     for (let i = 0; i < this.Nx; i += 1) {          // ... and its initialization
         const ut = this.Sunset + this.xstep * i;
         this.xaxis.push(ut);
@@ -140,7 +151,11 @@ Night.prototype.setEphemerides = function (obj) {
     if (this.tSunrise[4] !== 0) {
         stopUT += 1;
     }
-    let djutc = sla.cldj(this.year, this.month, this.day) + sla.dtf2d(firstUT, 0, 0);
+    utczero = sla.djcl(this.Sunset);
+    let djutc = sla.cldj(utczero.iy, utczero.im, utczero.id) + sla.dtf2d(firstUT, 0, 0);
+    this.UTtimes = [];
+    this.UTlabels = [];
+    this.STlabels = [];
     while (firstUT != stopUT) {
         if (firstUT == 25) {
             firstUT = 1;
