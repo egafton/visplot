@@ -27,6 +27,27 @@ function get_WHT_pointing() {
     return $s;
 }
 
+function get_INT_pointing() {
+    return json_encode(array(
+        "alt" => null,
+        "az" => null
+    ));
+}
+
+function get_HJST_pointing() {
+    return json_encode(array(
+        "alt" => null,
+        "az" => null
+    ));
+}
+
+function get_OST_pointing() {
+    return json_encode(array(
+        "alt" => null,
+        "az" => null
+    ));
+}
+
 try {
     $pointing = call_user_func("get_${telescope}_pointing");
     header("Content-Type: application/json");
