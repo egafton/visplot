@@ -912,6 +912,14 @@ Driver.prototype.CallbackUpdateDefaults = function () {
         }
     }
 
+    helper.LogDebug("Saving new configuration to the browser...");
+    localStorage.setItem("visplot", true);
+    localStorage.setItem("telescopeName", Driver.telescopeName);
+    localStorage.setItem("defaultEpoch", Driver.defaultEpoch);
+    localStorage.setItem("defaultProject", Driver.defaultProject);
+    localStorage.setItem("defaultType", Driver.defaultType);
+    localStorage.setItem("defaultAM", Driver.defaultAM);
+    localStorage.setItem("defaultObstime", Driver.defaultObstime);
     helper.LogEntry("Done.");
 };
 

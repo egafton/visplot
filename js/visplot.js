@@ -19,6 +19,39 @@ $(document).ready(function () {
     /* The one and only global variable */
     window.driver = new Driver();
 
+    /*
+     * If there is a configuration saved in localStorage (this is a nice
+     * feature of modern browsers), copy its entries over on to the default
+     * config.
+     */
+    if ("visplot" in localStorage) {
+        helper.LogEntry("Found existing visplot configuration in the browser, restoring...");
+        if ("telescopeName" in localStorage) {
+            helper.LogEntry(`Restoring telescope name to <i>${localStorage.telescopeName}</i>`);
+            Driver.telescopeName = localStorage.telescopeName;
+        }
+        if ("defaultEpoch" in localStorage) {
+            helper.LogEntry(`Restoring default epoch to <i>${localStorage.defaultEpoch}</i>`);
+            Driver.defaultEpoch = localStorage.defaultEpoch;
+        }
+        if ("defaultProject" in localStorage) {
+            helper.LogEntry(`Restoring default proposal ID to <i>${localStorage.defaultProject}</i>`);
+            Driver.defaultProject = localStorage.defaultProject;
+        }
+        if ("defaultType" in localStorage) {
+            helper.LogEntry(`Restoring default observation type to <i>${localStorage.defaultType}</i>`);
+            Driver.defaultType = localStorage.defaultType;
+        }
+        if ("defaultAM" in localStorage) {
+            helper.LogEntry(`Restoring default maximum airmass to <i>${localStorage.defaultAM}</i>`);
+            Driver.defaultAM = localStorage.defaultAM;
+        }
+        if ("defaultObstime" in localStorage) {
+            helper.LogEntry(`Restoring default observing time to <i>${localStorage.defaultObstime}</i>`);
+            Driver.defaultObstime = localStorage.defaultObstime;
+        }
+    }
+
     /* Perform the unit tests for slalib */
     sla.performUnitTests();
 
