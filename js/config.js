@@ -1,7 +1,7 @@
 /**
  * @file Configuration file for the different telescopes supported by Visplot.
  * @author ega
- * @copyright (c) 2016-2021 ega, NOT/ING.
+ * @copyright (c) 2016-2022 ega, NOT/ING.
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or

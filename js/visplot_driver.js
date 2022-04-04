@@ -1,6 +1,6 @@
 /**
  * @author ega
- * @copyright (c) 2016-2021 ega, NOT/ING.
+ * @copyright (c) 2016-2022 ega, NOT/ING.
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -33,10 +33,14 @@ function Driver() {
      * 2.2 - Aladin is hosted locally, and allows arbitrary position angles
      *     - Aladin FoV is now instrument-specific, as defined in config.js
      *     - Many bug fixes (part of them reported by NOT staff)
-     * 
+     *
      * 2.3 - Added CATServer OB type
+     *
+     * 2.4 - Added more telescopes, and support for telescopes in different
+     *       time zones.
+     *     - Now storing configuration in the browser's localStorage.
      */
-    this.version = "2.3";
+    this.version = "2.4";
     helper.LogSuccess(`Hello, this is Visplot version ${this.version}`);
 
     /* HTML5 canvas, context and Graph class - related variables */
