@@ -42,6 +42,9 @@ config["NOT"] = {
     // Lowest limit for unvignetted observations, in degrees; null if N/A
     vignetteLimit: 35,
 
+    // Lowest limit in elevation for observing, based on declination; null if N/A
+    declinationLimit: null,
+
     // Instrument definitions; fov in arcminutes
     instruments: {
         "ALFOSC": {
@@ -101,6 +104,9 @@ config["WHT"] = {
     // Lowest limit for unvignetted observations, in degrees; null if N/A
     vignetteLimit: 25,
 
+    // Lowest limit in elevation for observing, based on declination; null if N/A
+    declinationLimit: null,
+
     // Instrument definitions; fov in arcminutes
     instruments: {
         "ACAM": {
@@ -156,6 +162,17 @@ config["INT"] = {
     // Lowest limit for unvignetted observations, in degrees; null if N/A
     vignetteLimit: 33,
 
+    // Lowest limit in elevation for observing, based on declination; null if N/A
+    declinationLimit: function(dec) {
+        // Pass declination in degrees
+        if (dec < -30.1583) {
+            return 90; // Cannot observe
+        } else {
+            const hmin = Math.asin(0.4812 * (Math.sin(dec * 1.745329251994329576923691e-2))) * 57.29577951308232;
+            return Math.max(hmin, 20);
+        }
+    },
+
     // Instrument definitions; fov in arcminutes
     instruments: {
         "WFC": {
@@ -203,6 +220,9 @@ config["INT"] = {
     // Lowest limit for unvignetted observations, in degrees; null if N/A
     vignetteLimit: 20,
 
+    // Lowest limit in elevation for observing, based on declination; null if N/A
+    declinationLimit: null,
+
     // Instrument definitions; fov in arcminutes
     instruments: {
         "DIAFI": {
@@ -245,6 +265,9 @@ config["INT"] = {
 
     // Lowest limit for unvignetted observations, in degrees; null if N/A
     vignetteLimit: 20,
+
+    // Lowest limit in elevation for observing, based on declination; null if N/A
+    declinationLimit: null,
 
     // Instrument definitions; fov in arcminutes
     instruments: {

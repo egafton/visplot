@@ -41,6 +41,8 @@ function Target(k, obj) {
     this.Name = obj.name;
     this.RA = obj.ra;
     this.Dec = obj.dec;
+    this.RA_rad = obj.RA_rad;
+    this.Dec_rad = obj.Dec_rad;
     this.Epoch = obj.epoch;
     this.shortRA = (obj.ra.indexOf(".") > -1) ? obj.ra.substr(0, obj.ra.indexOf(".")) : obj.ra;
     this.shortDec = (obj.dec.indexOf(".") > -1) ? obj.dec.substr(0, obj.dec.indexOf(".")) : obj.dec;
@@ -189,6 +191,8 @@ TargetList.prototype.targetStringToJSON = function (line) {
         obj.line.push(helper.rad2deg(ell));
     }
     obj.zenithtime = night.xaxis[imax];
+    obj.RA_rad = ra;
+    obj.Dec_rad = dec;
     return obj;
 };
 
@@ -248,7 +252,7 @@ TargetList.prototype.processTarget = function (i, obj) {
 };
 
 /**
- * @memberof TargetList
+ * @memberof Target
  */
 Target.prototype.intersectingChain = function (Targets, checked) {
     let len, iIntersect = [], i, j, chain = [this.Index], rc;
@@ -1406,6 +1410,11 @@ Target.prototype.canObserve = function (time, altitude) {
     if ((this.RestrictionMinUT <= time && this.RestrictionMaxUT >= time &&
             this.RestrictionMinAlt <= altitude && this.RestrictionMaxAlt >= altitude) === false) {
         return false;
+    }
+    if (config[Driver.telescopeName].declinationLimit !== null) {
+        if (config[Driver.telescopeName].declinationLimit(this.Dec_rad * sla.r2d) > altitude) {
+            return false;
+        }
     }
     for (let i = 0; i < driver.targets.Offline.length; i += 1) {
         if (time >= driver.targets.Offline[i].Start && time <= driver.targets.Offline[i].End) {
