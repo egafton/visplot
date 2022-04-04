@@ -644,3 +644,14 @@ helper.offlineStrings = [
     "#Offline",
     "#BadWolf"
 ];
+
+/**
+ * Format a timezone number. Display as integer and always show the sign.
+ */
+helper.timezone = function(value) {
+    if (value >= 0) {
+        return `+${value.toFixed(0)}`;
+    } else {
+        return value.toFixed(0);
+    }
+};

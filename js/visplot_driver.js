@@ -564,11 +564,11 @@ Driver.prototype.InitializeDate = function () {
         datemsg = `Date set to ${year}-${helper.padTwoDigits(month)}-${helper.padTwoDigits(day)}, as provided by the OB queue.`;
     } else {
         let now = new Date();
-        helper.LogEntry(`Today is ${now.toUTCString()}`);
+        helper.LogEntry(`Today is ${now.toUTCString()}, timezone set to UTC${helper.timezone(config[Driver.telescopeName].timezone)}`);
         day = now.getUTCDate();
         month = now.getUTCMonth() + 1;
         year = now.getUTCFullYear();
-        if ((now.getUTCHours() - config[Driver.telescopeName].timezone) % 24 < 12) {
+        if ((now.getUTCHours() + config[Driver.telescopeName].timezone) % 24 < 12) {
             if (day == 1) {
                 let dd = helper.numberOfDays(year, month - 1);
                 if (month === 0) {
