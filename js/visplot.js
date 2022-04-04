@@ -74,7 +74,6 @@ $(document).ready(function () {
     $("#canvasFrame").toggle();
     helper.LogDebug("Disabling buttons until the necessary quantities have been calculated...");
     $("#planNight").prop("disabled", true);
-    $("#pngExport").prop("disabled", true);
     $("#saveDoc").prop("disabled", true);
     $("#tcsExport").prop("disabled", true);
 

@@ -121,7 +121,6 @@ serializer.loadDocument = function (e) {
             driver.Refresh();
             if (driver.scheduleMode) {
                 driver.targets.display_scheduleStatistics();
-                $("#pngExport").removeAttr("disabled");
                 $("#planNight").val(Driver.updSchedText);
             }
             $("#tcsExport").removeAttr("disabled");

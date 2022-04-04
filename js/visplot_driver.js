@@ -188,7 +188,6 @@ Driver.prototype.Callback_UpdateSchedule = function () {
         this.targets.plan(this.targets.Targets);
         helper.LogEntry("Done.");
         this.scheduleMode = true;
-        $("#pngExport").removeAttr("disabled");
         $("#planNight").val(Driver.updSchedText);
     }
     if (this.RequestedScheduleType === 3) {
