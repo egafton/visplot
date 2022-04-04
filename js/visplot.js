@@ -16,8 +16,16 @@ $(document).ready(function () {
      * Available error IDs: 60+
      */
 
+    /* Perform the unit tests for slalib */
+    sla.performUnitTests();
+
     /* The one and only global variable */
     window.driver = new Driver();
+
+    // Populate the telescope select input
+    for (const key in config) {
+        $("#def_telescope").append(new Option(config[key].name, key));
+    }
 
     /*
      * If there is a configuration saved in localStorage (this is a nice
@@ -52,9 +60,6 @@ $(document).ready(function () {
         }
     }
 
-    /* Perform the unit tests for slalib */
-    sla.performUnitTests();
-
     /* Now that the driver is created, do some stuff that require it*/
     driver.skyGraph.skyImg.onload = function () {
         driver.skyGraph.setup(true);
@@ -62,10 +67,6 @@ $(document).ready(function () {
     setInterval(function () {
         driver.skyGraph.display_time();
     }, 500);   // 0.5 second update times
-    // Populate the telescope select input
-    for (const key in config) {
-        $("#def_telescope").append(new Option(config[key].name, key));
-    }
 
     helper.LogDebug("Drawing plot background...");
     driver.graph.drawBackground();
