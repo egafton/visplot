@@ -431,19 +431,31 @@ Graph.prototype.drawEphemerides = function () {
     for (let i = 0; i < driver.night.UTtimes.length; i += 1) {
         const xnight = driver.night.UTtimes[i];
         const xplot = this.transformXLocation(xnight);
-        if (driver.night.UTlabels[i] != "24") {
-            this.plotVerticalLine(this.ystart, this.yend, xplot, [1, 2], 1);
-        } else {
+        if ((Driver.obs_timezone === 0 && driver.night.UTlabels[i] === "24") ||
+            (Driver.obs_timezone !== 0 && driver.night.MSZTlabels[i] === "24")) {
             this.plotVerticalLine(this.ystart, this.yend, xplot, [], 1.6);
+        } else {
+            this.plotVerticalLine(this.ystart, this.yend, xplot, [1, 2], 1);
         }
-        this.ctx.font = `11pt ${this.fontFamily}`;
-        this.ctx.fillText(driver.night.UTlabels[i], xplot, this.yend + 15);
-        this.ctx.font = `8pt ${this.fontFamily}`;
-        this.ctx.fillText(driver.night.STlabels[i], xplot, this.ystart - 35);
+        if (Driver.obs_timezone === 0) {
+            this.ctx.font = `11pt ${this.fontFamily}`;
+            this.ctx.fillText(driver.night.UTlabels[i], xplot, this.yend + 15);
+            this.ctx.font = `8pt ${this.fontFamily}`;
+            this.ctx.fillText(driver.night.STlabels[i], xplot, this.ystart - 35);
+        } else {
+            this.ctx.font = `11pt ${this.fontFamily}`;
+            this.ctx.fillText(driver.night.MSZTlabels[i], xplot, this.yend + 24);
+            this.ctx.font = `8pt ${this.fontFamily}`;
+            this.ctx.fillText(driver.night.UTlabels[i], xplot, this.yend + 10);
+            this.ctx.fillText(driver.night.STlabels[i], xplot, this.ystart - 35);
+        }
     }
     // Print the LST, S.set and S.rise labels
     this.ctx.font = `8pt ${this.fontFamily}`;
     this.ctx.fillText("LST   ⟶", this.xstart - 35, this.ystart - 35);
+    if (Driver.obs_timezone !== 0) {
+        this.ctx.fillText("UT   ⟶", this.xstart - 20, this.yend + 10);
+    }
     this.ctx.fillText("S.set", this.xstart, this.ystart - 22);
     this.ctx.fillText("S.rise", this.xend, this.ystart - 22);
     // Plot the sunset and sunrise times
@@ -521,10 +533,17 @@ Graph.prototype.drawEphemerides = function () {
     this.ctx.fillStyle = "black";
     // Plot the x-axis label
     this.ctx.font = `11pt ${this.fontFamily}`;
-    this.ctx.fillText(
-        `Universal Time, starting night ${driver.night.year}-` +
-        `${helper.padTwoDigits(driver.night.month)}-${helper.padTwoDigits(driver.night.day)}`,
-        this.xmid, this.yend + 40);
+    if (Driver.obs_timezone === 0) {
+        this.ctx.fillText(
+            `Universal Time, starting night ${driver.night.year}-` +
+            `${helper.padTwoDigits(driver.night.month)}-${helper.padTwoDigits(driver.night.day)}`,
+            this.xmid, this.yend + 40);
+    } else {
+        this.ctx.fillText(
+            `Mean Solar Zone Time, starting night ${driver.night.year}-` +
+            `${helper.padTwoDigits(driver.night.month)}-${helper.padTwoDigits(driver.night.day)}`,
+            this.xmid, this.yend + 44);
+    }
 
     // Moon illumination text
     this.ctx.font = `8pt ${this.fontFamily}`;
@@ -607,7 +626,7 @@ Graph.prototype.drawBackground = function () {
     for (let i = 0; i < 90; i += 10) {
         this.ctx.font = `11pt ${this.fontFamily}`;
         this.ctx.textAlign = "right";
-        this.ctx.textBaseline = "middle";
+        this.ctx.textBaseline = (i > 0 || Driver.obs_timezone === 0) ? "middle" : "bottom";
         this.ctx.fillText(`${i}°`, this.xstart - this.tickLength, this.transformYLocation(i));
     }
     /*

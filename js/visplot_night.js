@@ -28,6 +28,7 @@ function Night(y, m, d) {
     /* Other arrays, not of length Nx */
     this.UTtimes = [];                      // Position of full hours (8UT, 9UT, etc) in terms of MJD-UTC
     this.UTlabels = [];                     // UT labels corresponding to UTtimes ("8", "9", etc)
+    this.MSZTlabels = [];                   // Mean Solar Zone Time labels corresponding to UTtimes ("8", "9", etc)
     this.STlabels = [];                     // ST labels corresponding to UTtimes
 }
 
@@ -155,6 +156,7 @@ Night.prototype.setEphemerides = function (obj) {
     let djutc = sla.cldj(utczero.iy, utczero.im, utczero.id) + sla.dtf2d(firstUT, 0, 0);
     this.UTtimes = [];
     this.UTlabels = [];
+    this.MSZTlabels = [];
     this.STlabels = [];
     while (firstUT != stopUT) {
         if (firstUT == 25) {
@@ -162,6 +164,10 @@ Night.prototype.setEphemerides = function (obj) {
         }
         this.UTtimes.push(djutc);
         this.UTlabels.push(firstUT.toString());
+        if (Driver.obs_timezone != 0) {
+            let mszt = (firstUT + Driver.obs_timezone + 24) % 24;
+            this.MSZTlabels.push(mszt == 0 ? "24" : mszt.toString());
+        }
         stl = sla.dr2tf(1, sla.dranrm(sla.gmst(djutc) + Driver.obs_lon_rad) + this.eqeqx);
         this.STlabels.push(`${stl.ihmsf[0]}:${stl.ihmsf[1] < 10 ? "0" : ""}${stl.ihmsf[1].toFixed(0)}`);
         firstUT += 1;
