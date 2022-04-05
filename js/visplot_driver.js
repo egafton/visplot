@@ -453,8 +453,8 @@ Driver.prototype.EvtFrame_Click = function (e) {
             let moonHasSet = obj.Scheduled ? (this.night.ymoon[helper.EphemTimeToIndex(obj.ScheduledMidTime)] < 0) : false;
             let LunarPhase = moonHasSet ? "D" :
                     (this.night.MoonIllumination <= 40 ? "D" : (
-                            this.night.MoonIllumination <= 70 ? (obj.AvgMoonDistance <= 90 ? "G" : "D")
-                            : (obj.AvgMoonDistance <= 60 ? "N" : "G")
+                            this.night.MoonIllumination <= 70 ? (obj.MinMoonDistance <= 90 ? "G" : "D")
+                            : (obj.MinMoonDistance <= 60 ? "N" : "G")
                             ));
             $("#details_title").html(obj.Name);
             let info = `<h2 class="h2-instr">Object details</h2>` +
@@ -463,7 +463,8 @@ Driver.prototype.EvtFrame_Click = function (e) {
                 `<p class="pp">RA: <b>${obj.RA}</b></p>` +
                 `<p class="pp">Dec: <b>${obj.Dec.replace("-", "–")}</b></p>` +
                 `<p class="pp">Epoch: <b>${obj.Epoch == "1950" ? "B1950" : "J2000"}</b></p>` +
-                `<p class="pp">Moon Distance: <span title="${helper.LunarPhaseExplanation(LunarPhase)}"><b>${obj.AvgMoonDistance}°</b> (${LunarPhase})</span></p>` +
+                `<p class="pp">Moon Distance: <span title="${helper.LunarPhaseExplanation(LunarPhase)}"><b>${obj.MinMoonDistance}°</b> (${LunarPhase})</span></p>` +
+                `<p class="pp">Moon Closest At: <b>${helper.EphemDateToHM(obj.MinMoonDistanceTime)} UT</p>` +
                 `<p class="pp">Obstime: <b>${obj.ExptimeSeconds.toFixed(0)} s</b> (${obj.ExptimeHM})</p>` +
                 (obj.ExtraInfo === null
                     ? ""

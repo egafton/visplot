@@ -57,7 +57,8 @@ function Target(k, obj) {
     this.Graph = obj.line;
     this.FullType = obj.type;
     this.Type = (obj.type.indexOf("/") === -1 ? obj.type : obj.type.substring(0, obj.type.indexOf("/")));
-    this.AvgMoonDistance = Math.round(obj.mdist);
+    this.MinMoonDistance = Math.round(obj.mdist);
+    this.MinMoonDistanceTime = obj.mdisttime;
     this.ProjectNumber = obj.project;
     this.RestrictionMaxAlt = $("#opt_away_from_zenith").is(":checked")
         ? 90 - config[Driver.telescopeName].zenithLimit
@@ -144,7 +145,17 @@ TargetList.prototype.targetStringToJSON = function (line) {
     if (decneg) {
         dec *= -1;
     }
-    obj.mdist = sla.r2d * sla.dsep(night.moonra, night.moondec, ra, dec);
+    let minmdist = 9999;
+    let iminmdist = 0;
+    for (let i=0; i<night.Nx; i+=1) {
+        let mdist = sla.r2d * sla.dsep(night.ramoon[i], night.decmoon[i], ra, dec);
+        if (mdist < minmdist) {
+            minmdist = mdist;
+            iminmdist = i;
+        }
+    }
+    obj.mdist = minmdist;
+    obj.mdisttime = night.xaxis[iminmdist];
     let pmra, pmdec;
     if (rax.length === 1) {
         pmra = 0;
@@ -1462,7 +1473,7 @@ Target.prototype.preCompute = function () {
     if (this.beginForbidden.length !== this.endForbidden.length) {
         this.endForbidden.push(driver.night.xaxis[last]);
     } else {
-        this.endAllowed.push(driver.night.axis[last]);
+        this.endAllowed.push(driver.night.xaxis[last]);
     }
     if (this.beginAllowed.length !== this.endAllowed.length || this.beginForbidden.length !== this.endForbidden.length) {
         helper.LogError("Bug report: safety check failed in @Target.prototype.preCompute. Please report this bug.");

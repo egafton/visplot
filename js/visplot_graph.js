@@ -416,7 +416,7 @@ Graph.prototype.drawTargetNames = function (Targets) {
  */
 Graph.prototype.drawEphemerides = function () {
     /*
-     Convert the night.axis array (which is in units of ephem.Date) to a graph.axis array
+     Convert the night.xaxis array (which is in units of ephem.Date) to a graph.axis array
      (containing the corresponding HTML5 canvas positions, in (sub)pixels
      */
     this.xaxis = [];

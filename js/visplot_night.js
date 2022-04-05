@@ -20,11 +20,13 @@ function Night(y, m, d) {
     /* ALL time series begin at sunset and end at sunrise */
     this.Nx = 1000;
     /* Time series arrays */
-    this.xaxis = [];  /* UTC times in MJD format, from sunset to sunrise */
-    this.ymoon = [];  /* Refracted moon altitude in degrees */
-    this.rmoon = [];  /* Apparent moon radius in degrees */
-    this.aoprms = []; /* Apparent to observed parameters, SLALIB */
-    this.amprms = []; /* Mean to apparent parameters, SLALIB */
+    this.xaxis = [];   /* UTC times in MJD format, from sunset to sunrise */
+    this.ymoon = [];   /* Refracted moon altitude in degrees */
+    this.rmoon = [];   /* Apparent moon radius in degrees */
+    this.ramoon = [];  /* RA of moon */
+    this.decmoon = []; /* Dec of moon */
+    this.aoprms = [];  /* Apparent to observed parameters, SLALIB */
+    this.amprms = [];  /* Mean to apparent parameters, SLALIB */
     /* Other arrays, not of length Nx */
     this.UTtimes = [];                      // Position of full hours (8UT, 9UT, etc) in terms of MJD-UTC
     this.UTlabels = [];                     // UT labels corresponding to UTtimes ("8", "9", etc)
@@ -122,6 +124,8 @@ Night.prototype.setEphemerides = function (obj) {
     this.xaxis = [];
     this.ymoon = [];
     this.rmoon = [];
+    this.ramoon = [];
+    this.decmoon = [];
     for (let i = 0; i < this.Nx; i += 1) {          // ... and its initialization
         const ut = this.Sunset + this.xstep * i;
         this.xaxis.push(ut);
@@ -135,6 +139,8 @@ Night.prototype.setEphemerides = function (obj) {
         this.amprms[i] = sla.mappa(2000, ut + this.dut);
         // Apparent RA, Dec of Moon
         ret = sla.rdplan(ut + this.dut, "Moon", Driver.obs_lon_rad, Driver.obs_lat_rad);
+        this.ramoon.push(ret.ra);
+        this.decmoon.push(ret.dec);
         const diam = ret.diam;
         // Topocentric zd of Moon WITHOUT refraction
         ret = sla.aopqk(ret.ra, ret.dec, aop);
