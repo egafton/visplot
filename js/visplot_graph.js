@@ -129,7 +129,7 @@ Graph.prototype.drawRHSofSchedule = function () {
                               (driver.reObj == i && driver.rescheduling) ? "blue" : "black",
                               this.targetsx + 15, y, "left", "bottom");
             } else {
-                this.plotText(`${obj.Name.substr(0, this.maxLenTgtName)} (${obj.ProjectNumber}; UT ${helper.EphemDateToHM(obj.ScheduledStartTime)})`,
+                this.plotText(`${obj.Name.substr(0, this.maxLenTgtName)} (${obj.ProjectNumber}; UTC ${helper.EphemDateToHM(obj.ScheduledStartTime)})`,
                               "8pt",
                               (driver.reObj == i && driver.rescheduling) ? "blue" : "black",
                               this.targetsx + 15, y, "left", "bottom");
@@ -156,7 +156,7 @@ Graph.prototype.drawRHSofSchedule = function () {
         y += this.targetsyskip;
         if (this.doubleTargets) {
             if (obj.Scheduled) {
-                this.plotText(`${obj.shortRA} ${obj.shortDec} (UT ${helper.EphemDateToHM(obj.ScheduledStartTime)})`,
+                this.plotText(`${obj.shortRA} ${obj.shortDec} (UTC ${helper.EphemDateToHM(obj.ScheduledStartTime)})`,
                               this.legendSize,
                               (driver.reObj == i && driver.rescheduling) ? "blue" : "black",
                               this.targetsx + 15, y, "left", "bottom");
@@ -425,13 +425,13 @@ Graph.prototype.drawEphemerides = function () {
     }
     this.ctx.strokeStyle = "black";
     this.ctx.fillStyle = "black";
-    // Plot the full hour UT and ST labels (8UT, 9UT, etc) below and above the plot, respectively
+    // Plot the full hour UTC and ST labels (8 UTC, 9 UTC, etc) below and above the plot, respectively
     this.ctx.textAlign = "center";
     this.ctx.textBaseline = "middle";
-    for (let i = 0; i < driver.night.UTtimes.length; i += 1) {
-        const xnight = driver.night.UTtimes[i];
+    for (let i = 0; i < driver.night.UTCtimes.length; i += 1) {
+        const xnight = driver.night.UTCtimes[i];
         const xplot = this.transformXLocation(xnight);
-        if ((Driver.obs_timezone === 0 && driver.night.UTlabels[i] === "24") ||
+        if ((Driver.obs_timezone === 0 && driver.night.UTClabels[i] === "24") ||
             (Driver.obs_timezone !== 0 && driver.night.MSZTlabels[i] === "24")) {
             this.plotVerticalLine(this.ystart, this.yend, xplot, [], 1.6);
         } else {
@@ -439,22 +439,22 @@ Graph.prototype.drawEphemerides = function () {
         }
         if (Driver.obs_timezone === 0) {
             this.ctx.font = `11pt ${this.fontFamily}`;
-            this.ctx.fillText(driver.night.UTlabels[i], xplot, this.yend + 15);
+            this.ctx.fillText(driver.night.UTClabels[i], xplot, this.yend + 15);
             this.ctx.font = `8pt ${this.fontFamily}`;
-            this.ctx.fillText(driver.night.STlabels[i], xplot, this.ystart - 35);
+            this.ctx.fillText(driver.night.LSTlabels[i], xplot, this.ystart - 35);
         } else {
             this.ctx.font = `11pt ${this.fontFamily}`;
             this.ctx.fillText(driver.night.MSZTlabels[i], xplot, this.yend + 24);
             this.ctx.font = `8pt ${this.fontFamily}`;
-            this.ctx.fillText(driver.night.UTlabels[i], xplot, this.yend + 10);
-            this.ctx.fillText(driver.night.STlabels[i], xplot, this.ystart - 35);
+            this.ctx.fillText(driver.night.UTClabels[i], xplot, this.yend + 10);
+            this.ctx.fillText(driver.night.LSTlabels[i], xplot, this.ystart - 35);
         }
     }
     // Print the LST, S.set and S.rise labels
     this.ctx.font = `8pt ${this.fontFamily}`;
     this.ctx.fillText("LST   ⟶", this.xstart - 35, this.ystart - 35);
     if (Driver.obs_timezone !== 0) {
-        this.ctx.fillText("UT   ⟶", this.xstart - 20, this.yend + 10);
+        this.ctx.fillText("UTC   ⟶", this.xstart - 22, this.yend + 10);
     }
     this.ctx.fillText("S.set", this.xstart, this.ystart - 22);
     this.ctx.fillText("S.rise", this.xend, this.ystart - 22);
@@ -535,7 +535,7 @@ Graph.prototype.drawEphemerides = function () {
     this.ctx.font = `11pt ${this.fontFamily}`;
     if (Driver.obs_timezone === 0) {
         this.ctx.fillText(
-            `Universal Time, starting night ${driver.night.year}-` +
+            `Coordinated Universal Time, starting night ${driver.night.year}-` +
             `${helper.padTwoDigits(driver.night.month)}-${helper.padTwoDigits(driver.night.day)}`,
             this.xmid, this.yend + 40);
     } else {

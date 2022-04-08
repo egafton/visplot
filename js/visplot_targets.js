@@ -65,8 +65,8 @@ function Target(k, obj) {
         : 90;
     this.MaxAirmass = obj.airmass;
     this.RestrictionMinAlt = helper.AirmassToAltitude(this.MaxAirmass);
-    this.RestrictionMinUT = obj.UTstart; //night.ENauTwilight;
-    this.RestrictionMaxUT = obj.UTend;   //night.MNauTwilight;
+    this.RestrictionMinUTC = obj.UTstart; //night.ENauTwilight;
+    this.RestrictionMaxUTC = obj.UTend;   //night.MNauTwilight;
     this.observable = [];
     this.Scheduled = false;
     this.FillSlot = obj.fillslot;
@@ -363,10 +363,10 @@ TargetList.prototype.resetWarnings = function () {
  */
 TargetList.prototype.warnUnobservable = function () {
     if (this.Warning1.length > 0) {
-        helper.LogWarning("Warning: Target" + (this.Warning1.length === 1 ? "" : "s") + " <i>" + this.Warning1.join(", ") + "</i> cannot possibly be scheduled for this night, as " + (this.Warning1.length === 1 ? "it" : "they") + " will never fit the airmass/UT constraints.");
+        helper.LogWarning("Warning: Target" + (this.Warning1.length === 1 ? "" : "s") + " <i>" + this.Warning1.join(", ") + "</i> cannot possibly be scheduled for this night, as " + (this.Warning1.length === 1 ? "it" : "they") + " will never fit the airmass/UTC constraints.");
     }
     if (this.Warning2.length > 0) {
-        helper.LogWarning("Warning: Target" + (this.Warning2.length === 1 ? "" : "s") + " <i>" + this.Warning2.join(", ") + "</i> cannot possibly be scheduled for this night, as " + (this.Warning2.length === 1 ? "it" : "they") + " will not fit the airmass/UT constraints for long enough to perform the observations.");
+        helper.LogWarning("Warning: Target" + (this.Warning2.length === 1 ? "" : "s") + " <i>" + this.Warning2.join(", ") + "</i> cannot possibly be scheduled for this night, as " + (this.Warning2.length === 1 ? "it" : "they") + " will not fit the airmass/UTC constraints for long enough to perform the observations.");
     }
 };
 
@@ -660,7 +660,7 @@ TargetList.prototype.schedule_inOriginalOrder = function (startingAt) {
         k = order[i];
         if (this.Targets[k].FillSlot === true) {
             obj = this.Targets[k];
-            obj.Schedule(obj.RestrictionMinUT);
+            obj.Schedule(obj.RestrictionMinUTC);
             scheduleorder.push(k);
         }
     }
@@ -751,7 +751,7 @@ TargetList.prototype.schedule_inOrderOfSetting = function (startingAt) {
         k = order[i];
         if (this.Targets[k].FillSlot === true) {
             obj = this.Targets[k];
-            obj.Schedule(obj.RestrictionMinUT);
+            obj.Schedule(obj.RestrictionMinUTC);
             scheduleorder.push(k);
         }
     }
@@ -800,7 +800,7 @@ TargetList.prototype.scheduleAndOptimize_givenOrder = function (newscheduleorder
     for (i = 0; i < this.nTargets; i += 1) {
         if (this.Targets[i].FillSlot === true) {
             obj = this.Targets[i];
-            obj.Schedule(obj.RestrictionMinUT);
+            obj.Schedule(obj.RestrictionMinUTC);
         }
     }
     let curtime = driver.night.Sunset;
@@ -1136,7 +1136,6 @@ TargetList.prototype.validateAndFormatTargets = function () {
     driver.CMeditor.setValue(this.VisibleLines.join("\n"));
     driver.CMeditor.scrollTo(scrollInfo.left, scrollInfo.top);
     $("#targets_actual").val(this.TargetsLines.join("\n"));
-    let nt = this.TargetsLines.length;
     helper.LogEntry(`Done. Target list looks properly formatted (${helper.plural(this.InputStats.Actual, "target")}).`);
     this.InputText = driver.CMeditor.getValue();
     this.InputValid = true;
@@ -1183,7 +1182,7 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
     }
     if ($.inArray(words[0], helper.offlineStrings) !== -1) {
         if (words.length < 2 || words.length > 3) {
-            helper.LogError(`Error 7: Incorrect syntax on Line #${linenumber}; for offline time you must provide a valid UT range!`);
+            helper.LogError(`Error 7: Incorrect syntax on Line #${linenumber}; for offline time you must provide a valid UTC range!`);
             return false;
         }
         if (words.length == 3) {
@@ -1197,7 +1196,7 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
         if (!words[0].startsWith("#")) {
             let UTr = helper.ExtractUTRange(words[q]), ut1, ut2;
             if (UTr === false) {
-                helper.LogError(`Error 9: Incorrect syntax in [CONSTRAINTS] on line #${linenumber}: the UT range must be a valid interval (e.g., [20:00-23:00] or [1-2])!`);
+                helper.LogError(`Error 9: Incorrect syntax in [CONSTRAINTS] on line #${linenumber}: the UTC range must be a valid interval (e.g., [20:00-23:00] or [1-2])!`);
                 return false;
             } else {
                 this.BadWolfStart.push(UTr[0]);
@@ -1361,9 +1360,9 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
         return false;
     }
     if (helper.notFloat(words[10])) {
-        if (!(words[10].startsWith("UT[") || words[10].startsWith("LST[")) ||
+        if (!(words[10].startsWith("UT[") || words[10].startsWith("UTC") || words[10].startsWith("LST[")) ||
             words[10].slice(-1) != "]" || words[10].indexOf("-") == -1) {
-            helper.LogError(`Error 31: Incorrect syntax: [CONSTRAINTS] should either be a float (e.g., 2.0), a UT range (e.g., UT[20:00-23:00]) or an LST range (e.g. LST[2-4:30]) on line #${linenumber}!`);
+            helper.LogError(`Error 31: Incorrect syntax: [CONSTRAINTS] should either be a float (e.g., 2.0), a UTC range (e.g., UTC[20:00-23:00]) or an LST range (e.g. LST[2-4:30]) on line #${linenumber}!`);
             return false;
         }
         if (helper.notInt(words[8]) && words[8] != "*") {
@@ -1431,7 +1430,7 @@ TargetList.prototype.checkForDuplicates = function () {
  * @memberof Target
  */
 Target.prototype.canObserve = function (time, altitude) {
-    if ((this.RestrictionMinUT <= time && this.RestrictionMaxUT >= time &&
+    if ((this.RestrictionMinUTC <= time && this.RestrictionMaxUTC >= time &&
             this.RestrictionMinAlt <= altitude && this.RestrictionMaxAlt >= altitude) === false) {
         return false;
     }
@@ -1581,25 +1580,25 @@ Target.prototype.Update = function (obj) {
     this.Type = (obj[3].indexOf("/") === -1 ? obj[3] : obj[3].substring(0, obj[3].indexOf("/")));
     this.ProjectNumber = obj[1];
     this.Constraints = obj[2];
-    let isUT;
+    let isUTC;
     const UTr = helper.ExtractUTRange(obj[2]);
     let ut1, ut2;
     if (UTr === false) {
-        isUT = false;
+        isUTC = false;
         this.MaxAirmass = driver.defaultAM;
         this.MaxAirmass = parseFloat(obj[2]);
-        this.RestrictionMinUT = driver.night.ENauTwilight;
-        this.RestrictionMaxUT = driver.night.MNauTwilight;
+        this.RestrictionMinUTC = driver.night.ENauTwilight;
+        this.RestrictionMaxUTC = driver.night.MNauTwilight;
     } else {
-        isUT = true;
+        isUTC = true;
         ut1 = Math.max(night.ENauTwilight, UTr[0]);
         ut2 = Math.min(night.MNauTwilight, UTr[1]);
         this.MaxAirmass = 9.9;
-        this.RestrictionMinUT = ut1;
-        this.RestrictionMaxUT = ut2;
+        this.RestrictionMinUTC = ut1;
+        this.RestrictionMaxUTC = ut2;
     }
     this.RestrictionMinAlt = helper.AirmassToAltitude(this.MaxAirmass);
-    this.FillSlot = isUT && (obj[0] === "*");
+    this.FillSlot = isUTC && (obj[0] === "*");
     if (helper.filterInt(obj[0])) {
         this.ExptimeSeconds = parseInt(obj[0]);
         this.Exptime = Math.floor(this.ExptimeSeconds / 86400 / driver.night.xstep) * driver.night.xstep;

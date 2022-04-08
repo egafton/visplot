@@ -350,10 +350,24 @@ helper.HMToEphemDate = function (text) {
     if (hh < 0 || hh > 24 || mm < 0 || mm > 60 || ss < 0 || ss > 60) {
         return -1;
     }
-    if (hh < driver.night.tSunset[3] - 1 && hh > driver.night.tSunrise[3] + 1) {
-        return -1;
+    if (driver.night.tSunset[3] > driver.night.tSunrise[3]) {
+        // UTC rolls over during the night, so HH must be
+        // > sunset OR < sunrise
+        if (hh < driver.night.tSunset[3] - 1 && hh > driver.night.tSunrise[3] + 1) {
+            return -1;
+        }
+    } else {
+        // UTC doesn't roll over during the night, so HH must be
+        // > sunset AND < sunrise
+        if (hh < driver.night.tSunset[3] - 1 || hh > driver.night.tSunrise[3] + 1) {
+            return -1;
+        }
     }
-    const jtime = new Date(Date.UTC(driver.night.tSunset[0], driver.night.tSunset[1]-1, driver.night.tSunset[2] + (hh > 12 ? 0 : 1), hh, mm, ss, 0));
+    const jtime = new Date(Date.UTC(
+        driver.night.tSunset[0],
+        driver.night.tSunset[1]-1,
+        driver.night.tSunset[2] + ((driver.night.tSunset[3] < driver.night.tSunrise[3] || hh > 12) ? 0 : 1),
+        hh, mm, ss, 0));
     const jdiff = (jtime - jsunset) / 8.64e7;
     return driver.night.Sunset + jdiff;
 };
@@ -537,7 +551,7 @@ helper.plural = function (num, what) {
  *
  */
 helper.ExtractLSTRange = function (str) {
-    if (str.startsWith("UT[")) {
+    if (str.startsWith("UT[") || str.startsWith("UTC[")) {
         return helper.ExtractUTRange(str);
     }
     if (str.slice(-1) !== "]" || str.indexOf("-") === -1) {
@@ -589,7 +603,7 @@ helper.ExtractUTRange = function (str) {
 };
 
 /**
- * Calculate the Local Sidereal Time corresponding to a given UT time.
+ * Calculate the Local Sidereal Time corresponding to a given UTC time.
  * @param {Number} utc - UTC in MJD format
  * @param {Number} eqeqx - Equation of the equinoxes
  */

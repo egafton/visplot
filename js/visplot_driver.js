@@ -44,6 +44,7 @@ function Driver() {
      *       either as ha(dec) or as alt(dec).
      *     - Updated README file and included a screenshot of Visplot.
      *     - Added footer with misc. information and links to GitHub.
+     *     - Changed UT to UTC, since that is what we are using.
      */
     this.version = "2.4";
     helper.LogSuccess(`Hello, this is Visplot version ${this.version}`);
@@ -480,7 +481,7 @@ Driver.prototype.EvtFrame_Click = function (e) {
                 `<p class="pp">Dec: <b>${obj.Dec.replace("-", "–")}</b></p>` +
                 `<p class="pp">Epoch: <b>${obj.Epoch == "1950" ? "B1950" : "J2000"}</b></p>` +
                 `<p class="pp">Moon Distance: <span title="${helper.LunarPhaseExplanation(LunarPhase)}"><b>${obj.MinMoonDistance}°</b> (${LunarPhase})</span></p>` +
-                `<p class="pp">Moon Closest At: <b>${helper.EphemDateToHM(obj.MinMoonDistanceTime)} UT</p>` +
+                `<p class="pp">Moon Closest At: <b>${helper.EphemDateToHM(obj.MinMoonDistanceTime)} UTC</p>` +
                 `<p class="pp">Obstime: <b>${obj.ExptimeSeconds.toFixed(0)} s</b> (${obj.ExptimeHM})</p>` +
                 (obj.ExtraInfo === null
                     ? ""
@@ -493,7 +494,7 @@ Driver.prototype.EvtFrame_Click = function (e) {
                     : "") +
                 (this.scheduleMode
                     ? (obj.Scheduled
-                        ? `<p class="pp">Suggested UT: <b>${helper.EphemDateToHM(obj.ScheduledStartTime)}–${helper.EphemDateToHM(obj.ScheduledEndTime)}</b></p>`
+                        ? `<p class="pp">Suggested UTC: <b>${helper.EphemDateToHM(obj.ScheduledStartTime)}–${helper.EphemDateToHM(obj.ScheduledEndTime)}</b></p>`
                         : `<p class="pp">Not scheduled for observation.</p>`)
                       + `<p class="pp2"><span style="display:inline-block;width:80px">Started:</span><input type="text" class="inpshort" id="actual_start" /></p>`
                       + `<p class="pp2"><span style="display:inline-block;width:80px">Finished:</span><input type="text" class="inpshort" id="actual_end" /></p>`

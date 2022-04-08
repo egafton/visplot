@@ -147,17 +147,17 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
         <div id="help-container"><div id="help">
             <div id="help-left">
                 <span class="sh0">Workflow</span>
-                • Set the observing date in the <i>Date</i> field and press <i>Set</i>. This will populate the graph with the ephemerides for that night. By default, the page is pre-loaded for today's observing night (after 12:00 UT) or for last night (before 12:00 UT).<br/>
+                • Set the observing date in the <i>Date</i> field and press <i>Set</i>. This will populate the graph with the ephemerides for that night. By default, the page is pre-loaded for today's observing night (after noon) or for last night (before noon).<br/>
                 • Fill in the list of targets according to the rules given below (alternatively, the list of targets may be pre-filled by the OB generator if the page is accessed from there) and press <i>Plot targets</i>.<br/>
                 • Choose the scheduling and rendering options from the checkbox list and press <i>Schedule observations</i>.
                 The software will then attempt to schedule as many targets as possible, each at the best possible airmass, while taking into account all specified and implicit constraints.<br/>
-                • Once the night is scheduled, the visibility plot will be refreshed and the UT range of observation for each target will be marked by a thick, coloured line.<br/>
-                • After scheduling the night, you can always click on the number corresponding to an object to see the details of the observation (UT range, total observing time, etc.) and the finding chart (loaded automatically from Aladin).
+                • Once the night is scheduled, the visibility plot will be refreshed and the UTC range of observation for each target will be marked by a thick, coloured line.<br/>
+                • After scheduling the night, you can always click on the number corresponding to an object to see the details of the observation (UTC range, total observing time, etc.) and the finding chart (loaded automatically from Aladin).
                 It is also possible to <i>Mark the object as observed</i>, in which case it will be redrawn in green.<br/>
                 • After scheduling the night for the first time, the <i>Schedule observations</i> button will change into <i>Update schedule</i>. From that point onwards, any change to the input list of targets will update the schedule (e.g., targets marked as <i>Observed</i> remain observed and are no longer moved around or rescheduled) as opposed to completely resetting it.
                 If a complete reset of the schedule is desired, press first the <i>Plot targets</i> button, and then <i>Schedule observations</i>; be warned that this will result in all previous changes being lost (e.g., observed targets will be marked as unobserved).<br/>
                 • After the software has suggested an observing order, it is possible to reorder the targets manually, by dragging and dropping them on the right-hand side of the plot.
-                The program may then reschedule some or all of the other targets so that all of them continue to fit their respective constraints, in their new order. In rare cases, a manual reordering may results in one or few targets becoming de-scheduled, which normally means that with the new order it is not possible for all the targets to be observed according to their respective (UT, airmass, altitude, etc.) constraints.<br/>
+                The program may then reschedule some or all of the other targets so that all of them continue to fit their respective constraints, in their new order. In rare cases, a manual reordering may results in one or few targets becoming de-scheduled, which normally means that with the new order it is not possible for all the targets to be observed according to their respective (UTC, airmass, altitude, etc.) constraints.<br/>
                 <br/>
                 <span class="sh0">Input syntax</span>
                 • <code>[NAME] [RA]/[pmRA] [DEC]/[pmDEC] [EPOCH] [OBSTIME] [PROJECT] [CONSTRAINTS] [TYPE] [OBINFO]</code>,
@@ -168,9 +168,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
                 • <code>[DEC]</code>  is the declination, given in the same format as the RA; optionally, one can append to it a proper motion given in arcsec/year <code>[pmDEC]</code>, which is otherwise assumed to be <code>0.0</code>;<br/>
                 • <code>[EPOCH]</code> is the epoch of the coordinates; the only valid options are <code>2000</code> (corresponding to J2000) and <code>1950</code> (corresponding to B1950);<br/>
                 • <code>[OBSTIME]</code>  is the total observing time (<b>including overheads</b>) in seconds;<br/>
-                  Alternatively, <code>[OBSTIME]</code> can be <code>*</code> if <code>[CONSTRAINTS]</code> is a UT/LST range, in which case the object will be scheduled with absolute priority for the entire time interval (useful for, e.g., time-critical monitoring);<br/>
+                  Alternatively, <code>[OBSTIME]</code> can be <code>*</code> if <code>[CONSTRAINTS]</code> is a UTC/LST range, in which case the object will be scheduled with absolute priority for the entire time interval (useful for, e.g., time-critical monitoring);<br/>
                 • <code>[PROJECT]</code> is the project number (used for accounting purposes, but also for priority-based scheduling);<br/>
-                • <code>[CONSTRAINTS]</code>  are the observing constraints, either airmass (a float, e.g., <code>2.0</code>), a UT range (<code>UT[20:00-23:30]</code>) or an LST range (<code>LST[2-4:30]</code>); integers, floats, <code>HH:MM</code> syntax, or a mix of them are all allowed for the range components (e.g., <code>LST[2:00-4.5]</code>;<br/>
+                • <code>[CONSTRAINTS]</code>  are the observing constraints, either airmass (a float, e.g., <code>2.0</code>), a UTC range (<code>UTC[20:00-23:30]</code>) or an LST range (<code>LST[2-4:30]</code>); integers, floats, <code>HH:MM</code> syntax, or a mix of them are all allowed for the range components (e.g., <code>LST[2:00-4.5]</code>;<br/>
                 • <code>[TYPE]</code> is the type of observation, and can be one of the following: <code>Monitor</code>, <code>ToO</code>, <code>SoftToO</code>, <code>Payback</code>, <code>Fast-Track</code>, <code>Service</code>, <code>CATService</code>, <code>Visitor</code>, and <code>Staff</code>.
                 Iff <code>[TYPE]</code> is set to <code>Staff</code>, it is allowed to add a slash and 2-3 initials to identify for which member of the staff the observations are taken (e.g., <code>Staff/JHT</code>, <code>Staff/TP</code>, etc.).<br/>
                 • <code>[OBINFO]</code> is information passed automatically when the page is loaded from an OB queue; it allows Visplot to generate backlinks to the OB queue, as well as show additional information about each target. At the moment the system is only integrated with the NOT OB queue. In all other cases, the value should be <code>default</code>.<br/><br/>
@@ -191,11 +191,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
                 • <code>HD84937 09 46 12.06/0.373 13 59 17.44/-0.774 1950 414 54-501 1.5 ToO</code><br/>
                   For this object the proper motion is appended to the RA and Dec values, and the coordinate epoch is given as B1950.<br/>
 
-                • <code>EQPsc 23 34 34.70 -01 19 36.01 2000 1800 54-321 UT[22:00-24:00] Staff</code><br/>
-                  In this case the program will schedule EQPsc for 30 min between UT 22 and 24.<br/>
+                • <code>EQPsc 23 34 34.70 -01 19 36.01 2000 1800 54-321 UTC[22:00-24:00] Staff</code><br/>
+                  In this case the program will schedule EQPsc for 30 min between UTC 22 and 24.<br/>
 
-                • <code>EQPsc 23:34:34.70 -01:19:36.01 2000 * 54-321 UT[20:00-20:30] Staff default</code><br/>
-                  In this case EQPsc will be scheduled for the entire half hour between UT 20:00 and 20:30. Highest priority.<br/>
+                • <code>EQPsc 23:34:34.70 -01:19:36.01 2000 * 54-321 UTC[20:00-20:30] Staff default</code><br/>
+                  In this case EQPsc will be scheduled for the entire half hour between UTC 20:00 and 20:30. Highest priority.<br/>
                 <br/>
                 Note: It is possible to separate groups of targets by blank lines, which will be ignored by the software.<br/>
                 Note: It is also possible to comment out a target by adding a hashtag (<code>#</code>) at the beginning of the line. In this case, the software will not plot or schedule that target. The line can always be uncommented later on.<br/>
@@ -209,10 +209,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
                 The syntax to add an offline period is:<br/>
                 • <code>Offline UT[20:30-22:30]</code><br/>
                 • <code>Offline LST[23-3.5]</code><br/>
-                In this example, the system will not schedule any observations in the given UT or LST range. One can define as many such intervals as desired.<br/>
+                In this example, the system will not schedule any observations in the given UTC or LST range. One can define as many such intervals as desired.<br/>
                 <br/>
                 <span class="sh0">SkyCam</span>
-                The button <i>Show SkyCam</i> will open a lightbox window showing SkyCam and the current UT and LST (these refresh automatically).
+                The button <i>Show SkyCam</i> will open a lightbox window showing SkyCam and the current UTC and LST (these refresh automatically).
                 If a valid list of targets is loaded (i.e., the <i>Plot</i> button has been pressed), the targets will be shown on SkyCam, and their positions will be automatically refreshed every few seconds.
                 It is particularly advisable to use this feature when the sky is partially cloudy, as it will allow the observer to schedule observations through patches of clear sky.<br/>
                 <br/>

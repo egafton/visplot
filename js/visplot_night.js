@@ -28,10 +28,10 @@ function Night(y, m, d) {
     this.aoprms = [];  /* Apparent to observed parameters, SLALIB */
     this.amprms = [];  /* Mean to apparent parameters, SLALIB */
     /* Other arrays, not of length Nx */
-    this.UTtimes = [];                      // Position of full hours (8UT, 9UT, etc) in terms of MJD-UTC
-    this.UTlabels = [];                     // UT labels corresponding to UTtimes ("8", "9", etc)
-    this.MSZTlabels = [];                   // Mean Solar Zone Time labels corresponding to UTtimes ("8", "9", etc)
-    this.STlabels = [];                     // ST labels corresponding to UTtimes
+    this.UTCtimes = [];                     // Position of full hours (8UT, 9UT, etc) in terms of MJD-UTC
+    this.UTClabels = [];                    // UTC labels corresponding to UTCtimes ("8", "9", etc)
+    this.MSZTlabels = [];                   // Mean Solar Zone Time labels corresponding to UTCtimes ("8", "9", etc)
+    this.LSTlabels = [];                    // LST labels corresponding to UTCtimes
 }
 
 /**
@@ -153,30 +153,30 @@ Night.prototype.setEphemerides = function (obj) {
     this.DateSunrise = new Date(Date.UTC(this.tSunrise[0], this.tSunrise[1]-1, this.tSunrise[2], this.tSunrise[3], this.tSunrise[4], this.tSunrise[5], 0));
     this.DarkTime = (this.MAstTwilight - this.EAstTwilight);
     this.NightLength = (this.MNauTwilight - this.ENauTwilight);
-    let firstUT = this.tSunset[3]+1;
-    let stopUT = this.tSunrise[3];
+    let firstUTC = this.tSunset[3]+1;
+    let stopUTC = this.tSunrise[3];
     if (this.tSunrise[4] !== 0) {
-        stopUT += 1;
+        stopUTC += 1;
     }
     utczero = sla.djcl(this.Sunset);
-    let djutc = sla.cldj(utczero.iy, utczero.im, utczero.id) + sla.dtf2d(firstUT, 0, 0);
-    this.UTtimes = [];
-    this.UTlabels = [];
+    let djutc = sla.cldj(utczero.iy, utczero.im, utczero.id) + sla.dtf2d(firstUTC, 0, 0);
+    this.UTCtimes = [];
+    this.UTClabels = [];
     this.MSZTlabels = [];
-    this.STlabels = [];
-    while (firstUT != stopUT) {
-        if (firstUT == 25) {
-            firstUT = 1;
+    this.LSTlabels = [];
+    while (firstUTC != stopUTC) {
+        if (firstUTC == 25) {
+            firstUTC = 1;
         }
-        this.UTtimes.push(djutc);
-        this.UTlabels.push(firstUT.toString());
+        this.UTCtimes.push(djutc);
+        this.UTClabels.push(firstUTC.toString());
         if (Driver.obs_timezone != 0) {
-            let mszt = (firstUT + Driver.obs_timezone + 24) % 24;
+            let mszt = (firstUTC + Driver.obs_timezone + 24) % 24;
             this.MSZTlabels.push(mszt == 0 ? "24" : mszt.toString());
         }
         stl = sla.dr2tf(1, sla.dranrm(sla.gmst(djutc) + Driver.obs_lon_rad) + this.eqeqx);
-        this.STlabels.push(`${stl.ihmsf[0]}:${stl.ihmsf[1] < 10 ? "0" : ""}${stl.ihmsf[1].toFixed(0)}`);
-        firstUT += 1;
+        this.LSTlabels.push(`${stl.ihmsf[0]}:${stl.ihmsf[1] < 10 ? "0" : ""}${stl.ihmsf[1].toFixed(0)}`);
+        firstUTC += 1;
         djutc += 1/24;
     }
     this.BestEvBlank = "";
