@@ -6,7 +6,15 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. See LICENSE.md.
  */
-$urlSkyCam = "http://www.gtc.iac.es/multimedia/netcam/camaraAllSky.jpg?t=" . time();
+$telescope = $_GET["telescope"];
+
+if (in_array($telescope, Array("NOT", "WHT", "INT"))) {
+    $urlSkyCam = "http://www.gtc.iac.es/multimedia/netcam/camaraAllSky.jpg?t=" . time();
+} elseif (in_array($telescope, Array("HJST", "OST"))) {
+    $urlSkyCam = "http://www.gtc.iac.es/multimedia/netcam/camaraAllSky.jpg?t=" . time();
+} else {
+    $urlSkyCam = "";
+}
 
 header("Content-type: image/jpeg");
 echo file_get_contents($urlSkyCam);
