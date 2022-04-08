@@ -50,7 +50,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
                     <input type="button" value="Configuration" id="configBtn" />
                     <input type="button" value="Help" id="helpBtn" />
                 </div>
-                Date:<br/>
+                Date:
                 <input type="text" id="dateY" /> &ndash; <input type="text" id="dateM" /> &ndash; <input type="text" id="dateD" />
                 <input type="button" value="Set" id="dateSet" /><br/><br/>
                 <span class="middle">Targets:
