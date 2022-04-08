@@ -39,6 +39,11 @@ function Driver() {
      * 2.4 - Added more telescopes, and support for telescopes in different
      *       time zones.
      *     - Now storing configuration in the browser's localStorage.
+     *
+     * 2.5 - Added declination limits for equatorial-mount telescopes,
+     *       either as ha(dec) or as alt(dec).
+     *     - Updated README file and included a screenshot of Visplot.
+     *     - Added footer with misc. information and links to GitHub.
      */
     this.version = "2.4";
     helper.LogSuccess(`Hello, this is Visplot version ${this.version}`);
@@ -102,6 +107,17 @@ function Driver() {
     this.reObj = null;   // Object that is being moved/rescheduled on the RHS
     this.reY = null;     // Tracking of mouse y-position during said rescheduling
     this.mouseInsideObject = -1;
+
+    /* Update footer */
+    $("#footer-year").text((new Date()).getUTCFullYear());
+    $("#footer-version").text(this.version);
+    $("#footer-version").attr("href", `https://github.com/egafton/visplot/tree/v${this.version}`);
+    fetch(`https://api.github.com/repos/egafton/visplot/commits/tags/v${this.version}`)
+        .then(res => res.json())
+        .then(res => {
+            $("#footer-date").text(`, committed on ${res.commit.author.date.replace("T", " at ").slice(0, 19)} UTC`);
+        })
+        .catch(error => {});
 }
 
 /**

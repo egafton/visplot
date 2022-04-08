@@ -76,6 +76,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
             <canvas id="canvasFrame" width="951" height="672"></canvas>
         </div> <!-- #contentblock -->
     </div> <!-- #container -->
+    <div id="footer">
+        <div id="footer-inner">
+            ©2016–<span id="footer-year"></span> ega (NOT/ING).
+            Running Visplot version <a target="_blank" id="footer-version"></a><span id="footer-date"></span>.<br/>
+            Released under the <a target="_blank" href="https://github.com/egafton/visplot/blob/master/LICENSE.md">GNU General Public License v3.0</a>.
+            Report bugs and feature requests in the <a target="_blank" href="https://github.com/egafton/visplot/issues"><i>Issues</i> section</a> on GitHub.
+        </div> <!-- #footer-inner -->
+    </div> <!-- # footer -->
     <a id="inline" href="#details" style="display:none"></a>
     <div style="display:none">
         <div id="details">
