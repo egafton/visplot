@@ -655,3 +655,57 @@ helper.timezone = function(value) {
         return value.toFixed(0);
     }
 };
+
+/**
+ * Created multi-dimensional array filled with 0.
+ */
+helper.zeros = function(dimensions) {
+    var array = [];
+    for (var i=0; i<dimensions[0]; ++i) {
+        array.push(dimensions.length == 1 ? 0 : this.zeros(dimensions.slice(1)));
+    }
+    return array;
+};
+
+/**
+ * Evaluate a B-spline at a set of points.
+ *
+ * @see https://stackoverflow.com/a/25330648
+ */
+ helper.bspleval = function(xx, order, knots, coeffs) {
+    const k = order;
+    const t = knots;
+    const m = t.length;
+    const x = Array.isArray(xx) ? xx : [xx];
+    const npts = x.length;
+    const B = helper.zeros([m-1,k+1,npts]);
+    for (let i=0; i<m-1; i++) {
+        for (let ix=0; ix<npts; ix++) {
+            B[i][0][ix] = ((x[ix] >= t[i]) && (x[ix] < t[i+1])) ? 1 : 0;
+        }
+    }
+    if (k == 0) {
+        B[m-2][0][npts-1] = 1;
+    }
+    // Next iteratively define the higher-order basis functions, working from lower order to higher.
+    for (let j=1; j<k+1; j++) {
+        for (let i=0; i<m-j-1; i++) {
+            for (let ix=0; ix<npts; ix++) {
+                let first_term = (t[i+j] == t[i]) ? 0 : ((x[ix] - t[i]) / (t[i+j] - t[i])) * B[i][j-1][ix];
+                let second_term = (t[i+j+1] == t[i+1]) ? 0 : ((t[i+j+1] - x[ix]) / (t[i+j+1] - t[i+1])) * B[i+1][j-1][ix];
+                B[i][j][ix] = first_term + second_term;
+            }
+        }
+        if (k == 0) {
+            B[m-j-2][j][npts-1] = 1;
+        }
+    }
+    // Evaluate the spline by multiplying the coefficients with the highest-order basis functions.
+    const y = helper.zeros([npts]);
+    for (let i=0; i<m-k-1; i++) {
+        for (let ix=0; ix<npts; ix++) {
+            y[ix] += coeffs[i] * B[i][k][ix];
+        }
+    }
+    return npts == 1 ? y[0] : y;
+};

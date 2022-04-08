@@ -97,6 +97,19 @@ function Target(k, obj) {
     this.ReconstructedInput = `${this.Name} ${this.inputRA} ${this.inputDec} ${this.Epoch} ${this.ExptimeSeconds} ${this.ProjectNumber} ${this.Constraints} ${this.FullType} ${this.OBData}`;
     this.ReconstructedMinimumInput = `${this.Name} ${this.inputRA} ${this.inputDec} ${this.Epoch}`;
     this.Comments = null;
+
+    let dfun = config[Driver.telescopeName].declinationLimit;
+    this.DecLimit_MinimumAlt = null;
+    this.DecLimit_MinimumHA = null;
+    this.DecLimit_MaximumHA = null;
+    if (dfun !== null) {
+        if (dfun[0] == "alt(dec)") {
+            this.DecLimit_MinimumAlt = dfun[1](this.Dec_rad * sla.r2d);
+        } else if (dfun[0] == "ha(dec)") {
+            this.DecLimit_MinimumHA = dfun[1](this.Dec_rad * sla.r2d);
+            this.DecLimit_MaximumHA = dfun[2](this.Dec_rad * sla.r2d);
+        }
+    }
 }
 
 /**
@@ -1422,15 +1435,21 @@ Target.prototype.canObserve = function (time, altitude) {
             this.RestrictionMinAlt <= altitude && this.RestrictionMaxAlt >= altitude) === false) {
         return false;
     }
-    if (config[Driver.telescopeName].declinationLimit !== null) {
-        if (config[Driver.telescopeName].declinationLimit(this.Dec_rad * sla.r2d) > altitude) {
-            return false;
-        }
-    }
     for (let i = 0; i < driver.targets.Offline.length; i += 1) {
         if (time >= driver.targets.Offline[i].Start && time <= driver.targets.Offline[i].End) {
             return false;
         }
+    }
+    /* Special provisions for equatorial mounts */
+    if (this.DecLimit_MinimumAlt !== null && altitude < this.DecLimit_MinimumAlt) {
+        return false;
+    }
+    let ha = (time - this.ZenithTime) * 24;
+    if (this.DecLimit_MinimumHA !== null && ha < this.DecLimit_MinimumHA) {
+        return false;
+    }
+    if (this.DecLimit_MaximumHA !== null && ha > this.DecLimit_MaximumHA) {
+        return false;
     }
     return true;
 };

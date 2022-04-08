@@ -42,7 +42,7 @@ config["NOT"] = {
     // Lowest limit for unvignetted observations, in degrees; null if N/A
     vignetteLimit: 35,
 
-    // Lowest limit in elevation for observing, based on declination; null if N/A
+    // Limits based on declination (for equatorial mounts); null if N/A
     declinationLimit: null,
 
     // Instrument definitions; fov in arcminutes
@@ -104,7 +104,7 @@ config["WHT"] = {
     // Lowest limit for unvignetted observations, in degrees; null if N/A
     vignetteLimit: 25,
 
-    // Lowest limit in elevation for observing, based on declination; null if N/A
+    // Limits based on declination (for equatorial mounts); null if N/A
     declinationLimit: null,
 
     // Instrument definitions; fov in arcminutes
@@ -162,16 +162,17 @@ config["INT"] = {
     // Lowest limit for unvignetted observations, in degrees; null if N/A
     vignetteLimit: 33,
 
-    // Lowest limit in elevation for observing, based on declination; null if N/A
-    declinationLimit: function(dec) {
-        // Pass declination in degrees
+    // Limits based on declination (for equatorial mounts); null if N/A
+    declinationLimit: ["alt(dec)", function(dec) {
+        // Lowest elevation as a function of declination
+        // Taken from https://www.ing.iac.es/Astronomy/telescopes/int/int_pointing_limits.html
         if (dec < -30.1583) {
             return 90; // Cannot observe
         } else {
             const hmin = Math.asin(0.4812 * (Math.sin(dec * 1.745329251994329576923691e-2))) * 57.29577951308232;
             return Math.max(hmin, 20);
         }
-    },
+    }],
 
     // Instrument definitions; fov in arcminutes
     instruments: {
@@ -220,8 +221,37 @@ config["INT"] = {
     // Lowest limit for unvignetted observations, in degrees; null if N/A
     vignetteLimit: 20,
 
-    // Lowest limit in elevation for observing, based on declination; null if N/A
-    declinationLimit: null,
+    // Limits based on declination (for equatorial mounts); null if N/A
+    declinationLimit: ["ha(dec)", function(dec) {
+        // Lowest HA as a function of declination
+        return helper.bspleval(
+            dec,
+            config["HJST"]._interp_order,
+            config["HJST"]._minha_knots,
+            config["HJST"]._minha_coeffs);
+    }, function(dec) {
+        // Highest HA as a function of declination
+        return helper.bspleval(
+            dec,
+            config["HJST"]._interp_order,
+            config["HJST"]._maxha_knots,
+            config["HJST"]._maxha_coeffs);
+    }],
+
+    // Private constants for spline interpolation
+    _interp_order: 1,
+    _minha_knots: [ -52.0, -52.0, -50.0, -45.0, -42.0, -40.0, -30.0, -20.0,
+        -17.0, -10.0, 0.0, 5.0, 15.0, 25.0, 30.0, 40.0, 50.0, 60.0, 63.0,
+        73.0, 80.0, 81.0, 82.0, 85.0, 88.0, 89.0, 90.0, 90.0 ],
+    _minha_coeffs: [ 2.3, 2.0, 1.1, 0.0, -1.0, -2.0, -2.7, -3.0, -3.3, -3.6,
+        -4.0, -4.3, -4.7, -4.1, -3.3, -2.6, -2.2, -2.0, -1.8, -1.5, -1.2,
+        -1.0, -0.5, 0.8, 2.0, 3.0, 0.0, 0.0 ],
+    _maxha_knots: [ -52.0, -52.0, -50.0, -45.0, -40.0, -30.0, -20.0, -15.0,
+        -5.0, 0.0, 2.0, 15.0, 25.0, 30.0, 40.0, 50.0, 60.0, 65.0, 73.0, 80.0,
+        81.0, 82.0, 85.0, 88.0, 89.0, 90.0, 90.0 ],
+    _maxha_coeffs: [ 2.3, 3.0, 3.4, 4.0, 4.7, 5.0, 5.3, 5.6, 5.8, 6.0, 6.5,
+        7.0, 7.4, 8.0, 9.0, 10.7, 11.8, 5.4, 5.3, 5.2, 5.5, 5.0, 4.8, 4.0,
+        4.0, 0.0, 0.0 ],
 
     // Instrument definitions; fov in arcminutes
     instruments: {
@@ -266,7 +296,7 @@ config["INT"] = {
     // Lowest limit for unvignetted observations, in degrees; null if N/A
     vignetteLimit: 20,
 
-    // Lowest limit in elevation for observing, based on declination; null if N/A
+    // Limits based on declination (for equatorial mounts); null if N/A
     declinationLimit: null,
 
     // Instrument definitions; fov in arcminutes
