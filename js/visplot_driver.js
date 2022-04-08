@@ -45,6 +45,7 @@ function Driver() {
      *     - Updated README file and included a screenshot of Visplot.
      *     - Added footer with misc. information and links to GitHub.
      *     - Changed UT to UTC, since that is what we are using.
+     *     - Telescope name and default AM are now saved upon serialization.
      */
     this.version = "2.4";
     helper.LogSuccess(`Hello, this is Visplot version ${this.version}`);
