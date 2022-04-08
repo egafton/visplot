@@ -139,7 +139,7 @@ SkyGraph.prototype.setPointing = function (xy) {
  * @memberof SkyGraph
  */
 SkyGraph.prototype.reload = function () {
-    this.skyImg.src = `skycam.php?telescope=${config[Driver.telescopeName]}`;
+    this.skyImg.src = `skycam.php?telescope=${Driver.telescopeName}`;
 };
 
 /**
