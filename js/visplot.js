@@ -58,6 +58,9 @@ $(document).ready(function () {
             helper.LogEntry(`Restoring default observing time to <i>${localStorage.defaultObstime}</i>`);
             Driver.defaultObstime = localStorage.defaultObstime;
         }
+    } else {
+        /* Default image for default telescope */
+        $("#canvasFrame").css("background-image", 'url(' + config[Driver.telescopeName].background + ')');
     }
 
     /* Now that the driver is created, do some stuff that require it*/

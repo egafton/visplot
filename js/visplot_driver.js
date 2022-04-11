@@ -46,6 +46,7 @@ function Driver() {
      *     - Added footer with misc. information and links to GitHub.
      *     - Changed UT to UTC, since that is what we are using.
      *     - Telescope name and default AM are now saved upon serialization.
+     *     - Each telescope now has its own background image.
      */
     this.version = "2.4";
     helper.LogSuccess(`Hello, this is Visplot version ${this.version}`);
@@ -1066,6 +1067,7 @@ Object.defineProperties(Driver, {
             if ($.inArray(val, Object.keys(config)) !== -1) {
                 this._telescopeName = val;
                 $("#def_telescope").val(val);
+                $("#canvasFrame").css("background-image", 'url(' + config[val].background + ')');
             }
         }},
     "updSchedText": {

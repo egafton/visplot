@@ -22,8 +22,10 @@ body {
 #canvasFrame{
     padding: 12px;
     background: rgba(255, 255, 255, 0);
-    background: url("../img/image.jpg");
-    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    background-attachment: local;
+    background-position: center;
+    background-size: cover;
     box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
     border-radius: 16px;
     display: none;

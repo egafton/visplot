@@ -45,6 +45,9 @@ config["NOT"] = {
     // Limits based on declination (for equatorial mounts); null if N/A
     declinationLimit: null,
 
+    // Background image for plot
+    background: "img/telescopes/NOT.jpg",
+
     // Instrument definitions; fov in arcminutes
     instruments: {
         "ALFOSC": {
@@ -106,6 +109,9 @@ config["WHT"] = {
 
     // Limits based on declination (for equatorial mounts); null if N/A
     declinationLimit: null,
+
+    // Background image for plot
+    background: "img/telescopes/WHT.jpg",
 
     // Instrument definitions; fov in arcminutes
     instruments: {
@@ -173,6 +179,9 @@ config["INT"] = {
             return Math.max(hmin, 20);
         }
     }],
+
+    // Background image for plot
+    background: "img/telescopes/INT.jpg",
 
     // Instrument definitions; fov in arcminutes
     instruments: {
@@ -253,6 +262,9 @@ config["INT"] = {
         7.0, 7.4, 8.0, 9.0, 10.7, 11.8, 5.4, 5.3, 5.2, 5.5, 5.0, 4.8, 4.0,
         4.0, 0.0, 0.0 ],
 
+    // Background image for plot
+    background: "img/telescopes/HJST.jpg",
+
     // Instrument definitions; fov in arcminutes
     instruments: {
         "DIAFI": {
@@ -298,6 +310,9 @@ config["INT"] = {
 
     // Limits based on declination (for equatorial mounts); null if N/A
     declinationLimit: null,
+
+    // Background image for plot
+    background: "img/telescopes/OST.jpg",
 
     // Instrument definitions; fov in arcminutes
     instruments: {
