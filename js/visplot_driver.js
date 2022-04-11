@@ -48,7 +48,7 @@ function Driver() {
      *     - Telescope name and default AM are now saved upon serialization.
      *     - Each telescope now has its own background image.
      */
-    this.version = "2.4";
+    this.version = "2.5";
     helper.LogSuccess(`Hello, this is Visplot version ${this.version}`);
 
     /* HTML5 canvas, context and Graph class - related variables */

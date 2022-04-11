@@ -157,7 +157,7 @@ Graph.prototype.drawRHSofSchedule = function () {
                               (driver.reObj == i &amp;&amp; driver.rescheduling) ? "blue" : "black",
                               this.targetsx + 15, y, "left", "bottom");
             } else {
-                this.plotText(`${obj.Name.substr(0, this.maxLenTgtName)} (${obj.ProjectNumber}; UT ${helper.EphemDateToHM(obj.ScheduledStartTime)})`,
+                this.plotText(`${obj.Name.substr(0, this.maxLenTgtName)} (${obj.ProjectNumber}; UTC ${helper.EphemDateToHM(obj.ScheduledStartTime)})`,
                               "8pt",
                               (driver.reObj == i &amp;&amp; driver.rescheduling) ? "blue" : "black",
                               this.targetsx + 15, y, "left", "bottom");
@@ -184,7 +184,7 @@ Graph.prototype.drawRHSofSchedule = function () {
         y += this.targetsyskip;
         if (this.doubleTargets) {
             if (obj.Scheduled) {
-                this.plotText(`${obj.shortRA} ${obj.shortDec} (UT ${helper.EphemDateToHM(obj.ScheduledStartTime)})`,
+                this.plotText(`${obj.shortRA} ${obj.shortDec} (UTC ${helper.EphemDateToHM(obj.ScheduledStartTime)})`,
                               this.legendSize,
                               (driver.reObj == i &amp;&amp; driver.rescheduling) ? "blue" : "black",
                               this.targetsx + 15, y, "left", "bottom");
@@ -444,7 +444,7 @@ Graph.prototype.drawTargetNames = function (Targets) {
  */
 Graph.prototype.drawEphemerides = function () {
     /*
-     Convert the night.axis array (which is in units of ephem.Date) to a graph.axis array
+     Convert the night.xaxis array (which is in units of ephem.Date) to a graph.axis array
      (containing the corresponding HTML5 canvas positions, in (sub)pixels
      */
     this.xaxis = [];
@@ -453,25 +453,37 @@ Graph.prototype.drawEphemerides = function () {
     }
     this.ctx.strokeStyle = "black";
     this.ctx.fillStyle = "black";
-    // Plot the full hour UT and ST labels (8UT, 9UT, etc) below and above the plot, respectively
+    // Plot the full hour UTC and ST labels (8 UTC, 9 UTC, etc) below and above the plot, respectively
     this.ctx.textAlign = "center";
     this.ctx.textBaseline = "middle";
-    for (let i = 0; i &lt; driver.night.UTtimes.length; i += 1) {
-        const xnight = driver.night.UTtimes[i];
+    for (let i = 0; i &lt; driver.night.UTCtimes.length; i += 1) {
+        const xnight = driver.night.UTCtimes[i];
         const xplot = this.transformXLocation(xnight);
-        if (driver.night.UTlabels[i] != "24") {
-            this.plotVerticalLine(this.ystart, this.yend, xplot, [1, 2], 1);
-        } else {
+        if ((Driver.obs_timezone === 0 &amp;&amp; driver.night.UTClabels[i] === "24") ||
+            (Driver.obs_timezone !== 0 &amp;&amp; driver.night.MSZTlabels[i] === "24")) {
             this.plotVerticalLine(this.ystart, this.yend, xplot, [], 1.6);
+        } else {
+            this.plotVerticalLine(this.ystart, this.yend, xplot, [1, 2], 1);
         }
-        this.ctx.font = `11pt ${this.fontFamily}`;
-        this.ctx.fillText(driver.night.UTlabels[i], xplot, this.yend + 15);
-        this.ctx.font = `8pt ${this.fontFamily}`;
-        this.ctx.fillText(driver.night.STlabels[i], xplot, this.ystart - 35);
+        if (Driver.obs_timezone === 0) {
+            this.ctx.font = `11pt ${this.fontFamily}`;
+            this.ctx.fillText(driver.night.UTClabels[i], xplot, this.yend + 15);
+            this.ctx.font = `8pt ${this.fontFamily}`;
+            this.ctx.fillText(driver.night.LSTlabels[i], xplot, this.ystart - 35);
+        } else {
+            this.ctx.font = `11pt ${this.fontFamily}`;
+            this.ctx.fillText(driver.night.MSZTlabels[i], xplot, this.yend + 24);
+            this.ctx.font = `8pt ${this.fontFamily}`;
+            this.ctx.fillText(driver.night.UTClabels[i], xplot, this.yend + 10);
+            this.ctx.fillText(driver.night.LSTlabels[i], xplot, this.ystart - 35);
+        }
     }
     // Print the LST, S.set and S.rise labels
     this.ctx.font = `8pt ${this.fontFamily}`;
     this.ctx.fillText("LST   ⟶", this.xstart - 35, this.ystart - 35);
+    if (Driver.obs_timezone !== 0) {
+        this.ctx.fillText("UTC   ⟶", this.xstart - 22, this.yend + 10);
+    }
     this.ctx.fillText("S.set", this.xstart, this.ystart - 22);
     this.ctx.fillText("S.rise", this.xend, this.ystart - 22);
     // Plot the sunset and sunrise times
@@ -549,10 +561,17 @@ Graph.prototype.drawEphemerides = function () {
     this.ctx.fillStyle = "black";
     // Plot the x-axis label
     this.ctx.font = `11pt ${this.fontFamily}`;
-    this.ctx.fillText(
-        `Universal Time, starting night ${driver.night.year}-` +
-        `${helper.padTwoDigits(driver.night.month)}-${helper.padTwoDigits(driver.night.day)}`,
-        this.xmid, this.yend + 40);
+    if (Driver.obs_timezone === 0) {
+        this.ctx.fillText(
+            `Coordinated Universal Time, starting night ${driver.night.year}-` +
+            `${helper.padTwoDigits(driver.night.month)}-${helper.padTwoDigits(driver.night.day)}`,
+            this.xmid, this.yend + 40);
+    } else {
+        this.ctx.fillText(
+            `Mean Solar Zone Time, starting night ${driver.night.year}-` +
+            `${helper.padTwoDigits(driver.night.month)}-${helper.padTwoDigits(driver.night.day)}`,
+            this.xmid, this.yend + 44);
+    }
 
     // Moon illumination text
     this.ctx.font = `8pt ${this.fontFamily}`;
@@ -635,7 +654,7 @@ Graph.prototype.drawBackground = function () {
     for (let i = 0; i &lt; 90; i += 10) {
         this.ctx.font = `11pt ${this.fontFamily}`;
         this.ctx.textAlign = "right";
-        this.ctx.textBaseline = "middle";
+        this.ctx.textBaseline = (i > 0 || Driver.obs_timezone === 0) ? "middle" : "bottom";
         this.ctx.fillText(`${i}°`, this.xstart - this.tickLength, this.transformYLocation(i));
     }
     /*
@@ -702,7 +721,7 @@ Graph.prototype.drawBackground = function () {
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.5</a> on Mon Apr 04 2022 09:12:38 GMT-0500 (Central Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.5</a> on Mon Apr 11 2022 11:51:55 GMT-0500 (Central Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>

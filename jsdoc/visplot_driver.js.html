@@ -67,8 +67,16 @@ function Driver() {
      * 2.4 - Added more telescopes, and support for telescopes in different
      *       time zones.
      *     - Now storing configuration in the browser's localStorage.
+     *
+     * 2.5 - Added declination limits for equatorial-mount telescopes,
+     *       either as ha(dec) or as alt(dec).
+     *     - Updated README file and included a screenshot of Visplot.
+     *     - Added footer with misc. information and links to GitHub.
+     *     - Changed UT to UTC, since that is what we are using.
+     *     - Telescope name and default AM are now saved upon serialization.
+     *     - Each telescope now has its own background image.
      */
-    this.version = "2.4";
+    this.version = "2.5";
     helper.LogSuccess(`Hello, this is Visplot version ${this.version}`);
 
     /* HTML5 canvas, context and Graph class - related variables */
@@ -130,6 +138,17 @@ function Driver() {
     this.reObj = null;   // Object that is being moved/rescheduled on the RHS
     this.reY = null;     // Tracking of mouse y-position during said rescheduling
     this.mouseInsideObject = -1;
+
+    /* Update footer */
+    $("#footer-year").text((new Date()).getUTCFullYear());
+    $("#footer-version").text(this.version);
+    $("#footer-version").attr("href", `https://github.com/egafton/visplot/tree/v${this.version}`);
+    fetch(`https://api.github.com/repos/egafton/visplot/commits/tags/v${this.version}`)
+        .then(res => res.json())
+        .then(res => {
+            $("#footer-date").text(`, committed on ${res.commit.author.date.replace("T", " at ").slice(0, 19)} UTC`);
+        })
+        .catch(error => {});
 }
 
 /**
@@ -216,7 +235,6 @@ Driver.prototype.Callback_UpdateSchedule = function () {
         this.targets.plan(this.targets.Targets);
         helper.LogEntry("Done.");
         this.scheduleMode = true;
-        $("#pngExport").removeAttr("disabled");
         $("#planNight").val(Driver.updSchedText);
     }
     if (this.RequestedScheduleType === 3) {
@@ -482,8 +500,8 @@ Driver.prototype.EvtFrame_Click = function (e) {
             let moonHasSet = obj.Scheduled ? (this.night.ymoon[helper.EphemTimeToIndex(obj.ScheduledMidTime)] &lt; 0) : false;
             let LunarPhase = moonHasSet ? "D" :
                     (this.night.MoonIllumination &lt;= 40 ? "D" : (
-                            this.night.MoonIllumination &lt;= 70 ? (obj.AvgMoonDistance &lt;= 90 ? "G" : "D")
-                            : (obj.AvgMoonDistance &lt;= 60 ? "N" : "G")
+                            this.night.MoonIllumination &lt;= 70 ? (obj.MinMoonDistance &lt;= 90 ? "G" : "D")
+                            : (obj.MinMoonDistance &lt;= 60 ? "N" : "G")
                             ));
             $("#details_title").html(obj.Name);
             let info = `&lt;h2 class="h2-instr">Object details&lt;/h2>` +
@@ -492,7 +510,8 @@ Driver.prototype.EvtFrame_Click = function (e) {
                 `&lt;p class="pp">RA: &lt;b>${obj.RA}&lt;/b>&lt;/p>` +
                 `&lt;p class="pp">Dec: &lt;b>${obj.Dec.replace("-", "–")}&lt;/b>&lt;/p>` +
                 `&lt;p class="pp">Epoch: &lt;b>${obj.Epoch == "1950" ? "B1950" : "J2000"}&lt;/b>&lt;/p>` +
-                `&lt;p class="pp">Moon Distance: &lt;span title="${helper.LunarPhaseExplanation(LunarPhase)}">&lt;b>${obj.AvgMoonDistance}°&lt;/b> (${LunarPhase})&lt;/span>&lt;/p>` +
+                `&lt;p class="pp">Moon Distance: &lt;span title="${helper.LunarPhaseExplanation(LunarPhase)}">&lt;b>${obj.MinMoonDistance}°&lt;/b> (${LunarPhase})&lt;/span>&lt;/p>` +
+                `&lt;p class="pp">Moon Closest At: &lt;b>${helper.EphemDateToHM(obj.MinMoonDistanceTime)} UTC&lt;/p>` +
                 `&lt;p class="pp">Obstime: &lt;b>${obj.ExptimeSeconds.toFixed(0)} s&lt;/b> (${obj.ExptimeHM})&lt;/p>` +
                 (obj.ExtraInfo === null
                     ? ""
@@ -505,7 +524,7 @@ Driver.prototype.EvtFrame_Click = function (e) {
                     : "") +
                 (this.scheduleMode
                     ? (obj.Scheduled
-                        ? `&lt;p class="pp">Suggested UT: &lt;b>${helper.EphemDateToHM(obj.ScheduledStartTime)}–${helper.EphemDateToHM(obj.ScheduledEndTime)}&lt;/b>&lt;/p>`
+                        ? `&lt;p class="pp">Suggested UTC: &lt;b>${helper.EphemDateToHM(obj.ScheduledStartTime)}–${helper.EphemDateToHM(obj.ScheduledEndTime)}&lt;/b>&lt;/p>`
                         : `&lt;p class="pp">Not scheduled for observation.&lt;/p>`)
                       + `&lt;p class="pp2">&lt;span style="display:inline-block;width:80px">Started:&lt;/span>&lt;input type="text" class="inpshort" id="actual_start" />&lt;/p>`
                       + `&lt;p class="pp2">&lt;span style="display:inline-block;width:80px">Finished:&lt;/span>&lt;input type="text" class="inpshort" id="actual_end" />&lt;/p>`
@@ -592,11 +611,11 @@ Driver.prototype.InitializeDate = function () {
         datemsg = `Date set to ${year}-${helper.padTwoDigits(month)}-${helper.padTwoDigits(day)}, as provided by the OB queue.`;
     } else {
         let now = new Date();
-        helper.LogEntry(`Today is ${now.toUTCString()}`);
+        helper.LogEntry(`Today is ${now.toUTCString()}, timezone set to UTC${helper.timezone(config[Driver.telescopeName].timezone)}`);
         day = now.getUTCDate();
         month = now.getUTCMonth() + 1;
         year = now.getUTCFullYear();
-        if ((now.getUTCHours() - config[Driver.telescopeName].timezone) % 24 &lt; 12) {
+        if ((now.getUTCHours() + config[Driver.telescopeName].timezone) % 24 &lt; 12) {
             if (day == 1) {
                 let dd = helper.numberOfDays(year, month - 1);
                 if (month === 0) {
@@ -1076,6 +1095,7 @@ Object.defineProperties(Driver, {
             if ($.inArray(val, Object.keys(config)) !== -1) {
                 this._telescopeName = val;
                 $("#def_telescope").val(val);
+                $("#canvasFrame").css("background-image", 'url(' + config[val].background + ')');
             }
         }},
     "updSchedText": {
@@ -1241,7 +1261,7 @@ Object.defineProperties(Driver, {
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.5</a> on Mon Apr 04 2022 09:12:38 GMT-0500 (Central Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.5</a> on Mon Apr 11 2022 11:51:55 GMT-0500 (Central Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>
