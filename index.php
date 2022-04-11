@@ -1,4 +1,3 @@
-<!DOCTYPE HTML>
 <?php
 /**
  * Copyright (c) 2016-2022 ega, NOT/ING.
@@ -27,7 +26,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
 } else {
     $obpost = FALSE;
 }
-?>
+?><!DOCTYPE HTML>
 <html lang="en">
 
 <head>
