@@ -233,11 +233,24 @@ config["INT"] = {
     // Limits based on declination (for equatorial mounts); null if N/A
     declinationLimit: ["alt(az)", function(az, west=false) {
         // Lowest alt as a function of az
-        return helper.bspleval(
+        let spline = helper.bspleval(
             az,
             config["HJST"]._interp_order,
             west ? config["HJST"]._west_knots : config["HJST"]._east_knots,
             west ? config["HJST"]._west_coeffs : config["HJST"]._east_coeffs);
+        if (west) {
+            // Extra constraint from mount
+            let tan_lat = Math.tan(helper.deg2rad(config["HJST"].latitude));
+            let extra = az.map(function(x) {
+                return 10 + (90 - Math.sign(x) * x) * tan_lat;
+            });
+            for (let i=0; i<az.length; i++) {
+                if (spline[i] < extra[i]) {
+                    spline[i] = extra[i];
+                }
+            }
+        }
+        return spline;
     }],
 
     // Private constants for spline interpolation
