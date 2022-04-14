@@ -61,7 +61,7 @@ function Target(k, obj) {
     this.MinMoonDistance = Math.round(obj.mdist);
     this.MinMoonDistanceTime = obj.mdisttime;
     this.ProjectNumber = obj.project;
-    this.RestrictionMaxAlt = $("#opt_away_from_zenith").is(":checked")
+    this.RestrictionMaxAlt = (config[Driver.telescopeName].zenithLimit !== null && $("#opt_away_from_zenith").is(":checked"))
         ? 90 - config[Driver.telescopeName].zenithLimit
         : 90;
     this.MaxAirmass = obj.airmass;
@@ -1450,7 +1450,7 @@ Target.prototype.canObserve = function (idx) {
     const time = driver.night.xaxis[idx];
     const altitude = this.Graph[idx];
 
-    if (altitude < Driver.obs_lowestLimit) {
+    if (Driver.obs_lowestLimit !== null && altitude < Driver.obs_lowestLimit) {
         return 0;
     }
     if ((this.RestrictionMinUTC <= time && this.RestrictionMaxUTC >= time &&

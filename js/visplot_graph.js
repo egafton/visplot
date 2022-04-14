@@ -662,10 +662,12 @@ Graph.prototype.drawBackground = function () {
     this.ctx.textBaseline = "middle";
     this.ctx.strokeStyle = "black";
     // Closed lower hatch, 0% vignetting
-    this.ctx.fillText("Closed lower hatch", this.xstart - 130, this.transformYLocation(Driver.obs_lowerHatch + 2));
-    this.ctx.fillText("0% vignetting", this.xstart - 130, this.transformYLocation(Driver.obs_lowerHatch));
-    this.ctx.fillText("⟶", this.xstart - 50, this.transformYLocation(Driver.obs_lowerHatch));
-    this.plotHorizontalLine(this.xstart, this.xend, this.transformYLocation(Driver.obs_lowerHatch), [1, 2, 3, 2], 1);
+    if (Driver.obs_lowerHatch !== null) {
+        this.ctx.fillText("Closed lower hatch", this.xstart - 130, this.transformYLocation(Driver.obs_lowerHatch + 2));
+        this.ctx.fillText("0% vignetting", this.xstart - 130, this.transformYLocation(Driver.obs_lowerHatch));
+        this.ctx.fillText("⟶", this.xstart - 50, this.transformYLocation(Driver.obs_lowerHatch));
+        this.plotHorizontalLine(this.xstart, this.xend, this.transformYLocation(Driver.obs_lowerHatch), [1, 2, 3, 2], 1);
+    }
     // Closed lower hatch, 50% vignetting (only for NOT)
     if (Driver.telescopeName === "NOT") {
         this.ctx.fillText("Closed lower hatch", this.xstart - 130, this.transformYLocation(22));
@@ -673,12 +675,14 @@ Graph.prototype.drawBackground = function () {
         this.ctx.fillText("⟶", this.xstart - 50, this.transformYLocation(20));
     }
     // Lowest observing altitude
-    this.ctx.fillText(`${Driver.telescopeName} lowest limit`,
-                      this.xstart - 130, this.transformYLocation(Driver.obs_lowestLimit + 2));
-    this.ctx.fillText(`(${Driver.obs_lowestLimit.toFixed(0)}°)`,
-                      this.xstart - 130, this.transformYLocation(Driver.obs_lowestLimit));
-    this.ctx.fillText("⟶", this.xstart - 50, this.transformYLocation(Driver.obs_lowestLimit));
-    this.plotHorizontalLine(this.xstart, this.xend, this.transformYLocation(Driver.obs_lowestLimit), [1, 2, 3, 2], 1);
+    if (Driver.obs_lowestLimit !== null) {
+        this.ctx.fillText(`${Driver.telescopeName} lowest limit`,
+                          this.xstart - 130, this.transformYLocation(Driver.obs_lowestLimit + 2));
+        this.ctx.fillText(`(${Driver.obs_lowestLimit.toFixed(0)}°)`,
+                          this.xstart - 130, this.transformYLocation(Driver.obs_lowestLimit));
+        this.ctx.fillText("⟶", this.xstart - 50, this.transformYLocation(Driver.obs_lowestLimit));
+        this.plotHorizontalLine(this.xstart, this.xend, this.transformYLocation(Driver.obs_lowestLimit), [1, 2, 3, 2], 1);
+    }
 
     // Title of the plot
     this.ctx.font = `13pt ${this.fontFamily}`;
