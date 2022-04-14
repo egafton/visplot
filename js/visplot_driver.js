@@ -47,8 +47,13 @@ function Driver() {
      *     - Changed UT to UTC, since that is what we are using.
      *     - Telescope name and default AM are now saved upon serialization.
      *     - Each telescope now has its own background image.
+     *
+     * 2.6 - Updated collision map for HJST.
+     *     - Added the possibility of observing over-the-axis in equatorial
+     *       mount telescopes.
+     *     - Telescope lowest limit now enforced in the scheduling algorithm.
      */
-    this.version = "2.5";
+    this.version = "2.6";
     helper.LogSuccess(`Hello, this is Visplot version ${this.version}`);
 
     /* HTML5 canvas, context and Graph class - related variables */

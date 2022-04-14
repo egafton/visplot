@@ -55,6 +55,7 @@ function Target(k, obj) {
     this.ExptimeHM = `${hrs > 0 ? hrs.toFixed(0) + "h " : ""}${min.toFixed(0)}m`;
     this.ZenithTime = obj.zenithtime;
     this.Graph = obj.line;
+    this.Azimuth = obj.azim;
     this.FullType = obj.type;
     this.Type = (obj.type.indexOf("/") === -1 ? obj.type : obj.type.substring(0, obj.type.indexOf("/")));
     this.MinMoonDistance = Math.round(obj.mdist);
@@ -100,11 +101,16 @@ function Target(k, obj) {
 
     let dfun = config[Driver.telescopeName].declinationLimit;
     this.DecLimit_MinimumAlt = null;
+    this.DecLimit_MinimumAltAzEast = null;
+    this.DecLimit_MinimumAltAzWest = null;
     this.DecLimit_MinimumHA = null;
     this.DecLimit_MaximumHA = null;
     if (dfun !== null) {
         if (dfun[0] == "alt(dec)") {
             this.DecLimit_MinimumAlt = dfun[1](this.Dec_rad * sla.r2d);
+        } else if (dfun[0] == "alt(az)") {
+            this.DecLimit_MinimumAltAzEast = dfun[1](this.Azimuth, false);
+            this.DecLimit_MinimumAltAzWest = dfun[1](this.Azimuth, true);
         } else if (dfun[0] == "ha(dec)") {
             this.DecLimit_MinimumHA = dfun[1](this.Dec_rad * sla.r2d);
             this.DecLimit_MaximumHA = dfun[2](this.Dec_rad * sla.r2d);
@@ -142,6 +148,7 @@ TargetList.prototype.targetStringToJSON = function (line) {
     obj.project = dat[9];
     obj.epoch = parseFloat(dat[7]);
     obj.line = Array();
+    obj.azim = Array();
     obj.type = dat[11];
     obj.obdata = dat[12];
     obj.constraints = dat[10];
@@ -213,6 +220,11 @@ TargetList.prototype.targetStringToJSON = function (line) {
             altmax = ell;
         }
         obj.line.push(helper.rad2deg(ell));
+        let az = helper.rad2deg(retob.aob);
+        if (az < 0) {
+            az += 360;
+        }
+        obj.azim.push(az);
     }
     obj.zenithtime = night.xaxis[imax];
     obj.RA_rad = ra;
@@ -1428,29 +1440,67 @@ TargetList.prototype.checkForDuplicates = function () {
 
 /**
  * @memberof Target
+ * @returns 0 = cannot observe the object (gray line)
+ *          1 = can observe the object (telescopes that don't have an over-the-axis mode)
+ *              or can observe the object under-the-axis only
+ *          2 = can observe the object over-the-axis only
+ *          3 = can observe the object both over- and under-the-axis
  */
-Target.prototype.canObserve = function (time, altitude) {
+Target.prototype.canObserve = function (idx) {
+    const time = driver.night.xaxis[idx];
+    const altitude = this.Graph[idx];
+
+    if (altitude < Driver.obs_lowestLimit) {
+        return 0;
+    }
     if ((this.RestrictionMinUTC <= time && this.RestrictionMaxUTC >= time &&
             this.RestrictionMinAlt <= altitude && this.RestrictionMaxAlt >= altitude) === false) {
-        return false;
+        return 0;
     }
     for (let i = 0; i < driver.targets.Offline.length; i += 1) {
         if (time >= driver.targets.Offline[i].Start && time <= driver.targets.Offline[i].End) {
-            return false;
+            return 0;
         }
     }
     /* Special provisions for equatorial mounts */
+    // alt(dec)
     if (this.DecLimit_MinimumAlt !== null && altitude < this.DecLimit_MinimumAlt) {
-        return false;
+        return 0;
     }
+    // ha(dec)
     let ha = (time - this.ZenithTime) * 24;
     if (this.DecLimit_MinimumHA !== null && ha < this.DecLimit_MinimumHA) {
-        return false;
+        return 0;
     }
     if (this.DecLimit_MaximumHA !== null && ha > this.DecLimit_MaximumHA) {
-        return false;
+        return 0;
     }
-    return true;
+    if (this.DecLimit_MinimumAltAzEast === null && this.DecLimit_MinimumAltAzWest === null) {
+        return 1;
+    }
+    // alt(az)
+    let notwest = false, noteast = false;
+    if ($("#opt_allow_over_axis").is(":checked")) {
+        if (this.DecLimit_MinimumAltAzWest !== null && altitude < this.DecLimit_MinimumAltAzWest[idx]) {
+            notwest = true;
+        }
+    } else {
+        // Do not allow observations over-the-axis
+        notwest = true;
+    }
+    if (this.DecLimit_MinimumAltAzEast !== null && altitude < this.DecLimit_MinimumAltAzEast[idx]) {
+        noteast = true;
+    }
+    if (noteast && notwest) {
+        return 0;
+    }
+    if (!noteast && notwest) {
+        return 1;
+    }
+    if (!notwest && noteast) {
+        return 2;
+    }
+    return 3;
 };
 
 /**
@@ -1462,32 +1512,31 @@ Target.prototype.preCompute = function () {
     this.endAllowed = [];
     this.beginForbidden = [];
     this.endForbidden = [];
-    let obs = (this.canObserve(driver.night.xaxis[0], this.Graph[0]));
-    this.observable[0] = obs;
+    this.observable[0] = this.canObserve(0);
+    let obs = (this.observable[0] > 0);
     if (!obs) {
         this.beginForbidden.push(driver.night.xaxis[0]);
     } else {
         this.beginAllowed.push(driver.night.xaxis[0]);
     }
     for (let i = 1; i < this.Graph.length - 1; i += 1) {
-        if (this.canObserve(driver.night.xaxis[i], this.Graph[i])) {
+        this.observable[i] = this.canObserve(i);
+        if (this.observable[i] > 0) {
             if (!obs) {
                 obs = true;
                 this.endForbidden.push(driver.night.xaxis[i]);
                 this.beginAllowed.push(driver.night.xaxis[i]);
             }
-            this.observable[i] = true;
         } else {
             if (obs) {
                 obs = false;
                 this.endAllowed.push(driver.night.xaxis[i]);
                 this.beginForbidden.push(driver.night.xaxis[i]);
             }
-            this.observable[i] = false;
         }
     }
     let last = this.Graph.length - 1;
-    this.observable[last] = this.canObserve(driver.night.xaxis[last], this.Graph[last]);
+    this.observable[last] = this.canObserve(last);
     if (this.beginForbidden.length !== this.endForbidden.length) {
         this.endForbidden.push(driver.night.xaxis[last]);
     } else {

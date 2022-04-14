@@ -327,15 +327,26 @@ Graph.prototype.drawTargets = function (Targets) {
     this.ctx.rect(this.xstart, this.ystart, this.width, this.height);
     this.ctx.clip();
     this.ctx.setLineDash([]);
-    this.ctx.lineWidth = 1.2;
-    const strokes = [];
-    strokes[true] = "#000";
-    strokes[false] = "#aaa";
+    const strokes = [], dashes = [], lws = [];
+    strokes[0] = "#aaa";
+    strokes[1] = "#000";
+    strokes[2] = "#f55";
+    strokes[3] = "#000";
+    dashes[0] = [];
+    dashes[1] = [];
+    dashes[2] = [1,3];
+    dashes[3] = [2,2];
+    lws[0] = 1.2;
+    lws[1] = 1.2;
+    lws[2] = 3.2;
+    lws[3] = 3.2;
 
     for (let i = 0; i < Targets.length; i += 1) {
         const obj = Targets[i];
         let obs = obj.observable[0];
         this.ctx.strokeStyle = strokes[obs];
+        this.ctx.setLineDash(dashes[obs]);
+        this.ctx.lineWidth = lws[obs];
         this.ctx.beginPath();
         this.ctx.moveTo(this.xaxis[0], this.transformYLocation(obj.Graph[0]));
         for (let j = 1; j < obj.Graph.length; j += 1) {
@@ -344,6 +355,8 @@ Graph.prototype.drawTargets = function (Targets) {
                 this.ctx.stroke();
                 obs = obj.observable[j];
                 this.ctx.strokeStyle = strokes[obs];
+                this.ctx.setLineDash(dashes[obs]);
+                this.ctx.lineWidth = lws[obs];
                 this.ctx.beginPath();
                 this.ctx.moveTo(this.xaxis[j], this.transformYLocation(obj.Graph[j]));
             } else {
