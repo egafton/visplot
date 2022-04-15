@@ -43,7 +43,7 @@ function SkyGraph(_canvas, _context) {
 SkyGraph.prototype.startTimer = function () {
     this.timer = setInterval(function () {
         driver.skyGraph.reload();
-    }, 5000);  // 5 second reload
+    }, 10000);  // 10 second reload
 };
 
 /**
@@ -139,7 +139,7 @@ SkyGraph.prototype.setPointing = function (xy) {
  * @memberof SkyGraph
  */
 SkyGraph.prototype.reload = function () {
-    this.skyImg.src = `skycam.php?telescope=${Driver.telescopeName}`;
+    this.skyImg.src = `skycam.php?telescope=${Driver.telescopeName}&time=${new Date().getTime()}`;
 };
 
 /**

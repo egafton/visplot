@@ -11,10 +11,13 @@ $telescope = $_GET["telescope"];
 if (in_array($telescope, Array("NOT", "WHT", "INT"))) {
     $urlSkyCam = "http://www.gtc.iac.es/multimedia/netcam/camaraAllSky.jpg?t=" . time();
 } elseif (in_array($telescope, Array("HJST", "OST"))) {
-    $urlSkyCam = "http://www.gtc.iac.es/multimedia/netcam/camaraAllSky.jpg?t=" . time();
+    $urlSkyCam = "http://monet-n-sky.as.utexas.edu/jpg/1/image.jpg?t=" . time();
 } else {
     $urlSkyCam = "";
 }
 
 header("Content-type: image/jpeg");
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
 echo file_get_contents($urlSkyCam);
