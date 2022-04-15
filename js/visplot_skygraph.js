@@ -68,6 +68,7 @@ SkyGraph.prototype.updateTelescope = function () {
         this.distortPower = 0.5;
     }
     this.pang = [this.south, this.south + 6, this.south + 12, this.south + 18];
+    this.reload();
 };
 
 /**
