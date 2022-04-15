@@ -1076,6 +1076,8 @@ Object.defineProperties(Driver, {
                 $("#canvasFrame").css("background-image", 'url(' + config[val].background + ')');
                 // Recalculate Skycam constants
                 driver.skyGraph.updateTelescope();
+                // Revalidate targets to recompute TCS lines
+                driver.targets.validateAndFormatTargets(true);
             }
         }},
     "updSchedText": {

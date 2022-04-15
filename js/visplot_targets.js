@@ -1014,10 +1014,10 @@ TargetList.prototype.inputHasChanged = function (_newinput, _oldinput) {
  *     by adding spaces so that the various columns fall nicely under each
  *     other.
  */
-TargetList.prototype.validateAndFormatTargets = function () {
+TargetList.prototype.validateAndFormatTargets = function (force = false) {
     // Retrieve content of #targets textarea
     const tgts = driver.CMeditor.getValue();
-    if (!this.inputHasChanged(tgts, this.InputText) && this.InputValid) {
+    if (!this.inputHasChanged(tgts, this.InputText) && this.InputValid && !force) {
         helper.LogEntry("Target input list has not changed, no need to revalidate.");
         return true;
     } else {
@@ -1026,6 +1026,9 @@ TargetList.prototype.validateAndFormatTargets = function () {
     $("#tcsExport").prop("disabled", true);
     this.InputValid = false;
     if (tgts.length === 0) {
+        if (force) {
+            return true;
+        }
         helper.LogError("Error 1: Please fill in the <i>Targets</i> field.");
         return false;
     }
@@ -1114,7 +1117,9 @@ TargetList.prototype.validateAndFormatTargets = function () {
             continue;
         }
         if (!badwolf) {
-            this.TCSlines.push(helper.pad(words[0].replace(/[^A-Za-z0-9\_\+\-]+/g, ""), this.MaxLen.Name, false, " ") + " " +
+            this.InputStats.Actual += 1;
+            if ($.inArray(Driver.telescopeName, ["NOT", "WHT", "INT"]) >= 0) {
+                this.TCSlines.push(helper.pad(words[0].replace(/[^A-Za-z0-9\_\+\-]+/g, ""), this.MaxLen.Name, false, " ") + " " +
                     helper.padTwoDigits(words[1]) + ":" +
                     helper.padTwoDigits(words[2]) + ":" +
                     helper.pad(parseFloat(words[13]).toFixed(2).toString(), 5, true, "0") + " " +
@@ -1125,7 +1130,20 @@ TargetList.prototype.validateAndFormatTargets = function () {
                     helper.pad(parseFloat(words[14]).toFixed(2).toString(), this.MaxLen.TCSpmra + 3, true, " ") + " " +
                     helper.pad(parseFloat(words[16]).toFixed(2).toString(), this.MaxLen.TCSpmdec + 3, true, " ") + " " +
                     "0.0");
-            this.InputStats.Actual += 1;
+            } else if ($.inArray(Driver.telescopeName, ["HJST", "OST"]) >= 0) {
+                this.TCSlines.push(
+                    helper.pad(this.InputStats.Actual.toString(), 2, true, " ") + " " +
+                    '"' + helper.pad(words[0].replace(/[^A-Za-z0-9\_\+\-]+/g, ""), this.MaxLen.Name, false, " ") + '" ' +
+                    helper.padTwoDigits(words[1]) + " " +
+                    helper.padTwoDigits(words[2]) + " " +
+                    helper.pad(parseFloat(words[13]).toFixed(2).toString(), 5, true, "0") + " " +
+                    helper.pad(helper.padTwoDigits(words[4]), 3, true, " ") + " " +
+                    helper.pad(words[5], 2, true, "0") + " " +
+                    helper.pad(parseFloat(words[15]).toFixed(1).toString(), 4, true, "0") + " " +
+                    helper.pad(parseFloat(words[7]).toFixed(1).toString(), 6, " ") + " " +
+                    helper.pad(parseFloat(words[14]).toFixed(2).toString(), this.MaxLen.TCSpmra + 3, true, " ") + " " +
+                    helper.pad(parseFloat(words[16]).toFixed(2).toString(), this.MaxLen.TCSpmdec + 3, true, " "));
+            }
             this.TargetsLines.push(padded.join(" "));
         }
     }
