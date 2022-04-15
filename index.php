@@ -96,6 +96,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
         <div id="tcscat">
             <h2 class="fancyhead">Targets in TCS catalogue format</h2>
             <pre id="tcspre"></pre>
+            <input type="button" value="Save file" id="tcsSave" />
         </div> <!-- #tcscat -->
         <div id="config-container">
             <h2 class="fancyhead">Configure Visplot</h2>

@@ -29,6 +29,10 @@ serializer.BindEvents = function () {
     $("#pngExport").click(function () {
         serializer.exportPNG();
     });
+
+    $("#tcsSave").click(function () {
+        serializer.saveTCS();
+    });
 };
 
 /**
@@ -54,6 +58,30 @@ serializer.saveDocument = function () {
         }).then(function (content) {
             saveAs(content, "schedule.visplot");
         });
+        helper.LogEntry("Done.");
+    } catch (e) {
+        helper.LogError(`Error 42: <i>${e}</i>`);
+    }
+};
+
+/**
+ * Save the list of targets in TCS format to disk.
+ */
+ serializer.saveTCS = function () {
+    helper.Log("Exporting schedule in TCS format...");
+    let filename;
+    if ($.inArray(Driver.telescopeName, ["NOT", "WHT", "INT"]) >= 0) {
+        filename = "visplot.cat";
+    } else if ($.inArray(Driver.telescopeName, ["HJST", "OST"]) >= 0) {
+        filename = "visplot.wrk";
+    }
+    try {
+        const blob = new Blob(
+            [$("#tcspre").html()],
+            {
+                type: "text/plain;charset=utf-8"
+            });
+        saveAs(blob, filename);
         helper.LogEntry("Done.");
     } catch (e) {
         helper.LogError(`Error 42: <i>${e}</i>`);
