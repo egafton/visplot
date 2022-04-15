@@ -652,7 +652,8 @@ Driver.prototype.EvtSkycm_MouseMove = function (e, jQthis) {
         this.skyGraph.display_coords(null);
         this.skyGraph.lastazalt = null;
     } else {
-        const azalt = helper.getCoordinates(320, 240, pos_x, pos_y, 280, this.skyGraph.lst);
+        //const azalt = helper.getCoordinates(320, 240, pos_x, pos_y, 280, this.skyGraph.lst);
+        const azalt = helper.getCoordinates(this.skyGraph.cx, this.skyGraph.cy, pos_x, pos_y, 280, this.skyGraph.lst);
         this.skyGraph.display_coords(azalt);
         this.skyGraph.lastazalt = azalt;
     }
@@ -1073,6 +1074,8 @@ Object.defineProperties(Driver, {
                 this._telescopeName = val;
                 $("#def_telescope").val(val);
                 $("#canvasFrame").css("background-image", 'url(' + config[val].background + ')');
+                // Recalculate Skycam constants
+                driver.skyGraph.updateTelescope();
             }
         }},
     "updSchedText": {

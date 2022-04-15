@@ -22,6 +22,10 @@ function SkyGraph(_canvas, _context) {
     this.south = 2.3;
     this.pang = [this.south, this.south + 6, this.south + 12, this.south + 18];
     this.plab = ["S", "W", "N", "E"];
+    this.xl = [-7, -5, -2, 1];
+    this.yl = [-2, +4, +7, 0];
+    this.distortPower = 1.05;
+    this.labelYShift = [0, 0, 0, 0];
     this.lastazalt = null;
     this.lst = helper.LM_Sidereal_Time(helper.julianDate(new Date()));
     this.timer = null;
@@ -30,12 +34,41 @@ function SkyGraph(_canvas, _context) {
     this.cx = 0.51 * this.imx;
     this.cy = 0.52 * this.imy;
     this.cr = this.imx * 0.5;
+    this.arcRadius = [0.85 * this.cr, 0.85 * this.cr, 0.85 * this.cr, 0.85 * this.cr];
     this.tcsx = null;
     this.tcsy = null;
     this.percentClearSky = -1;
     this.skyImg = new Image();
     this.reload();
 }
+
+/**
+ * 
+ */
+SkyGraph.prototype.updateTelescope = function () {
+    if ($.inArray(Driver.telescopeName, ["NOT", "WHT", "INT"]) >= 0) {
+        this.south = 2.3;
+        this.xl = [-7, -5, -2, 1];
+        this.yl = [-2, +4, +7, 0];
+        this.labelYShift = [0, 0, 0, 0];
+        this.cx = 0.51 * this.imx;
+        this.cy = 0.52 * this.imy;
+        this.cr = this.imx * 0.5;
+        this.arcRadius = [0.85 * this.cr, 0.85 * this.cr, 0.85 * this.cr, 0.85 * this.cr];
+        this.distortPower = 1.05;
+    } else if ($.inArray(Driver.telescopeName, ["HJST", "OST"]) >= 0) {
+        this.south = -0.5;
+        this.xl = [3, -10, -7, 2];
+        this.yl = [4, +4, +16, 3];
+        this.labelYShift = [-45, 0, 5, 0];
+        this.cx = 0.53 * this.imx;
+        this.cy = 0.53 * this.imy;
+        this.cr = this.imx * 0.45;
+        this.arcRadius = [0.70 * this.cr, 0.85 * this.cr, 0.80 * this.cr, 0.85 * this.cr];
+        this.distortPower = 0.5;
+    }
+    this.pang = [this.south, this.south + 6, this.south + 12, this.south + 18];
+};
 
 /**
  * @memberof SkyGraph
@@ -146,7 +179,7 @@ SkyGraph.prototype.reload = function () {
  * @memberof SkyGraph
  */
 SkyGraph.prototype.distort = function (zd) {
-    return Math.pow(zd, 1.07);
+    return Math.pow(zd, this.distortPower);
 };
 
 /**
@@ -233,17 +266,16 @@ SkyGraph.prototype.drawtics = function () {
         const ang = this.pang[i] * Math.PI / 12;
         let xx1 = this.cx + this.cr * Math.sin(ang);
         let yy1 = this.cy + this.cr * Math.cos(ang);
-        const xl = [-7, -5, -2, 1], yl = [-2, +4, +7, 0];
         this.ctx.beginPath();
-        this.ctx.arc(this.cx, this.cy, 0.85 * this.cr, Math.PI / 2 - ang - 0.05, Math.PI / 2 - ang + 0.05, false);
+        this.ctx.arc(this.cx, this.cy, this.arcRadius[i], Math.PI / 2 - ang - 0.05, Math.PI / 2 - ang + 0.05, false);
         this.ctx.lineTo(xx1, yy1);
         this.ctx.closePath();
         this.ctx.fillStyle = "blue";
         this.ctx.fill();
         this.ctx.fillStyle = "white";
         xx1 = this.cx + 0.9 * this.cr * Math.sin(ang);
-        yy1 = this.cy + 0.9 * this.cr * Math.cos(ang);
-        this.ctx.fillText(this.plab[i], xx1 + xl[i], yy1 + yl[i]);
+        yy1 = this.cy + 0.9 * this.cr * Math.cos(ang) + this.labelYShift[i];
+        this.ctx.fillText(this.plab[i], xx1 + this.xl[i], yy1 + this.yl[i]);
     }
 };
 

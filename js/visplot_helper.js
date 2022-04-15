@@ -101,15 +101,25 @@ helper.extractLines = function (str) {
     return str.split(/\r?\n/);
 };
 
+helper.getCoordinates = function(xcent, ycent, x, y, r, lst) {
+    if ($.inArray(Driver.telescopeName, ["NOT", "WHT", "INT"]) >= 0) {
+        return helper.getCoordinates_NOT(xcent, ycent, x, y, r, lst);
+    } else if ($.inArray(Driver.telescopeName, ["HJST", "OST"]) >= 0) {
+        return helper.getCoordinates_HJST(xcent, ycent, x, y, r, lst);
+    } else {
+        return null;
+    }
+};
+
 /**
- * Convert pixel coordinates in SkyCam image to Az/Alt and RA/Dec
+ * Convert pixel coordinates in GTC SkyCam image to Az/Alt and RA/Dec
  */
-helper.getCoordinates = function (xcent, ycent, x, y, r, lst) {
+helper.getCoordinates_NOT = function (xcent, ycent, x, y, r, lst) {
     const myArray = new Array(4); /* Exception to Google style rule 5.2.2 */
     x = x - xcent;
     y = y - ycent;
     let newR = Math.sqrt(x * x + y * y);
-    let newTeta = helper.rad2deg(Math.atan2(y, x) - helper.deg2rad(90) + helper.deg2rad(35));
+    let newTheta = helper.rad2deg(Math.atan2(y, x) - helper.deg2rad(90) + helper.deg2rad(35));
     r = Math.max(r, newR);
     newR = newR - 3;
     const n = (r - newR) / r;
@@ -122,12 +132,44 @@ helper.getCoordinates = function (xcent, ycent, x, y, r, lst) {
             myArray[0] = 90;
         }
     }
-    newTeta = 180 - newTeta;
-    if (newTeta >= 360) {
-        newTeta = newTeta - 360;
+    newTheta = 180 - newTheta;
+    if (newTheta >= 360) {
+        newTheta = newTheta - 360;
     }
-    myArray[1] = Math.round(newTeta);
-    const val = helper.radec(newR, newTeta, lst);
+    myArray[1] = Math.round(newTheta);
+    const val = helper.radec(newR, newTheta, lst);
+    myArray[2] = helper.HMS(val[0], "h", "m", "s");
+    myArray[3] = helper.HMS(val[1], "°", "'", '"');
+    return myArray;
+};
+
+/**
+ * Convert pixel coordinates in Monet SkyCam image to Az/Alt and RA/Dec
+ */
+helper.getCoordinates_HJST = function (xcent, ycent, x, y, r, lst) {
+    const myArray = new Array(4); /* Exception to Google style rule 5.2.2 */
+    x = x - xcent;
+    y = y - ycent;
+    let newR = Math.sqrt(x * x + y * y);
+    let newTheta = helper.rad2deg(Math.atan2(y, x) - helper.deg2rad(90) - helper.deg2rad(5));
+    r = Math.max(r, newR);
+    newR = newR - 3;
+    const n = (r - newR) / r;
+    newR = 6.686 + 47.324 * n + 135.465 * n * n - 187.185 * n * n * n + 87.754 * n * n * n * n;
+    if (newR > r) {
+        myArray[0] = "low";
+    } else {
+        myArray[0] = Math.round(newR);
+        if (myArray[0] > 90) {
+            myArray[0] = 90;
+        }
+    }
+    newTheta = 180 - newTheta;
+    if (newTheta >= 360) {
+        newTheta = newTheta - 360;
+    }
+    myArray[1] = Math.round(newTheta);
+    const val = helper.radec(newR, newTheta, lst);
     myArray[2] = helper.HMS(val[0], "h", "m", "s");
     myArray[3] = helper.HMS(val[1], "°", "'", '"');
     return myArray;
