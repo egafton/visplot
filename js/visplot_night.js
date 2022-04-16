@@ -117,6 +117,21 @@ Night.prototype.setEphemerides = function (obj) {
     this.MoonIllEnd = (1 - Math.cos(sep)) * 0.5 * 100;
     this.stlSunrise = helper.stl(this.Sunrise, this.eqeqx);
 
+
+    switch ($('input[type="radio"][name="opt_schedule_between"]:checked').val()) {
+        case "sunset/sunrise":
+            this.global_UTstart = this.Sunset;
+            this.global_UTend = this.Sunrise;
+            break;
+        case "astronomical":
+            this.global_UTstart = this.EAstTwilight;
+            this.global_UTend = this.MAstTwilight;
+            break;
+        default:
+            this.global_UTstart = this.ENauTwilight;
+            this.global_UTend = this.MNauTwilight;
+    }
+
     this.wnight = this.Sunrise - this.Sunset;   // Length of the night in days
     this.xstep = this.wnight / this.Nx;         // Resolution of the time array
     let aop;
@@ -152,7 +167,7 @@ Night.prototype.setEphemerides = function (obj) {
     this.DateSunset = new Date(Date.UTC(this.tSunset[0], this.tSunset[1]-1, this.tSunset[2], this.tSunset[3], this.tSunset[4], this.tSunset[5], 0));
     this.DateSunrise = new Date(Date.UTC(this.tSunrise[0], this.tSunrise[1]-1, this.tSunrise[2], this.tSunrise[3], this.tSunrise[4], this.tSunrise[5], 0));
     this.DarkTime = (this.MAstTwilight - this.EAstTwilight);
-    this.NightLength = (this.MNauTwilight - this.ENauTwilight);
+    this.NightLength = (this.global_UTend - this.global_UTstart);
     let firstUTC = this.tSunset[3]+1;
     let stopUTC = this.tSunrise[3];
     if (this.tSunrise[4] !== 0) {

@@ -57,6 +57,8 @@ function Driver() {
      *     - Target list in TCS format can now be exported to disk.
      *     - Added support for different skycams, and simplified & improved
      *       the spherical geometry calculations mapping pixels to alt/az.
+     *     - Observations can now be scheduled between sunset/sunrise,
+     *       between nautical twilights, or between astronomical twilights.
      */
     this.version = "2.6";
     helper.LogSuccess(`Hello, this is Visplot version ${this.version}`);
@@ -945,6 +947,7 @@ Driver.prototype.CallbackUpdateDefaults = function () {
             this.Refresh();
         }
     }
+    this.night.setEphemerides();
 
     helper.LogDebug("Saving new configuration to the browser...");
     localStorage.setItem("visplot", true);

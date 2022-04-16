@@ -130,8 +130,8 @@ TargetList.prototype.targetStringToJSON = function (line) {
     obj.airmass = parseFloat(dat[10]);
     if (isNaN(obj.airmass)) {
         let uts = helper.ExtractUTRange(dat[10]);
-        obj.UTstart = Math.max(night.ENauTwilight, uts[0]);
-        obj.UTend = Math.min(night.MNauTwilight, uts[1]);
+        obj.UTstart = Math.max(night.global_UTstart, uts[0]);
+        obj.UTend = Math.min(night.global_UTend, uts[1]);
         obj.airmass = 9.9;
         obj.fillslot = dat[8] == "*";
         if (obj.fillslot) {
@@ -140,8 +140,8 @@ TargetList.prototype.targetStringToJSON = function (line) {
             obj.exptime = parseFloat(dat[8])/86400.0;
         }
     } else {
-        obj.UTstart = night.ENauTwilight;
-        obj.UTend = night.MNauTwilight;
+        obj.UTstart = night.global_UTstart;
+        obj.UTend = night.global_UTend;
         obj.fillslot = false;
         obj.exptime = parseFloat(dat[8])/86400.0;
     }

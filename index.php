@@ -137,6 +137,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
                 <span class="middle"><label for="opt_away_from_zenith"><input type="checkbox" name="opt_away_from_zenith" id="opt_away_from_zenith" checked="checked" /> Do not observe at altitudes higher than the zenith tracking limit</label></span><br/>
                 <span class="middle"><label for="opt_maintain_order"><input type="checkbox" name="opt_maintain_order" id="opt_maintain_order" /> Always schedule targets in their input order</label></span><br/>
                 <span class="middle"><label for="opt_allow_over_axis"><input type="checkbox" name="opt_allow_over_axis" id="opt_allow_over_axis" /> Allow observations over-the-axis (equatorial mounts only)</label></span><br/>
+                <span class="middle">Schedule observations between:</label></span><br/>
+                    <input type="radio" id="sunset/sunrise" name="opt_schedule_between" value="sunset/sunrise"><label for="sunset/sunrise">Sunset / Sunrise</label><br/>
+                    <input type="radio" id="nautical" name="opt_schedule_between" value="nautical" checked="checked"><label for="nautical">Nautical twilights</label><br/>
+                    <input type="radio" id="astronomical" name="opt_schedule_between" value="astronomical"><label for="astronomical">Astronomical twilights</label><br/>
                 <br/>
                 <h2 class="h2-instr">Display settings</h2><br/>
                 <span class="middle"><label for="opt_show_lastobstime"><input type="checkbox" name="opt_show_lastobstime" id="opt_show_lastobstime" /> Mark last possible starting time</label></span><br/>
