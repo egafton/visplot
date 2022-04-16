@@ -60,7 +60,7 @@ function Driver() {
      *     - Observations can now be scheduled between sunset/sunrise,
      *       between nautical twilights, or between astronomical twilights.
      */
-    this.version = "2.6";
+    this.version = "2.7";
     helper.LogSuccess(`Hello, this is Visplot version ${this.version}`);
 
     /* HTML5 canvas, context and Graph class - related variables */
