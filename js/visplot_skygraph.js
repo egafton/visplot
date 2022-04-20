@@ -18,7 +18,7 @@ function SkyGraph(_canvas, _context) {
     this.canvasWidth = _canvas.width;
     this.canvasHeight = _canvas.height;
     this.xmid = this.canvasWidth / 2;
-    this.fontFamily = "Ubuntu";
+    this.fontFamily = "Ubuntu, sans-serif";
     this.south = 2.3;
     this.pang = [this.south, this.south + 6, this.south + 12, this.south + 18];
     this.plab = ["S", "W", "N", "E"];

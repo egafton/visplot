@@ -552,8 +552,7 @@ helper.Log = function (msg, cls) {
             helper.pad(cd.getUTCDate().toString(), 2, true, "0") + " " +
             helper.pad(cd.getUTCHours().toString(), 2, true, "0") + ":" +
             helper.pad(cd.getUTCMinutes().toString(), 2, true, "0") + ":" +
-            helper.pad(cd.getUTCSeconds().toString(), 2, true, "0") + "." +
-            helper.pad(cd.getUTCMilliseconds().toString(), 3, true, "0") + "] " +
+            helper.pad(cd.getUTCSeconds().toString(), 2, true, "0") + "] " +
             msg + "</span>");
     $("#logger").scrollTop($("#logger")[0].scrollHeight);
 };

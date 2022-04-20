@@ -235,6 +235,24 @@ TargetList.prototype.targetStringToJSON = function (line) {
 /**
  * @memberof TargetList
  */
+TargetList.prototype.setTargetsSize = function () {
+    for (let i = 0; i < this.nTargets; i += 1) {
+        let tgt = this.Targets[i];
+        tgt.xlab = driver.graph.transformXLocation(tgt.LabelX);
+        tgt.ylab = driver.graph.transformYLocation(tgt.LabelY);
+        tgt.rxmid = driver.graph.targetsx;
+        tgt.rymid = driver.graph.targetsy + i * (driver.graph.targetsyskip * (driver.graph.doubleTargets ? 2 : 1) + 2) - 6.5;
+        if (tgt.Scheduled) {
+            tgt.ComputePositionSchedLabel();
+        }
+    }
+    driver.graph.setTargetsSize(this.nTargets);
+    this.removeClusters();
+};
+
+/**
+ * @memberof TargetList
+ */
 TargetList.prototype.setTargets = function (obj) {
     const res = obj.map(function (x) {
         return this.targetStringToJSON (x);
@@ -247,8 +265,7 @@ TargetList.prototype.setTargets = function (obj) {
         this.Targets[i] = this.processTarget(i, res[i]);
     }
     this.warnUnobservable();
-    driver.graph.setTargetsSize(this.nTargets);
-    this.removeClusters();
+    this.setTargetsSize();
 };
 
 /**
@@ -266,7 +283,7 @@ TargetList.prototype.addTargets = function (obj) {
         this.Targets[i] = this.processTarget(i, res[i - oldNobjects]);
     }
     this.warnUnobservable();
-    driver.graph.setTargetsSize(this.nTargets);
+    this.setTargetsSize();
 };
 
 /**
@@ -282,8 +299,6 @@ TargetList.prototype.processTarget = function (i, obj) {
         target.LabelX = driver.night.MNauTwilight;
     }
     target.LabelY = target.getAltitude(target.LabelX);
-    target.xlab = driver.graph.transformXLocation(target.LabelX);
-    target.ylab = driver.graph.transformYLocation(target.LabelY);
     return target;
 };
 
@@ -611,7 +626,18 @@ TargetList.prototype.display_scheduleStatistics = function () {
             ratio_lost = 100 - ratio_sched;
         }
     }
-    helper.LogSuccess(`Night length (ENT-MNT):    ${helper.ReportSHM(time_night)}`);
+    let describeNight;
+    switch ($('input[type="radio"][name="opt_schedule_between"]:checked').val()) {
+        case "sunset/sunrise":
+            describeNight = "SET-RIS";
+            break;
+        case "astronomical":
+            describeNight = "EAT-MAT";
+            break;
+        default:
+            describeNight = "ENT-MNT";
+    }
+    helper.LogSuccess(`Night length (${describeNight}):    ${helper.ReportSHM(time_night)}`);
     helper.LogEntry(`Dark time (EAT-MAT):       ${helper.ReportSHM(time_dark)}`);
     if (time_sched > 0) {
         helper.LogSuccess(`Scheduled observing time:  ${helper.ReportSHM(time_sched)} (${ratio_sched.toFixed(0)}%)`);
@@ -1617,8 +1643,8 @@ Target.prototype.ComputePositionSchedLabel = function () {
     const dist = driver.graph.CircleSize * 1.2;
     xshift = dist * Math.sin(angle);
     yshift = dist * Math.cos(angle);
-    this.xmid = driver.graph.xaxis[this.iScheduledMidTime] - xshift;
-    this.ymid = driver.graph.yend - driver.graph.degree * this.Graph[this.iScheduledMidTime] - yshift;
+    this.xmid = driver.graph.xaxis[helper.EphemTimeToIndex(this.ScheduledMidTime)] - xshift;
+    this.ymid = driver.graph.yend - driver.graph.degree * this.Graph[helper.EphemTimeToIndex(this.ScheduledMidTime)] - yshift;
 };
 
 /**
@@ -1629,12 +1655,9 @@ Target.prototype.Schedule = function (start) {
     this.ScheduledStartTime = start;
     this.ScheduledEndTime = start + this.Exptime;
     this.ScheduledMidTime = start + 0.5 * this.Exptime;
-    this.iScheduledStartTime = helper.EphemTimeToIndex(this.ScheduledStartTime);
-    this.iScheduledEndTime = helper.EphemTimeToIndex(this.ScheduledEndTime);
-    this.iScheduledMidTime = helper.EphemTimeToIndex(this.ScheduledMidTime);
-    this.AltStartTime = this.Graph[this.iScheduledStartTime];
-    this.AltEndTime = this.Graph[this.iScheduledEndTime];
-    this.AltMidTime = this.Graph[this.iScheduledMidTime];
+    this.AltStartTime = this.Graph[helper.EphemTimeToIndex(this.ScheduledStartTime)];
+    this.AltEndTime = this.Graph[helper.EphemTimeToIndex(this.ScheduledEndTime)];
+    this.AltMidTime = this.Graph[helper.EphemTimeToIndex(this.ScheduledMidTime)];
     this.ComputePositionSchedLabel();
 };
 

@@ -38,12 +38,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" type="text/css" media="screen" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.59.4/codemirror.min.css" type="text/css" />
     <link rel="stylesheet" href="css/aladin.min.css" type="text/css" />
-    <link rel="stylesheet" href="css/visplot.css" type="text/css" />
+    <link rel="stylesheet" href="css/visplot.css?" type="text/css" />
 </head>
 
-<body>
-    <div id="container">
-        <div id="leftblock">
+<body class="fixed-left">
+    <div id="toggle-sidebar">
+        <img src="img/sidebar.png" />
+    </div>
+    <div style="display: flex">
+        <div id="sidebar">
             <div id="left_upper">
                 <div id="upperBtnDiv">
                     <input type="button" value="Configuration" id="configBtn" />
@@ -68,21 +71,22 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
                     <div id="lb_svdoc"><input type="button" value="Save" id="saveDoc" /></div>
                     <div id="lb_lddoc"><span class="middle">&nbsp;<label for="loadDoc">Load: <input type="file" value="Load" id="loadDoc" /></label></span></div>
                 </div>
-                <pre id="logger"><span class="loggerEntry">Waiting for the page to load...</span></pre>
             </div> <!-- #left_lower -->
-        </div> <!-- #leftblock -->
-        <div id="contentblock">
-            <canvas id="canvasFrame" width="951" height="672"></canvas>
-        </div> <!-- #contentblock -->
-    </div> <!-- #container -->
-    <div id="footer">
-        <div id="footer-inner">
-            ©2016–<span id="footer-year"></span> ega (NOT/ING).
-            Running Visplot version <a target="_blank" id="footer-version"></a><span id="footer-date"></span>.<br/>
-            Released under the <a target="_blank" href="https://github.com/egafton/visplot/blob/master/LICENSE.md">GNU General Public License v3.0</a>.
-            Report bugs and feature requests in the <a target="_blank" href="https://github.com/egafton/visplot/issues"><i>Issues</i> section</a> on GitHub.
-        </div> <!-- #footer-inner -->
-    </div> <!-- # footer -->
+            <pre id="logger"><span class="loggerEntry">Waiting for the page to load...</span></pre>
+            <div id="footer">
+                <div id="footer-inner">
+                ©2016–<span id="footer-year"></span> ega (NOT/ING).
+                Running Visplot version <a target="_blank" id="footer-version"></a><span id="footer-date"></span>.<br/>
+                Released under the <a target="_blank" href="https://github.com/egafton/visplot/blob/master/LICENSE.md">GNU General Public License v3.0</a>.
+                Report bugs and feature requests in the <a target="_blank" href="https://github.com/egafton/visplot/issues"><i>Issues</i> section</a> on GitHub.
+                </div> <!-- #footer-inner -->
+            </div> <!-- # footer -->
+        </div> <!-- sidebar -->
+        <div id="divider"></div>
+        <div id="canvas-wrapper">
+            <canvas id="canvasFrame"></canvas>
+        </div> <!-- #canvas-wrapper -->
+    </div>
     <a id="inline" href="#details" style="display:none"></a>
     <div style="display:none">
         <div id="details">
@@ -237,19 +241,20 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.5.0/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <script src="js/aladin.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/jsplitter.js" type="text/javascript"></script>
     <!-- Configuration files -->
-    <script src="js/config.js" type="text/javascript"></script>
+    <script src="js/config.js?" type="text/javascript"></script>
     <!-- Main JS code -->
-    <script src="js/visplot_slacoeffs.js" type="text/javascript"></script>
-    <script src="js/visplot_sla.js" type="text/javascript"></script>
-    <script src="js/visplot.js" type="text/javascript"></script>
-    <script src="js/visplot_driver.js" type="text/javascript"></script>
-    <script src="js/visplot_night.js" type="text/javascript"></script>
-    <script src="js/visplot_graph.js" type="text/javascript"></script>
-    <script src="js/visplot_targets.js" type="text/javascript"></script>
-    <script src="js/visplot_helper.js" type="text/javascript"></script>
-    <script src="js/visplot_serializer.js" type="text/javascript"></script>
-    <script src="js/visplot_skygraph.js" type="text/javascript"></script>
+    <script src="js/visplot_slacoeffs.js?" type="text/javascript"></script>
+    <script src="js/visplot_sla.js?" type="text/javascript"></script>
+    <script src="js/visplot.js?" type="text/javascript"></script>
+    <script src="js/visplot_driver.js?" type="text/javascript"></script>
+    <script src="js/visplot_night.js?" type="text/javascript"></script>
+    <script src="js/visplot_graph.js?" type="text/javascript"></script>
+    <script src="js/visplot_targets.js?" type="text/javascript"></script>
+    <script src="js/visplot_helper.js?" type="text/javascript"></script>
+    <script src="js/visplot_serializer.js?" type="text/javascript"></script>
+    <script src="js/visplot_skygraph.js?" type="text/javascript"></script>
     <!-- OB data goes in its own hidden variables -->
     <?php if ($obpost) { echo '<input type="hidden" id="obinfo" value="'.rawurlencode($obinfo).'" /> '; } ?>
 </body>

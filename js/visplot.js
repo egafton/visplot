@@ -22,6 +22,40 @@ $(document).ready(function () {
     /* The one and only global variable */
     window.driver = new Driver();
 
+    $("body").toggle();
+
+    /* Catch resize events */
+    window.addEventListener("resize", driver.Refresh);
+    //window.jsplitterSettings.maxleftwidth = window.outerWidth - driver.graph.minwidth - 5;
+
+    /* Sidebar toggle button */
+    $("#toggle-sidebar").click(function() {
+        $("#sidebar").toggleClass("flex");
+        $("#divider").toggle();
+        if ($("#sidebar").is(":visible")) {
+            /* Create the panel divider */
+            $("#divider").jSplitter({
+                "leftdiv": "sidebar",
+                "rightdiv": "canvasFrame",
+                "flex": true,
+                "persist": true,
+                "cookie": "jSplitter",
+                "minleftwidth": 250
+            });
+        }
+        localStorage.visplotSidebarVisible = $("#sidebar").is(":visible");
+        if (driver.night !== null) {
+            driver.Refresh();
+        }
+    });
+
+    /* Show the sidebar if the user had it open */
+    if ("visplotSidebarVisible" in localStorage) {
+        if (localStorage.visplotSidebarVisible === "true") {
+            $("#toggle-sidebar").trigger("click");
+        }
+    }
+
     // Populate the telescope select input
     for (const key in config) {
         $("#def_telescope").append(new Option(config[key].name, key));
@@ -74,7 +108,7 @@ $(document).ready(function () {
     helper.LogDebug("Drawing plot background...");
     driver.graph.drawBackground();
 
-    $("#canvasFrame").toggle();
+    //$("#canvasFrame").toggle();
     helper.LogDebug("Disabling buttons until the necessary quantities have been calculated...");
     $("#planNight").prop("disabled", true);
     $("#saveDoc").prop("disabled", true);

@@ -9,18 +9,70 @@ html,
 body {
     margin: 0;
     padding: 0;
+    width: 100%;
     height: 100%;
 }
 body {
-    min-width: 951px;
-    font-family: "Ubuntu";
+    min-height: 100vh;
+    text-align: center;
+    font-family: Ubuntu, sans-serif;
     font-size: 11.5px;
     line-height: 16px;
-    display: flex;
+    display: none;
+}
+#sidebar {
+    height: 100vh;
+    width: 700px;
+    min-width: 250px;
+    box-sizing: border-box;
+    top: 0;
+    left: 0;
+    text-align: left;
+    background-color: #eaeaef;
+    background-image: url("../img/white-carbon.png");
+    overflow: hidden;
+    padding: 12px;
+    padding-top: 40px;
+    border: 1px solid #777;
+    border-radius: 0 10px 10px 0;
+    border-left: 0;
+    display: none;
     flex-direction: column;
 }
+#divider {
+    display: none;
+    height: 100vh;
+    flex: 0 0 10px;
+    background: url("data:image/gif;base64,R0lGODlhBQAXAIABAHNxbf///yH5BAEAAAEALAAAAAAFABcAAAIUDBypeJvXHHQP0Xmt1Avv2HHKVAAAOw==") no-repeat scroll center center;
+}
+.flex {
+    display: flex !important;
+}
+#canvas-wrapper {
+    width: 100%;
+    height: 100vh;
+    margin: 0;
+    border: 0;
+    padding: 0;
+}
+#toggle-sidebar {
+    height: 32px;
+    width: 32px;
+    position: fixed;
+    z-index: 2;
+    top: 5px;
+    left: 5px;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+#toggle-sidebar img {
+    width: 32px;
+    height: 32px;
+}
+
 #canvasFrame{
-    padding: 12px;
+    margin: 0 auto;
     background: rgba(255, 255, 255, 0);
     background-repeat: no-repeat;
     background-attachment: local;
@@ -28,24 +80,8 @@ body {
     background-size: cover;
     box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
     border-radius: 16px;
-    display: none;
 }
-#container {
-    padding: 0;
-    margin: 0;
-    width: 100%;
-    position: relative;
-    flex: 1 0 auto;
-}
-#leftblock {
-    vertical-align: top;
-    padding-right: 20px;
-    padding-left: 12px;
-    padding-top: 5px;
-    padding-bottom: 0;
-    margin: 0;
-    margin-right: 975px;
-}
+
 #footer {
     width: 100%;
     border: 0;
@@ -60,23 +96,12 @@ body {
 }
 #footer-inner {
     width: 100%;
-    max-width: 1000px;
     position: relative;
     margin: 0 auto;
 }
 #footer a {
     color: #8888cc;
     text-decoration: none;
-}
-#contentblock {
-    position: absolute;
-    right: 30px;
-    top: 0;
-    width: 951px;
-    height: 100%;
-    padding: 0;
-    margin: 0;
-    vertical-align: top;
 }
 .fancybox-content {
     color: #444;
@@ -261,7 +286,7 @@ pre#logger {
     overflow-y: auto;
     display: block;
     border-radius: 4px;
-    padding: 1px 3px;
+    padding: 0;
     margin-bottom: 0;
     width: 100%;
     white-space: pre-wrap;       /* css-3 */
@@ -269,6 +294,7 @@ pre#logger {
     white-space: -pre-wrap;      /* Opera 4-6 */
     white-space: -o-pre-wrap;    /* Opera 7 */
     word-wrap: break-word;       /* Internet Explorer 5.5+ */
+    flex: 1;
 }
 pre#logger span.loggerEntry {
     color: #555;
@@ -347,39 +373,6 @@ p.pp2 {
     color: #8c7c76;
     font-weight: bold;
 }
-@media screen and (max-width: 1250px) {
-    #container {
-        display: flex;
-        flex-flow: column;
-        position: static;
-    }
-    #leftblock {
-        order: 2;
-        width: 951px;
-        min-width: 951px;
-        max-width: 951px;
-        position: static;
-    }
-    #contentblock {
-        order: 1;
-        width: 951px;
-        max-width: 951px;
-        min-width: 951px;
-        height: 672px;
-        margin-bottom: 35px;
-        position: static;
-    }
-    #left_upper {
-        float: left;
-        width: 50%;
-        padding-right: 9px;
-        border-right: 1px solid #ccc;
-    }
-    #left_lower {
-        float: right;
-        width: 48%;
-    }
-}
 @media print {
     body {
         padding: 0;
@@ -387,16 +380,9 @@ p.pp2 {
         width: 0;
         height: 0;
     }
-    #leftblock,
-    #footer {
+    #sidebar,
+    #toggle-sidebar {
         display: none;
-    }
-    #container {
-        width: 0 !important;
-        height: auto;
-    }
-    #contentblock {
-        position: relative;
     }
     #canvasFrame{
         padding: 0;
