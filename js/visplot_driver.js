@@ -62,10 +62,12 @@ function Driver() {
      * 
      * 3.0 - Redesigned user interface: only the plot is visible by default,
      *       while all the settings are available in a collapsible sidebar.
+     *     - The sidebar can be resized at will ("split pane"), while the
+     *       plot will adjust to fill the remaining space.
      *     - Stopped logging milliseconds.
      *     - Fixed some minor bugs.
      */
-    this.version = "2.7";
+    this.version = "3.0";
     helper.LogSuccess(`Hello, this is Visplot version ${this.version}`);
 
     /* HTML5 canvas, context and Graph class - related variables */
