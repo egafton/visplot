@@ -65,12 +65,10 @@ body {
     overflow: hidden;
     cursor: pointer;
 }
-
 #toggle-sidebar img {
     width: 32px;
     height: 32px;
 }
-
 #canvasFrame{
     margin: 0 auto;
     background: rgba(255, 255, 255, 0);
@@ -81,7 +79,6 @@ body {
     box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
     border-radius: 16px;
 }
-
 #footer {
     width: 100%;
     border: 0;
@@ -381,8 +378,9 @@ p.pp2 {
         height: 0;
     }
     #sidebar,
+    #divider,
     #toggle-sidebar {
-        display: none;
+        display: none !important;
     }
     #canvasFrame{
         padding: 0;
