@@ -45,48 +45,50 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
     <div id="toggle-sidebar">
         <img src="img/sidebar.png" />
     </div>
-    <div style="display: flex">
+    <div style="display:flex">
         <div id="sidebar">
-            <div id="left_upper">
-                <div id="upperBtnDiv">
-                    <input type="button" value="Configuration" id="configBtn" />
-                    <input type="button" value="Help" id="helpBtn" />
-                </div>
-                Date:
-                <input type="text" id="dateY" /> &ndash; <input type="text" id="dateM" /> &ndash; <input type="text" id="dateD" />
-                <input type="button" value="Set" id="dateSet" /><br/><br/>
-                <span class="middle">Targets:
-                    <input type="button" value="Blank fields" id="targetBlanks" />
-                </span><br/>
-                <textarea id="targets"></textarea><br/>
-                <input type="hidden" id="targets_actual" /><input type="hidden" id="added_targets" />
-                <input type="button" value="Plot targets" id="plotTargets" />
-                <input type="button" value="Schedule observations" id="planNight" /><br/><br/>
-            </div> <!-- #left_upper -->
-            <div id="left_lower">
-                <div id="buttons">
-                    <div id="lb_skycm"><input type="button" value="Show SkyCam" id="showSkyCam" /></div>
-                    <div id="lb_exprt"><input type="button" value="Export PNG" id="pngExport" /></div>
-                    <div id="lb_tcsex"><input type="button" value="TCS format" id="tcsExport" /></div>
-                    <div id="lb_svdoc"><input type="button" value="Save" id="saveDoc" /></div>
-                    <div id="lb_lddoc"><span class="middle">&nbsp;<label for="loadDoc">Load: <input type="file" value="Load" id="loadDoc" /></label></span></div>
-                </div>
-            </div> <!-- #left_lower -->
-            <pre id="logger"><span class="loggerEntry">Waiting for the page to load...</span></pre>
-            <div id="footer">
-                <div id="footer-inner">
-                ©2016–<span id="footer-year"></span> ega (NOT/ING).
-                Running Visplot version <a target="_blank" id="footer-version"></a><span id="footer-date"></span>.<br/>
-                Released under the <a target="_blank" href="https://github.com/egafton/visplot/blob/master/LICENSE.md">GNU General Public License v3.0</a>.
-                Report bugs and feature requests in the <a target="_blank" href="https://github.com/egafton/visplot/issues"><i>Issues</i> section</a> on GitHub.
-                </div> <!-- #footer-inner -->
-            </div> <!-- # footer -->
-        </div> <!-- sidebar -->
+            <div id="sidebarpad">
+                <div id="left_upper">
+                    <div id="upperBtnDiv">
+                        <input type="button" value="Configuration" id="configBtn" />
+                        <input type="button" value="Help" id="helpBtn" />
+                    </div>
+                    Date:
+                    <input type="text" id="dateY" /> &ndash; <input type="text" id="dateM" /> &ndash; <input type="text" id="dateD" />
+                    <input type="button" value="Set" id="dateSet" /><br/><br/>
+                    <span class="middle">Targets:
+                        <input type="button" value="Blank fields" id="targetBlanks" />
+                    </span><br/>
+                    <textarea id="targets"></textarea><br/>
+                    <input type="hidden" id="targets_actual" /><input type="hidden" id="added_targets" />
+                    <input type="button" value="Plot targets" id="plotTargets" />
+                    <input type="button" value="Schedule observations" id="planNight" /><br/><br/>
+                </div> <!-- #left_upper -->
+                <div id="left_lower">
+                    <div id="buttons">
+                        <div id="lb_skycm"><input type="button" value="Show SkyCam" id="showSkyCam" /></div>
+                        <div id="lb_exprt"><input type="button" value="Export PNG" id="pngExport" /></div>
+                        <div id="lb_tcsex"><input type="button" value="TCS format" id="tcsExport" /></div>
+                        <div id="lb_svdoc"><input type="button" value="Save" id="saveDoc" /></div>
+                        <div id="lb_lddoc"><span class="middle">&nbsp;<label for="loadDoc">Load: <input type="file" value="Load" id="loadDoc" /></label></span></div>
+                    </div>
+                </div> <!-- #left_lower -->
+                <pre id="logger"><span class="loggerEntry">Waiting for the page to load...</span></pre>
+                <div id="footer">
+                    <div id="footer-inner">
+                    ©2016–<span id="footer-year"></span> ega (NOT/ING).
+                    Running Visplot version <a target="_blank" id="footer-version"></a><span id="footer-date"></span>.<br/>
+                    Released under the <a target="_blank" href="https://github.com/egafton/visplot/blob/master/LICENSE.md">GNU General Public License v3.0</a>.
+                    Report bugs and feature requests in the <a target="_blank" href="https://github.com/egafton/visplot/issues"><i>Issues</i> section</a> on GitHub.
+                    </div> <!-- #footer-inner -->
+                </div> <!-- #footer -->
+            </div> <!-- #sidebarpad -->
+        </div> <!-- #sidebar -->
         <div id="divider"></div>
         <div id="canvas-wrapper">
             <canvas id="canvasFrame"></canvas>
         </div> <!-- #canvas-wrapper -->
-    </div>
+    </div> <!-- div style="display:flex" -->
     <a id="inline" href="#details" style="display:none"></a>
     <div style="display:none">
         <div id="details">

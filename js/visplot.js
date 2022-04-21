@@ -30,7 +30,7 @@ $(document).ready(function () {
 
     /* Sidebar toggle button */
     $("#toggle-sidebar").click(function() {
-        $("#sidebar").toggleClass("flex");
+        $("#sidebar").toggle();
         $("#divider").toggle();
         const visible = $("#sidebar").is(":visible");
         if (visible) {

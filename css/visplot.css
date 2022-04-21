@@ -21,22 +21,27 @@ body {
     display: none;
 }
 #sidebar {
-    height: 100vh;
     width: 700px;
     min-width: 250px;
     box-sizing: border-box;
     top: 0;
     left: 0;
     text-align: left;
-    background-color: #eaeaef;
-    background-image: url("../img/white-carbon.png");
     overflow: hidden;
+    display: none;
+}
+#sidebarpad {
     padding: 12px;
     padding-top: 40px;
+    height: 100vh;
+    width: 100%;
+    background-color: #eaeaef;
+    background-image: url("../img/white-carbon.png");
     border: 1px solid #777;
     border-radius: 0 10px 10px 0;
     border-left: 0;
-    display: none;
+    box-sizing: border-box;
+    display: flex;
     flex-direction: column;
 }
 #divider {
@@ -44,9 +49,6 @@ body {
     height: 100vh;
     flex: 0 0 10px;
     background: url("data:image/gif;base64,R0lGODlhBQAXAIABAHNxbf///yH5BAEAAAEALAAAAAAFABcAAAIUDBypeJvXHHQP0Xmt1Avv2HHKVAAAOw==") no-repeat scroll center center;
-}
-.flex {
-    display: flex !important;
 }
 #canvas-wrapper {
     width: 100%;
