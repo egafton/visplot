@@ -243,21 +243,22 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.59.4/addon/mode/simple.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.5.0/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <!-- Locally-hosted, 3rd party libraries -->
     <script src="js/aladin.min.js?" type="text/javascript" charset="utf-8"></script>
-    <script src="js/jsplitter.js?" type="text/javascript"></script>
+    <script src="js/jsplitter.js?" type="text/javascript" charset="utf-8"></script>
     <!-- Configuration files -->
-    <script src="js/config.js?" type="text/javascript"></script>
+    <script src="js/config.js?" type="text/javascript" charset="utf-8"></script>
     <!-- Main JS code -->
-    <script src="js/visplot_slacoeffs.js?" type="text/javascript"></script>
-    <script src="js/visplot_sla.js?" type="text/javascript"></script>
-    <script src="js/visplot.js?" type="text/javascript"></script>
-    <script src="js/visplot_driver.js?" type="text/javascript"></script>
-    <script src="js/visplot_night.js?" type="text/javascript"></script>
-    <script src="js/visplot_graph.js?" type="text/javascript"></script>
-    <script src="js/visplot_targets.js?" type="text/javascript"></script>
-    <script src="js/visplot_helper.js?" type="text/javascript"></script>
-    <script src="js/visplot_serializer.js?" type="text/javascript"></script>
-    <script src="js/visplot_skygraph.js?" type="text/javascript"></script>
+    <script src="js/visplot_slacoeffs.js?" type="text/javascript" charset="utf-8"></script>
+    <script src="js/visplot_sla.js?" type="text/javascript" charset="utf-8"></script>
+    <script src="js/visplot.js?" type="text/javascript" charset="utf-8"></script>
+    <script src="js/visplot_driver.js?" type="text/javascript" charset="utf-8"></script>
+    <script src="js/visplot_night.js?" type="text/javascript" charset="utf-8"></script>
+    <script src="js/visplot_graph.js?" type="text/javascript" charset="utf-8"></script>
+    <script src="js/visplot_targets.js?" type="text/javascript" charset="utf-8"></script>
+    <script src="js/visplot_helper.js?" type="text/javascript" charset="utf-8"></script>
+    <script src="js/visplot_serializer.js?" type="text/javascript" charset="utf-8"></script>
+    <script src="js/visplot_skygraph.js?" type="text/javascript" charset="utf-8"></script>
     <!-- OB data goes in its own hidden variables -->
     <?php if ($obpost) { echo '<input type="hidden" id="obinfo" value="'.rawurlencode($obinfo).'" /> '; } ?>
 </body>

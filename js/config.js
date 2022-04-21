@@ -52,23 +52,28 @@ config["NOT"] = {
     instruments: {
         "ALFOSC": {
             type: "optical",
-            fov: 6.4
+            fov: 6.4,
+            flip: null
         },
         "NOTCAM": {
             type: "infrared",
-            fov: 4
+            fov: 4,
+            flip: null
         },
         "MOSCA": {
             type: "optical",
-            fov: 7.7
+            fov: 7.7,
+            flip: null
         },
         "STANCAM": {
             type: "optical",
-            fov: 3
+            fov: 3,
+            flip: null
         },
         "FIES": {
             type: "optical",
-            fov: 3 /* Uses STANCAM for acquisition */
+            fov: 3, /* Uses STANCAM for acquisition */
+            flip: null
         }
     },
 
@@ -117,19 +122,23 @@ config["WHT"] = {
     instruments: {
         "ACAM": {
             type: "optical",
-            fov: 8
+            fov: 8,
+            flip: null
         },
         "LIRIS": {
             type: "infrared",
-            fov: 4.3
+            fov: 4.3,
+            flip: null
         },
         "ISIS": {
             type: "optical",
-            fov: 15 /* Uses A&G unit for acquisition */
+            fov: 15, /* Uses A&G unit for acquisition */
+            flip: null
         },
         "WEAVE": {
             type: "optical",
-            fov: 144 /* Field of view of the FPI camera */
+            fov: 144, /* Field of view of the FPI camera */
+            flip: null
         }
     },
 
@@ -187,11 +196,13 @@ config["INT"] = {
     instruments: {
         "WFC": {
             type: "optical",
-            fov: 33.8
+            fov: 33.8,
+            flip: null
         },
         "IDS": {
             type: "optical",
-            fov: 1.2 /* Uses AG0 for acquisition */
+            fov: 1.2, /* Uses AG0 for acquisition */
+            flip: null
         }
     },
 
@@ -267,12 +278,18 @@ config["INT"] = {
     instruments: {
         "DIAFI": {
             type: "optical",
-            fov: 8.8
+            fov: 8.8,
+            flip: null
+        },
+        "VIRUS": {
+            type: "optical",
+            fov: 20, /* Uses a separate guide camera 540 arcsec North of the IFU */
+            flip: "x"
         }
     },
 
     // When all else fails, what to use?
-    defaultInstrument: "DIAFI",
+    defaultInstrument: "VIRUS",
 
     // Time zone relative to UTC
     timezone: -6
@@ -316,7 +333,8 @@ config["INT"] = {
     instruments: {
         "CQUEAN": {
             type: "optical",
-            fov: 4.7
+            fov: 4.7,
+            flip: null
         }
     },
 

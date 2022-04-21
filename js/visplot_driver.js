@@ -88,6 +88,7 @@ function Driver() {
         survey: "P/DSS2/color",
         fov: 0.1,
         pa: 0,
+        flip: null,
         reticle: true,
         showZoomControl: true,
         showFullscreenControl: false,
@@ -552,12 +553,14 @@ Driver.prototype.EvtFrame_Click = function (e) {
                 instrument = config[Driver.telescopeName].defaultInstrument;
             }
             const fov = config[Driver.telescopeName].instruments[instrument].fov / 60;
+            const flip = config[Driver.telescopeName].instruments[instrument].flip;
             const surveyName = config[Driver.telescopeName].instruments[instrument].type == "optical"
                 ? "P/DSS2/color"
                 : "P/2MASS/color";
             $("#details_map_hang").html(surveyName);
             this.objAladin.setImageSurvey(surveyName);
             this.objAladin.setFov(fov);
+            this.objAladin.setFlip(flip);
             this.objAladin.gotoRaDec(ra, dec);
             this.objAladin.setPA(obj.SkyPA);
             $("a#inline").trigger("click");
