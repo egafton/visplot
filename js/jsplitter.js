@@ -6,9 +6,9 @@
  */
  (function( $ ) {
     $.fn.jSplitter = function(opts) {
-        var body = $('body');
+        const body = $('body');
 
-        var defaultSettings    = {
+        const defaultSettings    = {
             leftdiv         : null,
             rightdiv        : null,
             cookie          : 'jsplitter',
@@ -18,23 +18,23 @@
             persist         : false
         };
         window.jsplitterSettings = $.extend({}, defaultSettings, opts);
-        var settings = window.jsplitterSettings;
+        const settings = window.jsplitterSettings;
 
         /*******************************************************
          Loop through all matching elements and initialise
          splitter on them
         ********************************************************/
         return this.each(function(index) {
-            var divider = this
-            var leftdiv = $('#'+ settings['leftdiv']);
-            var rightdiv = $('#'+ settings['rightdiv']);
+            const divider = this;
+            const leftdiv = $('#'+ settings.leftdiv);
+            const rightdiv = $('#'+ settings.rightdiv);
 
-            settings['cookie'] = settings['cookie'] + '_' + $(divider).attr('id');
+            settings.cookie = settings.cookie + '_' + $(divider).attr('id');
 
-            var dividerwidth = $(divider).width();
+            const dividerwidth = $(divider).width();
 
-            var disableLeftUserSel = true;
-            var disableRightUserSel = true;
+            let disableLeftUserSel = true;
+            let disableRightUserSel = true;
             if ($(leftdiv).css('user-select') == 'none' ||
                 $(leftdiv).css('-webkit-user-select') == 'none') {
                 disableLeftUserSel = false;
@@ -46,14 +46,14 @@
 
             $(divider).css('cursor', 'col-resize');
 
-            var initWidths = function() {
+            const initWidths = function() {
                 if (! $(divider).is(":visible")){
                     $(rightdiv).css('margin-left', '0px');
-                    return
+                    return;
                 } else {
-                    if (settings['persist'] && localStorage.getItem(settings['cookie']) != null) {
-                        var width = parseInt(localStorage.getItem(settings['cookie']));
-                        if (settings['flex']) {
+                    if (settings.persist && localStorage.getItem(settings.cookie) != null) {
+                        const width = parseInt(localStorage.getItem(settings.cookie));
+                        if (settings.flex) {
                             $(leftdiv).css('flex', '0 0 '+width+'px');
                         } else {
                             $(leftdiv).width(width);
@@ -62,22 +62,22 @@
                         }
 
                     } else {
-                        if (! settings['flex']) {
-                            var width = $(leftdiv).width();
+                        if (! settings.flex) {
+                            const width = $(leftdiv).width();
                             $(divider).css('margin-left', width + "px");
                             $(rightdiv).css('margin-left', width+dividerwidth + "px");
                         }
                     }
                 }
-            }
+            };
             initWidths();
 
-            var currentWidth = $(leftdiv).width();
-            var maxWidth = $(leftdiv).css('max-width');
-            var minWidth = $(leftdiv).css('min-width');
-            var startPos = 0;
+            let currentWidth = $(leftdiv).width();
+            const maxWidth = $(leftdiv).css('max-width');
+            const minWidth = $(leftdiv).css('min-width');
+            let startPos = 0;
 
-            var startSplitMouse = function(evt) {
+            const startSplitMouse = function(evt) {
                 $(document).bind("mousemove touchmove", doSplitMouse)
                            .bind("mouseup touchend", endSplitMouse);
 
@@ -92,21 +92,21 @@
                     $(rightdiv).css('-webkit-user-select', 'none');
                 }
 
-                startPos = evt["pageX"];
+                startPos = evt.pageX;
             };
             function doSplitMouse(evt) {
-                var pos = evt["pageX"];
-                var diff = pos - startPos;
+                const pos = evt.pageX;
+                const diff = pos - startPos;
 
-                var newWidth = currentWidth + diff
-                if (newWidth > settings['maxleftwidth'] ||
-                    newWidth < settings['minleftwidth']) {
+                const newWidth = currentWidth + diff;
+                if (newWidth > settings.maxleftwidth ||
+                    newWidth < settings.minleftwidth) {
                     return;
                 }
-                var splitterMargin = newWidth;
-                var rightdivMargin = newWidth + dividerwidth;
+                const splitterMargin = newWidth;
+                const rightdivMargin = newWidth + dividerwidth;
 
-                if (settings['flex']) {
+                if (settings.flex) {
                     $(leftdiv).css('flex', '0 0 '+newWidth+'px');
                 } else {
                     $(leftdiv).css('width', newWidth + "px");
@@ -119,8 +119,8 @@
                 currentWidth = $(leftdiv).width();
                 startPos = 0;
 
-                if (settings['persist']) {
-                    localStorage.setItem(settings['cookie'], currentWidth);
+                if (settings.persist) {
+                    localStorage.setItem(settings.cookie, currentWidth);
                 }
 
                 // Enable selection if needed.

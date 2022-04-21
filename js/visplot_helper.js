@@ -715,8 +715,8 @@ helper.timezone = function(value) {
  * Created multi-dimensional array filled with 0.
  */
 helper.zeros = function(dimensions) {
-    var array = [];
-    for (var i=0; i<dimensions[0]; ++i) {
+    let array = [];
+    for (let i=0; i<dimensions[0]; ++i) {
         array.push(dimensions.length == 1 ? 0 : this.zeros(dimensions.slice(1)));
     }
     return array;

@@ -32,7 +32,8 @@ $(document).ready(function () {
     $("#toggle-sidebar").click(function() {
         $("#sidebar").toggleClass("flex");
         $("#divider").toggle();
-        if ($("#sidebar").is(":visible")) {
+        const visible = $("#sidebar").is(":visible");
+        if (visible) {
             /* Create the panel divider */
             $("#divider").jSplitter({
                 "leftdiv": "sidebar",
@@ -43,7 +44,7 @@ $(document).ready(function () {
                 "minleftwidth": 250
             });
         }
-        localStorage.visplotSidebarVisible = $("#sidebar").is(":visible");
+        localStorage.visplotSidebarVisible = visible;
         if (driver.night !== null) {
             driver.Refresh();
         }
