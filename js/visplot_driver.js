@@ -82,9 +82,23 @@ function Driver() {
     this.skyGraph = new SkyGraph(this.skyCanvas, this.skyContext);
     this.rescaleCanvas(this.skyCanvas, this.skyContext);
 
-    /* Aladin object */
-    this.objAladin = null;
-    this.aladinInitialized = false;
+    /* Preload Aladin object */
+    this.objAladin = A.aladin("#details_map", {
+        target: `0.0 0.0`,
+        survey: "P/DSS2/color",
+        fov: 0.1,
+        pa: 0,
+        reticle: true,
+        showZoomControl: true,
+        showFullscreenControl: false,
+        showLayersControl: false,
+        showGotoControl: false,
+        reticleColor: "rgb(144, 238, 144)"
+    });
+    this.aladinInitialized = true;
+    this.objAladin.on("positionChanged", function() {
+        driver.objAladin.view.applyRotation();
+    });
 
     /* OB queue - related */
     this.ob = false;            // Whether or not the page is a referral from the OB queue
@@ -542,24 +556,10 @@ Driver.prototype.EvtFrame_Click = function (e) {
                 ? "P/DSS2/color"
                 : "P/2MASS/color";
             $("#details_map_hang").html(surveyName);
-            if (this.aladinInitialized) {
-                this.objAladin.setImageSurvey(surveyName);
-                this.objAladin.setFov(fov)
-                this.objAladin.gotoRaDec(ra, dec);
-            } else {
-                this.objAladin = A.aladin("#details_map", {
-                    target: `${ra} ${dec}`,
-                    survey: surveyName,
-                    fov: fov,
-                    reticle: true,
-                    showZoomControl: true,
-                    showFullscreenControl: false,
-                    showLayersControl: false,
-                    showGotoControl: false,
-                    reticleColor: "rgb(144, 238, 144)"
-                });
-                this.aladinInitialized = true;
-            }
+            this.objAladin.setImageSurvey(surveyName);
+            this.objAladin.setFov(fov);
+            this.objAladin.gotoRaDec(ra, dec);
+            this.objAladin.setPA(obj.SkyPA);
             $("a#inline").trigger("click");
             break;
         }
@@ -1238,6 +1238,12 @@ Object.defineProperties(Driver, {
             return this._defaultOBInfo || "default";
         }, set: function (val) {
             this._defaultOBInfo = val;
+        }},
+    "defaultSkyPA": {
+        get: function () {
+            return this._defaultSkyPA || "0";
+        }, set: function (val) {
+            this._defaultSkyPA = val;
         }},
     "skyCamLink": {
         get: function () {

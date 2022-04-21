@@ -13,7 +13,7 @@
  */
 $(document).ready(function () {
     /*
-     * Available error IDs: 60+
+     * Available error IDs: 61+
      */
 
     /* Perform the unit tests for slalib */

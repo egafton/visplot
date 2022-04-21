@@ -171,7 +171,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
                 The program may then reschedule some or all of the other targets so that all of them continue to fit their respective constraints, in their new order. In rare cases, a manual reordering may results in one or few targets becoming de-scheduled, which normally means that with the new order it is not possible for all the targets to be observed according to their respective (UTC, airmass, altitude, etc.) constraints.<br/>
                 <br/>
                 <span class="sh0">Input syntax</span>
-                • <code>[NAME] [RA]/[pmRA] [DEC]/[pmDEC] [EPOCH] [OBSTIME] [PROJECT] [CONSTRAINTS] [TYPE] [OBINFO]</code>,
+                • <code>[NAME] [RA]/[pmRA] [DEC]/[pmDEC] [EPOCH] [OBSTIME] [PROJECT] [CONSTRAINTS] [TYPE] [OBINFO] [SKYPA]</code>,
 
                 <span class="sh1">where:</span>
                 • <code>[NAME]</code> is the object name, without spaces;<br/>
@@ -184,9 +184,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
                 • <code>[CONSTRAINTS]</code>  are the observing constraints, either airmass (a float, e.g., <code>2.0</code>), a UTC range (<code>UTC[20:00-23:30]</code>) or an LST range (<code>LST[2-4:30]</code>); integers, floats, <code>HH:MM</code> syntax, or a mix of them are all allowed for the range components (e.g., <code>LST[2:00-4.5]</code>;<br/>
                 • <code>[TYPE]</code> is the type of observation, and can be one of the following: <code>Monitor</code>, <code>ToO</code>, <code>SoftToO</code>, <code>Payback</code>, <code>Fast-Track</code>, <code>Service</code>, <code>CATService</code>, <code>Visitor</code>, and <code>Staff</code>.
                 Iff <code>[TYPE]</code> is set to <code>Staff</code>, it is allowed to add a slash and 2-3 initials to identify for which member of the staff the observations are taken (e.g., <code>Staff/JHT</code>, <code>Staff/TP</code>, etc.).<br/>
-                • <code>[OBINFO]</code> is information passed automatically when the page is loaded from an OB queue; it allows Visplot to generate backlinks to the OB queue, as well as show additional information about each target. At the moment the system is only integrated with the NOT OB queue. In all other cases, the value should be <code>default</code>.<br/><br/>
+                • <code>[OBINFO]</code> is information passed automatically when the page is loaded from an OB queue; it allows Visplot to generate backlinks to the OB queue, as well as show additional information about each target. At the moment the system is only integrated with the NOT OB queue. In all other cases, the value should be <code>default</code>.<br/>
+                • <code>[SKYPA]</code> is the Sky Position Angle in degrees, with 0=North up, 90=East up, etc. Used for the orientation of the finding chart only.<br/>
 
-                <span class="sh1">Note: Fields <code>[EPOCH]</code>, <code>[OBSTIME]</code>, <code>[PROJECT]</code>, <code>[CONSTRAINTS]</code>, <code>[TYPE]</code> and <code>[OBINFO]</code> are optional, and will be filled with default values (i.e., <code>2000 600 54-199 2.0 Staff default</code>) if missing.</span><br/>
+                <span class="sh1"><b>Note:</b> The fields <code>[EPOCH]</code>, <code>[OBSTIME]</code>, <code>[PROJECT]</code>, <code>[CONSTRAINTS]</code>, <code>[TYPE]</code>, <code>[OBINFO]</code> and <code>[SKYPA]</code> are optional, and will be filled with default values (i.e., <code>2000 600 54-199 2.0 Staff default 0</code>) if missing.</span><br/>
             </div> <!-- #help-left -->
             <div id="help-right">
                 <span class="sh1"><b>Examples of valid input formats:</b></span>
@@ -242,8 +243,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.59.4/addon/mode/simple.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.5.0/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-    <script src="js/aladin.min.js" type="text/javascript" charset="utf-8"></script>
-    <script src="js/jsplitter.js" type="text/javascript"></script>
+    <script src="js/aladin.min.js?" type="text/javascript" charset="utf-8"></script>
+    <script src="js/jsplitter.js?" type="text/javascript"></script>
     <!-- Configuration files -->
     <script src="js/config.js?" type="text/javascript"></script>
     <!-- Main JS code -->

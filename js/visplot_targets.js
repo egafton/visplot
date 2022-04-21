@@ -30,6 +30,7 @@ function TargetList() {
     this.StartingAt = null;
     this.Warning1 = [];
     this.Warning2 = [];
+    this.ReqLineLen = 14;
 }
 
 /**
@@ -57,6 +58,7 @@ function Target(k, obj) {
     this.Graph = obj.line;
     this.Azimuth = obj.azim;
     this.FullType = obj.type;
+    this.SkyPA = obj.skypa;
     this.Type = (obj.type.indexOf("/") === -1 ? obj.type : obj.type.substring(0, obj.type.indexOf("/")));
     this.MinMoonDistance = Math.round(obj.mdist);
     this.MinMoonDistanceTime = obj.mdisttime;
@@ -151,6 +153,7 @@ TargetList.prototype.targetStringToJSON = function (line) {
     obj.azim = Array();
     obj.type = dat[11];
     obj.obdata = dat[12];
+    obj.skypa = parseFloat(dat[13]);
     obj.constraints = dat[10];
     let rax = dat[3].split("/");
     let decx = dat[6]. split("/");
@@ -1064,7 +1067,7 @@ TargetList.prototype.validateAndFormatTargets = function (force = false) {
     this.TargetsLines = [];
     this.FormattedLines = [];
     // Determine maximum width of the various fields
-    this.MaxLen = {Name: 0, RA: 0, Dec: 0, Exp: 0, AM: 0, Type: 0, OBData: 0, TCSpmra: 0, TCSpmdec: 0};
+    this.MaxLen = {Name: 0, RA: 0, Dec: 0, Exp: 0, AM: 0, Type: 0, OBData: 0, TCSpmra: 0, TCSpmdec: 0, Skypa: 0};
     this.BadWolfStart = [];
     this.BadWolfEnd = [];
     for (let i = 0; i < lines.length; i += 1) {
@@ -1101,12 +1104,15 @@ TargetList.prototype.validateAndFormatTargets = function (force = false) {
         if (words[12].length > this.MaxLen.OBData) {
             this.MaxLen.OBData = words[12].length;
         }
+        if (words[13].length > this.MaxLen.Skypa) {
+            this.MaxLen.Skypa = words[13].length;
+        }
         let j;
-        j = (parseInt(words[14]) + "").length + (words[14] < 0 && words[14] > -1 ? 1 : 0);
+        j = (parseInt(words[this.ReqLineLen + 1]) + "").length + (words[this.ReqLineLen + 1] < 0 && words[this.ReqLineLen + 1] > -1 ? 1 : 0);
         if (j > this.MaxLen.TCSpmra) {
             this.MaxLen.TCSpmra = j;
         }
-        j = (parseInt(words[16]) + "").length + (words[16] < 0 && words[16] > -1 ? 1 : 0);
+        j = (parseInt(words[this.ReqLineLen + 3]) + "").length + (words[this.ReqLineLen + 3] < 0 && words[this.ReqLineLen + 3] > -1 ? 1 : 0);
         if (j > this.MaxLen.TCSpmdec) {
             this.MaxLen.TCSpmdec = j;
         }
@@ -1135,7 +1141,8 @@ TargetList.prototype.validateAndFormatTargets = function (force = false) {
             helper.pad(words[9], 6, false, " "),
             helper.pad(words[10], this.MaxLen.AM, false, " "),
             helper.pad(words[11], this.MaxLen.Type, false, " "),
-            helper.pad(words[12], this.MaxLen.OBData, false, " ")
+            helper.pad(words[12], this.MaxLen.OBData, false, " "),
+            helper.pad(words[13], this.MaxLen.Skypa, false, " ")
         ];
         this.VisibleLines.push(padded.join(" "));
         if (words[0][0] == "#") {
@@ -1148,13 +1155,13 @@ TargetList.prototype.validateAndFormatTargets = function (force = false) {
                 this.TCSlines.push(helper.pad(words[0].replace(/[^A-Za-z0-9\_\+\-]+/g, ""), this.MaxLen.Name, false, " ") + " " +
                     helper.padTwoDigits(words[1]) + ":" +
                     helper.padTwoDigits(words[2]) + ":" +
-                    helper.pad(parseFloat(words[13]).toFixed(2).toString(), 5, true, "0") + " " +
+                    helper.pad(parseFloat(words[this.ReqLineLen]).toFixed(2).toString(), 5, true, "0") + " " +
                     helper.pad(helper.padTwoDigits(words[4]), 3, true, " ") + ":" +
                     helper.pad(words[5], 2, true, "0") + ":" +
-                    helper.pad(parseFloat(words[15]).toFixed(1).toString(), 4, true, "0") + " " +
+                    helper.pad(parseFloat(words[this.ReqLineLen + 2]).toFixed(1).toString(), 4, true, "0") + " " +
                     helper.pad(words[7], 4, " ") + " " +
-                    helper.pad(parseFloat(words[14]).toFixed(2).toString(), this.MaxLen.TCSpmra + 3, true, " ") + " " +
-                    helper.pad(parseFloat(words[16]).toFixed(2).toString(), this.MaxLen.TCSpmdec + 3, true, " ") + " " +
+                    helper.pad(parseFloat(words[this.ReqLineLen + 1]).toFixed(2).toString(), this.MaxLen.TCSpmra + 3, true, " ") + " " +
+                    helper.pad(parseFloat(words[this.ReqLineLen + 3]).toFixed(2).toString(), this.MaxLen.TCSpmdec + 3, true, " ") + " " +
                     "0.0");
             } else if ($.inArray(Driver.telescopeName, ["HJST", "OST"]) >= 0) {
                 this.TCSlines.push(
@@ -1162,13 +1169,13 @@ TargetList.prototype.validateAndFormatTargets = function (force = false) {
                     '"' + helper.pad(words[0].replace(/[^A-Za-z0-9\_\+\-]+/g, ""), this.MaxLen.Name, false, " ") + '" ' +
                     helper.padTwoDigits(words[1]) + " " +
                     helper.padTwoDigits(words[2]) + " " +
-                    helper.pad(parseFloat(words[13]).toFixed(2).toString(), 5, true, "0") + " " +
+                    helper.pad(parseFloat(words[this.ReqLineLen]).toFixed(2).toString(), 5, true, "0") + " " +
                     helper.pad(helper.padTwoDigits(words[4]), 3, true, " ") + " " +
                     helper.pad(words[5], 2, true, "0") + " " +
-                    helper.pad(parseFloat(words[15]).toFixed(1).toString(), 4, true, "0") + " " +
+                    helper.pad(parseFloat(words[this.ReqLineLen + 2]).toFixed(1).toString(), 4, true, "0") + " " +
                     helper.pad(parseFloat(words[7]).toFixed(1).toString(), 6, " ") + " " +
-                    helper.pad(parseFloat(words[14]).toFixed(2).toString(), this.MaxLen.TCSpmra + 3, true, " ") + " " +
-                    helper.pad(parseFloat(words[16]).toFixed(2).toString(), this.MaxLen.TCSpmdec + 3, true, " "));
+                    helper.pad(parseFloat(words[this.ReqLineLen + 1]).toFixed(2).toString(), this.MaxLen.TCSpmra + 3, true, " ") + " " +
+                    helper.pad(parseFloat(words[this.ReqLineLen + 3]).toFixed(2).toString(), this.MaxLen.TCSpmdec + 3, true, " "));
             }
             this.TargetsLines.push(padded.join(" "));
         }
@@ -1296,20 +1303,22 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
         words = [words[0], words[1], words[2], words[3] + (parseFloat(words[8]) !== 0 ? "/" + words[8] : ""), words[4], words[5], words[6] + (parseFloat(words[9]) !== 0 ? "/" + words[9] : ""), words[7]].concat([Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo]);
     }
     if (words.length == 7) {
-        words = words.concat([Driver.defaultEpoch, Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo]);
+        words = words.concat([Driver.defaultEpoch, Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo, Driver.defaultSkyPA]);
     } else if (words.length == 8) {
-        words = words.concat([Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo]);
+        words = words.concat([Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo, Driver.defaultSkyPA]);
     } else if (words.length == 9) {
-        words = words.concat([Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo]);
+        words = words.concat([Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo, Driver.defaultSkyPA]);
     } else if (words.length == 10) {
-        words = words.concat([Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo]);
+        words = words.concat([Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo, Driver.defaultSkyPA]);
     } else if (words.length == 11) {
-        words = words.concat([Driver.defaultType, Driver.defaultOBInfo]);
+        words = words.concat([Driver.defaultType, Driver.defaultOBInfo, Driver.defaultSkyPA]);
     } else if (words.length == 12) {
-        words = words.concat([Driver.defaultOBInfo]);
+        words = words.concat([Driver.defaultOBInfo, Driver.defaultSkyPA]);
+    } else if (words.length == 13) {
+        words = words.concat([Driver.defaultSkyPA]);
     }
-    // Sanity check: there must now be exactly 13 entries in the array
-    if (words.length !== 13) {
+    // Sanity check: there must now be exactly this.ReqLineLen entries in the array
+    if (words.length !== this.ReqLineLen) {
         helper.LogError(`Error 13: Incorrect syntax: the number of entries on line #${linenumber} is incorrect: ${words}!`);
         return false;
     }
@@ -1344,18 +1353,18 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
                 return false;
             }
         }
-        words[13] = parseFloat(rax[0]);
-        words[14] = parseFloat(rax[1]);
-        words[14] = Math.max(-1000, Math.min(1000, words[14]));
+        words[this.ReqLineLen] = parseFloat(rax[0]);
+        words[this.ReqLineLen + 1] = parseFloat(rax[1]);
+        words[this.ReqLineLen + 1] = Math.max(-1000, Math.min(1000, words[this.ReqLineLen + 1]));
     } else if (helper.notFloat(words[3])) {
         helper.LogError(`Error 19: Incorrect syntax: non-integer value detected in [RA] on line #${linenumber}!`);
         return false;
     } else {
-        words[13] = parseFloat(words[3]);
-        words[14] = 0;
+        words[this.ReqLineLen] = parseFloat(words[3]);
+        words[this.ReqLineLen + 1] = 0;
     }
     /* RA seconds, integer part between 0 and 59 */
-    if (parseInt(words[13]) < 0 || parseInt(words[13]) > 59) {
+    if (parseInt(words[this.ReqLineLen]) < 0 || parseInt(words[this.ReqLineLen]) > 59) {
         helper.LogError(`Error 20: Incorrect syntax: the integer part of "seconds" in [RA] must be a number between 0 and 59 on line #${linenumber}!`);
         return false;
     }
@@ -1388,18 +1397,18 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
                 return false;
             }
         }
-        words[15] = parseFloat(rax[0]);
-        words[16] = parseFloat(rax[1]);
-        words[16] = Math.max(-1000, Math.min(1000, words[16]));
+        words[this.ReqLineLen + 2] = parseFloat(rax[0]);
+        words[this.ReqLineLen + 3] = parseFloat(rax[1]);
+        words[this.ReqLineLen + 3] = Math.max(-1000, Math.min(1000, words[this.ReqLineLen + 3]));
     } else if (helper.notFloat(words[6])) {
         helper.LogError(`Error 26: Incorrect syntax: non-integer value detected in [DEC] on line #${linenumber}!`);
         return false;
     } else {
-        words[15] = parseFloat(words[6]);
-        words[16] = 0;
+        words[this.ReqLineLen + 2] = parseFloat(words[6]);
+        words[this.ReqLineLen + 3] = 0;
     }
     /* Dec arcseconds, integer part between 0 and 59 */
-    if (parseInt(words[15]) < 0 || parseInt(words[15]) > 59) {
+    if (parseInt(words[this.ReqLineLen + 2]) < 0 || parseInt(words[this.ReqLineLen + 2]) > 59) {
         helper.LogError(`Error 27: Incorrect syntax: the integer part of "arcseconds" in [Dec] must be a number between 0 and 59 on line #${linenumber}!`);
         return false;
     }
@@ -1445,6 +1454,11 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
             helper.LogError(`Error 49: OB info is not valid on line #${linenumber}, it should be Instrument:Mode:GroupID:BlockID!`);
             return false;
         }
+    }
+    /* Sky PA must be a float */
+    if (helper.notFloat(words[13])) {
+        helper.LogError(`Error 60: Incorrect syntax: non-float value detected in [SKYPA] on line #${linenumber}!`);
+        return false;
     }
     return words;
 };
