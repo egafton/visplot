@@ -58,6 +58,7 @@ function TargetList() {
     this.StartingAt = null;
     this.Warning1 = [];
     this.Warning2 = [];
+    this.ReqLineLen = 14;
 }
 
 /**
@@ -83,12 +84,14 @@ function Target(k, obj) {
     this.ExptimeHM = `${hrs > 0 ? hrs.toFixed(0) + "h " : ""}${min.toFixed(0)}m`;
     this.ZenithTime = obj.zenithtime;
     this.Graph = obj.line;
+    this.Azimuth = obj.azim;
     this.FullType = obj.type;
+    this.SkyPA = obj.skypa;
     this.Type = (obj.type.indexOf("/") === -1 ? obj.type : obj.type.substring(0, obj.type.indexOf("/")));
     this.MinMoonDistance = Math.round(obj.mdist);
     this.MinMoonDistanceTime = obj.mdisttime;
     this.ProjectNumber = obj.project;
-    this.RestrictionMaxAlt = $("#opt_away_from_zenith").is(":checked")
+    this.RestrictionMaxAlt = (config[Driver.telescopeName].zenithLimit !== null &amp;&amp; $("#opt_away_from_zenith").is(":checked"))
         ? 90 - config[Driver.telescopeName].zenithLimit
         : 90;
     this.MaxAirmass = obj.airmass;
@@ -128,11 +131,16 @@ function Target(k, obj) {
 
     let dfun = config[Driver.telescopeName].declinationLimit;
     this.DecLimit_MinimumAlt = null;
+    this.DecLimit_MinimumAltAzEast = null;
+    this.DecLimit_MinimumAltAzWest = null;
     this.DecLimit_MinimumHA = null;
     this.DecLimit_MaximumHA = null;
     if (dfun !== null) {
         if (dfun[0] == "alt(dec)") {
             this.DecLimit_MinimumAlt = dfun[1](this.Dec_rad * sla.r2d);
+        } else if (dfun[0] == "alt(az)") {
+            this.DecLimit_MinimumAltAzEast = dfun[1](this.Azimuth, false);
+            this.DecLimit_MinimumAltAzWest = dfun[1](this.Azimuth, true);
         } else if (dfun[0] == "ha(dec)") {
             this.DecLimit_MinimumHA = dfun[1](this.Dec_rad * sla.r2d);
             this.DecLimit_MaximumHA = dfun[2](this.Dec_rad * sla.r2d);
@@ -152,8 +160,8 @@ TargetList.prototype.targetStringToJSON = function (line) {
     obj.airmass = parseFloat(dat[10]);
     if (isNaN(obj.airmass)) {
         let uts = helper.ExtractUTRange(dat[10]);
-        obj.UTstart = Math.max(night.ENauTwilight, uts[0]);
-        obj.UTend = Math.min(night.MNauTwilight, uts[1]);
+        obj.UTstart = Math.max(night.global_UTstart, uts[0]);
+        obj.UTend = Math.min(night.global_UTend, uts[1]);
         obj.airmass = 9.9;
         obj.fillslot = dat[8] == "*";
         if (obj.fillslot) {
@@ -162,16 +170,18 @@ TargetList.prototype.targetStringToJSON = function (line) {
             obj.exptime = parseFloat(dat[8])/86400.0;
         }
     } else {
-        obj.UTstart = night.ENauTwilight;
-        obj.UTend = night.MNauTwilight;
+        obj.UTstart = night.global_UTstart;
+        obj.UTend = night.global_UTend;
         obj.fillslot = false;
         obj.exptime = parseFloat(dat[8])/86400.0;
     }
     obj.project = dat[9];
     obj.epoch = parseFloat(dat[7]);
     obj.line = Array();
+    obj.azim = Array();
     obj.type = dat[11];
     obj.obdata = dat[12];
+    obj.skypa = parseFloat(dat[13]);
     obj.constraints = dat[10];
     let rax = dat[3].split("/");
     let decx = dat[6]. split("/");
@@ -241,11 +251,34 @@ TargetList.prototype.targetStringToJSON = function (line) {
             altmax = ell;
         }
         obj.line.push(helper.rad2deg(ell));
+        let az = helper.rad2deg(retob.aob);
+        if (az &lt; 0) {
+            az += 360;
+        }
+        obj.azim.push(az);
     }
     obj.zenithtime = night.xaxis[imax];
     obj.RA_rad = ra;
     obj.Dec_rad = dec;
     return obj;
+};
+
+/**
+ * @memberof TargetList
+ */
+TargetList.prototype.setTargetsSize = function () {
+    for (let i = 0; i &lt; this.nTargets; i += 1) {
+        let tgt = this.Targets[i];
+        tgt.xlab = driver.graph.transformXLocation(tgt.LabelX);
+        tgt.ylab = driver.graph.transformYLocation(tgt.LabelY);
+        tgt.rxmid = driver.graph.targetsx;
+        tgt.rymid = driver.graph.targetsy + i * (driver.graph.targetsyskip * (driver.graph.doubleTargets ? 2 : 1) + 2) - 6.5;
+        if (tgt.Scheduled) {
+            tgt.ComputePositionSchedLabel();
+        }
+    }
+    driver.graph.setTargetsSize(this.nTargets);
+    this.removeClusters();
 };
 
 /**
@@ -263,8 +296,7 @@ TargetList.prototype.setTargets = function (obj) {
         this.Targets[i] = this.processTarget(i, res[i]);
     }
     this.warnUnobservable();
-    driver.graph.setTargetsSize(this.nTargets);
-    this.removeClusters();
+    this.setTargetsSize();
 };
 
 /**
@@ -282,7 +314,7 @@ TargetList.prototype.addTargets = function (obj) {
         this.Targets[i] = this.processTarget(i, res[i - oldNobjects]);
     }
     this.warnUnobservable();
-    driver.graph.setTargetsSize(this.nTargets);
+    this.setTargetsSize();
 };
 
 /**
@@ -298,8 +330,6 @@ TargetList.prototype.processTarget = function (i, obj) {
         target.LabelX = driver.night.MNauTwilight;
     }
     target.LabelY = target.getAltitude(target.LabelX);
-    target.xlab = driver.graph.transformXLocation(target.LabelX);
-    target.ylab = driver.graph.transformYLocation(target.LabelY);
     return target;
 };
 
@@ -627,7 +657,18 @@ TargetList.prototype.display_scheduleStatistics = function () {
             ratio_lost = 100 - ratio_sched;
         }
     }
-    helper.LogSuccess(`Night length (ENT-MNT):    ${helper.ReportSHM(time_night)}`);
+    let describeNight;
+    switch ($('input[type="radio"][name="opt_schedule_between"]:checked').val()) {
+        case "sunset/sunrise":
+            describeNight = "SET-RIS";
+            break;
+        case "astronomical":
+            describeNight = "EAT-MAT";
+            break;
+        default:
+            describeNight = "ENT-MNT";
+    }
+    helper.LogSuccess(`Night length (${describeNight}):    ${helper.ReportSHM(time_night)}`);
     helper.LogEntry(`Dark time (EAT-MAT):       ${helper.ReportSHM(time_dark)}`);
     if (time_sched > 0) {
         helper.LogSuccess(`Scheduled observing time:  ${helper.ReportSHM(time_sched)} (${ratio_sched.toFixed(0)}%)`);
@@ -1030,10 +1071,10 @@ TargetList.prototype.inputHasChanged = function (_newinput, _oldinput) {
  *     by adding spaces so that the various columns fall nicely under each
  *     other.
  */
-TargetList.prototype.validateAndFormatTargets = function () {
+TargetList.prototype.validateAndFormatTargets = function (force = false) {
     // Retrieve content of #targets textarea
     const tgts = driver.CMeditor.getValue();
-    if (!this.inputHasChanged(tgts, this.InputText) &amp;&amp; this.InputValid) {
+    if (!this.inputHasChanged(tgts, this.InputText) &amp;&amp; this.InputValid &amp;&amp; !force) {
         helper.LogEntry("Target input list has not changed, no need to revalidate.");
         return true;
     } else {
@@ -1042,6 +1083,9 @@ TargetList.prototype.validateAndFormatTargets = function () {
     $("#tcsExport").prop("disabled", true);
     this.InputValid = false;
     if (tgts.length === 0) {
+        if (force) {
+            return true;
+        }
         helper.LogError("Error 1: Please fill in the &lt;i>Targets&lt;/i> field.");
         return false;
     }
@@ -1051,7 +1095,7 @@ TargetList.prototype.validateAndFormatTargets = function () {
     this.TargetsLines = [];
     this.FormattedLines = [];
     // Determine maximum width of the various fields
-    this.MaxLen = {Name: 0, RA: 0, Dec: 0, Exp: 0, AM: 0, Type: 0, OBData: 0, TCSpmra: 0, TCSpmdec: 0};
+    this.MaxLen = {Name: 0, RA: 0, Dec: 0, Exp: 0, AM: 0, Type: 0, OBData: 0, TCSpmra: 0, TCSpmdec: 0, Skypa: 0};
     this.BadWolfStart = [];
     this.BadWolfEnd = [];
     for (let i = 0; i &lt; lines.length; i += 1) {
@@ -1088,12 +1132,15 @@ TargetList.prototype.validateAndFormatTargets = function () {
         if (words[12].length > this.MaxLen.OBData) {
             this.MaxLen.OBData = words[12].length;
         }
+        if (words[13].length > this.MaxLen.Skypa) {
+            this.MaxLen.Skypa = words[13].length;
+        }
         let j;
-        j = (parseInt(words[14]) + "").length + (words[14] &lt; 0 &amp;&amp; words[14] > -1 ? 1 : 0);
+        j = (parseInt(words[this.ReqLineLen + 1]) + "").length + (words[this.ReqLineLen + 1] &lt; 0 &amp;&amp; words[this.ReqLineLen + 1] > -1 ? 1 : 0);
         if (j > this.MaxLen.TCSpmra) {
             this.MaxLen.TCSpmra = j;
         }
-        j = (parseInt(words[16]) + "").length + (words[16] &lt; 0 &amp;&amp; words[16] > -1 ? 1 : 0);
+        j = (parseInt(words[this.ReqLineLen + 3]) + "").length + (words[this.ReqLineLen + 3] &lt; 0 &amp;&amp; words[this.ReqLineLen + 3] > -1 ? 1 : 0);
         if (j > this.MaxLen.TCSpmdec) {
             this.MaxLen.TCSpmdec = j;
         }
@@ -1122,7 +1169,8 @@ TargetList.prototype.validateAndFormatTargets = function () {
             helper.pad(words[9], 6, false, " "),
             helper.pad(words[10], this.MaxLen.AM, false, " "),
             helper.pad(words[11], this.MaxLen.Type, false, " "),
-            helper.pad(words[12], this.MaxLen.OBData, false, " ")
+            helper.pad(words[12], this.MaxLen.OBData, false, " "),
+            helper.pad(words[13], this.MaxLen.Skypa, false, " ")
         ];
         this.VisibleLines.push(padded.join(" "));
         if (words[0][0] == "#") {
@@ -1130,18 +1178,33 @@ TargetList.prototype.validateAndFormatTargets = function () {
             continue;
         }
         if (!badwolf) {
-            this.TCSlines.push(helper.pad(words[0].replace(/[^A-Za-z0-9\_\+\-]+/g, ""), this.MaxLen.Name, false, " ") + " " +
+            this.InputStats.Actual += 1;
+            if ($.inArray(Driver.telescopeName, ["NOT", "WHT", "INT"]) >= 0) {
+                this.TCSlines.push(helper.pad(words[0].replace(/[^A-Za-z0-9\_\+\-]+/g, ""), this.MaxLen.Name, false, " ") + " " +
                     helper.padTwoDigits(words[1]) + ":" +
                     helper.padTwoDigits(words[2]) + ":" +
-                    helper.pad(parseFloat(words[13]).toFixed(2).toString(), 5, true, "0") + " " +
+                    helper.pad(parseFloat(words[this.ReqLineLen]).toFixed(2).toString(), 5, true, "0") + " " +
                     helper.pad(helper.padTwoDigits(words[4]), 3, true, " ") + ":" +
                     helper.pad(words[5], 2, true, "0") + ":" +
-                    helper.pad(parseFloat(words[15]).toFixed(1).toString(), 4, true, "0") + " " +
+                    helper.pad(parseFloat(words[this.ReqLineLen + 2]).toFixed(1).toString(), 4, true, "0") + " " +
                     helper.pad(words[7], 4, " ") + " " +
-                    helper.pad(parseFloat(words[14]).toFixed(2).toString(), this.MaxLen.TCSpmra + 3, true, " ") + " " +
-                    helper.pad(parseFloat(words[16]).toFixed(2).toString(), this.MaxLen.TCSpmdec + 3, true, " ") + " " +
+                    helper.pad(parseFloat(words[this.ReqLineLen + 1]).toFixed(2).toString(), this.MaxLen.TCSpmra + 3, true, " ") + " " +
+                    helper.pad(parseFloat(words[this.ReqLineLen + 3]).toFixed(2).toString(), this.MaxLen.TCSpmdec + 3, true, " ") + " " +
                     "0.0");
-            this.InputStats.Actual += 1;
+            } else if ($.inArray(Driver.telescopeName, ["HJST", "OST"]) >= 0) {
+                this.TCSlines.push(
+                    helper.pad(this.InputStats.Actual.toString(), 2, true, " ") + " " +
+                    '"' + helper.pad(words[0].replace(/[^A-Za-z0-9\_\+\-]+/g, ""), this.MaxLen.Name, false, " ") + '" ' +
+                    helper.padTwoDigits(words[1]) + " " +
+                    helper.padTwoDigits(words[2]) + " " +
+                    helper.pad(parseFloat(words[this.ReqLineLen]).toFixed(2).toString(), 5, true, "0") + " " +
+                    helper.pad(helper.padTwoDigits(words[4]), 3, true, " ") + " " +
+                    helper.pad(words[5], 2, true, "0") + " " +
+                    helper.pad(parseFloat(words[this.ReqLineLen + 2]).toFixed(1).toString(), 4, true, "0") + " " +
+                    helper.pad(parseFloat(words[7]).toFixed(1).toString(), 6, " ") + " " +
+                    helper.pad(parseFloat(words[this.ReqLineLen + 1]).toFixed(2).toString(), this.MaxLen.TCSpmra + 3, true, " ") + " " +
+                    helper.pad(parseFloat(words[this.ReqLineLen + 3]).toFixed(2).toString(), this.MaxLen.TCSpmdec + 3, true, " "));
+            }
             this.TargetsLines.push(padded.join(" "));
         }
     }
@@ -1268,20 +1331,22 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
         words = [words[0], words[1], words[2], words[3] + (parseFloat(words[8]) !== 0 ? "/" + words[8] : ""), words[4], words[5], words[6] + (parseFloat(words[9]) !== 0 ? "/" + words[9] : ""), words[7]].concat([Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo]);
     }
     if (words.length == 7) {
-        words = words.concat([Driver.defaultEpoch, Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo]);
+        words = words.concat([Driver.defaultEpoch, Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo, Driver.defaultSkyPA]);
     } else if (words.length == 8) {
-        words = words.concat([Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo]);
+        words = words.concat([Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo, Driver.defaultSkyPA]);
     } else if (words.length == 9) {
-        words = words.concat([Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo]);
+        words = words.concat([Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo, Driver.defaultSkyPA]);
     } else if (words.length == 10) {
-        words = words.concat([Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo]);
+        words = words.concat([Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo, Driver.defaultSkyPA]);
     } else if (words.length == 11) {
-        words = words.concat([Driver.defaultType, Driver.defaultOBInfo]);
+        words = words.concat([Driver.defaultType, Driver.defaultOBInfo, Driver.defaultSkyPA]);
     } else if (words.length == 12) {
-        words = words.concat([Driver.defaultOBInfo]);
+        words = words.concat([Driver.defaultOBInfo, Driver.defaultSkyPA]);
+    } else if (words.length == 13) {
+        words = words.concat([Driver.defaultSkyPA]);
     }
-    // Sanity check: there must now be exactly 13 entries in the array
-    if (words.length !== 13) {
+    // Sanity check: there must now be exactly this.ReqLineLen entries in the array
+    if (words.length !== this.ReqLineLen) {
         helper.LogError(`Error 13: Incorrect syntax: the number of entries on line #${linenumber} is incorrect: ${words}!`);
         return false;
     }
@@ -1316,18 +1381,18 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
                 return false;
             }
         }
-        words[13] = parseFloat(rax[0]);
-        words[14] = parseFloat(rax[1]);
-        words[14] = Math.max(-1000, Math.min(1000, words[14]));
+        words[this.ReqLineLen] = parseFloat(rax[0]);
+        words[this.ReqLineLen + 1] = parseFloat(rax[1]);
+        words[this.ReqLineLen + 1] = Math.max(-1000, Math.min(1000, words[this.ReqLineLen + 1]));
     } else if (helper.notFloat(words[3])) {
         helper.LogError(`Error 19: Incorrect syntax: non-integer value detected in [RA] on line #${linenumber}!`);
         return false;
     } else {
-        words[13] = parseFloat(words[3]);
-        words[14] = 0;
+        words[this.ReqLineLen] = parseFloat(words[3]);
+        words[this.ReqLineLen + 1] = 0;
     }
     /* RA seconds, integer part between 0 and 59 */
-    if (parseInt(words[13]) &lt; 0 || parseInt(words[13]) > 59) {
+    if (parseInt(words[this.ReqLineLen]) &lt; 0 || parseInt(words[this.ReqLineLen]) > 59) {
         helper.LogError(`Error 20: Incorrect syntax: the integer part of "seconds" in [RA] must be a number between 0 and 59 on line #${linenumber}!`);
         return false;
     }
@@ -1360,18 +1425,18 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
                 return false;
             }
         }
-        words[15] = parseFloat(rax[0]);
-        words[16] = parseFloat(rax[1]);
-        words[16] = Math.max(-1000, Math.min(1000, words[16]));
+        words[this.ReqLineLen + 2] = parseFloat(rax[0]);
+        words[this.ReqLineLen + 3] = parseFloat(rax[1]);
+        words[this.ReqLineLen + 3] = Math.max(-1000, Math.min(1000, words[this.ReqLineLen + 3]));
     } else if (helper.notFloat(words[6])) {
         helper.LogError(`Error 26: Incorrect syntax: non-integer value detected in [DEC] on line #${linenumber}!`);
         return false;
     } else {
-        words[15] = parseFloat(words[6]);
-        words[16] = 0;
+        words[this.ReqLineLen + 2] = parseFloat(words[6]);
+        words[this.ReqLineLen + 3] = 0;
     }
     /* Dec arcseconds, integer part between 0 and 59 */
-    if (parseInt(words[15]) &lt; 0 || parseInt(words[15]) > 59) {
+    if (parseInt(words[this.ReqLineLen + 2]) &lt; 0 || parseInt(words[this.ReqLineLen + 2]) > 59) {
         helper.LogError(`Error 27: Incorrect syntax: the integer part of "arcseconds" in [Dec] must be a number between 0 and 59 on line #${linenumber}!`);
         return false;
     }
@@ -1418,6 +1483,11 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
             return false;
         }
     }
+    /* Sky PA must be a float */
+    if (helper.notFloat(words[13])) {
+        helper.LogError(`Error 60: Incorrect syntax: non-float value detected in [SKYPA] on line #${linenumber}!`);
+        return false;
+    }
     return words;
 };
 
@@ -1456,29 +1526,67 @@ TargetList.prototype.checkForDuplicates = function () {
 
 /**
  * @memberof Target
+ * @returns 0 = cannot observe the object (gray line)
+ *          1 = can observe the object (telescopes that don't have an over-the-axis mode)
+ *              or can observe the object under-the-axis only
+ *          2 = can observe the object over-the-axis only
+ *          3 = can observe the object both over- and under-the-axis
  */
-Target.prototype.canObserve = function (time, altitude) {
+Target.prototype.canObserve = function (idx) {
+    const time = driver.night.xaxis[idx];
+    const altitude = this.Graph[idx];
+
+    if (Driver.obs_lowestLimit !== null &amp;&amp; altitude &lt; Driver.obs_lowestLimit) {
+        return 0;
+    }
     if ((this.RestrictionMinUTC &lt;= time &amp;&amp; this.RestrictionMaxUTC >= time &amp;&amp;
             this.RestrictionMinAlt &lt;= altitude &amp;&amp; this.RestrictionMaxAlt >= altitude) === false) {
-        return false;
+        return 0;
     }
     for (let i = 0; i &lt; driver.targets.Offline.length; i += 1) {
         if (time >= driver.targets.Offline[i].Start &amp;&amp; time &lt;= driver.targets.Offline[i].End) {
-            return false;
+            return 0;
         }
     }
     /* Special provisions for equatorial mounts */
+    // alt(dec)
     if (this.DecLimit_MinimumAlt !== null &amp;&amp; altitude &lt; this.DecLimit_MinimumAlt) {
-        return false;
+        return 0;
     }
+    // ha(dec)
     let ha = (time - this.ZenithTime) * 24;
     if (this.DecLimit_MinimumHA !== null &amp;&amp; ha &lt; this.DecLimit_MinimumHA) {
-        return false;
+        return 0;
     }
     if (this.DecLimit_MaximumHA !== null &amp;&amp; ha > this.DecLimit_MaximumHA) {
-        return false;
+        return 0;
     }
-    return true;
+    if (this.DecLimit_MinimumAltAzEast === null &amp;&amp; this.DecLimit_MinimumAltAzWest === null) {
+        return 1;
+    }
+    // alt(az)
+    let notwest = false, noteast = false;
+    if ($("#opt_allow_over_axis").is(":checked")) {
+        if (this.DecLimit_MinimumAltAzWest !== null &amp;&amp; altitude &lt; this.DecLimit_MinimumAltAzWest[idx]) {
+            notwest = true;
+        }
+    } else {
+        // Do not allow observations over-the-axis
+        notwest = true;
+    }
+    if (this.DecLimit_MinimumAltAzEast !== null &amp;&amp; altitude &lt; this.DecLimit_MinimumAltAzEast[idx]) {
+        noteast = true;
+    }
+    if (noteast &amp;&amp; notwest) {
+        return 0;
+    }
+    if (!noteast &amp;&amp; notwest) {
+        return 1;
+    }
+    if (!notwest &amp;&amp; noteast) {
+        return 2;
+    }
+    return 3;
 };
 
 /**
@@ -1490,32 +1598,31 @@ Target.prototype.preCompute = function () {
     this.endAllowed = [];
     this.beginForbidden = [];
     this.endForbidden = [];
-    let obs = (this.canObserve(driver.night.xaxis[0], this.Graph[0]));
-    this.observable[0] = obs;
+    this.observable[0] = this.canObserve(0);
+    let obs = (this.observable[0] > 0);
     if (!obs) {
         this.beginForbidden.push(driver.night.xaxis[0]);
     } else {
         this.beginAllowed.push(driver.night.xaxis[0]);
     }
     for (let i = 1; i &lt; this.Graph.length - 1; i += 1) {
-        if (this.canObserve(driver.night.xaxis[i], this.Graph[i])) {
+        this.observable[i] = this.canObserve(i);
+        if (this.observable[i] > 0) {
             if (!obs) {
                 obs = true;
                 this.endForbidden.push(driver.night.xaxis[i]);
                 this.beginAllowed.push(driver.night.xaxis[i]);
             }
-            this.observable[i] = true;
         } else {
             if (obs) {
                 obs = false;
                 this.endAllowed.push(driver.night.xaxis[i]);
                 this.beginForbidden.push(driver.night.xaxis[i]);
             }
-            this.observable[i] = false;
         }
     }
     let last = this.Graph.length - 1;
-    this.observable[last] = this.canObserve(driver.night.xaxis[last], this.Graph[last]);
+    this.observable[last] = this.canObserve(last);
     if (this.beginForbidden.length !== this.endForbidden.length) {
         this.endForbidden.push(driver.night.xaxis[last]);
     } else {
@@ -1578,8 +1685,8 @@ Target.prototype.ComputePositionSchedLabel = function () {
     const dist = driver.graph.CircleSize * 1.2;
     xshift = dist * Math.sin(angle);
     yshift = dist * Math.cos(angle);
-    this.xmid = driver.graph.xaxis[this.iScheduledMidTime] - xshift;
-    this.ymid = driver.graph.yend - driver.graph.degree * this.Graph[this.iScheduledMidTime] - yshift;
+    this.xmid = driver.graph.xaxis[helper.EphemTimeToIndex(this.ScheduledMidTime)] - xshift;
+    this.ymid = driver.graph.yend - driver.graph.degree * this.Graph[helper.EphemTimeToIndex(this.ScheduledMidTime)] - yshift;
 };
 
 /**
@@ -1590,12 +1697,9 @@ Target.prototype.Schedule = function (start) {
     this.ScheduledStartTime = start;
     this.ScheduledEndTime = start + this.Exptime;
     this.ScheduledMidTime = start + 0.5 * this.Exptime;
-    this.iScheduledStartTime = helper.EphemTimeToIndex(this.ScheduledStartTime);
-    this.iScheduledEndTime = helper.EphemTimeToIndex(this.ScheduledEndTime);
-    this.iScheduledMidTime = helper.EphemTimeToIndex(this.ScheduledMidTime);
-    this.AltStartTime = this.Graph[this.iScheduledStartTime];
-    this.AltEndTime = this.Graph[this.iScheduledEndTime];
-    this.AltMidTime = this.Graph[this.iScheduledMidTime];
+    this.AltStartTime = this.Graph[helper.EphemTimeToIndex(this.ScheduledStartTime)];
+    this.AltEndTime = this.Graph[helper.EphemTimeToIndex(this.ScheduledEndTime)];
+    this.AltMidTime = this.Graph[helper.EphemTimeToIndex(this.ScheduledMidTime)];
     this.ComputePositionSchedLabel();
 };
 
@@ -1676,7 +1780,7 @@ Target.prototype.Update = function (obj) {
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.5</a> on Mon Apr 11 2022 11:51:55 GMT-0500 (Central Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.5</a> on Thu Apr 21 2022 19:28:34 GMT-0500 (Central Daylight Time)
 </footer>
 
 <script> prettyPrint(); </script>
