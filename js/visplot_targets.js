@@ -869,7 +869,9 @@ TargetList.prototype.scheduleAndOptimize_givenOrder = function (newscheduleorder
     }
 
     this.optimize_moveToLaterTimesIfRising(scheduleorder, false);
-    this.reorder_accordingToScheduling(scheduleorder);
+    if ($("#opt_reorder_targets").is(":checked")) {
+        this.reorder_accordingToScheduling(scheduleorder);
+    }
     this.display_scheduleStatistics();
 };
 
@@ -1009,7 +1011,9 @@ TargetList.prototype.doSchedule = function (start, reorder) {
         if (!maintainorder) {
             this.optimize_interchangeNeighbours(scheduleorder);
         }
-        this.reorder_accordingToScheduling(scheduleorder);
+        if ($("#opt_reorder_targets").is(":checked")) {
+            this.reorder_accordingToScheduling(scheduleorder);
+        }
         this.display_scheduleStatistics();
     } else {
         this.scheduleAndOptimize_givenOrder(scheduleorder);
