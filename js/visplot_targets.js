@@ -1024,7 +1024,19 @@ TargetList.prototype.doSchedule = function (start, reorder) {
  * @memberof TargetList
  */
 TargetList.prototype.plan = function () {
-    this.doSchedule(driver.night.Sunset, true);
+    if ($("#opt_reschedule_later").is(":checked")) {
+        let now = new Date();
+        helper.LogEntry("Current time: " + now.toUTCString());
+        if (now > driver.night.DateSunset && now < driver.night.DateSunrise) {
+            helper.LogWarning("Attention: the night has already started, so we will only schedule after the current time.");
+            this.doSchedule(driver.night.Sunset + (now - driver.night.DateSunset) / 1000 / 86400, true);
+        } else {
+            helper.LogWarning("We are not currently in the middle of the observing night. Scheduling as usual...");
+            this.doSchedule(driver.night.Sunset, true);
+        }
+    } else {
+        this.doSchedule(driver.night.Sunset, true);
+    }
 };
 
 /**
