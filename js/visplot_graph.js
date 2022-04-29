@@ -396,7 +396,7 @@ Graph.prototype.drawTargets = function (Targets) {
     }
 
     /* If over-the-axis observations are possible, show a legend */
-    if (Driver.telescopeName === "HJST" && $("#opt_allow_over_axis").is(":checked")) {
+    if (Targets.length > 0 && Driver.telescopeName === "HJST" && $("#opt_allow_over_axis").is(":checked")) {
         this.ctx.restore();
         const legtext = {
             1: "tube-east only",

@@ -66,6 +66,10 @@ function Driver() {
      *       plot will adjust to fill the remaining space.
      *     - Stopped logging milliseconds.
      *     - Fixed some minor bugs.
+     *     - Major changes to the AladinLite applet, which now allows arbitrary
+     *       sky PAs and flipping in x/y.
+     *     - Added legend for over-the-axis observations.
+     *     - All options are now saved between sessions, including checkboxes.
      */
     this.version = "3.0";
     helper.LogSuccess(`Hello, this is Visplot version ${this.version}`);
@@ -963,6 +967,13 @@ Driver.prototype.CallbackUpdateDefaults = function () {
     localStorage.setItem("defaultType", Driver.defaultType);
     localStorage.setItem("defaultAM", Driver.defaultAM);
     localStorage.setItem("defaultObstime", Driver.defaultObstime);
+    localStorage.setItem("opt_reschedule_later", $("#opt_reschedule_later").is(":checked"));
+    localStorage.setItem("opt_away_from_zenith", $("#opt_away_from_zenith").is(":checked"));
+    localStorage.setItem("opt_maintain_order", $("#opt_maintain_order").is(":checked"));
+    localStorage.setItem("opt_reorder_targets", $("#opt_reorder_targets").is(":checked"));
+    localStorage.setItem("opt_allow_over_axis", $("#opt_allow_over_axis").is(":checked"));
+    localStorage.setItem("opt_schedule_between", $('input[type="radio"][name="opt_schedule_between"]:checked').val());
+    localStorage.setItem("opt_show_lastobstime", $("#opt_show_lastobstime").is(":checked"));
     helper.LogEntry("Done.");
 };
 

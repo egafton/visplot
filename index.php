@@ -145,7 +145,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
                 <span class="middle"><label for="opt_reorder_targets"><input type="checkbox" name="opt_reorder_targets" id="opt_reorder_targets" checked="checked" /> Relabel targets according to the schedule order</label></span><br/>
                 <span class="middle"><label for="opt_allow_over_axis"><input type="checkbox" name="opt_allow_over_axis" id="opt_allow_over_axis" /> Allow observations over-the-axis (equatorial mounts only)</label></span><br/>
                 <span class="middle">Schedule observations between:</label></span><br/>
-                    <input type="radio" id="sunset/sunrise" name="opt_schedule_between" value="sunset/sunrise"><label for="sunset/sunrise">Sunset / Sunrise</label><br/>
+                    <input type="radio" id="sunset-sunrise" name="opt_schedule_between" value="sunset-sunrise"><label for="sunset-sunrise">Sunset / Sunrise</label><br/>
                     <input type="radio" id="nautical" name="opt_schedule_between" value="nautical" checked="checked"><label for="nautical">Nautical twilights</label><br/>
                     <input type="radio" id="astronomical" name="opt_schedule_between" value="astronomical"><label for="astronomical">Astronomical twilights</label><br/>
                 <br/>

@@ -93,6 +93,34 @@ $(document).ready(function () {
             helper.LogEntry(`Restoring default observing time to <i>${localStorage.defaultObstime}</i>`);
             Driver.defaultObstime = localStorage.defaultObstime;
         }
+        if ("opt_reschedule_later" in localStorage) {
+            helper.LogEntry(`Restoring <i>opt_reschedule_later</i> to <i>${localStorage.opt_reschedule_later}</i>`);
+            $("#opt_reschedule_later").prop("checked", localStorage.opt_reschedule_later === "true");
+        }
+        if ("opt_away_from_zenith" in localStorage) {
+            helper.LogEntry(`Restoring <i>opt_away_from_zenith</i> to <i>${localStorage.opt_away_from_zenith}</i>`);
+            $("#opt_away_from_zenith").prop("checked", localStorage.opt_away_from_zenith === "true");
+        }
+        if ("opt_maintain_order" in localStorage) {
+            helper.LogEntry(`Restoring <i>opt_maintain_order</i> to <i>${localStorage.opt_maintain_order}</i>`);
+            $("#opt_maintain_order").prop("checked", localStorage.opt_maintain_order === "true");
+        }
+        if ("opt_reorder_targets" in localStorage) {
+            helper.LogEntry(`Restoring <i>opt_reorder_targets</i> to <i>${localStorage.opt_reorder_targets}</i>`);
+            $("#opt_reorder_targets").prop("checked", localStorage.opt_reorder_targets === "true");
+        }
+        if ("opt_allow_over_axis" in localStorage) {
+            helper.LogEntry(`Restoring <i>opt_allow_over_axis</i> to <i>${localStorage.opt_allow_over_axis}</i>`);
+            $("#opt_allow_over_axis").prop("checked", localStorage.opt_allow_over_axis === "true");
+        }
+        if ("opt_schedule_between" in localStorage) {
+            helper.LogEntry(`Restoring <i>opt_schedule_between</i> to <i>${localStorage.opt_schedule_between}</i>`);
+            $(`#${localStorage.opt_schedule_between}`).prop("checked", true);
+        }
+        if ("opt_show_lastobstime" in localStorage) {
+            helper.LogEntry(`Restoring <i>opt_show_lastobstime</i> to <i>${localStorage.opt_show_lastobstime}</i>`);
+            $("#opt_show_lastobstime").prop("checked", localStorage.opt_show_lastobstime === "true");
+        }
     } else {
         /* Default image for default telescope */
         $("#canvasFrame").css("background-image", 'url(' + config[Driver.telescopeName].background + ')');

@@ -631,7 +631,7 @@ TargetList.prototype.display_scheduleStatistics = function () {
     }
     let describeNight;
     switch ($('input[type="radio"][name="opt_schedule_between"]:checked').val()) {
-        case "sunset/sunrise":
+        case "sunset-sunrise":
             describeNight = "SET-RIS";
             break;
         case "astronomical":
