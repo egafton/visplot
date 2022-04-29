@@ -280,13 +280,13 @@ Graph.prototype.setTargetsSize = function (ntargets) {
     this.targetsx = this.xend + 35;
     
     let totalheight = (this.targetsyskip * (this.doubleTargets ? 2 : 1) + 2) * ntargets;
-    if (this.targetsy + totalheight > this.yend + 55) {
+    if (this.targetsy + totalheight > this.yend) {
         this.targetsy = this.ystart - 25;
         totalheight = (this.targetsyskip * (this.doubleTargets ? 2 : 1) + 2) * ntargets;
-        if (this.targetsy + totalheight > this.yend + 55) {
-            this.targetsyskip = (this.doubleTargets ? 0.5 : 1) * (((this.yend + 55 - this.targetsy) / ntargets) - 2);
+        if (this.targetsy + totalheight > this.yend) {
+            this.targetsyskip = (this.doubleTargets ? 0.5 : 1) * (((this.yend - this.targetsy) / ntargets) - 2);
             if (this.targetsyskip < 10) {
-                this.targetsyskip = (this.doubleTargets ? 0.5 : 1) * (((this.yend + 55 - this.targetsy) / ntargets) - 2);
+                this.targetsyskip = (this.doubleTargets ? 0.5 : 1) * (((this.yend - this.targetsy) / ntargets) - 2);
             }
         }
     }
@@ -392,6 +392,37 @@ Graph.prototype.drawTargets = function (Targets) {
                 this.ctx.fill();
                 this.ctx.fillStyle = "black";
             }
+        }
+    }
+
+    /* If over-the-axis observations are possible, show a legend */
+    if (Driver.telescopeName === "HJST" && $("#opt_allow_over_axis").is(":checked")) {
+        this.ctx.restore();
+        const legtext = {
+            1: "tube-east only",
+            2: "tube-west only",
+            3: "both modes possible"
+        };
+
+        const xleg = this.targetsx;
+        const yleg = this.yend + 20;
+        const dxleg = 0;
+        const dyleg = 15;
+        let x = xleg;
+        let y = yleg;
+
+        for (let ii = 1; ii <= 3; ii ++) {
+            this.ctx.strokeStyle = strokes[ii];
+            this.ctx.setLineDash(dashes[ii]);
+            this.ctx.lineWidth = lws[ii];
+            this.ctx.beginPath();
+            this.ctx.moveTo(x, y);
+            this.ctx.lineTo(x + 30, y);
+            this.ctx.stroke();
+            this.plotText(legtext[ii], "8pt", "black", x + 35, y, "left", "middle");
+
+            x += dxleg;
+            y += dyleg;
         }
     }
     this.ctx.restore();
