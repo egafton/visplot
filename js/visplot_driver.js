@@ -70,6 +70,7 @@ function Driver() {
      *       sky PAs and flipping in x/y.
      *     - Added legend for over-the-axis observations.
      *     - All options are now saved between sessions, including checkboxes.
+     *     - Added support for RA/Dec input in decimal degrees.
      */
     this.version = "3.0";
     helper.LogSuccess(`Hello, this is Visplot version ${this.version}`);

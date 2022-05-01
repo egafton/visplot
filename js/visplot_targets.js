@@ -1284,8 +1284,18 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
         }
         return [words[0], "", "", "", "", "", "", "", "*", "", words[q], "", ""];
     }
-    if (words.length == 6 && words[2].indexOf(":") == -1) {
+    if ((words.length === 6 && words[2].indexOf(":") === -1) ||
+        (words.length === 2 && words[0].indexOf(":") !== -1 && words[1].indexOf(":") !== -1 ) ||
+        (words.length === 2 && !helper.notFloat(words[0]) && !helper.notFloat(words[1]))) {
         words = [`Object${linenumber}`].concat(words);
+    }
+    /* Everything given in degrees? Convert to hex */
+    if (words.length === 3 && !helper.notFloat(words[1]) && !helper.notFloat(words[2])) {
+        let RAhex = sla.dr2tf(2, parseFloat(words[1]) * sla.d2r);
+        let Dechex = sla.dr2af(2, parseFloat(words[2]) * sla.d2r);
+        let ra_arr = [`${RAhex.sign == '+' ? '' : RAhex.sign}${RAhex.ihmsf[0]}`, `${RAhex.ihmsf[1]}`, `${RAhex.ihmsf[2]}.${RAhex.ihmsf[3]}`];
+        let dec_arr = [`${Dechex.sign == '+' ? '' : Dechex.sign}${Dechex.idmsf[0]}`, `${Dechex.idmsf[1]}`, `${Dechex.idmsf[2]}.${Dechex.idmsf[3]}`];
+        words = words.slice(0, 1).concat(ra_arr).concat(dec_arr);
     }
     if (words.length < 2) {
         helper.LogError(`Error 10: Incorrect syntax on Line #${linenumber}; for each object you must provide at least the Name, RA and Dec!`);
