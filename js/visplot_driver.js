@@ -1211,6 +1211,10 @@ Object.defineProperties(Driver, {
         get: function () {
             return config[this.telescopeName].lowestLimit;
         }},
+    "obs_highestLimit": {
+        get: function () {
+            return config[this.telescopeName].highestLimit;
+        }},
     "obs_lowerHatch": {
         get: function () {
             return config[this.telescopeName].vignetteLimit;

@@ -1537,6 +1537,9 @@ Target.prototype.canObserve = function (idx) {
     if (Driver.obs_lowestLimit !== null && altitude < Driver.obs_lowestLimit) {
         return 0;
     }
+    if (Driver.obs_highestLimit !== null && altitude > Driver.obs_highestLimit) {
+        return 0;
+    }
     if ((this.RestrictionMinUTC <= time && this.RestrictionMaxUTC >= time &&
             this.RestrictionMinAlt <= altitude && this.RestrictionMaxAlt >= altitude) === false) {
         return 0;

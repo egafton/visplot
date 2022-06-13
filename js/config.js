@@ -39,6 +39,9 @@ config["NOT"] = {
     // Lowest limit in elevation for observing, in degrees
     lowestLimit: 6,
 
+    // Highest limit in elevation for observing, in degrees; null if N/A
+    highestLimit: null,
+
     // Lowest limit for unvignetted observations, in degrees; null if N/A
     vignetteLimit: 35,
 
@@ -109,6 +112,9 @@ config["WHT"] = {
     // Lowest limit in elevation for observing, in degrees
     lowestLimit: 12,
 
+    // Highest limit in elevation for observing, in degrees; null if N/A
+    highestLimit: null,
+
     // Lowest limit for unvignetted observations, in degrees; null if N/A
     vignetteLimit: 25,
 
@@ -174,6 +180,9 @@ config["INT"] = {
     // Lowest limit in elevation for observing, in degrees
     lowestLimit: 20,
 
+    // Highest limit in elevation for observing, in degrees; null if N/A
+    highestLimit: null,
+
     // Lowest limit for unvignetted observations, in degrees; null if N/A
     vignetteLimit: 33,
 
@@ -237,6 +246,9 @@ config["INT"] = {
 
     // Lowest limit in elevation for observing, in degrees
     lowestLimit: 20,
+
+    // Highest limit in elevation for observing, in degrees; null if N/A
+    highestLimit: null,
 
     // Lowest limit for unvignetted observations, in degrees; null if N/A
     vignetteLimit: null,
@@ -320,6 +332,9 @@ config["INT"] = {
     // Lowest limit in elevation for observing, in degrees
     lowestLimit: 10,
 
+    // Highest limit in elevation for observing, in degrees; null if N/A
+    highestLimit: null,
+
     // Lowest limit for unvignetted observations, in degrees; null if N/A
     vignetteLimit: 20,
 
@@ -340,6 +355,60 @@ config["INT"] = {
 
     // When all else fails, what to use?
     defaultInstrument: "CQUEAN",
+
+    // Time zone relative to UTC
+    timezone: -6
+};
+
+
+/**
+ * Configuration for the 10m Hobby-Eberly Telescope.
+ */
+ config["HET"] = {
+    // Name of the observatory site
+    site: "McDonald Observatory",
+
+    // Full name of the telescope
+    name: "Hobby-Eberly Telescope 10m",
+
+    // Latitude in degrees, +North
+    latitude: 30.681444,
+
+    // Longitude in degrees, +East
+    longitude: -104.014722,
+
+    // Altitude above sea level, in metres
+    altitude: 2026,
+
+    // Lowest limit in zenith distance for observing, in degrees; null if N/A
+    zenithLimit: null,
+
+    // Lowest limit in elevation for observing, in degrees
+    lowestLimit: 46.6,
+
+    // Highest limit in elevation for observing, in degrees
+    highestLimit: 63.4,
+
+    // Lowest limit for unvignetted observations, in degrees; null if N/A
+    vignetteLimit: null,
+
+    // Limits based on declination (for equatorial mounts); null if N/A
+    declinationLimit: null,
+
+    // Background image for plot
+    background: "img/telescopes/HET.jpg",
+
+    // Instrument definitions; fov in arcminutes
+    instruments: {
+        "VIRUS": {
+            type: "optical",
+            fov: 16,
+            flip: null
+        }
+    },
+
+    // When all else fails, what to use?
+    defaultInstrument: "VIRUS",
 
     // Time zone relative to UTC
     timezone: -6
