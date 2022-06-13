@@ -743,6 +743,16 @@ Graph.prototype.drawBackground = function () {
         this.ctx.fillText("⟶", this.xleftarrows, this.transformYLocation(Driver.obs_highestLimit));
         this.plotHorizontalLine(this.xstart, this.xend, this.transformYLocation(Driver.obs_highestLimit), [1, 2, 3, 2], 1);
     }
+    // Constant altitude for HET
+    if (Driver.telescopeName == "HET") {
+        const HETalt = 55;
+        this.ctx.fillText(`${Driver.telescopeName} altitude`,
+                          this.xleftlabels, this.transformYLocation(HETalt + 2));
+        this.ctx.fillText(`(${HETalt.toFixed(0)}°)`,
+                          this.xleftlabels, this.transformYLocation(HETalt));
+        this.ctx.fillText("⟶", this.xleftarrows, this.transformYLocation(HETalt));
+        this.plotHorizontalLine(this.xstart, this.xend, this.transformYLocation(HETalt), [5, 0, 0], 1);
+    }
 
     // Title of the plot
     this.ctx.font = `${this.pt(13)} ${this.fontFamily}`;
