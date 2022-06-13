@@ -578,7 +578,14 @@ helper.LunarPhaseExplanation = function (phase) {
  */
 helper.numberOfDays = function (year, month) {
     const d = new Date(Date.UTC(year, month, 0));
-    return d.getDate();
+    return d.getUTCDate();
+};
+
+/**
+ *
+ */
+helper.mod = function (num, modulo) {
+    return ((num % modulo) + modulo) % modulo;
 };
 
 /**

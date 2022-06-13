@@ -610,21 +610,29 @@ Driver.prototype.InitializeDate = function () {
         day = now.getUTCDate();
         month = now.getUTCMonth() + 1;
         year = now.getUTCFullYear();
-        if ((now.getUTCHours() + config[Driver.telescopeName].timezone) % 24 < 12) {
+	const msztAtTel = now.getUTCHours() + config[Driver.telescopeName].timezone;
+	let prevDay = false;
+	if (msztAtTel < 0) {
+	    prevDay = true;
+	    helper.LogEntry(`Setting date to yesterday because the Mean Solar Zone Time at the telescope is ${helper.padTwoDigits(helper.mod(msztAtTel, 24))}:${helper.padTwoDigits(now.getUTCMinutes())}`);
+	} else if (msztAtTel < 12) {
+	    prevDay = true;
+	    helper.LogEntry(`Setting date to yesterday because at the telescope it is still morning (MSZT=${helper.padTwoDigits(msztAtTel)}:${helper.padTwoDigits(now.getUTCMinutes())}`);
+	}
+	if (prevDay) {
             if (day == 1) {
-                let dd = helper.numberOfDays(year, month - 1);
-                if (month === 0) {
+                if (month === 1) {
                     year = year - 1;
-                    month = 11;
-                    day = dd;
+                    month = 12;
+                    day = 31;
                 } else {
                     month = month - 1;
-                    day = dd;
+                    day = helper.numberOfDays(year, month - 1); // Set day to last day of previous month
                 }
             } else {
                 day--;
             }
-            datemsg = `Default date set to ${year}-${helper.padTwoDigits(month)}-${helper.padTwoDigits(day)} (last night), since we are still in the morning.`;
+            datemsg = `Default date set to ${year}-${helper.padTwoDigits(month)}-${helper.padTwoDigits(day)} (last night).`;
         } else {
             datemsg = `Default date set to ${year}-${helper.padTwoDigits(month)}-${helper.padTwoDigits(day)}.`;
         }
