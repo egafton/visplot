@@ -522,15 +522,15 @@ Driver.prototype.EvtFrame_Click = function (e) {
                 `<p class="pp">Dec: <b>${obj.Dec.replace("-", "–")}</b></p>` +
                 `<p class="pp">Epoch: <b>${obj.Epoch == "1950" ? "B1950" : "J2000"}</b></p>` +
                 `<p class="pp">Moon Distance: <span title="${helper.LunarPhaseExplanation(LunarPhase)}"><b>${obj.MinMoonDistance}°</b> (${LunarPhase})</span></p>` +
-                `<p class="pp">Moon Closest At: <b>${helper.EphemDateToHM(obj.MinMoonDistanceTime)} UTC</p>` +
+                `<p class="pp">Moon Closest At: <b>${helper.EphemDateToHM(obj.MinMoonDistanceTime, true)} UTC</b></p>` +
                 `<p class="pp">Obstime: <b>${obj.ExptimeSeconds.toFixed(0)} s</b> (${obj.ExptimeHM})</p>` +
                 (obj.ExtraInfo === null
                     ? ""
                     : `<p class="pp">Instrument/Mode: <b>${obj.ExtraInfo}</b></p>`) +
                 (obj.BacklinkToOBQueue === null
                     ? ""
-                    : `<p class="pp"><a href="${obj.BacklinkToOBQueue}" target="_blank">OB update link (Staff)</a></br>
-                                     <a href="${obj.BacklinkToOBQueuePublic}" target="_blank">OB update link (Public)</a></p>`) +
+                    : `<p class="pp"><a href="${obj.BacklinkToOBQueue}" target="_blank">OB update link (Staff)</a></p>
+                       <p class="pp"><a href="${obj.BacklinkToOBQueuePublic}" target="_blank">OB update link (Public)</a></p>`) +
                 (this.scheduleMode || obj.Scheduled || obj.Observed
                     ? `<div style="height:5px; padding-top: 15px"></div><h2 class="h2-instr">Scheduling</h2>`
                     : "") +

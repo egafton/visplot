@@ -287,7 +287,7 @@ helper.degtosex = function (time, prec, sep1, sep2, sep3) {
 /**
  * Convert a Python.ephem date (stored as a float) to H:MM format
  */
-helper.EphemDateToHM = function (d) {
+helper.EphemDateToHM = function (d, padHours=false) {
     let t = new Date(driver.night.DateSunset);
     t.setSeconds(t.getUTCSeconds() + (d - driver.night.Sunset) * 86400);
     const ss = t.getUTCSeconds();
@@ -304,7 +304,7 @@ helper.EphemDateToHM = function (d) {
     if (hh == 24) {
         hh = 0;
     }
-    return `${hh}:${helper.padTwoDigits(mm)}`;
+    return `${padHours ? helper.padTwoDigits(hh) : hh}:${helper.padTwoDigits(mm)}`;
 };
 
 /**
