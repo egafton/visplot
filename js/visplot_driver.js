@@ -71,8 +71,12 @@ function Driver() {
      *     - Added legend for over-the-axis observations.
      *     - All options are now saved between sessions, including checkboxes.
      *     - Added support for RA/Dec input in decimal degrees.
+     *
+     * 3.1 - Now displaying two backlinks to the NOT OB queue (staff and
+     *       public).
+     *     - Added support for the HET.
      */
-    this.version = "3.0";
+    this.version = "3.1";
     helper.LogSuccess(`Hello, this is Visplot version ${this.version}`);
 
     /* HTML5 canvas, context and Graph class - related variables */
@@ -525,7 +529,8 @@ Driver.prototype.EvtFrame_Click = function (e) {
                     : `<p class="pp">Instrument/Mode: <b>${obj.ExtraInfo}</b></p>`) +
                 (obj.BacklinkToOBQueue === null
                     ? ""
-                    : `<p class="pp"><a href="${obj.BacklinkToOBQueue}" target="_blank">Backlink to OB queue</a></p>`) +
+                    : `<p class="pp"><a href="${obj.BacklinkToOBQueue}" target="_blank">OB update link (Staff)</a></br>
+                                     <a href="${obj.BacklinkToOBQueuePublic}" target="_blank">OB update link (Public)</a></p>`) +
                 (this.scheduleMode || obj.Scheduled || obj.Observed
                     ? `<div style="height:5px; padding-top: 15px"></div><h2 class="h2-instr">Scheduling</h2>`
                     : "") +
