@@ -30,6 +30,7 @@ function TargetList() {
     this.StartingAt = null;
     this.Warning1 = [];
     this.Warning2 = [];
+    this.ReqLineLen = 14;
 }
 
 /**
@@ -57,6 +58,7 @@ function Target(k, obj) {
     this.Graph = obj.line;
     this.Azimuth = obj.azim;
     this.FullType = obj.type;
+    this.SkyPA = obj.skypa;
     this.Type = (obj.type.indexOf("/") === -1 ? obj.type : obj.type.substring(0, obj.type.indexOf("/")));
     this.MinMoonDistance = Math.round(obj.mdist);
     this.MinMoonDistanceTime = obj.mdisttime;
@@ -88,10 +90,12 @@ function Target(k, obj) {
     if (obj.obdata !== Driver.defaultOBInfo) {
         let ob_arr = this.OBData.split(":");
         this.BacklinkToOBQueue = `http://www.not.iac.es/intranot/ob/ob_update.php?period=${parseInt(this.ProjectNumber.substring(0, 2))}&propID=${parseInt(this.ProjectNumber.substring(3))}&groupID=${ob_arr[2]}&blockID=${ob_arr[3]}`;
+        this.BacklinkToOBQueuePublic = `http://www.not.iac.es/observing/forms/obqueue/ob_update.php?period=${parseInt(this.ProjectNumber.substring(0, 2))}&propID=${parseInt(this.ProjectNumber.substring(3))}&groupID=${ob_arr[2]}&blockID=${ob_arr[3]}`;
         this.Instrument = ob_arr[0];
         this.ExtraInfo = `${ob_arr[0]}/${ob_arr[1]}`;
     } else {
         this.BacklinkToOBQueue = null;
+        this.BacklinkToOBQueuePublic = null;
         this.Instrument = null;
         this.ExtraInfo = null;
     }
@@ -151,6 +155,7 @@ TargetList.prototype.targetStringToJSON = function (line) {
     obj.azim = Array();
     obj.type = dat[11];
     obj.obdata = dat[12];
+    obj.skypa = parseFloat(dat[13]);
     obj.constraints = dat[10];
     let rax = dat[3].split("/");
     let decx = dat[6]. split("/");
@@ -235,6 +240,24 @@ TargetList.prototype.targetStringToJSON = function (line) {
 /**
  * @memberof TargetList
  */
+TargetList.prototype.setTargetsSize = function () {
+    for (let i = 0; i < this.nTargets; i += 1) {
+        let tgt = this.Targets[i];
+        tgt.xlab = driver.graph.transformXLocation(tgt.LabelX);
+        tgt.ylab = driver.graph.transformYLocation(tgt.LabelY);
+        tgt.rxmid = driver.graph.targetsx;
+        tgt.rymid = driver.graph.targetsy + i * (driver.graph.targetsyskip * (driver.graph.doubleTargets ? 2 : 1) + 2) - 6.5;
+        if (tgt.Scheduled) {
+            tgt.ComputePositionSchedLabel();
+        }
+    }
+    driver.graph.setTargetsSize(this.nTargets);
+    this.removeClusters();
+};
+
+/**
+ * @memberof TargetList
+ */
 TargetList.prototype.setTargets = function (obj) {
     const res = obj.map(function (x) {
         return this.targetStringToJSON (x);
@@ -247,8 +270,7 @@ TargetList.prototype.setTargets = function (obj) {
         this.Targets[i] = this.processTarget(i, res[i]);
     }
     this.warnUnobservable();
-    driver.graph.setTargetsSize(this.nTargets);
-    this.removeClusters();
+    this.setTargetsSize();
 };
 
 /**
@@ -266,7 +288,7 @@ TargetList.prototype.addTargets = function (obj) {
         this.Targets[i] = this.processTarget(i, res[i - oldNobjects]);
     }
     this.warnUnobservable();
-    driver.graph.setTargetsSize(this.nTargets);
+    this.setTargetsSize();
 };
 
 /**
@@ -282,8 +304,6 @@ TargetList.prototype.processTarget = function (i, obj) {
         target.LabelX = driver.night.MNauTwilight;
     }
     target.LabelY = target.getAltitude(target.LabelX);
-    target.xlab = driver.graph.transformXLocation(target.LabelX);
-    target.ylab = driver.graph.transformYLocation(target.LabelY);
     return target;
 };
 
@@ -611,7 +631,18 @@ TargetList.prototype.display_scheduleStatistics = function () {
             ratio_lost = 100 - ratio_sched;
         }
     }
-    helper.LogSuccess(`Night length (ENT-MNT):    ${helper.ReportSHM(time_night)}`);
+    let describeNight;
+    switch ($('input[type="radio"][name="opt_schedule_between"]:checked').val()) {
+        case "sunset-sunrise":
+            describeNight = "SET-RIS";
+            break;
+        case "astronomical":
+            describeNight = "EAT-MAT";
+            break;
+        default:
+            describeNight = "ENT-MNT";
+    }
+    helper.LogSuccess(`Night length (${describeNight}):    ${helper.ReportSHM(time_night)}`);
     helper.LogEntry(`Dark time (EAT-MAT):       ${helper.ReportSHM(time_dark)}`);
     if (time_sched > 0) {
         helper.LogSuccess(`Scheduled observing time:  ${helper.ReportSHM(time_sched)} (${ratio_sched.toFixed(0)}%)`);
@@ -840,7 +871,9 @@ TargetList.prototype.scheduleAndOptimize_givenOrder = function (newscheduleorder
     }
 
     this.optimize_moveToLaterTimesIfRising(scheduleorder, false);
-    this.reorder_accordingToScheduling(scheduleorder);
+    if ($("#opt_reorder_targets").is(":checked")) {
+        this.reorder_accordingToScheduling(scheduleorder);
+    }
     this.display_scheduleStatistics();
 };
 
@@ -980,7 +1013,9 @@ TargetList.prototype.doSchedule = function (start, reorder) {
         if (!maintainorder) {
             this.optimize_interchangeNeighbours(scheduleorder);
         }
-        this.reorder_accordingToScheduling(scheduleorder);
+        if ($("#opt_reorder_targets").is(":checked")) {
+            this.reorder_accordingToScheduling(scheduleorder);
+        }
         this.display_scheduleStatistics();
     } else {
         this.scheduleAndOptimize_givenOrder(scheduleorder);
@@ -991,7 +1026,19 @@ TargetList.prototype.doSchedule = function (start, reorder) {
  * @memberof TargetList
  */
 TargetList.prototype.plan = function () {
-    this.doSchedule(driver.night.Sunset, true);
+    if ($("#opt_reschedule_later").is(":checked")) {
+        let now = new Date();
+        helper.LogEntry("Current time: " + now.toUTCString());
+        if (now > driver.night.DateSunset && now < driver.night.DateSunrise) {
+            helper.LogWarning("Attention: the night has already started, so we will only schedule after the current time.");
+            this.doSchedule(driver.night.Sunset + (now - driver.night.DateSunset) / 1000 / 86400, true);
+        } else {
+            helper.LogWarning("We are not currently in the middle of the observing night. Scheduling as usual...");
+            this.doSchedule(driver.night.Sunset, true);
+        }
+    } else {
+        this.doSchedule(driver.night.Sunset, true);
+    }
 };
 
 /**
@@ -1038,7 +1085,7 @@ TargetList.prototype.validateAndFormatTargets = function (force = false) {
     this.TargetsLines = [];
     this.FormattedLines = [];
     // Determine maximum width of the various fields
-    this.MaxLen = {Name: 0, RA: 0, Dec: 0, Exp: 0, AM: 0, Type: 0, OBData: 0, TCSpmra: 0, TCSpmdec: 0};
+    this.MaxLen = {Name: 0, RA: 0, Dec: 0, Exp: 0, AM: 0, Type: 0, OBData: 0, TCSpmra: 0, TCSpmdec: 0, Skypa: 0};
     this.BadWolfStart = [];
     this.BadWolfEnd = [];
     for (let i = 0; i < lines.length; i += 1) {
@@ -1075,12 +1122,15 @@ TargetList.prototype.validateAndFormatTargets = function (force = false) {
         if (words[12].length > this.MaxLen.OBData) {
             this.MaxLen.OBData = words[12].length;
         }
+        if (words[13].length > this.MaxLen.Skypa) {
+            this.MaxLen.Skypa = words[13].length;
+        }
         let j;
-        j = (parseInt(words[14]) + "").length + (words[14] < 0 && words[14] > -1 ? 1 : 0);
+        j = (parseInt(words[this.ReqLineLen + 1]) + "").length + (words[this.ReqLineLen + 1] < 0 && words[this.ReqLineLen + 1] > -1 ? 1 : 0);
         if (j > this.MaxLen.TCSpmra) {
             this.MaxLen.TCSpmra = j;
         }
-        j = (parseInt(words[16]) + "").length + (words[16] < 0 && words[16] > -1 ? 1 : 0);
+        j = (parseInt(words[this.ReqLineLen + 3]) + "").length + (words[this.ReqLineLen + 3] < 0 && words[this.ReqLineLen + 3] > -1 ? 1 : 0);
         if (j > this.MaxLen.TCSpmdec) {
             this.MaxLen.TCSpmdec = j;
         }
@@ -1109,7 +1159,8 @@ TargetList.prototype.validateAndFormatTargets = function (force = false) {
             helper.pad(words[9], 6, false, " "),
             helper.pad(words[10], this.MaxLen.AM, false, " "),
             helper.pad(words[11], this.MaxLen.Type, false, " "),
-            helper.pad(words[12], this.MaxLen.OBData, false, " ")
+            helper.pad(words[12], this.MaxLen.OBData, false, " "),
+            helper.pad(words[13], this.MaxLen.Skypa, false, " ")
         ];
         this.VisibleLines.push(padded.join(" "));
         if (words[0][0] == "#") {
@@ -1122,13 +1173,13 @@ TargetList.prototype.validateAndFormatTargets = function (force = false) {
                 this.TCSlines.push(helper.pad(words[0].replace(/[^A-Za-z0-9\_\+\-]+/g, ""), this.MaxLen.Name, false, " ") + " " +
                     helper.padTwoDigits(words[1]) + ":" +
                     helper.padTwoDigits(words[2]) + ":" +
-                    helper.pad(parseFloat(words[13]).toFixed(2).toString(), 5, true, "0") + " " +
+                    helper.pad(parseFloat(words[this.ReqLineLen]).toFixed(2).toString(), 5, true, "0") + " " +
                     helper.pad(helper.padTwoDigits(words[4]), 3, true, " ") + ":" +
                     helper.pad(words[5], 2, true, "0") + ":" +
-                    helper.pad(parseFloat(words[15]).toFixed(1).toString(), 4, true, "0") + " " +
+                    helper.pad(parseFloat(words[this.ReqLineLen + 2]).toFixed(1).toString(), 4, true, "0") + " " +
                     helper.pad(words[7], 4, " ") + " " +
-                    helper.pad(parseFloat(words[14]).toFixed(2).toString(), this.MaxLen.TCSpmra + 3, true, " ") + " " +
-                    helper.pad(parseFloat(words[16]).toFixed(2).toString(), this.MaxLen.TCSpmdec + 3, true, " ") + " " +
+                    helper.pad(parseFloat(words[this.ReqLineLen + 1]).toFixed(2).toString(), this.MaxLen.TCSpmra + 3, true, " ") + " " +
+                    helper.pad(parseFloat(words[this.ReqLineLen + 3]).toFixed(2).toString(), this.MaxLen.TCSpmdec + 3, true, " ") + " " +
                     "0.0");
             } else if ($.inArray(Driver.telescopeName, ["HJST", "OST"]) >= 0) {
                 this.TCSlines.push(
@@ -1136,13 +1187,13 @@ TargetList.prototype.validateAndFormatTargets = function (force = false) {
                     '"' + helper.pad(words[0].replace(/[^A-Za-z0-9\_\+\-]+/g, ""), this.MaxLen.Name, false, " ") + '" ' +
                     helper.padTwoDigits(words[1]) + " " +
                     helper.padTwoDigits(words[2]) + " " +
-                    helper.pad(parseFloat(words[13]).toFixed(2).toString(), 5, true, "0") + " " +
+                    helper.pad(parseFloat(words[this.ReqLineLen]).toFixed(2).toString(), 5, true, "0") + " " +
                     helper.pad(helper.padTwoDigits(words[4]), 3, true, " ") + " " +
                     helper.pad(words[5], 2, true, "0") + " " +
-                    helper.pad(parseFloat(words[15]).toFixed(1).toString(), 4, true, "0") + " " +
+                    helper.pad(parseFloat(words[this.ReqLineLen + 2]).toFixed(1).toString(), 4, true, "0") + " " +
                     helper.pad(parseFloat(words[7]).toFixed(1).toString(), 6, " ") + " " +
-                    helper.pad(parseFloat(words[14]).toFixed(2).toString(), this.MaxLen.TCSpmra + 3, true, " ") + " " +
-                    helper.pad(parseFloat(words[16]).toFixed(2).toString(), this.MaxLen.TCSpmdec + 3, true, " "));
+                    helper.pad(parseFloat(words[this.ReqLineLen + 1]).toFixed(2).toString(), this.MaxLen.TCSpmra + 3, true, " ") + " " +
+                    helper.pad(parseFloat(words[this.ReqLineLen + 3]).toFixed(2).toString(), this.MaxLen.TCSpmdec + 3, true, " "));
             }
             this.TargetsLines.push(padded.join(" "));
         }
@@ -1235,8 +1286,18 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
         }
         return [words[0], "", "", "", "", "", "", "", "*", "", words[q], "", ""];
     }
-    if (words.length == 6 && words[2].indexOf(":") == -1) {
+    if ((words.length === 6 && words[2].indexOf(":") === -1) ||
+        (words.length === 2 && words[0].indexOf(":") !== -1 && words[1].indexOf(":") !== -1 ) ||
+        (words.length === 2 && !helper.notFloat(words[0]) && !helper.notFloat(words[1]))) {
         words = [`Object${linenumber}`].concat(words);
+    }
+    /* Everything given in degrees? Convert to hex */
+    if (words.length === 3 && !helper.notFloat(words[1]) && !helper.notFloat(words[2])) {
+        let RAhex = sla.dr2tf(2, parseFloat(words[1]) * sla.d2r);
+        let Dechex = sla.dr2af(2, parseFloat(words[2]) * sla.d2r);
+        let ra_arr = [`${RAhex.sign == '+' ? '' : RAhex.sign}${RAhex.ihmsf[0]}`, `${RAhex.ihmsf[1]}`, `${RAhex.ihmsf[2]}.${RAhex.ihmsf[3]}`];
+        let dec_arr = [`${Dechex.sign == '+' ? '' : Dechex.sign}${Dechex.idmsf[0]}`, `${Dechex.idmsf[1]}`, `${Dechex.idmsf[2]}.${Dechex.idmsf[3]}`];
+        words = words.slice(0, 1).concat(ra_arr).concat(dec_arr);
     }
     if (words.length < 2) {
         helper.LogError(`Error 10: Incorrect syntax on Line #${linenumber}; for each object you must provide at least the Name, RA and Dec!`);
@@ -1270,20 +1331,22 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
         words = [words[0], words[1], words[2], words[3] + (parseFloat(words[8]) !== 0 ? "/" + words[8] : ""), words[4], words[5], words[6] + (parseFloat(words[9]) !== 0 ? "/" + words[9] : ""), words[7]].concat([Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo]);
     }
     if (words.length == 7) {
-        words = words.concat([Driver.defaultEpoch, Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo]);
+        words = words.concat([Driver.defaultEpoch, Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo, Driver.defaultSkyPA]);
     } else if (words.length == 8) {
-        words = words.concat([Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo]);
+        words = words.concat([Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo, Driver.defaultSkyPA]);
     } else if (words.length == 9) {
-        words = words.concat([Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo]);
+        words = words.concat([Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo, Driver.defaultSkyPA]);
     } else if (words.length == 10) {
-        words = words.concat([Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo]);
+        words = words.concat([Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo, Driver.defaultSkyPA]);
     } else if (words.length == 11) {
-        words = words.concat([Driver.defaultType, Driver.defaultOBInfo]);
+        words = words.concat([Driver.defaultType, Driver.defaultOBInfo, Driver.defaultSkyPA]);
     } else if (words.length == 12) {
-        words = words.concat([Driver.defaultOBInfo]);
+        words = words.concat([Driver.defaultOBInfo, Driver.defaultSkyPA]);
+    } else if (words.length == 13) {
+        words = words.concat([Driver.defaultSkyPA]);
     }
-    // Sanity check: there must now be exactly 13 entries in the array
-    if (words.length !== 13) {
+    // Sanity check: there must now be exactly this.ReqLineLen entries in the array
+    if (words.length !== this.ReqLineLen) {
         helper.LogError(`Error 13: Incorrect syntax: the number of entries on line #${linenumber} is incorrect: ${words}!`);
         return false;
     }
@@ -1318,18 +1381,18 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
                 return false;
             }
         }
-        words[13] = parseFloat(rax[0]);
-        words[14] = parseFloat(rax[1]);
-        words[14] = Math.max(-1000, Math.min(1000, words[14]));
+        words[this.ReqLineLen] = parseFloat(rax[0]);
+        words[this.ReqLineLen + 1] = parseFloat(rax[1]);
+        words[this.ReqLineLen + 1] = Math.max(-1000, Math.min(1000, words[this.ReqLineLen + 1]));
     } else if (helper.notFloat(words[3])) {
         helper.LogError(`Error 19: Incorrect syntax: non-integer value detected in [RA] on line #${linenumber}!`);
         return false;
     } else {
-        words[13] = parseFloat(words[3]);
-        words[14] = 0;
+        words[this.ReqLineLen] = parseFloat(words[3]);
+        words[this.ReqLineLen + 1] = 0;
     }
     /* RA seconds, integer part between 0 and 59 */
-    if (parseInt(words[13]) < 0 || parseInt(words[13]) > 59) {
+    if (parseInt(words[this.ReqLineLen]) < 0 || parseInt(words[this.ReqLineLen]) > 59) {
         helper.LogError(`Error 20: Incorrect syntax: the integer part of "seconds" in [RA] must be a number between 0 and 59 on line #${linenumber}!`);
         return false;
     }
@@ -1362,18 +1425,18 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
                 return false;
             }
         }
-        words[15] = parseFloat(rax[0]);
-        words[16] = parseFloat(rax[1]);
-        words[16] = Math.max(-1000, Math.min(1000, words[16]));
+        words[this.ReqLineLen + 2] = parseFloat(rax[0]);
+        words[this.ReqLineLen + 3] = parseFloat(rax[1]);
+        words[this.ReqLineLen + 3] = Math.max(-1000, Math.min(1000, words[this.ReqLineLen + 3]));
     } else if (helper.notFloat(words[6])) {
         helper.LogError(`Error 26: Incorrect syntax: non-integer value detected in [DEC] on line #${linenumber}!`);
         return false;
     } else {
-        words[15] = parseFloat(words[6]);
-        words[16] = 0;
+        words[this.ReqLineLen + 2] = parseFloat(words[6]);
+        words[this.ReqLineLen + 3] = 0;
     }
     /* Dec arcseconds, integer part between 0 and 59 */
-    if (parseInt(words[15]) < 0 || parseInt(words[15]) > 59) {
+    if (parseInt(words[this.ReqLineLen + 2]) < 0 || parseInt(words[this.ReqLineLen + 2]) > 59) {
         helper.LogError(`Error 27: Incorrect syntax: the integer part of "arcseconds" in [Dec] must be a number between 0 and 59 on line #${linenumber}!`);
         return false;
     }
@@ -1419,6 +1482,11 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
             helper.LogError(`Error 49: OB info is not valid on line #${linenumber}, it should be Instrument:Mode:GroupID:BlockID!`);
             return false;
         }
+    }
+    /* Sky PA must be a float */
+    if (helper.notFloat(words[13])) {
+        helper.LogError(`Error 60: Incorrect syntax: non-float value detected in [SKYPA] on line #${linenumber}!`);
+        return false;
     }
     return words;
 };
@@ -1469,6 +1537,9 @@ Target.prototype.canObserve = function (idx) {
     const altitude = this.Graph[idx];
 
     if (Driver.obs_lowestLimit !== null && altitude < Driver.obs_lowestLimit) {
+        return 0;
+    }
+    if (Driver.obs_highestLimit !== null && altitude > Driver.obs_highestLimit) {
         return 0;
     }
     if ((this.RestrictionMinUTC <= time && this.RestrictionMaxUTC >= time &&
@@ -1617,8 +1688,8 @@ Target.prototype.ComputePositionSchedLabel = function () {
     const dist = driver.graph.CircleSize * 1.2;
     xshift = dist * Math.sin(angle);
     yshift = dist * Math.cos(angle);
-    this.xmid = driver.graph.xaxis[this.iScheduledMidTime] - xshift;
-    this.ymid = driver.graph.yend - driver.graph.degree * this.Graph[this.iScheduledMidTime] - yshift;
+    this.xmid = driver.graph.xaxis[helper.EphemTimeToIndex(this.ScheduledMidTime)] - xshift;
+    this.ymid = driver.graph.yend - driver.graph.degree * this.Graph[helper.EphemTimeToIndex(this.ScheduledMidTime)] - yshift;
 };
 
 /**
@@ -1629,12 +1700,9 @@ Target.prototype.Schedule = function (start) {
     this.ScheduledStartTime = start;
     this.ScheduledEndTime = start + this.Exptime;
     this.ScheduledMidTime = start + 0.5 * this.Exptime;
-    this.iScheduledStartTime = helper.EphemTimeToIndex(this.ScheduledStartTime);
-    this.iScheduledEndTime = helper.EphemTimeToIndex(this.ScheduledEndTime);
-    this.iScheduledMidTime = helper.EphemTimeToIndex(this.ScheduledMidTime);
-    this.AltStartTime = this.Graph[this.iScheduledStartTime];
-    this.AltEndTime = this.Graph[this.iScheduledEndTime];
-    this.AltMidTime = this.Graph[this.iScheduledMidTime];
+    this.AltStartTime = this.Graph[helper.EphemTimeToIndex(this.ScheduledStartTime)];
+    this.AltEndTime = this.Graph[helper.EphemTimeToIndex(this.ScheduledEndTime)];
+    this.AltMidTime = this.Graph[helper.EphemTimeToIndex(this.ScheduledMidTime)];
     this.ComputePositionSchedLabel();
 };
 
@@ -1685,10 +1753,12 @@ Target.prototype.Update = function (obj) {
     if (this.OBData !== Driver.defaultOBInfo) {
         let ob_arr = this.OBData.split(":");
         this.BacklinkToOBQueue = `http://www.not.iac.es/intranot/ob/ob_update.php?period=${parseInt(this.ProjectNumber.substring(0, 2))}&propID=${parseInt(this.ProjectNumber.substring(3))}&groupID=${ob_arr[2]}&blockID=${ob_arr[3]}`;
+        this.BacklinkToOBQueuePublic = `http://www.not.iac.es/observing/forms/obqueue/ob_update.php?period=${parseInt(this.ProjectNumber.substring(0, 2))}&propID=${parseInt(this.ProjectNumber.substring(3))}&groupID=${ob_arr[2]}&blockID=${ob_arr[3]}`;
         this.Instrument = ob_arr[0];
         this.ExtraInfo = `${ob_arr[0]}/${ob_arr[1]}`;
     } else {
         this.BacklinkToOBQueue = null;
+        this.BacklinkToOBQueuePublic = null;
         this.Instrument = null;
         this.ExtraInfo = null;
     }

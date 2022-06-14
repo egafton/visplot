@@ -14,7 +14,7 @@ if (isset($_SESSION["obinfo"])) {
 }
 if ($_SERVER["REQUEST_METHOD"] === "POST" and
     isset($_POST["obinfo"]) and !empty($_POST["obinfo"])) {
-    if (get_magic_quotes_gpc()) {
+    if (function_exists("get_magic_quotes_gpc") && get_magic_quotes_gpc()) {
         $obinfo = stripslashes($_POST["obinfo"]);
     } else {
         $obinfo = $_POST["obinfo"];
@@ -38,51 +38,57 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" type="text/css" media="screen" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.59.4/codemirror.min.css" type="text/css" />
     <link rel="stylesheet" href="css/aladin.min.css" type="text/css" />
-    <link rel="stylesheet" href="css/visplot.css" type="text/css" />
+    <link rel="stylesheet" href="css/visplot.css?" type="text/css" />
 </head>
 
-<body>
-    <div id="container">
-        <div id="leftblock">
-            <div id="left_upper">
-                <div id="upperBtnDiv">
-                    <input type="button" value="Configuration" id="configBtn" />
-                    <input type="button" value="Help" id="helpBtn" />
-                </div>
-                Date:
-                <input type="text" id="dateY" /> &ndash; <input type="text" id="dateM" /> &ndash; <input type="text" id="dateD" />
-                <input type="button" value="Set" id="dateSet" /><br/><br/>
-                <span class="middle">Targets:
-                    <input type="button" value="Blank fields" id="targetBlanks" />
-                </span><br/>
-                <textarea id="targets"></textarea><br/>
-                <input type="hidden" id="targets_actual" /><input type="hidden" id="added_targets" />
-                <input type="button" value="Plot targets" id="plotTargets" />
-                <input type="button" value="Schedule observations" id="planNight" /><br/><br/>
-            </div> <!-- #left_upper -->
-            <div id="left_lower">
-                <div id="buttons">
-                    <div id="lb_skycm"><input type="button" value="Show SkyCam" id="showSkyCam" /></div>
-                    <div id="lb_exprt"><input type="button" value="Export PNG" id="pngExport" /></div>
-                    <div id="lb_tcsex"><input type="button" value="TCS format" id="tcsExport" /></div>
-                    <div id="lb_svdoc"><input type="button" value="Save" id="saveDoc" /></div>
-                    <div id="lb_lddoc"><span class="middle">&nbsp;<label for="loadDoc">Load: <input type="file" value="Load" id="loadDoc" /></label></span></div>
-                </div>
+<body class="fixed-left">
+    <div id="toggle-sidebar">
+        <img src="img/sidebar.png" />
+    </div>
+    <div style="display:flex">
+        <div id="sidebar">
+            <div id="sidebarpad">
+                <div id="left_upper">
+                    <div id="upperBtnDiv">
+                        <input type="button" value="Configuration" id="configBtn" />
+                        <input type="button" value="Help" id="helpBtn" />
+                    </div>
+                    Date:
+                    <input type="text" id="dateY" /> &ndash; <input type="text" id="dateM" /> &ndash; <input type="text" id="dateD" />
+                    <input type="button" value="Set" id="dateSet" /><br/><br/>
+                    <span class="middle">Targets:
+                        <input type="button" value="Blank fields" id="targetBlanks" />
+                    </span><br/>
+                    <textarea id="targets"></textarea><br/>
+                    <input type="hidden" id="targets_actual" /><input type="hidden" id="added_targets" />
+                    <input type="button" value="Plot targets" id="plotTargets" />
+                    <input type="button" value="Schedule observations" id="planNight" /><br/><br/>
+                </div> <!-- #left_upper -->
+                <div id="left_lower">
+                    <div id="buttons">
+                        <div id="lb_skycm"><input type="button" value="Show SkyCam" id="showSkyCam" /></div>
+                        <div id="lb_exprt"><input type="button" value="Export PNG" id="pngExport" /></div>
+                        <div id="lb_tcsex"><input type="button" value="TCS format" id="tcsExport" /></div>
+                        <div id="lb_svdoc"><input type="button" value="Save" id="saveDoc" /></div>
+                        <div id="lb_lddoc"><span class="middle">&nbsp;<label for="loadDoc">Load: <input type="file" value="Load" id="loadDoc" /></label></span></div>
+                    </div>
+                </div> <!-- #left_lower -->
                 <pre id="logger"><span class="loggerEntry">Waiting for the page to load...</span></pre>
-            </div> <!-- #left_lower -->
-        </div> <!-- #leftblock -->
-        <div id="contentblock">
-            <canvas id="canvasFrame" width="951" height="672"></canvas>
-        </div> <!-- #contentblock -->
-    </div> <!-- #container -->
-    <div id="footer">
-        <div id="footer-inner">
-            ©2016–<span id="footer-year"></span> ega (NOT/ING).
-            Running Visplot version <a target="_blank" id="footer-version"></a><span id="footer-date"></span>.<br/>
-            Released under the <a target="_blank" href="https://github.com/egafton/visplot/blob/master/LICENSE.md">GNU General Public License v3.0</a>.
-            Report bugs and feature requests in the <a target="_blank" href="https://github.com/egafton/visplot/issues"><i>Issues</i> section</a> on GitHub.
-        </div> <!-- #footer-inner -->
-    </div> <!-- # footer -->
+                <div id="footer">
+                    <div id="footer-inner">
+                    ©2016–<span id="footer-year"></span> ega (NOT/ING).
+                    Running Visplot version <a target="_blank" id="footer-version"></a><span id="footer-date"></span>.<br/>
+                    Released under the <a target="_blank" href="https://github.com/egafton/visplot/blob/master/LICENSE.md">GNU General Public License v3.0</a>.
+                    Report bugs and feature requests in the <a target="_blank" href="https://github.com/egafton/visplot/issues"><i>Issues</i> section</a> on GitHub.
+                    </div> <!-- #footer-inner -->
+                </div> <!-- #footer -->
+            </div> <!-- #sidebarpad -->
+        </div> <!-- #sidebar -->
+        <div id="divider"></div>
+        <div id="canvas-wrapper">
+            <canvas id="canvasFrame"></canvas>
+        </div> <!-- #canvas-wrapper -->
+    </div> <!-- div style="display:flex" -->
     <a id="inline" href="#details" style="display:none"></a>
     <div style="display:none">
         <div id="details">
@@ -136,9 +142,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
                 <span class="middle"><label for="opt_reschedule_later"><input type="checkbox" name="opt_reschedule_later" id="opt_reschedule_later" checked="checked" /> Do not schedule in the past during an observing night</label></span><br/>
                 <span class="middle"><label for="opt_away_from_zenith"><input type="checkbox" name="opt_away_from_zenith" id="opt_away_from_zenith" checked="checked" /> Do not observe at altitudes higher than the zenith tracking limit</label></span><br/>
                 <span class="middle"><label for="opt_maintain_order"><input type="checkbox" name="opt_maintain_order" id="opt_maintain_order" /> Always schedule targets in their input order</label></span><br/>
+                <span class="middle"><label for="opt_reorder_targets"><input type="checkbox" name="opt_reorder_targets" id="opt_reorder_targets" checked="checked" /> Relabel targets according to the schedule order</label></span><br/>
                 <span class="middle"><label for="opt_allow_over_axis"><input type="checkbox" name="opt_allow_over_axis" id="opt_allow_over_axis" /> Allow observations over-the-axis (equatorial mounts only)</label></span><br/>
                 <span class="middle">Schedule observations between:</label></span><br/>
-                    <input type="radio" id="sunset/sunrise" name="opt_schedule_between" value="sunset/sunrise"><label for="sunset/sunrise">Sunset / Sunrise</label><br/>
+                    <input type="radio" id="sunset-sunrise" name="opt_schedule_between" value="sunset-sunrise"><label for="sunset-sunrise">Sunset / Sunrise</label><br/>
                     <input type="radio" id="nautical" name="opt_schedule_between" value="nautical" checked="checked"><label for="nautical">Nautical twilights</label><br/>
                     <input type="radio" id="astronomical" name="opt_schedule_between" value="astronomical"><label for="astronomical">Astronomical twilights</label><br/>
                 <br/>
@@ -165,7 +172,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
                 The program may then reschedule some or all of the other targets so that all of them continue to fit their respective constraints, in their new order. In rare cases, a manual reordering may results in one or few targets becoming de-scheduled, which normally means that with the new order it is not possible for all the targets to be observed according to their respective (UTC, airmass, altitude, etc.) constraints.<br/>
                 <br/>
                 <span class="sh0">Input syntax</span>
-                • <code>[NAME] [RA]/[pmRA] [DEC]/[pmDEC] [EPOCH] [OBSTIME] [PROJECT] [CONSTRAINTS] [TYPE] [OBINFO]</code>,
+                • <code>[NAME] [RA]/[pmRA] [DEC]/[pmDEC] [EPOCH] [OBSTIME] [PROJECT] [CONSTRAINTS] [TYPE] [OBINFO] [SKYPA]</code>,
 
                 <span class="sh1">where:</span>
                 • <code>[NAME]</code> is the object name, without spaces;<br/>
@@ -178,9 +185,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
                 • <code>[CONSTRAINTS]</code>  are the observing constraints, either airmass (a float, e.g., <code>2.0</code>), a UTC range (<code>UTC[20:00-23:30]</code>) or an LST range (<code>LST[2-4:30]</code>); integers, floats, <code>HH:MM</code> syntax, or a mix of them are all allowed for the range components (e.g., <code>LST[2:00-4.5]</code>;<br/>
                 • <code>[TYPE]</code> is the type of observation, and can be one of the following: <code>Monitor</code>, <code>ToO</code>, <code>SoftToO</code>, <code>Payback</code>, <code>Fast-Track</code>, <code>Service</code>, <code>CATService</code>, <code>Visitor</code>, and <code>Staff</code>.
                 Iff <code>[TYPE]</code> is set to <code>Staff</code>, it is allowed to add a slash and 2-3 initials to identify for which member of the staff the observations are taken (e.g., <code>Staff/JHT</code>, <code>Staff/TP</code>, etc.).<br/>
-                • <code>[OBINFO]</code> is information passed automatically when the page is loaded from an OB queue; it allows Visplot to generate backlinks to the OB queue, as well as show additional information about each target. At the moment the system is only integrated with the NOT OB queue. In all other cases, the value should be <code>default</code>.<br/><br/>
+                • <code>[OBINFO]</code> is information passed automatically when the page is loaded from an OB queue; it allows Visplot to generate backlinks to the OB queue, as well as show additional information about each target. At the moment the system is only integrated with the NOT OB queue. In all other cases, the value should be <code>default</code>.<br/>
+                • <code>[SKYPA]</code> is the Sky Position Angle in degrees, with 0=North up, 90=East up, etc. Used for the orientation of the finding chart only.<br/>
 
-                <span class="sh1">Note: Fields <code>[EPOCH]</code>, <code>[OBSTIME]</code>, <code>[PROJECT]</code>, <code>[CONSTRAINTS]</code>, <code>[TYPE]</code> and <code>[OBINFO]</code> are optional, and will be filled with default values (i.e., <code>2000 600 54-199 2.0 Staff default</code>) if missing.</span><br/>
+                <span class="sh1"><b>Note:</b> The fields <code>[EPOCH]</code>, <code>[OBSTIME]</code>, <code>[PROJECT]</code>, <code>[CONSTRAINTS]</code>, <code>[TYPE]</code>, <code>[OBINFO]</code> and <code>[SKYPA]</code> are optional, and will be filled with default values (i.e., <code>2000 600 54-199 2.0 Staff default 0</code>) if missing.</span><br/>
             </div> <!-- #help-left -->
             <div id="help-right">
                 <span class="sh1"><b>Examples of valid input formats:</b></span>
@@ -236,20 +244,22 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.59.4/addon/mode/simple.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.5.0/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-    <script src="js/aladin.min.js" type="text/javascript" charset="utf-8"></script>
+    <!-- Locally-hosted, 3rd party libraries -->
+    <script src="js/aladin.min.js?" type="text/javascript" charset="utf-8"></script>
+    <script src="js/jsplitter.js?" type="text/javascript" charset="utf-8"></script>
     <!-- Configuration files -->
-    <script src="js/config.js" type="text/javascript"></script>
+    <script src="js/config.js?" type="text/javascript" charset="utf-8"></script>
     <!-- Main JS code -->
-    <script src="js/visplot_slacoeffs.js" type="text/javascript"></script>
-    <script src="js/visplot_sla.js" type="text/javascript"></script>
-    <script src="js/visplot.js" type="text/javascript"></script>
-    <script src="js/visplot_driver.js" type="text/javascript"></script>
-    <script src="js/visplot_night.js" type="text/javascript"></script>
-    <script src="js/visplot_graph.js" type="text/javascript"></script>
-    <script src="js/visplot_targets.js" type="text/javascript"></script>
-    <script src="js/visplot_helper.js" type="text/javascript"></script>
-    <script src="js/visplot_serializer.js" type="text/javascript"></script>
-    <script src="js/visplot_skygraph.js" type="text/javascript"></script>
+    <script src="js/visplot_slacoeffs.js?" type="text/javascript" charset="utf-8"></script>
+    <script src="js/visplot_sla.js?" type="text/javascript" charset="utf-8"></script>
+    <script src="js/visplot.js?" type="text/javascript" charset="utf-8"></script>
+    <script src="js/visplot_driver.js?" type="text/javascript" charset="utf-8"></script>
+    <script src="js/visplot_night.js?" type="text/javascript" charset="utf-8"></script>
+    <script src="js/visplot_graph.js?" type="text/javascript" charset="utf-8"></script>
+    <script src="js/visplot_targets.js?" type="text/javascript" charset="utf-8"></script>
+    <script src="js/visplot_helper.js?" type="text/javascript" charset="utf-8"></script>
+    <script src="js/visplot_serializer.js?" type="text/javascript" charset="utf-8"></script>
+    <script src="js/visplot_skygraph.js?" type="text/javascript" charset="utf-8"></script>
     <!-- OB data goes in its own hidden variables -->
     <?php if ($obpost) { echo '<input type="hidden" id="obinfo" value="'.rawurlencode($obinfo).'" /> '; } ?>
 </body>

@@ -287,7 +287,7 @@ helper.degtosex = function (time, prec, sep1, sep2, sep3) {
 /**
  * Convert a Python.ephem date (stored as a float) to H:MM format
  */
-helper.EphemDateToHM = function (d) {
+helper.EphemDateToHM = function (d, padHours=false) {
     let t = new Date(driver.night.DateSunset);
     t.setSeconds(t.getUTCSeconds() + (d - driver.night.Sunset) * 86400);
     const ss = t.getUTCSeconds();
@@ -304,7 +304,7 @@ helper.EphemDateToHM = function (d) {
     if (hh == 24) {
         hh = 0;
     }
-    return `${hh}:${helper.padTwoDigits(mm)}`;
+    return `${padHours ? helper.padTwoDigits(hh) : hh}:${helper.padTwoDigits(mm)}`;
 };
 
 /**
@@ -552,8 +552,7 @@ helper.Log = function (msg, cls) {
             helper.pad(cd.getUTCDate().toString(), 2, true, "0") + " " +
             helper.pad(cd.getUTCHours().toString(), 2, true, "0") + ":" +
             helper.pad(cd.getUTCMinutes().toString(), 2, true, "0") + ":" +
-            helper.pad(cd.getUTCSeconds().toString(), 2, true, "0") + "." +
-            helper.pad(cd.getUTCMilliseconds().toString(), 3, true, "0") + "] " +
+            helper.pad(cd.getUTCSeconds().toString(), 2, true, "0") + "] " +
             msg + "</span>");
     $("#logger").scrollTop($("#logger")[0].scrollHeight);
 };
@@ -579,7 +578,14 @@ helper.LunarPhaseExplanation = function (phase) {
  */
 helper.numberOfDays = function (year, month) {
     const d = new Date(Date.UTC(year, month, 0));
-    return d.getDate();
+    return d.getUTCDate();
+};
+
+/**
+ *
+ */
+helper.mod = function (num, modulo) {
+    return ((num % modulo) + modulo) % modulo;
 };
 
 /**
@@ -716,8 +722,8 @@ helper.timezone = function(value) {
  * Created multi-dimensional array filled with 0.
  */
 helper.zeros = function(dimensions) {
-    var array = [];
-    for (var i=0; i<dimensions[0]; ++i) {
+    let array = [];
+    for (let i=0; i<dimensions[0]; ++i) {
         array.push(dimensions.length == 1 ? 0 : this.zeros(dimensions.slice(1)));
     }
     return array;

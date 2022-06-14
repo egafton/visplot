@@ -59,25 +59,56 @@ function Driver() {
      *       the spherical geometry calculations mapping pixels to alt/az.
      *     - Observations can now be scheduled between sunset/sunrise,
      *       between nautical twilights, or between astronomical twilights.
+     * 
+     * 3.0 - Redesigned user interface: only the plot is visible by default,
+     *       while all the settings are available in a collapsible sidebar.
+     *     - The sidebar can be resized at will ("split pane"), while the
+     *       plot will adjust to fill the remaining space.
+     *     - Stopped logging milliseconds.
+     *     - Fixed some minor bugs.
+     *     - Major changes to the AladinLite applet, which now allows arbitrary
+     *       sky PAs and flipping in x/y.
+     *     - Added legend for over-the-axis observations.
+     *     - All options are now saved between sessions, including checkboxes.
+     *     - Added support for RA/Dec input in decimal degrees.
+     *
+     * 3.1 - Now displaying two backlinks to the NOT OB queue (staff and
+     *       public).
+     *     - Added support for the HET.
      */
-    this.version = "2.7";
+    this.version = "3.1";
     helper.LogSuccess(`Hello, this is Visplot version ${this.version}`);
 
     /* HTML5 canvas, context and Graph class - related variables */
     this.canvas = document.getElementById("canvasFrame");
     this.context = this.canvas.getContext("2d");
     this.graph = new Graph(this.canvas, this.context);
+    this.rescaleCanvas(this.canvas, this.context);
+    this.graph.Resize(this.canvas);
 
     this.skyCanvas = document.getElementById("canvasSkycam");
     this.skyContext = this.skyCanvas.getContext("2d");
     this.skyGraph = new SkyGraph(this.skyCanvas, this.skyContext);
-
-    this.rescaleCanvas(this.canvas, this.context);
     this.rescaleCanvas(this.skyCanvas, this.skyContext);
 
-    /* Aladin object */
-    this.objAladin = null;
-    this.aladinInitialized = false;
+    /* Preload Aladin object */
+    this.objAladin = A.aladin("#details_map", {
+        target: `0.0 0.0`,
+        survey: "P/DSS2/color",
+        fov: 0.1,
+        pa: 0,
+        flip: null,
+        reticle: true,
+        showZoomControl: true,
+        showFullscreenControl: false,
+        showLayersControl: false,
+        showGotoControl: false,
+        reticleColor: "rgb(144, 238, 144)"
+    });
+    this.aladinInitialized = true;
+    this.objAladin.on("positionChanged", function() {
+        driver.objAladin.view.applyRotation();
+    });
 
     /* OB queue - related */
     this.ob = false;            // Whether or not the page is a referral from the OB queue
@@ -295,6 +326,7 @@ Driver.prototype.BtnEvt_PlotTargets = function () {
             }
         }
     }
+    $("#plotTargets").prop("disabled", true);
     if (this.RequestedScheduleType !== 1) {
         if (this.RequestedScheduleType === 2 && !(this.targets.inputHasChanged($("#targets_actual").val(), this.targets.ComputedTargets))) {
             helper.LogEntry("No need to recompute altitudes. Proceeding to scheduling.");
@@ -304,6 +336,7 @@ Driver.prototype.BtnEvt_PlotTargets = function () {
             driver.Callback_SetTargets($("#targets_actual").val());
         }
     }
+    $("#plotTargets").prop("disabled", false);
 };
 
 /**
@@ -315,8 +348,6 @@ Driver.prototype.EvtFrame_MouseMove = function (e) {
     }
     let x = e.offsetX || e.layerX;
     let y = e.offsetY || e.layerY;
-    x -= 12;
-    y -= 12;
     if (this.rescheduling) {
         if (x > this.graph.targetsx) {
             for (let i = 0; i < this.targets.nTargets; i += 1) {
@@ -381,8 +412,6 @@ Driver.prototype.EvtFrame_MouseDown = function (e) {
     }
     let x = e.offsetX || e.layerX;
     let y = e.offsetY || e.layerY;
-    x -= 12;
-    y -= 12;
     if (x > this.graph.targetsx) {
         for (let i = 0; i < this.targets.nTargets; i += 1) {
             if (y >= this.targets.Targets[i].ystart && y <= this.targets.Targets[i].yend) {
@@ -403,8 +432,6 @@ Driver.prototype.EvtFrame_MouseUp = function (e) {
     }
     let x = e.offsetX || e.layerX;
     let y = e.offsetY || e.layerY;
-    x -= 12;
-    y -= 12;
     if (x > this.graph.targetsx) {
         if (!this.rescheduling) {
             return;
@@ -476,8 +503,8 @@ Driver.prototype.EvtFrame_Click = function (e) {
     if (this.targets.Ntargets === 0) {
         return;
     }
-    const x = (e.offsetX || e.layerX) - 12;
-    const y = (e.offsetY || e.layerY) - 12;
+    const x = (e.offsetX || e.layerX);
+    const y = (e.offsetY || e.layerY);
     for (let i = 0; i < this.targets.nTargets; i += 1) {
         let obj = this.targets.Targets[i];
         if (this.insideObject(x, y, obj)) {
@@ -495,14 +522,15 @@ Driver.prototype.EvtFrame_Click = function (e) {
                 `<p class="pp">Dec: <b>${obj.Dec.replace("-", "–")}</b></p>` +
                 `<p class="pp">Epoch: <b>${obj.Epoch == "1950" ? "B1950" : "J2000"}</b></p>` +
                 `<p class="pp">Moon Distance: <span title="${helper.LunarPhaseExplanation(LunarPhase)}"><b>${obj.MinMoonDistance}°</b> (${LunarPhase})</span></p>` +
-                `<p class="pp">Moon Closest At: <b>${helper.EphemDateToHM(obj.MinMoonDistanceTime)} UTC</p>` +
+                `<p class="pp">Moon Closest At: <b>${helper.EphemDateToHM(obj.MinMoonDistanceTime, true)} UTC</b></p>` +
                 `<p class="pp">Obstime: <b>${obj.ExptimeSeconds.toFixed(0)} s</b> (${obj.ExptimeHM})</p>` +
                 (obj.ExtraInfo === null
                     ? ""
                     : `<p class="pp">Instrument/Mode: <b>${obj.ExtraInfo}</b></p>`) +
                 (obj.BacklinkToOBQueue === null
                     ? ""
-                    : `<p class="pp"><a href="${obj.BacklinkToOBQueue}" target="_blank">Backlink to OB queue</a></p>`) +
+                    : `<p class="pp"><a href="${obj.BacklinkToOBQueue}" target="_blank">OB update link (Staff)</a></p>
+                       <p class="pp"><a href="${obj.BacklinkToOBQueuePublic}" target="_blank">OB update link (Public)</a></p>`) +
                 (this.scheduleMode || obj.Scheduled || obj.Observed
                     ? `<div style="height:5px; padding-top: 15px"></div><h2 class="h2-instr">Scheduling</h2>`
                     : "") +
@@ -535,28 +563,16 @@ Driver.prototype.EvtFrame_Click = function (e) {
                 instrument = config[Driver.telescopeName].defaultInstrument;
             }
             const fov = config[Driver.telescopeName].instruments[instrument].fov / 60;
+            const flip = config[Driver.telescopeName].instruments[instrument].flip;
             const surveyName = config[Driver.telescopeName].instruments[instrument].type == "optical"
                 ? "P/DSS2/color"
                 : "P/2MASS/color";
             $("#details_map_hang").html(surveyName);
-            if (this.aladinInitialized) {
-                this.objAladin.setImageSurvey(surveyName);
-                this.objAladin.setFov(fov)
-                this.objAladin.gotoRaDec(ra, dec);
-            } else {
-                this.objAladin = A.aladin("#details_map", {
-                    target: `${ra} ${dec}`,
-                    survey: surveyName,
-                    fov: fov,
-                    reticle: true,
-                    showZoomControl: true,
-                    showFullscreenControl: false,
-                    showLayersControl: false,
-                    showGotoControl: false,
-                    reticleColor: "rgb(144, 238, 144)"
-                });
-                this.aladinInitialized = true;
-            }
+            this.objAladin.setImageSurvey(surveyName);
+            this.objAladin.setFov(fov);
+            this.objAladin.setFlip(flip);
+            this.objAladin.gotoRaDec(ra, dec);
+            this.objAladin.setPA(obj.SkyPA);
             $("a#inline").trigger("click");
             break;
         }
@@ -599,21 +615,29 @@ Driver.prototype.InitializeDate = function () {
         day = now.getUTCDate();
         month = now.getUTCMonth() + 1;
         year = now.getUTCFullYear();
-        if ((now.getUTCHours() + config[Driver.telescopeName].timezone) % 24 < 12) {
+	const msztAtTel = now.getUTCHours() + config[Driver.telescopeName].timezone;
+	let prevDay = false;
+	if (msztAtTel < 0) {
+	    prevDay = true;
+	    helper.LogEntry(`Setting date to yesterday because the Mean Solar Zone Time at the telescope is ${helper.padTwoDigits(helper.mod(msztAtTel, 24))}:${helper.padTwoDigits(now.getUTCMinutes())}`);
+	} else if (msztAtTel < 12) {
+	    prevDay = true;
+	    helper.LogEntry(`Setting date to yesterday because at the telescope it is still morning (MSZT=${helper.padTwoDigits(msztAtTel)}:${helper.padTwoDigits(now.getUTCMinutes())}`);
+	}
+	if (prevDay) {
             if (day == 1) {
-                let dd = helper.numberOfDays(year, month - 1);
-                if (month === 0) {
+                if (month === 1) {
                     year = year - 1;
-                    month = 11;
-                    day = dd;
+                    month = 12;
+                    day = 31;
                 } else {
                     month = month - 1;
-                    day = dd;
+                    day = helper.numberOfDays(year, month - 1); // Set day to last day of previous month
                 }
             } else {
                 day--;
             }
-            datemsg = `Default date set to ${year}-${helper.padTwoDigits(month)}-${helper.padTwoDigits(day)} (last night), since we are still in the morning.`;
+            datemsg = `Default date set to ${year}-${helper.padTwoDigits(month)}-${helper.padTwoDigits(day)} (last night).`;
         } else {
             datemsg = `Default date set to ${year}-${helper.padTwoDigits(month)}-${helper.padTwoDigits(day)}.`;
         }
@@ -957,6 +981,13 @@ Driver.prototype.CallbackUpdateDefaults = function () {
     localStorage.setItem("defaultType", Driver.defaultType);
     localStorage.setItem("defaultAM", Driver.defaultAM);
     localStorage.setItem("defaultObstime", Driver.defaultObstime);
+    localStorage.setItem("opt_reschedule_later", $("#opt_reschedule_later").is(":checked"));
+    localStorage.setItem("opt_away_from_zenith", $("#opt_away_from_zenith").is(":checked"));
+    localStorage.setItem("opt_maintain_order", $("#opt_maintain_order").is(":checked"));
+    localStorage.setItem("opt_reorder_targets", $("#opt_reorder_targets").is(":checked"));
+    localStorage.setItem("opt_allow_over_axis", $("#opt_allow_over_axis").is(":checked"));
+    localStorage.setItem("opt_schedule_between", $('input[type="radio"][name="opt_schedule_between"]:checked').val());
+    localStorage.setItem("opt_show_lastobstime", $("#opt_show_lastobstime").is(":checked"));
     helper.LogEntry("Done.");
 };
 
@@ -978,17 +1009,71 @@ Driver.prototype.Callback_ShowCurrentTime = function () {
  * @memberof Driver
  */
 Driver.prototype.Refresh = function () {
+    // Cache some variables
+    let graph = driver.graph;
+    let canvas = driver.canvas;
+    let context = driver.context;
+    let targets = driver.targets;
+    let minwidth = driver.graph.minwidth;
+    let minheight = driver.graph.minheight;
+    let ratio = driver.graph.ratio;
+    let winheight = parseInt(window.innerHeight) - 4;
+    let winwidth = parseInt(window.innerWidth);
+    if (window.jsplitterSettings) {
+        window.jsplitterSettings.maxleftwidth = winwidth - driver.graph.minwidth - 10;
+    }
+    if ($("#sidebar").is(":visible")) {
+        winwidth -= $("#sidebar").innerWidth() + 10;
+    }
+
+    // Try to fill the window vertically (normally, the aspect ratio is > 1.4)
+    let ch = winheight;
+    let cw = parseInt(ch * ratio);
+    // If we overflow the width, then fill the window horizontally and adjust the height
+    if (cw > winwidth) {
+        ch = parseInt(winwidth / ratio);
+        cw = parseInt(ch * ratio);
+    }
+    // If we end up too small, set the size to the minimum width and height
+    if (cw < minwidth || ch < minheight) {
+        cw = minwidth;
+        ch = minheight;
+    }
+    // Resize the canvas to fit the window
+    $("#canvasFrame").height(`${ch}px`);
+    $("#canvasFrame").width(`${cw}px`);
+    canvas.height = ch;
+    canvas.width = cw;
+    driver.rescaleCanvas(canvas, context);
+
+    // Measure text to figure out margins
+    graph.canvasWidth = cw;
+    context.font = `${graph.pt(11)} ${graph.fontFamily}`;
+    const w1 = context.measureText("30°").width;
+    context.font=`${graph.pt(8)} ${graph.fontFamily}`;
+    const w2 = context.measureText("Closed lower hatch").width;
+    graph.xstart = graph.xleftlabels + w1 + w2 + graph.tickLength + 5;
+    const w3 = context.measureText("⟶").width;
+    graph.xleftarrows = graph.xstart - w1 - w3 - 10;
+    graph.Resize(canvas);
+
     document.title = `${Driver.telescopeName}/Visplot`;
-    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    this.graph.drawTargets(this.targets.Targets);
-    this.graph.drawEphemerides();
-    if (this.nightInitialized) {
-        this.graph.drawBackground();
-        if (this.scheduleMode) {
-            this.graph.drawSchedule();
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    /* Recalculate xaxis */
+    graph.xaxis = [];
+    for (let i = 0; i < driver.night.Nx; i += 1) {
+        graph.xaxis.push(graph.xstart + graph.width * (driver.night.xaxis[i] - driver.night.Sunset) / driver.night.wnight);
+    }
+    targets.setTargetsSize();
+    graph.drawTargets(targets.Targets);
+    graph.drawEphemerides();
+    if (driver.nightInitialized) {
+        graph.drawBackground();
+        if (driver.scheduleMode) {
+            graph.drawSchedule();
         } else {
-            if (this.targets.nTargets > 0) {
-                this.graph.drawTargetNames(this.targets.Targets);
+            if (targets.nTargets > 0) {
+                graph.drawTargetNames(targets.Targets);
             }
         }
     }
@@ -1004,7 +1089,7 @@ Driver.prototype.markAsObserved = function (observed) {
     obj.ObservedStartTime = $("#actual_start").val();
     obj.ObservedEndTime = $("#actual_end").val();
     obj.Comments = $("#popcomm").val();
-    obj.resetColours()
+    obj.resetColours();
     this.Refresh();
     helper.LogSuccess(`Object <i>${obj.Name}</i> ${observed ? "" : "is no longer "}marked as <i>Observed</i>.`);
     $.fancybox.close();
@@ -1021,21 +1106,21 @@ Driver.prototype.rescaleCanvas = function (cnv, ctx) {
             ctx.msBackingStorePixelRatio ||
             ctx.oBackingStorePixelRatio ||
             ctx.backingStorePixelRatio || 1;
-    let ratio = devicePixelRatio / backingStoreRatio;
+    window.ratio = devicePixelRatio / backingStoreRatio;
 
     // Upscale the canvas if the two ratios do not match
     if ((typeof auto === "undefined" ? true : auto) && devicePixelRatio !== backingStoreRatio) {
         let oldWidth = cnv.width;
         let oldHeight = cnv.height;
 
-        cnv.width = oldWidth * ratio;
-        cnv.height = oldHeight * ratio;
+        cnv.width = oldWidth * window.ratio;
+        cnv.height = oldHeight * window.ratio;
 
         cnv.style.width = `${oldWidth}px`;
         cnv.style.height = `${oldHeight}px`;
 
         // Now scale the context to counter the fact that we have manually scaled our canvas element
-        ctx.scale(ratio, ratio);
+        ctx.scale(window.ratio, window.ratio);
     }
 };
 
@@ -1079,13 +1164,19 @@ Object.defineProperties(Driver, {
         }, set: function(val) {
             /* Only update if we have a config entry for the telescope */
             if ($.inArray(val, Object.keys(config)) !== -1) {
-                this._telescopeName = val;
-                $("#def_telescope").val(val);
-                $("#canvasFrame").css("background-image", 'url(' + config[val].background + ')');
-                // Recalculate Skycam constants
-                driver.skyGraph.updateTelescope();
-                // Revalidate targets to recompute TCS lines
-                driver.targets.validateAndFormatTargets(true);
+                if (this._telescopeName !== val) {
+                    this._telescopeName = val;
+                    $("#def_telescope").val(val);
+                    $("#canvasFrame").css("background-image", 'url(' + config[val].background + ')');
+                    // Recalculate Skycam constants
+                    driver.skyGraph.updateTelescope();
+                    // Revalidate targets to recompute TCS lines
+                    if (driver.targets.validateAndFormatTargets(true)) {
+                        // Replot targets
+                        $("#dateSet").trigger("click");
+                        $("#plotTargets").trigger("click");
+                    }
+                }
             }
         }},
     "updSchedText": {
@@ -1125,6 +1216,10 @@ Object.defineProperties(Driver, {
         get: function () {
             return config[this.telescopeName].lowestLimit;
         }},
+    "obs_highestLimit": {
+        get: function () {
+            return config[this.telescopeName].highestLimit;
+        }},
     "obs_lowerHatch": {
         get: function () {
             return config[this.telescopeName].vignetteLimit;
@@ -1154,7 +1249,7 @@ Object.defineProperties(Driver, {
         }},
     "defaultProject": {
         get: function () {
-            return this._defaultProject || "54-199";
+            return this._defaultProject || "65-199";
         }, set: function (val) {
             this._defaultProject = val;
         }},
@@ -1175,6 +1270,12 @@ Object.defineProperties(Driver, {
             return this._defaultOBInfo || "default";
         }, set: function (val) {
             this._defaultOBInfo = val;
+        }},
+    "defaultSkyPA": {
+        get: function () {
+            return this._defaultSkyPA || "0";
+        }, set: function (val) {
+            this._defaultSkyPA = val;
         }},
     "skyCamLink": {
         get: function () {

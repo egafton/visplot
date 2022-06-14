@@ -39,6 +39,9 @@ config["NOT"] = {
     // Lowest limit in elevation for observing, in degrees
     lowestLimit: 6,
 
+    // Highest limit in elevation for observing, in degrees; null if N/A
+    highestLimit: null,
+
     // Lowest limit for unvignetted observations, in degrees; null if N/A
     vignetteLimit: 35,
 
@@ -52,23 +55,28 @@ config["NOT"] = {
     instruments: {
         "ALFOSC": {
             type: "optical",
-            fov: 6.4
+            fov: 6.4,
+            flip: null
         },
         "NOTCAM": {
             type: "infrared",
-            fov: 4
+            fov: 4,
+            flip: null
         },
         "MOSCA": {
             type: "optical",
-            fov: 7.7
+            fov: 7.7,
+            flip: null
         },
         "STANCAM": {
             type: "optical",
-            fov: 3
+            fov: 3,
+            flip: null
         },
         "FIES": {
             type: "optical",
-            fov: 3 /* Uses STANCAM for acquisition */
+            fov: 3, /* Uses STANCAM for acquisition */
+            flip: null
         }
     },
 
@@ -104,6 +112,9 @@ config["WHT"] = {
     // Lowest limit in elevation for observing, in degrees
     lowestLimit: 12,
 
+    // Highest limit in elevation for observing, in degrees; null if N/A
+    highestLimit: null,
+
     // Lowest limit for unvignetted observations, in degrees; null if N/A
     vignetteLimit: 25,
 
@@ -117,19 +128,23 @@ config["WHT"] = {
     instruments: {
         "ACAM": {
             type: "optical",
-            fov: 8
+            fov: 8,
+            flip: null
         },
         "LIRIS": {
             type: "infrared",
-            fov: 4.3
+            fov: 4.3,
+            flip: null
         },
         "ISIS": {
             type: "optical",
-            fov: 15 /* Uses A&G unit for acquisition */
+            fov: 15, /* Uses A&G unit for acquisition */
+            flip: null
         },
         "WEAVE": {
             type: "optical",
-            fov: 144 /* Field of view of the FPI camera */
+            fov: 144, /* Field of view of the FPI camera */
+            flip: null
         }
     },
 
@@ -165,6 +180,9 @@ config["INT"] = {
     // Lowest limit in elevation for observing, in degrees
     lowestLimit: 20,
 
+    // Highest limit in elevation for observing, in degrees; null if N/A
+    highestLimit: null,
+
     // Lowest limit for unvignetted observations, in degrees; null if N/A
     vignetteLimit: 33,
 
@@ -187,11 +205,13 @@ config["INT"] = {
     instruments: {
         "WFC": {
             type: "optical",
-            fov: 33.8
+            fov: 33.8,
+            flip: null
         },
         "IDS": {
             type: "optical",
-            fov: 1.2 /* Uses AG0 for acquisition */
+            fov: 1.2, /* Uses AG0 for acquisition */
+            flip: null
         }
     },
 
@@ -226,6 +246,9 @@ config["INT"] = {
 
     // Lowest limit in elevation for observing, in degrees
     lowestLimit: 20,
+
+    // Highest limit in elevation for observing, in degrees; null if N/A
+    highestLimit: null,
 
     // Lowest limit for unvignetted observations, in degrees; null if N/A
     vignetteLimit: null,
@@ -267,12 +290,18 @@ config["INT"] = {
     instruments: {
         "DIAFI": {
             type: "optical",
-            fov: 8.8
+            fov: 8.8,
+            flip: null
+        },
+        "VIRUS": {
+            type: "optical",
+            fov: 20, /* Uses a separate guide camera 540 arcsec North of the IFU */
+            flip: "x"
         }
     },
 
     // When all else fails, what to use?
-    defaultInstrument: "DIAFI",
+    defaultInstrument: "VIRUS",
 
     // Time zone relative to UTC
     timezone: -6
@@ -303,6 +332,9 @@ config["INT"] = {
     // Lowest limit in elevation for observing, in degrees
     lowestLimit: 10,
 
+    // Highest limit in elevation for observing, in degrees; null if N/A
+    highestLimit: null,
+
     // Lowest limit for unvignetted observations, in degrees; null if N/A
     vignetteLimit: 20,
 
@@ -316,12 +348,67 @@ config["INT"] = {
     instruments: {
         "CQUEAN": {
             type: "optical",
-            fov: 4.7
+            fov: 4.7,
+            flip: null
         }
     },
 
     // When all else fails, what to use?
     defaultInstrument: "CQUEAN",
+
+    // Time zone relative to UTC
+    timezone: -6
+};
+
+
+/**
+ * Configuration for the 10m Hobby-Eberly Telescope.
+ */
+ config["HET"] = {
+    // Name of the observatory site
+    site: "McDonald Observatory",
+
+    // Full name of the telescope
+    name: "Hobby-Eberly Telescope 10m",
+
+    // Latitude in degrees, +North
+    latitude: 30.681444,
+
+    // Longitude in degrees, +East
+    longitude: -104.014722,
+
+    // Altitude above sea level, in metres
+    altitude: 2026,
+
+    // Lowest limit in zenith distance for observing, in degrees; null if N/A
+    zenithLimit: null,
+
+    // Lowest limit in elevation for observing, in degrees
+    lowestLimit: 46.6,
+
+    // Highest limit in elevation for observing, in degrees
+    highestLimit: 63.4,
+
+    // Lowest limit for unvignetted observations, in degrees; null if N/A
+    vignetteLimit: null,
+
+    // Limits based on declination (for equatorial mounts); null if N/A
+    declinationLimit: null,
+
+    // Background image for plot
+    background: "img/telescopes/HET.jpg",
+
+    // Instrument definitions; fov in arcminutes
+    instruments: {
+        "VIRUS": {
+            type: "optical",
+            fov: 16,
+            flip: null
+        }
+    },
+
+    // When all else fails, what to use?
+    defaultInstrument: "VIRUS",
 
     // Time zone relative to UTC
     timezone: -6

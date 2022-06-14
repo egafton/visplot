@@ -649,7 +649,7 @@ sla.cldj = function (iy, im, id) {
     if (im < 1 || im > 12) {
         throw new RangeError("Bad month (j=2).");
     }
-    if (id < 1 || id > (new Date(iy, im, 0)).getDate()) {
+    if (id < 1 || id > (new Date(iy, im, 0)).getUTCDate()) {
         throw new RangeError("Bad day (j=3).");
     }
     return Math.floor((1461 * (iy - Math.floor((12 - im) / 10) + 4712)) / 4) +

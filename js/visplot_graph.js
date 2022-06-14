@@ -15,23 +15,35 @@
 function Graph(_canvas, _context) {
     this.canvas = _canvas;
     this.ctx = _context;
-    this.canvasWidth = _canvas.width;
-    this.canvasHeight = _canvas.height;
-    this.xmid = this.canvasWidth / 2;
-    this.width = 600;
-    this.degree = 6;
-    this.height = 90 * this.degree;
-    this.xstart = (_canvas.width - this.width) / 2 - 30;
-    this.ystart = 80;
-    this.xend = this.xstart + this.width;
-    this.yend = this.ystart + this.height;
+    this.xleftlabels = 25;
+    this.xstart = 157;
+    this.ystart = 92;
+    this.xleftarrows = this.xstart - 50;
     this.tickLength = 7;
-    this.fontFamily = "Ubuntu";
+    this.fontFamily = "Ubuntu, sans-serif";
     this.maxLenTgtName = 10;
     this.CircleSize = 8;
     this.CircleSizeSq = 64;
     this.doubleTargets = true;
+    this.ratio = 1.4;
+    this.minheight = 400; //696;
+    this.minwidth = this.minheight * this.ratio; //975;
 }
+
+Graph.prototype.Resize = function (_canvas) {
+    this.canvasWidth = _canvas.width / window.ratio;
+    this.canvasHeight = _canvas.height / window.ratio;
+    this.xend = this.canvasWidth - 218;
+    this.width = this.xend - this.xstart;
+    this.height = (this.canvasHeight - 156);
+    this.degree = this.height / 90;
+    this.xmid = this.canvasWidth / 2;
+    this.yend = this.ystart + this.height;
+};
+
+Graph.prototype.pt = function (_pt) {
+    return `${Math.max(8, _pt * (1 + ((this.canvasWidth - 975) / 975) * 0.7)).toFixed(1)}pt`;
+};
 
 /**
  * @memberof Graph
@@ -198,10 +210,13 @@ Graph.prototype.drawSchedule = function () {
             continue;
         }
         const obj = driver.targets.Targets[i];
+        const iScheduledStartTime = helper.EphemTimeToIndex(obj.ScheduledStartTime);
+        const iScheduledEndTime = helper.EphemTimeToIndex(obj.ScheduledEndTime);
+
         this.ctx.strokeStyle = obj.LabelStrokeColor;
         this.ctx.beginPath();
-        this.ctx.moveTo(this.xaxis[obj.iScheduledStartTime], this.transformYLocation(obj.Graph[obj.iScheduledStartTime]));
-        for (let j = obj.iScheduledStartTime + 1; j <= obj.iScheduledEndTime; j += 1) {
+        this.ctx.moveTo(this.xaxis[iScheduledStartTime], this.transformYLocation(obj.Graph[iScheduledStartTime]));
+        for (let j = iScheduledStartTime + 1; j <= iScheduledEndTime; j += 1) {
             this.ctx.lineTo(this.xaxis[j], this.transformYLocation(obj.Graph[j]));
         }
         this.ctx.stroke();
@@ -234,10 +249,12 @@ Graph.prototype.drawSchedule = function () {
             continue;
         }
         const obj = driver.targets.Targets[i];
+        const iScheduledStartTime = helper.EphemTimeToIndex(obj.ScheduledStartTime);
+        const iScheduledEndTime = helper.EphemTimeToIndex(obj.ScheduledEndTime);
         this.ctx.strokeStyle = obj.LabelStrokeColor;
         this.ctx.beginPath();
-        this.ctx.moveTo(this.xaxis[obj.iScheduledStartTime], this.yend + 2.6);
-        this.ctx.lineTo(this.xaxis[obj.iScheduledEndTime], this.yend + 2.6);
+        this.ctx.moveTo(this.xaxis[iScheduledStartTime], this.yend + 2.6);
+        this.ctx.lineTo(this.xaxis[iScheduledEndTime], this.yend + 2.6);
         this.ctx.stroke();
     }
     for (let i = 0; i < driver.targets.BadWolfStart.length; i += 1) {
@@ -255,18 +272,21 @@ Graph.prototype.drawSchedule = function () {
  * @memberof Graph
  */
 Graph.prototype.setTargetsSize = function (ntargets) {
-    this.doubleTargets = (ntargets <= 18);
+    this.targetsyskip = 15;
+    const maxsingle = parseInt(Math.floor(0.5 * this.height / this.targetsyskip));
+
+    this.doubleTargets = (ntargets <= maxsingle);
     this.targetsy = this.ystart + 15;
     this.targetsx = this.xend + 35;
-    this.targetsyskip = 15;
+    
     let totalheight = (this.targetsyskip * (this.doubleTargets ? 2 : 1) + 2) * ntargets;
-    if (this.targetsy + totalheight > this.yend + 55) {
+    if (this.targetsy + totalheight > this.yend) {
         this.targetsy = this.ystart - 25;
         totalheight = (this.targetsyskip * (this.doubleTargets ? 2 : 1) + 2) * ntargets;
-        if (this.targetsy + totalheight > this.yend + 55) {
-            this.targetsyskip = (this.doubleTargets ? 0.5 : 1) * (((this.yend + 55 - this.targetsy) / ntargets) - 2);
+        if (this.targetsy + totalheight > this.yend) {
+            this.targetsyskip = (this.doubleTargets ? 0.5 : 1) * (((this.yend - this.targetsy) / ntargets) - 2);
             if (this.targetsyskip < 10) {
-                this.targetsyskip = (this.doubleTargets ? 0.5 : 1) * (((this.yend + 55 - this.targetsy) / ntargets) - 2);
+                this.targetsyskip = (this.doubleTargets ? 0.5 : 1) * (((this.yend - this.targetsy) / ntargets) - 2);
             }
         }
     }
@@ -374,6 +394,37 @@ Graph.prototype.drawTargets = function (Targets) {
             }
         }
     }
+
+    /* If over-the-axis observations are possible, show a legend */
+    if (Targets.length > 0 && Driver.telescopeName === "HJST" && $("#opt_allow_over_axis").is(":checked")) {
+        this.ctx.restore();
+        const legtext = {
+            1: "tube-east only",
+            2: "tube-west only",
+            3: "both modes possible"
+        };
+
+        const xleg = this.targetsx;
+        const yleg = this.yend + 20;
+        const dxleg = 0;
+        const dyleg = 15;
+        let x = xleg;
+        let y = yleg;
+
+        for (let ii = 1; ii <= 3; ii ++) {
+            this.ctx.strokeStyle = strokes[ii];
+            this.ctx.setLineDash(dashes[ii]);
+            this.ctx.lineWidth = lws[ii];
+            this.ctx.beginPath();
+            this.ctx.moveTo(x, y);
+            this.ctx.lineTo(x + 30, y);
+            this.ctx.stroke();
+            this.plotText(legtext[ii], "8pt", "black", x + 35, y, "left", "middle");
+
+            x += dxleg;
+            y += dyleg;
+        }
+    }
     this.ctx.restore();
 };
 
@@ -451,23 +502,23 @@ Graph.prototype.drawEphemerides = function () {
             this.plotVerticalLine(this.ystart, this.yend, xplot, [1, 2], 1);
         }
         if (Driver.obs_timezone === 0) {
-            this.ctx.font = `11pt ${this.fontFamily}`;
+            this.ctx.font = `${this.pt(11)} ${this.fontFamily}`;
             this.ctx.fillText(driver.night.UTClabels[i], xplot, this.yend + 15);
-            this.ctx.font = `8pt ${this.fontFamily}`;
+            this.ctx.font = `${this.pt(8)} ${this.fontFamily}`;
             this.ctx.fillText(driver.night.LSTlabels[i], xplot, this.ystart - 35);
         } else {
-            this.ctx.font = `11pt ${this.fontFamily}`;
-            this.ctx.fillText(driver.night.MSZTlabels[i], xplot, this.yend + 24);
-            this.ctx.font = `8pt ${this.fontFamily}`;
-            this.ctx.fillText(driver.night.UTClabels[i], xplot, this.yend + 10);
+            this.ctx.font = `${this.pt(11)} ${this.fontFamily}`;
+            this.ctx.fillText(driver.night.MSZTlabels[i], xplot, this.yend + 26);
+            this.ctx.font = `${this.pt(8)} ${this.fontFamily}`;
+            this.ctx.fillText(driver.night.UTClabels[i], xplot, this.yend + 12);
             this.ctx.fillText(driver.night.LSTlabels[i], xplot, this.ystart - 35);
         }
     }
     // Print the LST, S.set and S.rise labels
-    this.ctx.font = `8pt ${this.fontFamily}`;
+    this.ctx.font = `${this.pt(8)} ${this.fontFamily}`;
     this.ctx.fillText("LST   ⟶", this.xstart - 35, this.ystart - 35);
     if (Driver.obs_timezone !== 0) {
-        this.ctx.fillText("UTC   ⟶", this.xstart - 22, this.yend + 10);
+        this.ctx.fillText("UTC   ⟶", this.xstart - 35, this.yend + 10);
     }
     this.ctx.fillText("S.set", this.xstart, this.ystart - 22);
     this.ctx.fillText("S.rise", this.xend, this.ystart - 22);
@@ -545,7 +596,7 @@ Graph.prototype.drawEphemerides = function () {
 
     this.ctx.fillStyle = "black";
     // Plot the x-axis label
-    this.ctx.font = `11pt ${this.fontFamily}`;
+    this.ctx.font = `${this.pt(11)} ${this.fontFamily}`;
     if (Driver.obs_timezone === 0) {
         this.ctx.fillText(
             `Coordinated Universal Time, starting night ${driver.night.year}-` +
@@ -555,26 +606,26 @@ Graph.prototype.drawEphemerides = function () {
         this.ctx.fillText(
             `Mean Solar Zone Time, starting night ${driver.night.year}-` +
             `${helper.padTwoDigits(driver.night.month)}-${helper.padTwoDigits(driver.night.day)}`,
-            this.xmid, this.yend + 44);
+            this.xmid, this.yend + 46);
     }
 
     // Moon illumination text
-    this.ctx.font = `8pt ${this.fontFamily}`;
+    this.ctx.font = `${this.pt(8)} ${this.fontFamily}`;
     this.ctx.textAlign = "left";
     this.ctx.textBaseline = "middle";
     if ((driver.night.MoonIllStart === 0 && driver.night.MoonIllEnd === 0) ||
         driver.night.Moonset < driver.night.Sunset ||
         driver.night.Moonrise > driver.night.Sunrise) {
-        this.ctx.fillText("Moonless night.", this.xstart - 130, this.transformYLocation(77));
+        this.ctx.fillText("Moonless night.", this.xleftlabels, this.transformYLocation(77));
     } else {
-        this.ctx.fillText("Moon illumination:", this.xstart - 130, this.transformYLocation(77));
-        this.ctx.fillText(driver.night.MoonIlluminationString, this.xstart - 130, this.transformYLocation(75));
+        this.ctx.fillText("Moon illumination:", this.xleftlabels, this.transformYLocation(77));
+        this.ctx.fillText(driver.night.MoonIlluminationString, this.xleftlabels, this.transformYLocation(75));
         if ((driver.night.Moonrise >= driver.night.Sunset) && (driver.night.Moonrise <= driver.night.Sunrise)) {
-            this.ctx.fillText("Moon rises:", this.xstart - 130, this.transformYLocation(71));
-            this.ctx.fillText(helper.EphemDateToHM(driver.night.Moonrise), this.xstart - 130, this.transformYLocation(69));
+            this.ctx.fillText("Moon rises:", this.xleftlabels, this.transformYLocation(71));
+            this.ctx.fillText(`${helper.EphemDateToHM(driver.night.Moonrise)} UTC`, this.xleftlabels, this.transformYLocation(69));
         } else if ((driver.night.Moonset >= driver.night.Sunset) && (driver.night.Moonset <= driver.night.Sunrise)) {
-            this.ctx.fillText("Moon sets:", this.xstart - 130, this.transformYLocation(71));
-            this.ctx.fillText(helper.EphemDateToHM(driver.night.Moonset), this.xstart - 130, this.transformYLocation(69));
+            this.ctx.fillText("Moon sets:", this.xleftlabels, this.transformYLocation(71));
+            this.ctx.fillText(`${helper.EphemDateToHM(driver.night.Moonset)} UTC`, this.xleftlabels, this.transformYLocation(69));
         }
     }
 
@@ -637,7 +688,7 @@ Graph.prototype.drawBackground = function () {
     this.ctx.restore();
     this.ctx.fillStyle = "black";
     for (let i = 0; i < 90; i += 10) {
-        this.ctx.font = `11pt ${this.fontFamily}`;
+        this.ctx.font = `${this.pt(11)} ${this.fontFamily}`;
         this.ctx.textAlign = "right";
         this.ctx.textBaseline = (i > 0 || Driver.obs_timezone === 0) ? "middle" : "bottom";
         this.ctx.fillText(`${i}°`, this.xstart - this.tickLength, this.transformYLocation(i));
@@ -650,47 +701,66 @@ Graph.prototype.drawBackground = function () {
     // Tick labels on the right-hand side (corresponding to the airmass ticks)
     for (let i = 10; i <= 80; i += 5) {
         this.plotRotatedText(helper.AltitudeToAirmass(i).toFixed(2),
-                             "8pt", this.xend + 1.3 * this.tickLength, this.transformYLocation(i), "center", "middle");
+                             this.pt(8), this.xend + 1.3 * this.tickLength, this.transformYLocation(i), "center", "middle");
     }
     // Airmass and altitude text
-    this.plotRotatedText("Airmass", "8pt", this.xend + 1.3 * this.tickLength, this.yend - 3, "left", "middle");
-    this.plotRotatedText("Altitude", "11pt", this.xstart - 40, 0.5 * (this.ystart + this.yend), "center", "middle");
+    this.plotRotatedText("Airmass", this.pt(8), this.xend + 1.3 * this.tickLength, this.yend - 3, "left", "middle");
+    this.plotRotatedText("Altitude", this.pt(11), this.xleftarrows + 10, 0.5 * (this.ystart + this.yend), "center", "middle");
 
     // Lower hatch and opening limits text
-    this.ctx.font = `8pt ${this.fontFamily}`;
+    this.ctx.font = `${this.pt(8)} ${this.fontFamily}`;
     this.ctx.textAlign = "left";
     this.ctx.textBaseline = "middle";
     this.ctx.strokeStyle = "black";
     // Closed lower hatch, 0% vignetting
     if (Driver.obs_lowerHatch !== null) {
-        this.ctx.fillText("Closed lower hatch", this.xstart - 130, this.transformYLocation(Driver.obs_lowerHatch + 2));
-        this.ctx.fillText("0% vignetting", this.xstart - 130, this.transformYLocation(Driver.obs_lowerHatch));
-        this.ctx.fillText("⟶", this.xstart - 50, this.transformYLocation(Driver.obs_lowerHatch));
+        this.ctx.fillText("Closed lower hatch", this.xleftlabels, this.transformYLocation(Driver.obs_lowerHatch + 2));
+        this.ctx.fillText("0% vignetting", this.xleftlabels, this.transformYLocation(Driver.obs_lowerHatch));
+        this.ctx.fillText("⟶", this.xleftarrows, this.transformYLocation(Driver.obs_lowerHatch));
         this.plotHorizontalLine(this.xstart, this.xend, this.transformYLocation(Driver.obs_lowerHatch), [1, 2, 3, 2], 1);
     }
     // Closed lower hatch, 50% vignetting (only for NOT)
     if (Driver.telescopeName === "NOT") {
-        this.ctx.fillText("Closed lower hatch", this.xstart - 130, this.transformYLocation(22));
-        this.ctx.fillText("50% vignetting", this.xstart - 130, this.transformYLocation(20));
-        this.ctx.fillText("⟶", this.xstart - 50, this.transformYLocation(20));
+        this.ctx.fillText("Closed lower hatch", this.xleftlabels, this.transformYLocation(22));
+        this.ctx.fillText("50% vignetting", this.xleftlabels, this.transformYLocation(20));
+        this.ctx.fillText("⟶", this.xleftarrows, this.transformYLocation(20));
     }
     // Lowest observing altitude
     if (Driver.obs_lowestLimit !== null) {
         this.ctx.fillText(`${Driver.telescopeName} lowest limit`,
-                          this.xstart - 130, this.transformYLocation(Driver.obs_lowestLimit + 2));
-        this.ctx.fillText(`(${Driver.obs_lowestLimit.toFixed(0)}°)`,
-                          this.xstart - 130, this.transformYLocation(Driver.obs_lowestLimit));
-        this.ctx.fillText("⟶", this.xstart - 50, this.transformYLocation(Driver.obs_lowestLimit));
+                          this.xleftlabels, this.transformYLocation(Driver.obs_lowestLimit + 2));
+        this.ctx.fillText(`(${Driver.obs_lowestLimit.toFixed(Driver.telescopeName == "HET" ? 1 : 0)}°)`,
+                          this.xleftlabels, this.transformYLocation(Driver.obs_lowestLimit));
+        this.ctx.fillText("⟶", this.xleftarrows + (Driver.telescopeName == "HET" ? 23 : 0), this.transformYLocation(Driver.obs_lowestLimit));
         this.plotHorizontalLine(this.xstart, this.xend, this.transformYLocation(Driver.obs_lowestLimit), [1, 2, 3, 2], 1);
+    }
+    // Highest observing altitude
+    if (Driver.obs_highestLimit !== null) {
+        this.ctx.fillText(`${Driver.telescopeName} highest limit`,
+                          this.xleftlabels, this.transformYLocation(Driver.obs_highestLimit + 2));
+        this.ctx.fillText(`(${Driver.obs_highestLimit.toFixed(Driver.telescopeName == "HET" ? 1 : 0)}°)`,
+                          this.xleftlabels, this.transformYLocation(Driver.obs_highestLimit));
+        this.ctx.fillText("⟶", this.xleftarrows, this.transformYLocation(Driver.obs_highestLimit));
+        this.plotHorizontalLine(this.xstart, this.xend, this.transformYLocation(Driver.obs_highestLimit), [1, 2, 3, 2], 1);
+    }
+    // Constant altitude for HET
+    if (Driver.telescopeName == "HET") {
+        const HETalt = 55;
+        this.ctx.fillText(`${Driver.telescopeName} altitude`,
+                          this.xleftlabels, this.transformYLocation(HETalt + 2));
+        this.ctx.fillText(`(${HETalt.toFixed(0)}°)`,
+                          this.xleftlabels, this.transformYLocation(HETalt));
+        this.ctx.fillText("⟶", this.xleftarrows, this.transformYLocation(HETalt));
+        this.plotHorizontalLine(this.xstart, this.xend, this.transformYLocation(HETalt), [5, 0, 0], 1);
     }
 
     // Title of the plot
-    this.ctx.font = `13pt ${this.fontFamily}`;
+    this.ctx.font = `${this.pt(13)} ${this.fontFamily}`;
     this.ctx.textAlign = "center";
-    this.ctx.fillText(Driver.plotTitle, this.xmid, 15);
+    this.ctx.fillText(Driver.plotTitle, this.xmid, 27);
 
     // Copyright notice
-    this.ctx.font = `7pt ${this.fontFamily}`;
+    this.ctx.font = `${this.pt(7)} ${this.fontFamily}`;
     this.ctx.textAlign = "left";
-    this.ctx.fillText(Driver.plotCopyright, this.xstart - 130, this.canvasHeight - 6);
+    this.ctx.fillText(Driver.plotCopyright, this.xleftlabels, this.canvasHeight - 18);
 };

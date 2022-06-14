@@ -119,7 +119,7 @@ Night.prototype.setEphemerides = function (obj) {
 
 
     switch ($('input[type="radio"][name="opt_schedule_between"]:checked').val()) {
-        case "sunset/sunrise":
+        case "sunset-sunrise":
             this.global_UTstart = this.Sunset;
             this.global_UTend = this.Sunrise;
             break;
