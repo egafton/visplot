@@ -14,7 +14,7 @@ if (isset($_SESSION["obinfo"])) {
 }
 if ($_SERVER["REQUEST_METHOD"] === "POST" and
     isset($_POST["obinfo"]) and !empty($_POST["obinfo"])) {
-    if (get_magic_quotes_gpc()) {
+    if (function_exists("get_magic_quotes_gpc") && get_magic_quotes_gpc()) {
         $obinfo = stripslashes($_POST["obinfo"]);
     } else {
         $obinfo = $_POST["obinfo"];
