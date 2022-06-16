@@ -288,9 +288,19 @@ config["INT"] = {
 
     // Instrument definitions; fov in arcminutes
     instruments: {
+        "COUDE": {
+            type: "optical",
+            fov: 6,
+            flip: null
+        },
         "DIAFI": {
             type: "optical",
             fov: 8.8,
+            flip: null
+        },
+        "GCMS": {
+            type: "optical",
+            fov: 20,
             flip: null
         },
         "VIRUS": {
@@ -301,7 +311,7 @@ config["INT"] = {
     },
 
     // When all else fails, what to use?
-    defaultInstrument: "VIRUS",
+    defaultInstrument: "COUDE",
 
     // Time zone relative to UTC
     timezone: -6
