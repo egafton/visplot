@@ -1085,7 +1085,7 @@ TargetList.prototype.validateAndFormatTargets = function (force = false) {
     this.TargetsLines = [];
     this.FormattedLines = [];
     // Determine maximum width of the various fields
-    this.MaxLen = {Name: 0, RA: 0, Dec: 0, Exp: 0, AM: 0, Type: 0, OBData: 0, TCSpmra: 0, TCSpmdec: 0, Skypa: 0};
+    this.MaxLen = {Name: 0, RA: 0, Dec: 0, Exp: 0, AM: 0, ProposalId: 0, Type: 0, OBData: 0, TCSpmra: 0, TCSpmdec: 0, Skypa: 0};
     this.BadWolfStart = [];
     this.BadWolfEnd = [];
     for (let i = 0; i < lines.length; i += 1) {
@@ -1112,6 +1112,9 @@ TargetList.prototype.validateAndFormatTargets = function (force = false) {
         }
         if (words[8].length > this.MaxLen.Exp) {
             this.MaxLen.Exp = words[8].length;
+        }
+        if (words[9].length > this.MaxLen.ProposalId) {
+            this.MaxLen.ProposalId = words[9].length;
         }
         if (words[10].length > this.MaxLen.AM) {
             this.MaxLen.AM = words[10].length;
@@ -1156,7 +1159,7 @@ TargetList.prototype.validateAndFormatTargets = function (force = false) {
             helper.pad(words[6], this.MaxLen.Dec, false, " "),
             helper.pad(words[7], 4, true, " "),
             helper.pad(words[8], this.MaxLen.Exp, true, " "),
-            helper.pad(words[9], 6, false, " "),
+            helper.pad(words[9], this.MaxLen.ProposalId, false, " "),
             helper.pad(words[10], this.MaxLen.AM, false, " "),
             helper.pad(words[11], this.MaxLen.Type, false, " "),
             helper.pad(words[12], this.MaxLen.OBData, false, " "),
@@ -1444,12 +1447,32 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
         helper.LogError(`Error 28: Incorrect syntax: [EPOCH] must be either 2000 or 1950 on line #${linenumber}!`);
         return false;
     }
-    if (words[9].length !== 6) {
-        helper.LogError(`Error 29: Incorrect syntax: [PROJECT] does not respect the NN-NNN syntax on line #${linenumber}!`);
+    /* Validate the proposal id; different telescopes use different formats */
+    let form, reqlen, reok;
+    if (Driver.telescopeName === "HJST") {
+        reqlen = 8;
+        form = "NNN-27NN";
+        reok = ! (helper.notInt(words[9].substr(0, 3)) || helper.notInt(words[9].substr(6, 2)) || words[9].substr(4, 2) !== "27" || words[9].substr(3, 1) !== "-");
+    } else if (Driver.telescopeName === "OST") {
+        reqlen = 8;
+        form = "NNN-21NN";
+        reok = ! (helper.notInt(words[9].substr(0, 3)) || helper.notInt(words[9].substr(6, 2)) || words[9].substr(4, 2) !== "21" || words[9].substr(3, 1) !== "-");
+    } else if (Driver.telescopeName === "HET") {
+        reqlen = 9;
+        form = "UTNNN-NNN";
+        reok = ! (helper.notInt(words[9].substr(2, 3)) || helper.notInt(words[9].substr(6, 3)) || words[9].substr(0, 2) !== "UT" || words[9].substr(5, 1) !== "-");
+    } else {
+        reqlen=6;
+        form = "NN-NNN";
+        reok = ! (helper.notInt(words[9].substr(0, 2)) || helper.notInt(words[9].substr(3, 3)) || words[9].substr(2, 1) !== "-");
+    }
+
+    if (words[9].length !== reqlen) {
+        helper.LogError(`Error 29: Incorrect syntax: [PROJECT] does not respect the ${form} syntax on line #${linenumber}!`);
         return false;
     }
-    if (helper.notInt(words[9].substr(0, 2)) || helper.notInt(words[9].substr(3, 3)) || words[9].substr(2, 1) != "-") {
-        helper.LogError(`Error 30: Incorrect syntax: [PROJECT] does not respect the NN-NNN syntax on line #${linenumber}!`);
+    if (!reok) {
+        helper.LogError(`Error 30: Incorrect syntax: [PROJECT] does not respect the ${form} syntax on line #${linenumber}!`);
         return false;
     }
     if (helper.notFloat(words[10])) {

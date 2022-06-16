@@ -115,7 +115,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
                 <span class="defdetails">Must be <code>1950</code> or <code>2000</code>.</span>
 
                 <span class="middle"><span class="llbl">Default proposal ID:</span><input type="text" id="def_project"/></span><br/>
-                <span class="defdetails">Must have the form <code>NN-NNN</code>.</span>
+                <span class="defdetails">Must have the form <code>NN-NNN</code> (for NOT), <code>NNN-27NN</code> (for HJST), <code>NNN-21NN</code> (for OST), <code>UTNNN-NNN</code> (for HET).</span>
 
                 <span class="middle"><span class="llbl">Default observation type:</span><input type="text" id="def_type"/></span><br/>
                 <span class="defdetails">Must be one of the following: <code>Monitor</code>, <code>ToO</code>, <code>SoftToO</code>, <code>Payback</code>, <code>Fast-Track</code>, <code>Service</code>, <code>CATService</code>, <code>Visitor</code>, or <code>Staff</code>.</span>

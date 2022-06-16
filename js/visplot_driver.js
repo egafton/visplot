@@ -900,8 +900,23 @@ Driver.prototype.CallbackUpdateDefaults = function () {
     }
     re = $("#def_project").val().trim();
     if (re !== Driver.defaultProject) {
-        if (re.length !== 6 || helper.notInt(re.substr(0, 2)) || helper.notInt(re.substr(3, 3)) || re.substr(2, 1) != "-") {
-            helper.LogError("Error 51: Default <i>Proposal ID</i> was not updated since the input was invalid (must have the form NN-NNN).");
+        let reok = true;
+        let form;
+        if (Driver.telescopeName === "HJST") {
+            reok = ! (re.length !== 8 || helper.notInt(re.substr(0, 3)) || helper.notInt(re.substr(6, 2)) || re.substr(4, 2) !== "27" || re.substr(3, 1) !== "-");
+            form = "NNN-27NN";
+        } else if (Driver.telescopeName === "OST") {
+            reok = ! (re.length !== 8 || helper.notInt(re.substr(0, 3)) || helper.notInt(re.substr(6, 2)) || re.substr(4, 2) !== "21" || re.substr(3, 1) !== "-");
+            form = "NNN-21NN";
+        } else if (Driver.telescopeName === "HET") {
+            reok = ! (re.length !== 9 || helper.notInt(re.substr(2, 3)) || helper.notInt(re.substr(6, 3)) || re.substr(0, 2) !== "UT" || re.substr(5, 1) !== "-");
+            form = "UTNNN-NNN";
+        } else {
+            reok = ! (re.length !== 6 || helper.notInt(re.substr(0, 2)) || helper.notInt(re.substr(3, 3)) || re.substr(2, 1) !== "-");
+            form = "NN-NNN";
+        }
+        if (!reok) {
+            helper.LogError(`Error 51: Default <i>Proposal ID</i> was not updated since the input was invalid (must have the form ${form}).`);
         } else {
             Driver.defaultProject = re;
             helper.LogSuccess(`Default <i>Proposal ID</i> set to <i>${re}</i>.`);
@@ -1249,7 +1264,12 @@ Object.defineProperties(Driver, {
         }},
     "defaultProject": {
         get: function () {
-            return this._defaultProject || "65-199";
+            console.log(Driver.telescopeName);
+            return this._defaultProject || (
+                Driver.telescopeName === "HJST" ? "223-2701" : (
+                Driver.telescopeName === "OST" ? "223-2101" : (
+                Driver.telescopeName === "HET" ? "UT223-001" :
+                "65-199")));
         }, set: function (val) {
             this._defaultProject = val;
         }},
