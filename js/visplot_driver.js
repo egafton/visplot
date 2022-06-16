@@ -524,6 +524,9 @@ Driver.prototype.EvtFrame_Click = function (e) {
                 `<p class="pp">Moon Distance: <span title="${helper.LunarPhaseExplanation(LunarPhase)}"><b>${obj.MinMoonDistance}°</b> (${LunarPhase})</span></p>` +
                 `<p class="pp">Moon Closest At: <b>${helper.EphemDateToHM(obj.MinMoonDistanceTime, true)} UTC</b></p>` +
                 `<p class="pp">Obstime: <b>${obj.ExptimeSeconds.toFixed(0)} s</b> (${obj.ExptimeHM})</p>` +
+                (obj.ExtraInfo === null && obj.BacklinkToOBQueue === null && obj.Instrument !== null
+                    ? `<p class="pp">Instrument: <b>${obj.Instrument}</b></p>`
+                    : "") +
                 (obj.ExtraInfo === null
                     ? ""
                     : `<p class="pp">Instrument/Mode: <b>${obj.ExtraInfo}</b></p>`) +

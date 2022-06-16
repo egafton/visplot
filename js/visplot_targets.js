@@ -88,11 +88,18 @@ function Target(k, obj) {
     this.ObservedTotalTime = null;
     this.OBData = obj.obdata;
     if (obj.obdata !== Driver.defaultOBInfo) {
-        let ob_arr = this.OBData.split(":");
-        this.BacklinkToOBQueue = `http://www.not.iac.es/intranot/ob/ob_update.php?period=${parseInt(this.ProjectNumber.substring(0, 2))}&propID=${parseInt(this.ProjectNumber.substring(3))}&groupID=${ob_arr[2]}&blockID=${ob_arr[3]}`;
-        this.BacklinkToOBQueuePublic = `http://www.not.iac.es/observing/forms/obqueue/ob_update.php?period=${parseInt(this.ProjectNumber.substring(0, 2))}&propID=${parseInt(this.ProjectNumber.substring(3))}&groupID=${ob_arr[2]}&blockID=${ob_arr[3]}`;
-        this.Instrument = ob_arr[0];
-        this.ExtraInfo = `${ob_arr[0]}/${ob_arr[1]}`;
+        if (this.OBData.indexOf(":") !== -1) {
+            let ob_arr = this.OBData.split(":");
+            this.BacklinkToOBQueue = `http://www.not.iac.es/intranot/ob/ob_update.php?period=${parseInt(this.ProjectNumber.substring(0, 2))}&propID=${parseInt(this.ProjectNumber.substring(3))}&groupID=${ob_arr[2]}&blockID=${ob_arr[3]}`;
+            this.BacklinkToOBQueuePublic = `http://www.not.iac.es/observing/forms/obqueue/ob_update.php?period=${parseInt(this.ProjectNumber.substring(0, 2))}&propID=${parseInt(this.ProjectNumber.substring(3))}&groupID=${ob_arr[2]}&blockID=${ob_arr[3]}`;
+            this.Instrument = ob_arr[0];
+            this.ExtraInfo = `${ob_arr[0]}/${ob_arr[1]}`;
+        } else {
+            this.BacklinkToOBQueue = null;
+            this.BacklinkToOBQueuePublic = null;
+            this.Instrument = this.OBData;
+            this.ExtraInfo = null;
+        }
     } else {
         this.BacklinkToOBQueue = null;
         this.BacklinkToOBQueuePublic = null;
@@ -113,8 +120,8 @@ function Target(k, obj) {
         if (dfun[0] == "alt(dec)") {
             this.DecLimit_MinimumAlt = dfun[1](this.Dec_rad * sla.r2d);
         } else if (dfun[0] == "alt(az)") {
-            this.DecLimit_MinimumAltAzEast = dfun[1](this.Azimuth, false);
-            this.DecLimit_MinimumAltAzWest = dfun[1](this.Azimuth, true);
+            this.DecLimit_MinimumAltAzEast = dfun[1](this.Azimuth, false, this.Instrument);
+            this.DecLimit_MinimumAltAzWest = dfun[1](this.Azimuth, true, this.Instrument);
         } else if (dfun[0] == "ha(dec)") {
             this.DecLimit_MinimumHA = dfun[1](this.Dec_rad * sla.r2d);
             this.DecLimit_MaximumHA = dfun[2](this.Dec_rad * sla.r2d);
@@ -1501,7 +1508,7 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
     /* OB info must be valid, or default */
     if (words[12] !== Driver.defaultOBInfo) {
         let arr = words[12].split(":");
-        if (arr.length !== 4) {
+        if (arr.length !== 4 && arr.length !== 1) {
             helper.LogError(`Error 49: OB info is not valid on line #${linenumber}, it should be Instrument:Mode:GroupID:BlockID!`);
             return false;
         }

@@ -185,12 +185,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
                 • <code>[CONSTRAINTS]</code>  are the observing constraints, either airmass (a float, e.g., <code>2.0</code>), a UTC range (<code>UTC[20:00-23:30]</code>) or an LST range (<code>LST[2-4:30]</code>); integers, floats, <code>HH:MM</code> syntax, or a mix of them are all allowed for the range components (e.g., <code>LST[2:00-4.5]</code>;<br/>
                 • <code>[TYPE]</code> is the type of observation, and can be one of the following: <code>Monitor</code>, <code>ToO</code>, <code>SoftToO</code>, <code>Payback</code>, <code>Fast-Track</code>, <code>Service</code>, <code>CATService</code>, <code>Visitor</code>, and <code>Staff</code>.
                 Iff <code>[TYPE]</code> is set to <code>Staff</code>, it is allowed to add a slash and 2-3 initials to identify for which member of the staff the observations are taken (e.g., <code>Staff/JHT</code>, <code>Staff/TP</code>, etc.).<br/>
-                • <code>[OBINFO]</code> is information passed automatically when the page is loaded from an OB queue; it allows Visplot to generate backlinks to the OB queue, as well as show additional information about each target. At the moment the system is only integrated with the NOT OB queue. In all other cases, the value should be <code>default</code>.<br/>
+                • <code>[OBINFO]</code> is information passed automatically when the page is loaded from an OB queue; it allows Visplot to generate backlinks to the OB queue, as well as show additional information about each target. At the moment the system is only integrated with the NOT OB queue. Alternatively, one can pass an instrument name in this field (e.g., <code>GCMS</code>). In all other cases, the value should be <code>default</code>.<br/>
                 • <code>[SKYPA]</code> is the Sky Position Angle in degrees, with 0=North up, 90=East up, etc. Used for the orientation of the finding chart only.<br/>
-
-                <span class="sh1"><b>Note:</b> The fields <code>[EPOCH]</code>, <code>[OBSTIME]</code>, <code>[PROJECT]</code>, <code>[CONSTRAINTS]</code>, <code>[TYPE]</code>, <code>[OBINFO]</code> and <code>[SKYPA]</code> are optional, and will be filled with default values (i.e., <code>2000 600 54-199 2.0 Staff default 0</code>) if missing.</span><br/>
             </div> <!-- #help-left -->
             <div id="help-right">
+                <span class="sh1"><b>Note:</b> The fields <code>[EPOCH]</code>, <code>[OBSTIME]</code>, <code>[PROJECT]</code>, <code>[CONSTRAINTS]</code>, <code>[TYPE]</code>, <code>[OBINFO]</code> and <code>[SKYPA]</code> are optional, and will be filled with default values (i.e., <code>2000 600 54-199 2.0 Staff default 0</code>) if missing.</span><br/>
+
                 <span class="sh1"><b>Examples of valid input formats:</b></span>
                 • <code>EQPsc 23 34 34 -01 19 36</code><br/>
                   This will fill the extra fields with the default values.<br/>
