@@ -704,6 +704,18 @@ Driver.prototype.EvySkycm_MouseOut = function () {
 /**
  * @memberof Driver
  */
+Driver.prototype.UpdateInstrumentList = function () {
+    const tel = $("#def_telescope").val();
+    $("#def_instrument option").remove();
+    for (const key in config[tel].instruments) {
+        $("#def_instrument").append(new Option(key, key));
+    }
+    return tel;
+};
+
+/**
+ * @memberof Driver
+ */
 Driver.prototype.BindEvents = function () {
     // Allow the current date to be changed with a simple Enter key
     $("#dateD").keydown(function (e) {
@@ -751,6 +763,12 @@ Driver.prototype.BindEvents = function () {
             $.fancybox.close();
         }
     });
+    $("#def_instrument").keydown(function (e) {
+        if (e.which == 13) {
+            $("#configsubmit").val("true");
+            $.fancybox.close();
+        }
+    });
     $("#def_telescope").on("keydown", function (e) {
         if (e.which == 13) {
             $("#configsubmit").val("true");
@@ -758,6 +776,18 @@ Driver.prototype.BindEvents = function () {
         }
     }).on("click", function (e) {
         $(this).focus();
+    }).on("change", function () {
+        const tel = driver.UpdateInstrumentList();
+        // Set instrument name to default
+        $("#def_instrument").val(config[tel].defaultInstrument);
+        // Set project number to default if not compatible with telescope
+        Driver.telescopeName = tel;
+        const valid = driver.validateProjectNumber(Driver.defaultProject);
+        if (! valid[2]) {
+            Driver._defaultProject = false;
+            Driver._defaultProject = Driver.defaultProject;
+            $("#def_project").val(Driver.defaultProject);
+        }
     });
 
     // Help button
@@ -857,6 +887,7 @@ Driver.prototype.EvtClick_Config = function () {
     $("#def_type").val(Driver.defaultType);
     $("#def_maxam").val(Driver.defaultAM);
     $("#def_obstime").val(Driver.defaultObstime);
+    $("#def_instrument").val(Driver.defaultOBInfo);
     for (let k in Driver.FillColors) {
         $(`#def_col_${k.replace("-", "_")}`).val(Driver.FillColors[k]);
         $(`#def_tcol_${k.replace("-", "_")}`).val(Driver.TextColors[k]);
@@ -903,21 +934,9 @@ Driver.prototype.CallbackUpdateDefaults = function () {
     }
     re = $("#def_project").val().trim();
     if (re !== Driver.defaultProject) {
-        let reok = true;
-        let form;
-        if (Driver.telescopeName === "HJST") {
-            reok = ! (re.length !== 8 || helper.notInt(re.substr(0, 3)) || helper.notInt(re.substr(6, 2)) || re.substr(4, 2) !== "27" || re.substr(3, 1) !== "-");
-            form = "NNN-27NN";
-        } else if (Driver.telescopeName === "OST") {
-            reok = ! (re.length !== 8 || helper.notInt(re.substr(0, 3)) || helper.notInt(re.substr(6, 2)) || re.substr(4, 2) !== "21" || re.substr(3, 1) !== "-");
-            form = "NNN-21NN";
-        } else if (Driver.telescopeName === "HET") {
-            reok = ! (re.length !== 9 || helper.notInt(re.substr(2, 3)) || helper.notInt(re.substr(6, 3)) || re.substr(0, 2) !== "UT" || re.substr(5, 1) !== "-");
-            form = "UTNNN-NNN";
-        } else {
-            reok = ! (re.length !== 6 || helper.notInt(re.substr(0, 2)) || helper.notInt(re.substr(3, 3)) || re.substr(2, 1) !== "-");
-            form = "NN-NNN";
-        }
+        const valid = driver.validateProjectNumber(re);
+        const form = valid[0];
+        const reok = valid[2];
         if (!reok) {
             helper.LogError(`Error 51: Default <i>Proposal ID</i> was not updated since the input was invalid (must have the form ${form}).`);
         } else {
@@ -959,6 +978,11 @@ Driver.prototype.CallbackUpdateDefaults = function () {
             helper.LogSuccess(`Default <i>Observing time</i> set to <i>${re}</i>.`);
         }
     }
+    re = $("#def_instrument").val().trim();
+    if (re !== Driver.defaultOBInfo) {
+        Driver.defaultOBInfo = re;
+        helper.LogSuccess(`Default <i>Instrument</i> set to <i>${re}</i>.`);
+    }
     for (k in Driver.FillColors) {
         re = $(`#def_col_${k.replace("-", "_")}`).val().trim();
         if (re !== Driver.FillColors[k]) {
@@ -999,6 +1023,7 @@ Driver.prototype.CallbackUpdateDefaults = function () {
     localStorage.setItem("defaultType", Driver.defaultType);
     localStorage.setItem("defaultAM", Driver.defaultAM);
     localStorage.setItem("defaultObstime", Driver.defaultObstime);
+    localStorage.setItem("defaultOBInfo", Driver.defaultOBInfo);
     localStorage.setItem("opt_reschedule_later", $("#opt_reschedule_later").is(":checked"));
     localStorage.setItem("opt_away_from_zenith", $("#opt_away_from_zenith").is(":checked"));
     localStorage.setItem("opt_maintain_order", $("#opt_maintain_order").is(":checked"));
@@ -1210,15 +1235,6 @@ Object.defineProperties(Driver, {
                 if (this._telescopeName !== val) {
                     this._telescopeName = val;
                     $("#def_telescope").val(val);
-                    // Set project number to default if not compatible with telescope
-                    if (driver.validateProjectNumber !== undefined) {
-                        let valid = driver.validateProjectNumber(this.defaultProject);
-                        if (! valid[2]) {
-                            this._defaultProject = false;
-                            this._defaultProject = this.defaultProject;
-                            $("#def_project").val(this.defaultProject);
-                        }
-                    }
                     // Background with telescope image
                     $("#canvasFrame").css("background-image", 'url(' + config[val].background + ')');
                     // Recalculate Skycam constants
@@ -1324,7 +1340,7 @@ Object.defineProperties(Driver, {
         }},
     "defaultOBInfo": {
         get: function () {
-            return this._defaultOBInfo || "default";
+            return this._defaultOBInfo || config[Driver.telescopeName].defaultInstrument;
         }, set: function (val) {
             this._defaultOBInfo = val;
         }},

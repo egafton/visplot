@@ -149,7 +149,7 @@ config["WHT"] = {
     },
 
     // When all else fails, what to use?
-    defaultInstrument: "ACAM",
+    defaultInstrument: "WEAVE",
 
     // Time zone relative to UTC
     timezone: 0

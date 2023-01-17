@@ -1455,10 +1455,10 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
         return false;
     }
     /* Validate the proposal id; different telescopes use different formats */
-    let valid = driver.validateProjectNumber(words[9]);
-    let form = valid[0];
-    let reqlen = valid[1];
-    let reok = valid[2];
+    const valid = driver.validateProjectNumber(words[9]);
+    const form = valid[0];
+    const reqlen = valid[1];
+    const reok = valid[2];
     if (words[9].length !== reqlen) {
         helper.LogError(`Error 29: Incorrect syntax: [PROJECT] (${words[9]}, ${words[9].length}, ${reqlen}) does not have the same length as ${form} on line #${linenumber}!`);
         return false;

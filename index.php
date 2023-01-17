@@ -114,17 +114,22 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
                 <span class="middle"><span class="llbl">Default epoch:</span><input type="text" id="def_epoch"/></span><br/>
                 <span class="defdetails">Must be <code>1950</code> or <code>2000</code>.</span>
 
+                <span class="middle"><span class="llbl">Default observing time:</span><input type="text" id="def_obstime"/></span><br/>
+                <span class="defdetails">Must be an integer.</span>
+
                 <span class="middle"><span class="llbl">Default proposal ID:</span><input type="text" id="def_project"/></span><br/>
                 <span class="defdetails">Must have the form <code>NN-NNN</code> (for NOT), <code>NNN-27NN</code> (for HJST), <code>NNN-21NN</code> (for OST), <code>UTNNN-NNN</code> (for HET).</span>
-
-                <span class="middle"><span class="llbl">Default observation type:</span><input type="text" id="def_type"/></span><br/>
-                <span class="defdetails">Must be one of the following: <code>Monitor</code>, <code>ToO</code>, <code>SoftToO</code>, <code>Payback</code>, <code>Fast-Track</code>, <code>Service</code>, <code>CATService</code>, <code>Visitor</code>, or <code>Staff</code>.</span>
 
                 <span class="middle"><span class="llbl">Default maximum airmass:</span><input type="text" id="def_maxam"/></span><br/>
                 <span class="defdetails">Must be a float.</span>
 
-                <span class="middle"><span class="llbl">Default observing time:</span><input type="text" id="def_obstime"/></span><br/>
-                <span class="defdetails">Must be an integer.</span>
+                <span class="middle"><span class="llbl">Default observation type:</span><input type="text" id="def_type"/></span><br/>
+                <span class="defdetails">Must be one of the following: <code>Monitor</code>, <code>ToO</code>, <code>SoftToO</code>, <code>Payback</code>, <code>Fast-Track</code>, <code>Service</code>, <code>CATService</code>, <code>Visitor</code>, or <code>Staff</code>.</span>
+
+                <span class="middle"><span class="llbl">Default instrument:</span>
+                    <select id="def_instrument" name="def_instrument"></select>
+                </span>
+                <br/>
 
                 <span class="middle"><span class="llbl">Default colours:</span><span class="rlbl">Monitor</span><input type="text" id="def_col_Monitor" /><input type="text" id="def_tcol_Monitor" /></span><br/>
                 <span class="middle"><span class="llbl"></span><span class="rlbl">ToO</span><input type="text" id="def_col_ToO" /><input type="text" id="def_tcol_ToO" /></span><br/>

@@ -72,6 +72,7 @@ $(document).ready(function () {
         if ("telescopeName" in localStorage) {
             helper.LogEntry(`Restoring telescope name to <i>${localStorage.telescopeName}</i>`);
             Driver.telescopeName = localStorage.telescopeName;
+            driver.UpdateInstrumentList();
         }
         if ("defaultEpoch" in localStorage) {
             helper.LogEntry(`Restoring default epoch to <i>${localStorage.defaultEpoch}</i>`);
@@ -92,6 +93,10 @@ $(document).ready(function () {
         if ("defaultObstime" in localStorage) {
             helper.LogEntry(`Restoring default observing time to <i>${localStorage.defaultObstime}</i>`);
             Driver.defaultObstime = localStorage.defaultObstime;
+        }
+        if ("defaultOBInfo" in localStorage) {
+            helper.LogEntry(`Restoring default instrument name to <i>${localStorage.defaultOBInfo}</i>`);
+            Driver.defaultOBInfo = localStorage.defaultOBInfo;
         }
         if ("opt_reschedule_later" in localStorage) {
             helper.LogEntry(`Restoring <i>opt_reschedule_later</i> to <i>${localStorage.opt_reschedule_later}</i>`);
