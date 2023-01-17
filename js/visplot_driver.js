@@ -1145,6 +1145,31 @@ Driver.prototype.rescaleCanvas = function (cnv, ctx) {
 /**
  * @memberof Driver
  */
+Driver.prototype.validateProjectNumber = function (project) {
+    let form, reqlen, reok;
+    if (Driver.telescopeName === "HJST") {
+        reqlen = 8;
+        form = "NNN-27NN";
+        reok = ! (helper.notInt(project.substr(0, 3)) || helper.notInt(project.substr(6, 2)) || project.substr(4, 2) !== "27" || project.substr(3, 1) !== "-");
+    } else if (Driver.telescopeName === "OST") {
+        reqlen = 8;
+        form = "NNN-21NN";
+        reok = ! (helper.notInt(project.substr(0, 3)) || helper.notInt(project.substr(6, 2)) || project.substr(4, 2) !== "21" || project.substr(3, 1) !== "-");
+    } else if (Driver.telescopeName === "HET") {
+        reqlen = 9;
+        form = "UTNNN-NNN";
+        reok = ! (helper.notInt(project.substr(2, 3)) || helper.notInt(project.substr(6, 3)) || project.substr(0, 2) !== "UT" || project.substr(5, 1) !== "-");
+    } else {
+        reqlen=6;
+        form = "NN-NNN";
+        reok = ! (helper.notInt(project.substr(0, 2)) || helper.notInt(project.substr(3, 3)) || project.substr(2, 1) !== "-");
+    }
+    return [form, reqlen, reok];
+};
+
+/**
+ * @memberof Driver
+ */
 Driver._fillObj = {
     "Monitor": "orange",
     "ToO": "#FF9900",
@@ -1185,6 +1210,16 @@ Object.defineProperties(Driver, {
                 if (this._telescopeName !== val) {
                     this._telescopeName = val;
                     $("#def_telescope").val(val);
+                    // Set project number to default if not compatible with telescope
+                    if (driver.validateProjectNumber !== undefined) {
+                        let valid = driver.validateProjectNumber(this.defaultProject);
+                        if (! valid[2]) {
+                            this._defaultProject = false;
+                            this._defaultProject = this.defaultProject;
+                            $("#def_project").val(this.defaultProject);
+                        }
+                    }
+                    // Background with telescope image
                     $("#canvasFrame").css("background-image", 'url(' + config[val].background + ')');
                     // Recalculate Skycam constants
                     driver.skyGraph.updateTelescope();
@@ -1267,7 +1302,6 @@ Object.defineProperties(Driver, {
         }},
     "defaultProject": {
         get: function () {
-            console.log(Driver.telescopeName);
             return this._defaultProject || (
                 Driver.telescopeName === "HJST" ? "223-2701" : (
                 Driver.telescopeName === "OST" ? "223-2101" : (

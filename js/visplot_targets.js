@@ -1455,33 +1455,19 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
         return false;
     }
     /* Validate the proposal id; different telescopes use different formats */
-    let form, reqlen, reok;
-    if (Driver.telescopeName === "HJST") {
-        reqlen = 8;
-        form = "NNN-27NN";
-        reok = ! (helper.notInt(words[9].substr(0, 3)) || helper.notInt(words[9].substr(6, 2)) || words[9].substr(4, 2) !== "27" || words[9].substr(3, 1) !== "-");
-    } else if (Driver.telescopeName === "OST") {
-        reqlen = 8;
-        form = "NNN-21NN";
-        reok = ! (helper.notInt(words[9].substr(0, 3)) || helper.notInt(words[9].substr(6, 2)) || words[9].substr(4, 2) !== "21" || words[9].substr(3, 1) !== "-");
-    } else if (Driver.telescopeName === "HET") {
-        reqlen = 9;
-        form = "UTNNN-NNN";
-        reok = ! (helper.notInt(words[9].substr(2, 3)) || helper.notInt(words[9].substr(6, 3)) || words[9].substr(0, 2) !== "UT" || words[9].substr(5, 1) !== "-");
-    } else {
-        reqlen=6;
-        form = "NN-NNN";
-        reok = ! (helper.notInt(words[9].substr(0, 2)) || helper.notInt(words[9].substr(3, 3)) || words[9].substr(2, 1) !== "-");
-    }
-
+    let valid = driver.validateProjectNumber(words[9]);
+    let form = valid[0];
+    let reqlen = valid[1];
+    let reok = valid[2];
     if (words[9].length !== reqlen) {
-        helper.LogError(`Error 29: Incorrect syntax: [PROJECT] does not respect the ${form} syntax on line #${linenumber}!`);
+        helper.LogError(`Error 29: Incorrect syntax: [PROJECT] (${words[9]}, ${words[9].length}, ${reqlen}) does not have the same length as ${form} on line #${linenumber}!`);
         return false;
     }
     if (!reok) {
-        helper.LogError(`Error 30: Incorrect syntax: [PROJECT] does not respect the ${form} syntax on line #${linenumber}!`);
+        helper.LogError(`Error 30: Incorrect syntax: [PROJECT] (${words[9]}) does not respect the ${form} syntax on line #${linenumber}!`);
         return false;
     }
+    /* Validate constraints */
     if (helper.notFloat(words[10])) {
         if (!(words[10].startsWith("UT[") || words[10].startsWith("UTC") || words[10].startsWith("LST[")) ||
             words[10].slice(-1) != "]" || words[10].indexOf("-") == -1) {
@@ -1498,6 +1484,7 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
             return false;
         }
     }
+    /* Validate observation type */
     if ($.inArray(words[11], ["Monitor", "ToO", "SoftToO", "Payback", "Fast-Track", "Service", "CATService", "Visitor", "Staff"]) === -1) {
         let wl = words[11].length;
         if (words[11].indexOf("Staff/") !== 0 || (words[11].indexOf("Staff/") === 0 && (wl < 8 || wl > 9))) {
@@ -1505,7 +1492,7 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
             return false;
         }
     }
-    /* OB info must be valid, or default */
+    /* OB info must be valid, or an instrument name, or "default" */
     if (words[12] !== Driver.defaultOBInfo) {
         let arr = words[12].split(":");
         if (arr.length !== 4 && arr.length !== 1) {
