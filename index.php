@@ -181,7 +181,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
 
                 <span class="sh1">where:</span>
                 • <code>[NAME]</code> is the object name, without spaces;<br/>
-                • <code>[RA]</code>   is the right ascension, given either with spaces (<code>23 34 34.7</code>) or with colons (<code>23:34:34.7</code>); optionally, one can append to it the proper motion given in arcsec/year <code>[pmRA]</code>, which is otherwise assumed to be <code>0.0</code>;<br/>
+                • <code>[RA]</code>   is the right ascension, given either with spaces (<code>23 34 34.7</code>) or with colons (<code>23:34:34.7</code>); optionally, one can append to it the proper motion given in arcsec/year <code>[pmRA]</code>, which is otherwise assumed to be <code>0.0</code>; if provided, <code>[pmRA]</code> must already include the cosine of declination;<br/>
                 • <code>[DEC]</code>  is the declination, given in the same format as the RA; optionally, one can append to it a proper motion given in arcsec/year <code>[pmDEC]</code>, which is otherwise assumed to be <code>0.0</code>;<br/>
                 • <code>[EPOCH]</code> is the epoch of the coordinates; the only valid options are <code>2000</code> (corresponding to J2000) and <code>1950</code> (corresponding to B1950);<br/>
                 • <code>[OBSTIME]</code>  is the total observing time (<b>including overheads</b>) in seconds;<br/>
