@@ -265,6 +265,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
     <script src="js/visplot_helper.js?" type="text/javascript" charset="utf-8"></script>
     <script src="js/visplot_serializer.js?" type="text/javascript" charset="utf-8"></script>
     <script src="js/visplot_skygraph.js?" type="text/javascript" charset="utf-8"></script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LLK3BS8DVJ"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-LLK3BS8DVJ');
+    </script>
     <!-- OB data goes in its own hidden variables -->
     <?php if ($obpost) { echo '<input type="hidden" id="obinfo" value="'.rawurlencode($obinfo).'" /> '; } ?>
 </body>
