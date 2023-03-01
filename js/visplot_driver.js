@@ -160,11 +160,18 @@ function Driver() {
     $("#footer-year").text((new Date()).getUTCFullYear());
     $("#footer-version").text(this.version);
     $("#footer-version").attr("href", `https://github.com/egafton/visplot/tree/v${this.version}`);
-    fetch(`https://api.github.com/repos/egafton/visplot/commits/tags/v${this.version}`)
+    fetch(`https://api.github.com/repos/egafton/visplot/tags`)
         .then(res => res.json())
-        .then(res => {
-            $("#footer-date").text(`, committed on ${res.commit.author.date.replace("T", " at ").slice(0, 19)} UTC`);
-        })
+        .then(res => res.forEach(tag => {
+            if (tag.name === `v${this.version}`) {
+                fetch(`https://api.github.com/repos/egafton/visplot/commits/${tag.commit.sha}`)
+                    .then(res => res.json())
+                    .then(res => {
+                        $("#footer-date").text(`, committed on ${res.commit.author.date.replace("T", " at ").slice(0, 19)} UTC`);
+                    })
+                    .catch(error => {});
+            }
+        }))
         .catch(error => {});
 }
 
