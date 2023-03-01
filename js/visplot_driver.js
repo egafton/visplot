@@ -635,7 +635,7 @@ Driver.prototype.InitializeDate = function () {
                     day = 31;
                 } else {
                     month = month - 1;
-                    day = helper.numberOfDays(year, month - 1); // Set day to last day of previous month
+                    day = helper.numberOfDays(year, month); // Set day to last day of previous month
                 }
             } else {
                 day--;
