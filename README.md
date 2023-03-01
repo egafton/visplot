@@ -3,8 +3,11 @@ Visibility plot and observation scheduling tool for telescopes. It allows automa
 
 ![Visplot](https://raw.githubusercontent.com/egafton/visplot/master/img/snapshot.png "Snapshot of Visplot")
 
-## Getting started
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
+## Using Visplot
+The latest version of Visplot is hosted publicly at [https://www.visplot.com](https://www.visplot.com). You can use it without installing anything on your computer.
+
+## Local installation
+These instructions will get you a copy of the project up and running on your local machine (e.g., for development and testing purposes).
 
 ### Prerequisites
 
