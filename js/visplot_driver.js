@@ -75,8 +75,10 @@ function Driver() {
      * 3.1 - Now displaying two backlinks to the NOT OB queue (staff and
      *       public).
      *     - Added support for the HET.
+     *
+     * 3.2 - First version hosted at https://www.visplot.com
      */
-    this.version = "3.1";
+    this.version = "3.2";
     helper.LogSuccess(`Hello, this is Visplot version ${this.version}`);
 
     /* HTML5 canvas, context and Graph class - related variables */
