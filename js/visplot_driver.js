@@ -625,7 +625,7 @@ Driver.prototype.InitializeDate = function () {
 	    helper.LogEntry(`Setting date to yesterday because the Mean Solar Zone Time at the telescope is ${helper.padTwoDigits(helper.mod(msztAtTel, 24))}:${helper.padTwoDigits(now.getUTCMinutes())}`);
 	} else if (msztAtTel < 12) {
 	    prevDay = true;
-	    helper.LogEntry(`Setting date to yesterday because at the telescope it is still morning (MSZT=${helper.padTwoDigits(msztAtTel)}:${helper.padTwoDigits(now.getUTCMinutes())}`);
+	    helper.LogEntry(`Setting date to yesterday because at the telescope it is still morning (MSZT=${helper.padTwoDigits(msztAtTel)}:${helper.padTwoDigits(now.getUTCMinutes())})`);
 	}
 	if (prevDay) {
             if (day == 1) {
