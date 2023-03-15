@@ -87,23 +87,16 @@ function Target(k, obj) {
     this.ObservedEndTime = null;
     this.ObservedTotalTime = null;
     this.OBData = obj.obdata;
-    if (obj.obdata !== Driver.defaultOBInfo) {
-        if (this.OBData.indexOf(":") !== -1) {
-            let ob_arr = this.OBData.split(":");
-            this.BacklinkToOBQueue = `http://www.not.iac.es/intranot/ob/ob_update.php?period=${parseInt(this.ProjectNumber.substring(0, 2))}&propID=${parseInt(this.ProjectNumber.substring(3))}&groupID=${ob_arr[2]}&blockID=${ob_arr[3]}`;
-            this.BacklinkToOBQueuePublic = `http://www.not.iac.es/observing/forms/obqueue/ob_update.php?period=${parseInt(this.ProjectNumber.substring(0, 2))}&propID=${parseInt(this.ProjectNumber.substring(3))}&groupID=${ob_arr[2]}&blockID=${ob_arr[3]}`;
-            this.Instrument = ob_arr[0];
-            this.ExtraInfo = `${ob_arr[0]}/${ob_arr[1]}`;
-        } else {
-            this.BacklinkToOBQueue = null;
-            this.BacklinkToOBQueuePublic = null;
-            this.Instrument = this.OBData;
-            this.ExtraInfo = null;
-        }
+    if (this.OBData.indexOf(":") !== -1) {
+        let ob_arr = this.OBData.split(":");
+        this.BacklinkToOBQueue = `http://www.not.iac.es/intranot/ob/ob_update.php?period=${parseInt(this.ProjectNumber.substring(0, 2))}&propID=${parseInt(this.ProjectNumber.substring(3))}&groupID=${ob_arr[2]}&blockID=${ob_arr[3]}`;
+        this.BacklinkToOBQueuePublic = `http://www.not.iac.es/observing/forms/obqueue/ob_update.php?period=${parseInt(this.ProjectNumber.substring(0, 2))}&propID=${parseInt(this.ProjectNumber.substring(3))}&groupID=${ob_arr[2]}&blockID=${ob_arr[3]}`;
+        this.Instrument = ob_arr[0];
+        this.ExtraInfo = `${ob_arr[0]}/${ob_arr[1]}`;
     } else {
         this.BacklinkToOBQueue = null;
         this.BacklinkToOBQueuePublic = null;
-        this.Instrument = null;
+        this.Instrument = this.OBData;
         this.ExtraInfo = null;
     }
     this.ReconstructedInput = `${this.Name} ${this.inputRA} ${this.inputDec} ${this.Epoch} ${this.ExptimeSeconds} ${this.ProjectNumber} ${this.Constraints} ${this.FullType} ${this.OBData}`;
@@ -1767,7 +1760,7 @@ Target.prototype.Update = function (obj) {
     }
 
     this.OBData = obj[4];
-    if (this.OBData !== Driver.defaultOBInfo) {
+    if (this.OBData.indexOf(":") !== -1) {
         let ob_arr = this.OBData.split(":");
         this.BacklinkToOBQueue = `http://www.not.iac.es/intranot/ob/ob_update.php?period=${parseInt(this.ProjectNumber.substring(0, 2))}&propID=${parseInt(this.ProjectNumber.substring(3))}&groupID=${ob_arr[2]}&blockID=${ob_arr[3]}`;
         this.BacklinkToOBQueuePublic = `http://www.not.iac.es/observing/forms/obqueue/ob_update.php?period=${parseInt(this.ProjectNumber.substring(0, 2))}&propID=${parseInt(this.ProjectNumber.substring(3))}&groupID=${ob_arr[2]}&blockID=${ob_arr[3]}`;
@@ -1776,7 +1769,7 @@ Target.prototype.Update = function (obj) {
     } else {
         this.BacklinkToOBQueue = null;
         this.BacklinkToOBQueuePublic = null;
-        this.Instrument = null;
+        this.Instrument = this.OBData;
         this.ExtraInfo = null;
     }
 
