@@ -94,8 +94,19 @@ function Driver() {
      *       plot will adjust to fill the remaining space.
      *     - Stopped logging milliseconds.
      *     - Fixed some minor bugs.
+     *     - Major changes to the AladinLite applet, which now allows arbitrary
+     *       sky PAs and flipping in x/y.
+     *     - Added legend for over-the-axis observations.
+     *     - All options are now saved between sessions, including checkboxes.
+     *     - Added support for RA/Dec input in decimal degrees.
+     *
+     * 3.1 - Now displaying two backlinks to the NOT OB queue (staff and
+     *       public).
+     *     - Added support for the HET.
+     *
+     * 3.2 - First version hosted at https://www.visplot.com
      */
-    this.version = "3.0";
+    this.version = "3.2";
     helper.LogSuccess(`Hello, this is Visplot version ${this.version}`);
 
     /* HTML5 canvas, context and Graph class - related variables */
@@ -177,11 +188,18 @@ function Driver() {
     $("#footer-year").text((new Date()).getUTCFullYear());
     $("#footer-version").text(this.version);
     $("#footer-version").attr("href", `https://github.com/egafton/visplot/tree/v${this.version}`);
-    fetch(`https://api.github.com/repos/egafton/visplot/commits/tags/v${this.version}`)
+    fetch(`https://api.github.com/repos/egafton/visplot/tags`)
         .then(res => res.json())
-        .then(res => {
-            $("#footer-date").text(`, committed on ${res.commit.author.date.replace("T", " at ").slice(0, 19)} UTC`);
-        })
+        .then(res => res.forEach(tag => {
+            if (tag.name === `v${this.version}`) {
+                fetch(`https://api.github.com/repos/egafton/visplot/commits/${tag.commit.sha}`)
+                    .then(res => res.json())
+                    .then(res => {
+                        $("#footer-date").text(`, committed on ${res.commit.author.date.replace("T", " at ").slice(0, 19)} UTC`);
+                    })
+                    .catch(error => {});
+            }
+        }))
         .catch(error => {});
 }
 
@@ -541,14 +559,18 @@ Driver.prototype.EvtFrame_Click = function (e) {
                 `&lt;p class="pp">Dec: &lt;b>${obj.Dec.replace("-", "–")}&lt;/b>&lt;/p>` +
                 `&lt;p class="pp">Epoch: &lt;b>${obj.Epoch == "1950" ? "B1950" : "J2000"}&lt;/b>&lt;/p>` +
                 `&lt;p class="pp">Moon Distance: &lt;span title="${helper.LunarPhaseExplanation(LunarPhase)}">&lt;b>${obj.MinMoonDistance}°&lt;/b> (${LunarPhase})&lt;/span>&lt;/p>` +
-                `&lt;p class="pp">Moon Closest At: &lt;b>${helper.EphemDateToHM(obj.MinMoonDistanceTime)} UTC&lt;/p>` +
+                `&lt;p class="pp">Moon Closest At: &lt;b>${helper.EphemDateToHM(obj.MinMoonDistanceTime, true)} UTC&lt;/b>&lt;/p>` +
                 `&lt;p class="pp">Obstime: &lt;b>${obj.ExptimeSeconds.toFixed(0)} s&lt;/b> (${obj.ExptimeHM})&lt;/p>` +
+                (obj.ExtraInfo === null &amp;&amp; obj.BacklinkToOBQueue === null &amp;&amp; obj.Instrument !== null
+                    ? `&lt;p class="pp">Instrument: &lt;b>${obj.Instrument}&lt;/b>&lt;/p>`
+                    : "") +
                 (obj.ExtraInfo === null
                     ? ""
                     : `&lt;p class="pp">Instrument/Mode: &lt;b>${obj.ExtraInfo}&lt;/b>&lt;/p>`) +
                 (obj.BacklinkToOBQueue === null
                     ? ""
-                    : `&lt;p class="pp">&lt;a href="${obj.BacklinkToOBQueue}" target="_blank">Backlink to OB queue&lt;/a>&lt;/p>`) +
+                    : `&lt;p class="pp">&lt;a href="${obj.BacklinkToOBQueue}" target="_blank">OB update link (Staff)&lt;/a>&lt;/p>
+                       &lt;p class="pp">&lt;a href="${obj.BacklinkToOBQueuePublic}" target="_blank">OB update link (Public)&lt;/a>&lt;/p>`) +
                 (this.scheduleMode || obj.Scheduled || obj.Observed
                     ? `&lt;div style="height:5px; padding-top: 15px">&lt;/div>&lt;h2 class="h2-instr">Scheduling&lt;/h2>`
                     : "") +
@@ -633,21 +655,29 @@ Driver.prototype.InitializeDate = function () {
         day = now.getUTCDate();
         month = now.getUTCMonth() + 1;
         year = now.getUTCFullYear();
-        if ((now.getUTCHours() + config[Driver.telescopeName].timezone) % 24 &lt; 12) {
+	const msztAtTel = now.getUTCHours() + config[Driver.telescopeName].timezone;
+	let prevDay = false;
+	if (msztAtTel &lt; 0) {
+	    prevDay = true;
+	    helper.LogEntry(`Setting date to yesterday because the Mean Solar Zone Time at the telescope is ${helper.padTwoDigits(helper.mod(msztAtTel, 24))}:${helper.padTwoDigits(now.getUTCMinutes())}`);
+	} else if (msztAtTel &lt; 12) {
+	    prevDay = true;
+	    helper.LogEntry(`Setting date to yesterday because at the telescope it is still morning (MSZT=${helper.padTwoDigits(msztAtTel)}:${helper.padTwoDigits(now.getUTCMinutes())})`);
+	}
+	if (prevDay) {
             if (day == 1) {
-                let dd = helper.numberOfDays(year, month - 1);
-                if (month === 0) {
+                if (month === 1) {
                     year = year - 1;
-                    month = 11;
-                    day = dd;
+                    month = 12;
+                    day = 31;
                 } else {
                     month = month - 1;
-                    day = dd;
+                    day = helper.numberOfDays(year, month); // Set day to last day of previous month
                 }
             } else {
                 day--;
             }
-            datemsg = `Default date set to ${year}-${helper.padTwoDigits(month)}-${helper.padTwoDigits(day)} (last night), since we are still in the morning.`;
+            datemsg = `Default date set to ${year}-${helper.padTwoDigits(month)}-${helper.padTwoDigits(day)} (last night).`;
         } else {
             datemsg = `Default date set to ${year}-${helper.padTwoDigits(month)}-${helper.padTwoDigits(day)}.`;
         }
@@ -711,6 +741,18 @@ Driver.prototype.EvySkycm_MouseOut = function () {
 /**
  * @memberof Driver
  */
+Driver.prototype.UpdateInstrumentList = function () {
+    const tel = $("#def_telescope").val();
+    $("#def_instrument option").remove();
+    for (const key in config[tel].instruments) {
+        $("#def_instrument").append(new Option(key, key));
+    }
+    return tel;
+};
+
+/**
+ * @memberof Driver
+ */
 Driver.prototype.BindEvents = function () {
     // Allow the current date to be changed with a simple Enter key
     $("#dateD").keydown(function (e) {
@@ -758,6 +800,12 @@ Driver.prototype.BindEvents = function () {
             $.fancybox.close();
         }
     });
+    $("#def_instrument").keydown(function (e) {
+        if (e.which == 13) {
+            $("#configsubmit").val("true");
+            $.fancybox.close();
+        }
+    });
     $("#def_telescope").on("keydown", function (e) {
         if (e.which == 13) {
             $("#configsubmit").val("true");
@@ -765,6 +813,18 @@ Driver.prototype.BindEvents = function () {
         }
     }).on("click", function (e) {
         $(this).focus();
+    }).on("change", function () {
+        const tel = driver.UpdateInstrumentList();
+        // Set instrument name to default
+        $("#def_instrument").val(config[tel].defaultInstrument);
+        // Set project number to default if not compatible with telescope
+        Driver.telescopeName = tel;
+        const valid = driver.validateProjectNumber(Driver.defaultProject);
+        if (! valid[2]) {
+            Driver._defaultProject = false;
+            Driver._defaultProject = Driver.defaultProject;
+            $("#def_project").val(Driver.defaultProject);
+        }
     });
 
     // Help button
@@ -864,6 +924,7 @@ Driver.prototype.EvtClick_Config = function () {
     $("#def_type").val(Driver.defaultType);
     $("#def_maxam").val(Driver.defaultAM);
     $("#def_obstime").val(Driver.defaultObstime);
+    $("#def_instrument").val(Driver.defaultOBInfo);
     for (let k in Driver.FillColors) {
         $(`#def_col_${k.replace("-", "_")}`).val(Driver.FillColors[k]);
         $(`#def_tcol_${k.replace("-", "_")}`).val(Driver.TextColors[k]);
@@ -910,8 +971,11 @@ Driver.prototype.CallbackUpdateDefaults = function () {
     }
     re = $("#def_project").val().trim();
     if (re !== Driver.defaultProject) {
-        if (re.length !== 6 || helper.notInt(re.substr(0, 2)) || helper.notInt(re.substr(3, 3)) || re.substr(2, 1) != "-") {
-            helper.LogError("Error 51: Default &lt;i>Proposal ID&lt;/i> was not updated since the input was invalid (must have the form NN-NNN).");
+        const valid = driver.validateProjectNumber(re);
+        const form = valid[0];
+        const reok = valid[2];
+        if (!reok) {
+            helper.LogError(`Error 51: Default &lt;i>Proposal ID&lt;/i> was not updated since the input was invalid (must have the form ${form}).`);
         } else {
             Driver.defaultProject = re;
             helper.LogSuccess(`Default &lt;i>Proposal ID&lt;/i> set to &lt;i>${re}&lt;/i>.`);
@@ -950,6 +1014,11 @@ Driver.prototype.CallbackUpdateDefaults = function () {
             Driver.defaultObstime = re;
             helper.LogSuccess(`Default &lt;i>Observing time&lt;/i> set to &lt;i>${re}&lt;/i>.`);
         }
+    }
+    re = $("#def_instrument").val().trim();
+    if (re !== Driver.defaultOBInfo) {
+        Driver.defaultOBInfo = re;
+        helper.LogSuccess(`Default &lt;i>Instrument&lt;/i> set to &lt;i>${re}&lt;/i>.`);
     }
     for (k in Driver.FillColors) {
         re = $(`#def_col_${k.replace("-", "_")}`).val().trim();
@@ -991,6 +1060,14 @@ Driver.prototype.CallbackUpdateDefaults = function () {
     localStorage.setItem("defaultType", Driver.defaultType);
     localStorage.setItem("defaultAM", Driver.defaultAM);
     localStorage.setItem("defaultObstime", Driver.defaultObstime);
+    localStorage.setItem("defaultOBInfo", Driver.defaultOBInfo);
+    localStorage.setItem("opt_reschedule_later", $("#opt_reschedule_later").is(":checked"));
+    localStorage.setItem("opt_away_from_zenith", $("#opt_away_from_zenith").is(":checked"));
+    localStorage.setItem("opt_maintain_order", $("#opt_maintain_order").is(":checked"));
+    localStorage.setItem("opt_reorder_targets", $("#opt_reorder_targets").is(":checked"));
+    localStorage.setItem("opt_allow_over_axis", $("#opt_allow_over_axis").is(":checked"));
+    localStorage.setItem("opt_schedule_between", $('input[type="radio"][name="opt_schedule_between"]:checked').val());
+    localStorage.setItem("opt_show_lastobstime", $("#opt_show_lastobstime").is(":checked"));
     helper.LogEntry("Done.");
 };
 
@@ -1130,6 +1207,31 @@ Driver.prototype.rescaleCanvas = function (cnv, ctx) {
 /**
  * @memberof Driver
  */
+Driver.prototype.validateProjectNumber = function (project) {
+    let form, reqlen, reok;
+    if (Driver.telescopeName === "HJST") {
+        reqlen = 8;
+        form = "NNN-27NN";
+        reok = ! (helper.notInt(project.substr(0, 3)) || helper.notInt(project.substr(6, 2)) || project.substr(4, 2) !== "27" || project.substr(3, 1) !== "-");
+    } else if (Driver.telescopeName === "OST") {
+        reqlen = 8;
+        form = "NNN-21NN";
+        reok = ! (helper.notInt(project.substr(0, 3)) || helper.notInt(project.substr(6, 2)) || project.substr(4, 2) !== "21" || project.substr(3, 1) !== "-");
+    } else if (Driver.telescopeName === "HET") {
+        reqlen = 9;
+        form = "UTNNN-NNN";
+        reok = ! (helper.notInt(project.substr(2, 3)) || helper.notInt(project.substr(6, 3)) || project.substr(0, 2) !== "UT" || project.substr(5, 1) !== "-");
+    } else {
+        reqlen=6;
+        form = "NN-NNN";
+        reok = ! (helper.notInt(project.substr(0, 2)) || helper.notInt(project.substr(3, 3)) || project.substr(2, 1) !== "-");
+    }
+    return [form, reqlen, reok];
+};
+
+/**
+ * @memberof Driver
+ */
 Driver._fillObj = {
     "Monitor": "orange",
     "ToO": "#FF9900",
@@ -1170,6 +1272,7 @@ Object.defineProperties(Driver, {
                 if (this._telescopeName !== val) {
                     this._telescopeName = val;
                     $("#def_telescope").val(val);
+                    // Background with telescope image
                     $("#canvasFrame").css("background-image", 'url(' + config[val].background + ')');
                     // Recalculate Skycam constants
                     driver.skyGraph.updateTelescope();
@@ -1219,6 +1322,10 @@ Object.defineProperties(Driver, {
         get: function () {
             return config[this.telescopeName].lowestLimit;
         }},
+    "obs_highestLimit": {
+        get: function () {
+            return config[this.telescopeName].highestLimit;
+        }},
     "obs_lowerHatch": {
         get: function () {
             return config[this.telescopeName].vignetteLimit;
@@ -1248,7 +1355,11 @@ Object.defineProperties(Driver, {
         }},
     "defaultProject": {
         get: function () {
-            return this._defaultProject || "54-199";
+            return this._defaultProject || (
+                Driver.telescopeName === "HJST" ? "223-2701" : (
+                Driver.telescopeName === "OST" ? "223-2101" : (
+                Driver.telescopeName === "HET" ? "UT223-001" :
+                "65-199")));
         }, set: function (val) {
             this._defaultProject = val;
         }},
@@ -1266,7 +1377,7 @@ Object.defineProperties(Driver, {
         }},
     "defaultOBInfo": {
         get: function () {
-            return this._defaultOBInfo || "default";
+            return this._defaultOBInfo || config[Driver.telescopeName].defaultInstrument;
         }, set: function (val) {
             this._defaultOBInfo = val;
         }},
@@ -1351,7 +1462,7 @@ Object.defineProperties(Driver, {
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.5</a> on Thu Apr 21 2022 19:28:34 GMT-0500 (Central Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.5</a> on Wed Mar 15 2023 20:08:04 GMT+0000 (Greenwich Mean Time)
 </footer>
 
 <script> prettyPrint(); </script>
