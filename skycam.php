@@ -12,11 +12,13 @@ if (in_array($telescope, Array("NOT", "WHT", "INT"))) {
     $urlSkyCam = "http://www.gtc.iac.es/multimedia/netcam/camaraAllSky.jpg?t=" . time();
 } elseif (in_array($telescope, Array("HJST", "OST"))) {
     $urlSkyCam = "http://monet-n-sky.as.utexas.edu/jpg/1/image.jpg?t=" . time();
+} elseif (in_array($telescope, Array("CAHA"))) {							//CAHA 
+    $urlSkyCam = "http://www.caha.es/WDXI/ASTMON/images/Johnson_V.png?t=" . time();		        //CAHA 
 } else {
     $urlSkyCam = "";
 }
 
-header("Content-type: image/jpeg");
+header("Content-type: image");										//CAHA  NOTE: The skycam is active only after sunset (NAU), before it gets active the scaling appears wrongly. 
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Cache-Control: post-check=0, pre-check=0", false);
 header("Pragma: no-cache");
