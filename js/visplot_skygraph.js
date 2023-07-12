@@ -66,16 +66,17 @@ SkyGraph.prototype.updateTelescope = function () {
         this.cr = this.imx * 0.45;
         this.arcRadius = [0.70 * this.cr, 0.85 * this.cr, 0.80 * this.cr, 0.85 * this.cr];
         this.distortPower = 0.5;
-    } else if ($.inArray(Driver.telescopeName, ["CAHA"]) >= 0) {    //CAHA   NOTE: The skycam is active only after sunset (NAU), before it gets active the image scaling appears wrongly. 
-        this.south = 0.05;					    //CAHA
+    } else if ($.inArray(Driver.telescopeName, ["CAHA"]) >= 0) {
+        /* NOTE: The skycam is active only after sunset (NAU), before it gets active the image scaling appears wrongly. */
+        this.south = 0.05;
         this.xl = [-7, -5, -2, 1];
-        this.yl = [-2, +4, +7, 0];				    //CAHA
-        this.labelYShift = [-5, 0, 5, 0];			    //CAHA
-        this.cx = 0.29 * this.imx;				   //CAHA
-        this.cy = 0.44 * this.imy;				   //CAHA
-        this.cr = this.imx * 0.29;                                   //CAHA
-        this.arcRadius = [0.80 * this.cr, 0.8 * this.cr, 0.80 * this.cr, 0.8 * this.cr];  //CAHA
-        this.distortPower = 0.9;					//CAHA
+        this.yl = [-2, +4, +7, 0];
+        this.labelYShift = [-5, 0, 5, 0];
+        this.cx = 0.29 * this.imx;
+        this.cy = 0.44 * this.imy;
+        this.cr = this.imx * 0.29;
+        this.arcRadius = [0.80 * this.cr, 0.8 * this.cr, 0.80 * this.cr, 0.8 * this.cr];
+        this.distortPower = 0.9;
     }
     this.pang = [this.south, this.south + 6, this.south + 12, this.south + 18];
     this.reload();
