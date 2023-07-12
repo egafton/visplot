@@ -426,8 +426,10 @@ config["INT"] = {
     timezone: -6
 };
 
-//-------------------------------------------------------------------------------------------- START CAHA ---------------------------------------------------------------------------------------------
-config ["CAHA"]={											//CAHA
+/**
+ * Configuration for the 2.2m telescope at the Calar Alto Observatory.
+ */
+config["CAHA"] = {
     // Name of the observatory site
     site: "Calar Alto Observatory",    
 
@@ -438,7 +440,7 @@ config ["CAHA"]={											//CAHA
     latitude: 37.220791,
 
     // Longitude in degrees, +East
-    longitude:  -2.546847,
+    longitude: -2.546847,
 
     // Altitude above sea level, in metres
     altitude: 2168,
@@ -447,7 +449,7 @@ config ["CAHA"]={											//CAHA
     zenithLimit: null,
 
     // Lowest limit in elevation for observing, in degrees
-    lowestLimit:10.9,
+    lowestLimit: 10.9,
 
     // Highest limit in elevation for observing, in degrees; null if N/A
     highestLimit: null,
@@ -458,11 +460,10 @@ config ["CAHA"]={											//CAHA
     // Limits based on declination (for equatorial mounts); null if N/A
     declinationLimit: ["alt(dec)", function(dec) {
         // Lowest elevation as a function of declination
-        // Taken from https://www.ing.iac.es/Astronomy/telescopes/int/int_pointing_limits.html
-        if (dec < -37 )      {	 //&& dec >85								 //CAHA dec limits 
+        if (dec < -37 ) {
             return 90; // Cannot observe
         } else {
-            const hmin = Math.asin(0.6049 * (Math.sin(dec* 1.745329251994329576923691e-2 ))) *57.29577951308232;      //CAHA  0.6049 =sin(lattitude)
+            const hmin = Math.asin(0.6049 * (Math.sin(dec * 1.745329251994329576923691e-2))) * 57.29577951308232;
             return Math.max(hmin, 10.9);
         }
     }],
@@ -485,5 +486,3 @@ config ["CAHA"]={											//CAHA
     // Time zone relative to UTC
     timezone: +1 
 };
-//----------------------------------------------------------------------------------------------- END CAHA ---------------------------------------------------------------------------------------------
-

@@ -106,8 +106,8 @@ helper.getCoordinates = function(xcent, ycent, x, y, r, lst) {
         return helper.getCoordinates_NOT(xcent, ycent, x, y, r, lst);
     } else if ($.inArray(Driver.telescopeName, ["HJST", "OST"]) >= 0) {
         return helper.getCoordinates_HJST(xcent, ycent, x, y, r, lst);
-    } else if ($.inArray(Driver.telescopeName, ["CAHA"]) >= 0) {    //CAHA
-        return helper.getCoordinates_HJST(xcent, ycent, x, y, r, lst);     //CAHA
+    } else if ($.inArray(Driver.telescopeName, ["CAHA"]) >= 0) {
+        return helper.getCoordinates_HJST(xcent, ycent, x, y, r, lst);
     } else {
         return null;
     }
