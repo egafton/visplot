@@ -79,8 +79,10 @@ function Driver() {
      * 3.2 - First version hosted at https://www.visplot.com
      *
      * 3.3 - Merged pull request that adds the CAHA 2.2m telescope.
+     * 
+     * 3.4 - Added OAJ observatory.
      */
-    this.version = "3.3";
+    this.version = "3.4";
     helper.LogSuccess(`Hello, this is Visplot version ${this.version}`);
 
     /* HTML5 canvas, context and Graph class - related variables */
