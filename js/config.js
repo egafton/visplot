@@ -227,7 +227,7 @@ config["INT"] = {
  */
 config["CAHA"] = {
     // Name of the observatory site
-    site: "Calar Alto Observatory",    
+    site: "Calar Alto Observatory",
 
     // Full name of the telescope
     name: "CAHA 2.2m",
@@ -251,7 +251,7 @@ config["CAHA"] = {
     highestLimit: null,
 
     // Lowest limit for unvignetted observations, in degrees; null if N/A
-    vignetteLimit: null,  
+    vignetteLimit: null,
 
     // Limits based on declination (for equatorial mounts); null if N/A
     declinationLimit: ["alt(dec)", function(dec) {
@@ -280,7 +280,7 @@ config["CAHA"] = {
     defaultInstrument: "CAFOS",
 
     // Time zone relative to UTC
-    timezone: +1 
+    timezone: +1
 };
 
 /**
@@ -333,7 +333,7 @@ config["OAJ"] = {
     defaultInstrument: "JPCam",
 
     // Time zone relative to UTC
-    timezone: +1 
+    timezone: +1
 };
 
 /**
