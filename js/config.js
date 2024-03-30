@@ -223,9 +223,123 @@ config["INT"] = {
 };
 
 /**
+ * Configuration for the 2.2m telescope at the Calar Alto Observatory.
+ */
+config["CAHA"] = {
+    // Name of the observatory site
+    site: "Calar Alto Observatory",    
+
+    // Full name of the telescope
+    name: "CAHA 2.2m",
+
+    // Latitude in degrees, +North
+    latitude: 37.220791,
+
+    // Longitude in degrees, +East
+    longitude: -2.546847,
+
+    // Altitude above sea level, in metres
+    altitude: 2168,
+
+    // Lowest limit in zenith distance for observing, in degrees; null if N/A
+    zenithLimit: null,
+
+    // Lowest limit in elevation for observing, in degrees
+    lowestLimit: 10.9,
+
+    // Highest limit in elevation for observing, in degrees; null if N/A
+    highestLimit: null,
+
+    // Lowest limit for unvignetted observations, in degrees; null if N/A
+    vignetteLimit: null,  
+
+    // Limits based on declination (for equatorial mounts); null if N/A
+    declinationLimit: ["alt(dec)", function(dec) {
+        // Lowest elevation as a function of declination
+        if (dec < -37 ) {
+            return 90; // Cannot observe
+        } else {
+            const hmin = Math.asin(0.6049 * (Math.sin(dec * 1.745329251994329576923691e-2))) * 57.29577951308232;
+            return Math.max(hmin, 10.9);
+        }
+    }],
+
+    // Background image for plot
+    background: "img/telescopes/CAHA.jpg",
+
+    // Instrument definitions; fov in arcminutes
+    instruments: {
+        "CAFOS": {
+            type: "optical",
+            fov: 16,
+            flip: null
+        }
+    },
+
+    // When all else fails, what to use?
+    defaultInstrument: "CAFOS",
+
+    // Time zone relative to UTC
+    timezone: +1 
+};
+
+/**
+ * Configuration for the Observatorio Astrofísico de Javalambre in Teruel.
+ */
+config["OAJ"] = {
+    // Name of the observatory site
+    site: "Observatorio Astrofísico de Javalambre",
+
+    // Full name of the telescope
+    name: "OAJ",
+
+    // Latitude in degrees, +North
+    latitude: 40.0418,
+
+    // Longitude in degrees, +East
+    longitude: -1.0163,
+
+    // Altitude above sea level, in metres
+    altitude: 1957,
+
+    // Lowest limit in zenith distance for observing, in degrees; null if N/A
+    zenithLimit: null,
+
+    // Lowest limit in elevation for observing, in degrees
+    lowestLimit: null,
+
+    // Highest limit in elevation for observing, in degrees; null if N/A
+    highestLimit: null,
+
+    // Lowest limit for unvignetted observations, in degrees; null if N/A
+    vignetteLimit: null,
+
+    // Limits based on declination (for equatorial mounts); null if N/A
+    declinationLimit: null,
+
+    // Background image for plot
+    background: "img/telescopes/OAJ.jpg",
+
+    // Instrument definitions; fov in arcminutes
+    instruments: {
+        "JPCam": {
+            type: "optical",
+            fov: 33.6,
+            flip: null
+        }
+    },
+
+    // When all else fails, what to use?
+    defaultInstrument: "JPCam",
+
+    // Time zone relative to UTC
+    timezone: +1 
+};
+
+/**
  * Configuration for the 2.7m Harlan J. Smith Telescope.
  */
- config["HJST"] = {
+config["HJST"] = {
     // Name of the observatory site
     site: "McDonald Observatory",
 
@@ -424,65 +538,4 @@ config["INT"] = {
 
     // Time zone relative to UTC
     timezone: -6
-};
-
-/**
- * Configuration for the 2.2m telescope at the Calar Alto Observatory.
- */
-config["CAHA"] = {
-    // Name of the observatory site
-    site: "Calar Alto Observatory",    
-
-    // Full name of the telescope
-    name: "CAHA 2.2m",
-
-    // Latitude in degrees, +North
-    latitude: 37.220791,
-
-    // Longitude in degrees, +East
-    longitude: -2.546847,
-
-    // Altitude above sea level, in metres
-    altitude: 2168,
-
-    // Lowest limit in zenith distance for observing, in degrees; null if N/A
-    zenithLimit: null,
-
-    // Lowest limit in elevation for observing, in degrees
-    lowestLimit: 10.9,
-
-    // Highest limit in elevation for observing, in degrees; null if N/A
-    highestLimit: null,
-
-    // Lowest limit for unvignetted observations, in degrees; null if N/A
-    vignetteLimit: null,  
-
-    // Limits based on declination (for equatorial mounts); null if N/A
-    declinationLimit: ["alt(dec)", function(dec) {
-        // Lowest elevation as a function of declination
-        if (dec < -37 ) {
-            return 90; // Cannot observe
-        } else {
-            const hmin = Math.asin(0.6049 * (Math.sin(dec * 1.745329251994329576923691e-2))) * 57.29577951308232;
-            return Math.max(hmin, 10.9);
-        }
-    }],
-
-    // Background image for plot
-    background: "img/telescopes/CAHA.jpg",
-
-    // Instrument definitions; fov in arcminutes
-    instruments: {
-        "CAFOS": {
-            type: "optical",
-            fov: 16,
-            flip: null
-        }
-    },
-
-    // When all else fails, what to use?
-    defaultInstrument: "CAFOS",
-
-    // Time zone relative to UTC
-    timezone: +1 
 };
