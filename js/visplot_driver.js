@@ -59,7 +59,7 @@ function Driver() {
      *       the spherical geometry calculations mapping pixels to alt/az.
      *     - Observations can now be scheduled between sunset/sunrise,
      *       between nautical twilights, or between astronomical twilights.
-     * 
+     *
      * 3.0 - Redesigned user interface: only the plot is visible by default,
      *       while all the settings are available in a collapsible sidebar.
      *     - The sidebar can be resized at will ("split pane"), while the
@@ -79,10 +79,12 @@ function Driver() {
      * 3.2 - First version hosted at https://www.visplot.com
      *
      * 3.3 - Merged pull request that adds the CAHA 2.2m telescope.
-     * 
+     *
      * 3.4 - Added OAJ observatory.
+     *
+     * 3.5 - Fixed morning twilights during DST change.
      */
-    this.version = "3.4";
+    this.version = "3.5";
     helper.LogSuccess(`Hello, this is Visplot version ${this.version}`);
 
     /* HTML5 canvas, context and Graph class - related variables */

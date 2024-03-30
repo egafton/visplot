@@ -43,7 +43,7 @@ function SkyGraph(_canvas, _context) {
 }
 
 /**
- * 
+ *
  */
 SkyGraph.prototype.updateTelescope = function () {
     if ($.inArray(Driver.telescopeName, ["NOT", "WHT", "INT"]) >= 0) {

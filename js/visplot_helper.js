@@ -291,7 +291,7 @@ helper.degtosex = function (time, prec, sep1, sep2, sep3) {
  */
 helper.EphemDateToHM = function (d, padHours=false) {
     let t = new Date(driver.night.DateSunset);
-    t.setSeconds(t.getUTCSeconds() + (d - driver.night.Sunset) * 86400);
+    t.setUTCSeconds(t.getUTCSeconds() + (d - driver.night.Sunset) * 86400);
     const ss = t.getUTCSeconds();
     let mm = t.getUTCMinutes();
     let hh = t.getUTCHours();

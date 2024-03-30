@@ -278,7 +278,7 @@ Graph.prototype.setTargetsSize = function (ntargets) {
     this.doubleTargets = (ntargets <= maxsingle);
     this.targetsy = this.ystart + 15;
     this.targetsx = this.xend + 35;
-    
+
     let totalheight = (this.targetsyskip * (this.doubleTargets ? 2 : 1) + 2) * ntargets;
     if (this.targetsy + totalheight > this.yend) {
         this.targetsy = this.ystart - 25;
@@ -516,10 +516,13 @@ Graph.prototype.drawEphemerides = function () {
     }
     // Print the LST, S.set and S.rise labels
     this.ctx.font = `${this.pt(8)} ${this.fontFamily}`;
-    this.ctx.fillText("LST   ⟶", this.xstart - 35, this.ystart - 35);
+    this.ctx.textAlign = "left";
+    this.ctx.fillText("LST   ⟶", this.xstart - 60, this.ystart - 35);
     if (Driver.obs_timezone !== 0) {
-        this.ctx.fillText("UTC   ⟶", this.xstart - 35, this.yend + 10);
+        this.ctx.fillText("UTC", this.xstart - 60, this.ystart - 10);
+        this.ctx.fillText("UTC   ⟶", this.xstart - 60, this.yend + 10);
     }
+    this.ctx.textAlign = "center";
     this.ctx.fillText("S.set", this.xstart, this.ystart - 22);
     this.ctx.fillText("S.rise", this.xend, this.ystart - 22);
     // Plot the sunset and sunrise times
