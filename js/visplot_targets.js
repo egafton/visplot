@@ -1287,7 +1287,7 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
                 this.BadWolfEnd.push(UTr[1]);
             }
         }
-        return [words[0], "", "", "", "", "", "", "", "*", "", words[q], "", ""];
+        return [words[0], "", "", "", "", "", "", "", "*", "", words[q], "", "", ""];
     }
     if ((words.length === 6 && words[2].indexOf(":") === -1) ||
         (words.length === 2 && words[0].indexOf(":") !== -1 && words[1].indexOf(":") !== -1 ) ||
