@@ -291,7 +291,7 @@ config["OAJ"] = {
     site: "Observatorio Astrofísico de Javalambre",
 
     // Full name of the telescope
-    name: "OAJ",
+    name: "OAJ 2.5m",
 
     // Latitude in degrees, +North
     latitude: 40.0418,
@@ -335,6 +335,79 @@ config["OAJ"] = {
     // Time zone relative to UTC
     timezone: +1
 };
+
+/**
+ * Configuration for the 8.3m Subaru Telescope.
+ */
+config["Subaru"] = {
+    // Name of the observatory site
+    site: "Mauna Kea",
+
+    // Full name of the Telescope
+    name: "Subaru Telescope 8.3m",
+
+    // Latitude in degrees, +North
+    latitude: 19.8256,
+
+    // Longitude in degrees, +East
+    longitude: -155.4761,
+
+    // Altitude above sea level, in metres
+    altitude: 4163,
+
+    // Lowest limit in zenith distance for observing, in degrees; null if N/A
+    zenithLimit: 1,
+
+    // Lowest limit in elevation for observing, in degrees
+    lowestLimit: 15,
+
+    // Highest limit in elevation for observing, in degrees; null if N/A
+    highestLimit: null,
+
+    // Lowest limit for unvignetted observations, in degrees; null if N/A
+    vignetteLimit: null,
+
+    // Limits based on declination (for equatorial mounts); null if N/A
+    declinationLimit: null,
+
+    // Background image for plot
+    background: "img/telescopes/Subaru.jpg",
+
+    // Instrument definitions; fov in arcminutes
+    instruments: {
+        "HSC": {
+            type: "optical",
+            fov: 90,
+            flip: null
+        },
+        "FOCAS": {
+            type: "optical",
+            fov: 6,
+            flip: null
+        },
+        "HDS": {
+            type: "optical",
+            fov: 1,
+            flip: null
+        },
+        "IRCS": {
+            type: "infrared",
+            fov: 1,
+            flip: null,
+        },
+        "PFS": {
+            type: "optical",
+            fov: 75,
+            flip: null
+        }
+    },
+
+    // When all else fails, what to use?
+    defaultInstrument: "HSC",
+
+    // Time zone relative to UTC
+    timezone: -10
+}
 
 /**
  * Configuration for the 2.7m Harlan J. Smith Telescope.
