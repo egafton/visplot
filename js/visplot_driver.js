@@ -83,8 +83,10 @@ function Driver() {
      * 3.4 - Added OAJ observatory.
      *
      * 3.5 - Fixed morning twilights during DST change.
+     *
+     * 3.6 - Added Subaru telescope.
      */
-    this.version = "3.5";
+    this.version = "3.6";
     helper.LogSuccess(`Hello, this is Visplot version ${this.version}`);
 
     /* HTML5 canvas, context and Graph class - related variables */
