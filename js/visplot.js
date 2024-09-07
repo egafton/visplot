@@ -149,17 +149,16 @@ $(document).ready(function () {
     $("#tcsExport").prop("disabled", true);
 
     /*
-     Trigger for the "Set" current date button; this uses AJAX to call a Py script
-     (through a PHP wrapper) that calculates the ephemerides, and on success it plots them.
+     Trigger for the "Set" current date button; this calculates the ephemerides
+     and plots them.
      */
     $("#dateSet").click(function () {
         driver.BtnEvt_SetDate();
     });
 
     /*
-     Trigger for the "Plot" targets button; this uses AJAX to call a Py script
-     (through a PHP wrapper) that calculates the altitudes of the various targets at
-     different times, and on success it plots them.
+     Trigger for the "Plot" targets button; this calculates the altitudes of
+     the various targets at different times and plots them.
      */
     $("#plotTargets").click(function () {
         driver.RequestedScheduleType = 3;

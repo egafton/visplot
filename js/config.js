@@ -83,8 +83,8 @@ config["NOT"] = {
     // When all else fails, what to use?
     defaultInstrument: "ALFOSC",
 
-    // Time zone relative to UTC
-    timezone: 0
+    // Time zone as defined in momentjs
+    timezoneName: "Atlantic/Canary"
 };
 
 /**
@@ -151,8 +151,8 @@ config["WHT"] = {
     // When all else fails, what to use?
     defaultInstrument: "WEAVE",
 
-    // Time zone relative to UTC
-    timezone: 0
+    // Time zone as defined in momentjs
+    timezoneName: "Atlantic/Canary"
 };
 
 /**
@@ -218,8 +218,8 @@ config["INT"] = {
     // When all else fails, what to use?
     defaultInstrument: "WFC",
 
-    // Time zone relative to UTC
-    timezone: 0
+    // Time zone as defined in momentjs
+    timezoneName: "Atlantic/Canary"
 };
 
 /**
@@ -279,8 +279,8 @@ config["CAHA"] = {
     // When all else fails, what to use?
     defaultInstrument: "CAFOS",
 
-    // Time zone relative to UTC
-    timezone: +1
+    // Time zone as defined in momentjs
+    timezoneName: "Europe/Madrid"
 };
 
 /**
@@ -332,8 +332,8 @@ config["OAJ"] = {
     // When all else fails, what to use?
     defaultInstrument: "JPCam",
 
-    // Time zone relative to UTC
-    timezone: +1
+    // Time zone as defined in momentjs
+    timezoneName: "Europe/Madrid"
 };
 
 /**
@@ -405,8 +405,8 @@ config["Subaru"] = {
     // When all else fails, what to use?
     defaultInstrument: "HSC",
 
-    // Time zone relative to UTC
-    timezone: -10
+    // Time zone as defined in momentjs
+    timezoneName: "US/Hawaii"
 }
 
 /**
@@ -502,8 +502,8 @@ config["HJST"] = {
     // When all else fails, what to use?
     defaultInstrument: "COUDE",
 
-    // Time zone relative to UTC
-    timezone: -6
+    // Time zone as defined in momentjs
+    timezoneName: "US/Central"
 };
 
 /**
@@ -555,8 +555,8 @@ config["HJST"] = {
     // When all else fails, what to use?
     defaultInstrument: "CQUEAN",
 
-    // Time zone relative to UTC
-    timezone: -6
+    // Time zone as defined in momentjs
+    timezoneName: "US/Central"
 };
 
 
@@ -609,6 +609,6 @@ config["HJST"] = {
     // When all else fails, what to use?
     defaultInstrument: "VIRUS",
 
-    // Time zone relative to UTC
-    timezone: -6
+    // Time zone as defined in momentjs
+    timezoneName: "US/Central"
 };

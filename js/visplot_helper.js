@@ -310,6 +310,28 @@ helper.EphemDateToHM = function (d, padHours=false) {
 };
 
 /**
+ * Convert a Python.ephem date (stored as a float) to H:MM format
+ * in the local time at the telescope.
+ */
+helper.EphemDateToHMLocal = function (d, utcOffset, padHours=false) {
+    let t = new Date(driver.night.DateSunset);
+    t.setUTCSeconds(t.getUTCSeconds() + (d - driver.night.Sunset) * 86400);
+    const ss = t.getUTCSeconds();
+    let mm = t.getUTCMinutes();
+    let hh = t.getUTCHours();
+    // Round up if necessary
+    if (ss > 30) {
+        mm += 1;
+    }
+    if (mm == 60) {
+        hh += 1;
+        mm = 0;
+    }
+    hh = ((hh + utcOffset) % 24 + 24) % 24;
+    return `${padHours ? helper.padTwoDigits(hh) : hh}:${helper.padTwoDigits(mm)}`;
+};
+
+/**
  * @param {String} - String representing the LST
  */
 helper.LSTToAngle = function (text) {
