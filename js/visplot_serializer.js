@@ -48,7 +48,21 @@ serializer.saveDocument = function () {
             targets: driver.targets,
             ta: $("#targets_actual").val(),
             tgts: driver.CMeditor.getValue(),
-            driver: {ob: driver.ob, obdata: driver.obdata, obprocessed: driver.obprocessed, nightInitialized: driver.nightInitialized, scheduleMode: driver.scheduleMode, telescopeName: Driver.telescopeName, defaultEpoch: Driver.defaultEpoch, defaultProject: Driver.defaultProject, defaultType: Driver.defaultType, defaultAM: Driver.defaultAM, defaultObstime: Driver.defaultObstime, FillColors: Driver.FillColors, TextColors: Driver.TextColors}
+            driver: {
+                ob: driver.ob,
+                obdata: driver.obdata,
+                obprocessed: driver.obprocessed,
+                nightInitialized: driver.nightInitialized,
+                scheduleMode: driver.scheduleMode,
+                telescopeName: Driver.telescopeName,
+                defaultEpoch: Driver.defaultEpoch,
+                defaultProject: Driver.defaultProject,
+                defaultType: Driver.defaultType,
+                defaultAM: Driver.defaultAM,
+                defaultObstime: Driver.defaultObstime,
+                FillColors: Driver.FillColors,
+                TextColors: Driver.TextColors
+            }
         }));
         zip.generateAsync({
             mimeType: "application/octet-stream",

@@ -496,7 +496,7 @@ Graph.prototype.drawEphemerides = function () {
         const xnight = driver.night.UTCtimes[i];
         const xplot = this.transformXLocation(xnight);
         if ((Driver.obs_timezone === 0 && driver.night.UTClabels[i] === "24") ||
-            (Driver.obs_timezone !== 0 && driver.night.MSZTlabels[i] === "24")) {
+            (Driver.obs_timezone !== 0 && driver.night.LocalTimelabels[i] === "24")) {
             this.plotVerticalLine(this.ystart, this.yend, xplot, [], 1.6);
         } else {
             this.plotVerticalLine(this.ystart, this.yend, xplot, [1, 2], 1);
@@ -508,7 +508,7 @@ Graph.prototype.drawEphemerides = function () {
             this.ctx.fillText(driver.night.LSTlabels[i], xplot, this.ystart - 35);
         } else {
             this.ctx.font = `${this.pt(11)} ${this.fontFamily}`;
-            this.ctx.fillText(driver.night.MSZTlabels[i], xplot, this.yend + 26);
+            this.ctx.fillText(driver.night.LocalTimelabels[i], xplot, this.yend + 26);
             this.ctx.font = `${this.pt(8)} ${this.fontFamily}`;
             this.ctx.fillText(driver.night.UTClabels[i], xplot, this.yend + 12);
             this.ctx.fillText(driver.night.LSTlabels[i], xplot, this.ystart - 35);
@@ -516,42 +516,38 @@ Graph.prototype.drawEphemerides = function () {
     }
     // Print the LST, S.set and S.rise labels
     this.ctx.font = `${this.pt(8)} ${this.fontFamily}`;
-    this.ctx.textAlign = "left";
-    this.ctx.fillText("LST   ⟶", this.xstart - 60, this.ystart - 35);
+    this.ctx.textAlign = "right";
+    this.ctx.fillText("LST   ⟶", this.xstart - 25, this.ystart - 35);
     if (Driver.obs_timezone !== 0) {
-        this.ctx.fillText("UTC", this.xstart - 60, this.ystart - 10);
+        this.ctx.fillText(`${Driver.obs_timezone_abbr}   ⟶`, this.xstart - 25, this.ystart - 10);
+        this.ctx.textAlign = "left";
         this.ctx.fillText("UTC   ⟶", this.xstart - 60, this.yend + 10);
     }
     this.ctx.textAlign = "center";
     this.ctx.fillText("S.set", this.xstart, this.ystart - 22);
     this.ctx.fillText("S.rise", this.xend, this.ystart - 22);
     // Plot the sunset and sunrise times
-    this.ctx.fillText(`${driver.night.tSunset[3]}:${helper.padTwoDigits(driver.night.tSunset[4])}`, this.xstart, this.ystart - 10);
-    this.ctx.fillText(`${driver.night.tSunrise[3]}:${helper.padTwoDigits(driver.night.tSunrise[4])}`, this.xend, this.ystart - 10);
+    this.ctx.fillText(helper.EphemDateToHMLocal(driver.night.Sunset, Driver.obs_timezone), this.xstart, this.ystart - 10);
+    this.ctx.fillText(helper.EphemDateToHMLocal(driver.night.Sunrise, Driver.obs_timezone), this.xend, this.ystart - 10);
     // Plot the twilights labels and corresponding dashed vertical lines
     const twiStyle = [6, 5];
     let xtemp;
     xtemp = this.transformXLocation(driver.night.ENauTwilight);
     this.ctx.fillText("Nau", xtemp, this.ystart - 22);
-    this.ctx.fillText(helper.EphemDateToHM(driver.night.ENauTwilight), xtemp - 3.5, this.ystart - 10);
+    this.ctx.fillText(helper.EphemDateToHMLocal(driver.night.ENauTwilight, Driver.obs_timezone), xtemp - 3.5, this.ystart - 10);
     this.plotVerticalLine(this.ystart, this.yend, xtemp, twiStyle, 1.2);
     xtemp = this.transformXLocation(driver.night.MNauTwilight);
     this.ctx.fillText("Nau", xtemp, this.ystart - 22);
-    this.ctx.fillText(helper.EphemDateToHM(driver.night.MNauTwilight), xtemp + 1, this.ystart - 10);
+    this.ctx.fillText(helper.EphemDateToHMLocal(driver.night.MNauTwilight, Driver.obs_timezone), xtemp + 1, this.ystart - 10);
     this.plotVerticalLine(this.ystart, this.yend, xtemp, twiStyle, 1.2);
     xtemp = this.transformXLocation(driver.night.EAstTwilight);
     this.ctx.fillText("Ast", xtemp, this.ystart - 22);
-    this.ctx.fillText(helper.EphemDateToHM(driver.night.EAstTwilight), xtemp + 4, this.ystart - 10);
+    this.ctx.fillText(helper.EphemDateToHMLocal(driver.night.EAstTwilight, Driver.obs_timezone), xtemp + 4, this.ystart - 10);
     this.plotVerticalLine(this.ystart, this.yend, xtemp, twiStyle, 1.2);
     xtemp = this.transformXLocation(driver.night.MAstTwilight);
     this.ctx.fillText("Ast", xtemp, this.ystart - 22);
-    this.ctx.fillText(helper.EphemDateToHM(driver.night.MAstTwilight), xtemp - 1, this.ystart - 10);
+    this.ctx.fillText(helper.EphemDateToHMLocal(driver.night.MAstTwilight, Driver.obs_timezone), xtemp - 1, this.ystart - 10);
     this.plotVerticalLine(this.ystart, this.yend, xtemp, twiStyle, 1.2);
-    // Print the recommended morning and evening blank fields for flats
-    this.ctx.textAlign = "left";
-    this.ctx.fillText(driver.night.BestEvBlank, this.transformXLocation(driver.night.Sunset), this.yend + 31);
-    this.ctx.textAlign = "right";
-    this.ctx.fillText(driver.night.BestMoBlank, this.transformXLocation(driver.night.Sunrise), this.yend + 31);
     this.ctx.textAlign = "center";
 
     // Plot the gray-shaded rectangles corresponding to the twilights (vertical) and to airmass=2 (horizontal)
@@ -602,12 +598,12 @@ Graph.prototype.drawEphemerides = function () {
     this.ctx.font = `${this.pt(11)} ${this.fontFamily}`;
     if (Driver.obs_timezone === 0) {
         this.ctx.fillText(
-            `Coordinated Universal Time, starting night ${driver.night.year}-` +
+            `Coordinated Universal Time (UTC), starting night ${driver.night.year}-` +
             `${helper.padTwoDigits(driver.night.month)}-${helper.padTwoDigits(driver.night.day)}`,
             this.xmid, this.yend + 40);
     } else {
         this.ctx.fillText(
-            `Mean Solar Zone Time, starting night ${driver.night.year}-` +
+            `Local Time (${Driver.obs_timezone_abbr}), starting night ${driver.night.year}-` +
             `${helper.padTwoDigits(driver.night.month)}-${helper.padTwoDigits(driver.night.day)}`,
             this.xmid, this.yend + 46);
     }
@@ -625,10 +621,18 @@ Graph.prototype.drawEphemerides = function () {
         this.ctx.fillText(driver.night.MoonIlluminationString, this.xleftlabels, this.transformYLocation(75));
         if ((driver.night.Moonrise >= driver.night.Sunset) && (driver.night.Moonrise <= driver.night.Sunrise)) {
             this.ctx.fillText("Moon rises:", this.xleftlabels, this.transformYLocation(71));
-            this.ctx.fillText(`${helper.EphemDateToHM(driver.night.Moonrise)} UTC`, this.xleftlabels, this.transformYLocation(69));
+            if (driver.obs_timezone === 0) {
+                this.ctx.fillText(`${helper.EphemDateToHM(driver.night.Moonrise)} UTC`, this.xleftlabels, this.transformYLocation(69));
+            } else {
+                this.ctx.fillText(`${helper.EphemDateToHMLocal(driver.night.Moonrise, Driver.obs_timezone)} ${Driver.obs_timezone_abbr}`, this.xleftlabels, this.transformYLocation(69));
+            }
         } else if ((driver.night.Moonset >= driver.night.Sunset) && (driver.night.Moonset <= driver.night.Sunrise)) {
             this.ctx.fillText("Moon sets:", this.xleftlabels, this.transformYLocation(71));
-            this.ctx.fillText(`${helper.EphemDateToHM(driver.night.Moonset)} UTC`, this.xleftlabels, this.transformYLocation(69));
+            if (driver.obs_timezone === 0) {
+                this.ctx.fillText(`${helper.EphemDateToHM(driver.night.Moonset)} UTC`, this.xleftlabels, this.transformYLocation(69));
+            } else {
+                this.ctx.fillText(`${helper.EphemDateToHMLocal(driver.night.Moonset, Driver.obs_timezone)} ${Driver.obs_timezone_abbr}`, this.xleftlabels, this.transformYLocation(69));
+            }
         }
     }
 

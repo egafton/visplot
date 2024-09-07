@@ -85,8 +85,11 @@ function Driver() {
      * 3.5 - Fixed morning twilights during DST change.
      *
      * 3.6 - Added Subaru telescope.
+     * 
+     * 3.7 - Replaced MSZT with Local Time (DST included if applicable),
+     *       using Moment.js.
      */
-    this.version = "3.6";
+    this.version = "3.7";
     helper.LogSuccess(`Hello, this is Visplot version ${this.version}`);
 
     /* HTML5 canvas, context and Graph class - related variables */
@@ -302,8 +305,12 @@ Driver.prototype.BtnEvt_SetDate = function () {
         helper.LogError(`Error 39: Invalid day (${day}) for ${year}-${helper.padTwoDigits(month)}. Please enter a number between 1 and ${dmax}.`);
         return;
     }
+    const zone = moment.tz.zone(config[Driver.telescopeName].timezoneName);
+    const tstamp = new Date(year, month-1, day, 20);
+    config[Driver.telescopeName].timezone = (-zone.utcOffset(tstamp)/60);
+    config[Driver.telescopeName].timezone_abbr = zone.abbr(tstamp);
+    helper.LogEntry(`Initializing date to ${year}-${helper.padTwoDigits(month)}-${helper.padTwoDigits(day)}; time zone set to ${config[Driver.telescopeName].timezoneName} (${Driver.obs_timezone_abbr}), which is UTC${helper.timezone(Driver.obs_timezone)}`);
     this.night = new Night(year, month, day);
-    helper.LogEntry(`Initializing date to ${year}-${helper.padTwoDigits(month)}-${helper.padTwoDigits(day)}...`);
     driver.Callback_SetDate();
 };
 
@@ -630,21 +637,24 @@ Driver.prototype.InitializeDate = function () {
         day = parseInt(this.obdata.Date.substr(6, 2));
         datemsg = `Date set to ${year}-${helper.padTwoDigits(month)}-${helper.padTwoDigits(day)}, as provided by the OB queue.`;
     } else {
-        let now = new Date();
-        helper.LogEntry(`Today is ${now.toUTCString()}, timezone set to UTC${helper.timezone(config[Driver.telescopeName].timezone)}`);
+        const zone = moment.tz.zone(config[Driver.telescopeName].timezoneName);
+        const now = new Date();
+        config[Driver.telescopeName].timezone = (-zone.utcOffset(now)/60);
+        config[Driver.telescopeName].timezone_abbr = zone.abbr(now);
+        helper.LogEntry(`Today is ${now.toUTCString()}, time zone set to ${config[Driver.telescopeName].timezoneName} (${Driver.obs_timezone_abbr}), which is UTC${helper.timezone(Driver.obs_timezone)}`);
         day = now.getUTCDate();
         month = now.getUTCMonth() + 1;
         year = now.getUTCFullYear();
-	const msztAtTel = now.getUTCHours() + config[Driver.telescopeName].timezone;
-	let prevDay = false;
-	if (msztAtTel < 0) {
-	    prevDay = true;
-	    helper.LogEntry(`Setting date to yesterday because the Mean Solar Zone Time at the telescope is ${helper.padTwoDigits(helper.mod(msztAtTel, 24))}:${helper.padTwoDigits(now.getUTCMinutes())}`);
-	} else if (msztAtTel < 12) {
-	    prevDay = true;
-	    helper.LogEntry(`Setting date to yesterday because at the telescope it is still morning (MSZT=${helper.padTwoDigits(msztAtTel)}:${helper.padTwoDigits(now.getUTCMinutes())})`);
-	}
-	if (prevDay) {
+    const localTimeAtTel = now.getUTCHours() + Driver.obs_timezone;
+    let prevDay = false;
+    if (localTimeAtTel < 0) {
+        prevDay = true;
+        helper.LogEntry(`Setting date to yesterday because the local time at the telescope is ${helper.padTwoDigits(helper.mod(localTimeAtTel, 24))}:${helper.padTwoDigits(now.getUTCMinutes())}`);
+    } else if (localTimeAtTel < 12) {
+        prevDay = true;
+        helper.LogEntry(`Setting date to yesterday because at the telescope it is still morning (local time ${helper.padTwoDigits(localTimeAtTel)}:${helper.padTwoDigits(now.getUTCMinutes())})`);
+    }
+    if (prevDay) {
             if (day == 1) {
                 if (month === 1) {
                     year = year - 1;
@@ -1288,6 +1298,10 @@ Object.defineProperties(Driver, {
     "obs_timezone": {
         get: function () {
             return config[this.telescopeName].timezone;
+        }},
+    "obs_timezone_abbr": {
+        get: function () {
+            return config[this.telescopeName].timezone_abbr;
         }},
     "obs_alt": {
         get: function () {
