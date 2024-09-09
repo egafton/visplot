@@ -88,8 +88,11 @@ function Driver() {
      * 
      * 3.7 - Replaced MSZT with Local Time (DST included if applicable),
      *       using Moment.js.
+     *
+     * 3.8 - Visplot can now query SIMBAD by identifier to retrieve coordinates
+     *       and proper motions.
      */
-    this.version = "3.7";
+    this.version = "3.8";
     helper.LogSuccess(`Hello, this is Visplot version ${this.version}`);
 
     /* HTML5 canvas, context and Graph class - related variables */
@@ -133,6 +136,7 @@ function Driver() {
     this.scheduleMode = false;
     this.rescheduling = false;
     this.night = null;
+    this.resolvedIdentifiers = Array();
     this.targets = new TargetList();
     this.RequestedScheduleType = 0;
     /* Types of request:
@@ -156,8 +160,9 @@ function Driver() {
         styleActiveLine: { nonEmpty: false },
         extraKeys: {
             Tab: function () {
-                driver.targets.validateAndFormatTargets();
-                $("#plotTargets").focus();
+                driver.targets.validateAndFormatTargets().then(function() {
+                    $("#plotTargets").focus();
+                });
             },
         }
     });
@@ -237,9 +242,9 @@ Driver.prototype.Callback_SetDate = function (obj) {
         }
         this.obprocessed = true;
         this.CMeditor.setValue(lines.join("\n"));
-        if (this.targets.validateAndFormatTargets()) {
+        this.targets.validateAndFormatTargets().then(function() {
             $("#plotTargets").trigger("click");
-        }
+        });
     }
 };
 
@@ -326,41 +331,40 @@ Driver.prototype.BtnEvt_PlotTargets = function () {
         helper.LogError("Error 41: Night not initialized. Click on [Set] first!");
         return;
     }
-    if (!this.targets.validateAndFormatTargets()) {
-        return;
-    }
-    if (this.RequestedScheduleType !== 1 && this.scheduleMode) {
-        if (!confirm("Are you sure you want to replot the targets?\nThe current schedule WILL BE LOST!")) {
-            return;
-        }
-    }
-    if (this.RequestedScheduleType === 1) {
-        const ret = this.targets.prepareScheduleForUpdate();
-        if (ret === "") { // nothing to do, since the input form has not been changed
-            return;
-        }
-        if (ret === false) { // reschedule at will, since we are not in the middle of the night
-            this.RequestedScheduleType = 2;
-        } else { // we are in the middle of the night...
-            if (ret === true) { // ... but there are no new targets; just redo the schedule and replot
-                this.Callback_UpdateSchedule();
-            } else { // ... and there are new targets;
-                helper.LogEntry("Calculating altitudes for the new targets. Please wait...");
-                driver.Callback_SetTargets($("#added_targets").val());
+    this.targets.validateAndFormatTargets().then(function() {
+        if (driver.RequestedScheduleType !== 1 && driver.scheduleMode) {
+            if (!confirm("Are you sure you want to replot the targets?\nThe current schedule WILL BE LOST!")) {
+                return;
             }
         }
-    }
-    $("#plotTargets").prop("disabled", true);
-    if (this.RequestedScheduleType !== 1) {
-        if (this.RequestedScheduleType === 2 && !(this.targets.inputHasChanged($("#targets_actual").val(), this.targets.ComputedTargets))) {
-            helper.LogEntry("No need to recompute altitudes. Proceeding to scheduling.");
-            this.Callback_UpdateSchedule();
-        } else {
-            helper.LogEntry("Calculating altitudes for all targets. Please wait...");
-            driver.Callback_SetTargets($("#targets_actual").val());
+        if (driver.RequestedScheduleType === 1) {
+            const ret = driver.targets.prepareScheduleForUpdate();
+            if (ret === "") { // nothing to do, since the input form has not been changed
+                return;
+            }
+            if (ret === false) { // reschedule at will, since we are not in the middle of the night
+                driver.RequestedScheduleType = 2;
+            } else { // we are in the middle of the night...
+                if (ret === true) { // ... but there are no new targets; just redo the schedule and replot
+                    driver.Callback_UpdateSchedule();
+                } else { // ... and there are new targets;
+                    helper.LogEntry("Calculating altitudes for the new targets. Please wait...");
+                    driver.Callback_SetTargets($("#added_targets").val());
+                }
+            }
         }
-    }
-    $("#plotTargets").prop("disabled", false);
+        $("#plotTargets").prop("disabled", true);
+        if (driver.RequestedScheduleType !== 1) {
+            if (driver.RequestedScheduleType === 2 && !(driver.targets.inputHasChanged($("#targets_actual").val(), driver.targets.ComputedTargets))) {
+                helper.LogEntry("No need to recompute altitudes. Proceeding to scheduling.");
+                driver.Callback_UpdateSchedule();
+            } else {
+                helper.LogEntry("Calculating altitudes for all targets. Please wait...");
+                driver.Callback_SetTargets($("#targets_actual").val());
+            }
+        }
+        $("#plotTargets").prop("disabled", false);
+    });
 };
 
 /**
@@ -1267,11 +1271,11 @@ Object.defineProperties(Driver, {
                     // Recalculate Skycam constants
                     driver.skyGraph.updateTelescope();
                     // Revalidate targets to recompute TCS lines
-                    if (driver.targets.validateAndFormatTargets(true)) {
+                    driver.targets.validateAndFormatTargets(true).then(function() {
                         // Replot targets
                         $("#dateSet").trigger("click");
                         $("#plotTargets").trigger("click");
-                    }
+                    });
                 }
             }
         }},

@@ -101,6 +101,18 @@ helper.extractLines = function (str) {
     return str.split(/\r?\n/);
 };
 
+helper.parseSIMBADResponse = function (responseText) {
+    if (responseText.startsWith("!!")) return null;
+    const coordsRegex = new RegExp(/Coordinates\(ICRS.*?\):\s+(\d+)\s+(\d+)\s+([\d\.]+)\s+([+\-\d]+)\s+(\d+)\s+([\d\.]+)/g);
+    const ca = coordsRegex.exec(responseText);
+    if (ca === null) return null;
+    const pmRegex = new RegExp(/Proper motions:\s+([+\-\d\.]+)\s+([+\-\d\.]+)/g);
+    const pa = pmRegex.exec(responseText);
+    if (pa === null) return null;
+    const ret = `${ca[1]} ${ca[2]} ${ca[3]}/${(parseFloat(pa[1])/1000).toFixed(5)} ${ca[4]} ${ca[5]} ${ca[6]}/${(parseFloat(pa[2])/1000).toFixed(5)}`;
+    return ret;
+};
+
 helper.getCoordinates = function(xcent, ycent, x, y, r, lst) {
     if ($.inArray(Driver.telescopeName, ["NOT", "WHT", "INT"]) >= 0) {
         return helper.getCoordinates_NOT(xcent, ycent, x, y, r, lst);
