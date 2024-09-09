@@ -11,41 +11,16 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-* a web server (e.g., Apache) that can run PHP scripts (i.e., `mod_php` enabled);
+* `docker` and `docker-compose`;
 * a modern browser with HTML5 support (Visplot may load but not display correctly on older browsers, or it may fail to load at all);
 
-### Installation on Ubuntu 22.04
+### Starting the container
 
-* Make sure your installation is up-to-date:
-
-  ```bash
-  sudo apt update && sudo apt upgrade
+* ```bash
+  docker compose up --build --detach visplot
   ```
 
-* Install Apache and PHP:
-
-  ```bash
-  sudo apt install apache2 php libapache2-mod-php
-  ```
-
-* Enable Apache and PHP (adapt the PHP version number if necessary):
-
-  ```bash
-  sudo systemctl enable apache2
-  sudo a2enmod php8.1
-  ```
-
-* Restart the Apache server:
-
-  ```bash
-  sudo systemctl restart apache2
-  ```
-
-Test that the installation has been successful by navigating to `http://localhost/`.
-
-If so, you can just copy the Visplot files to `/var/www/html/{SUBDIR}` and
-access them via a browser at `http://localhost/{SUBDIR}`. If Visplot is the
-only page that will run on your server, `{SUBDIR}` can and should be empty.
+Test that the installation has been successful by navigating to `http://localhost:8888/`.
 
 ## License
 
