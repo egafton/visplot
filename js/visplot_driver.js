@@ -162,7 +162,7 @@ function Driver() {
             Tab: function () {
                 driver.targets.validateAndFormatTargets().then(function() {
                     $("#plotTargets").focus();
-                });
+                }).catch(function() {});
             },
         }
     });
@@ -206,7 +206,8 @@ Driver.prototype.ParseOBInfoIfAny = function () {
             this.ob = true;
             if (this.obdata.Telescope.length) {
                 helper.LogEntry(`Setting telescope to <i>${this.obdata.Telescope}</i>.`);
-                Driver.telescopeName = this.obdata.Telescope;
+                driver.setTelescopeName(this.obdata.Telescope)
+                    .then(function() {});
             }
         } else {
             helper.LogError("Error 35: Could not decode JSON object. Falling back to standard (non-OB) visplot...");
@@ -244,7 +245,7 @@ Driver.prototype.Callback_SetDate = function (obj) {
         this.CMeditor.setValue(lines.join("\n"));
         this.targets.validateAndFormatTargets().then(function() {
             $("#plotTargets").trigger("click");
-        });
+        }).catch(function() {});
     }
 };
 
@@ -364,7 +365,7 @@ Driver.prototype.BtnEvt_PlotTargets = function () {
             }
         }
         $("#plotTargets").prop("disabled", false);
-    });
+    }).catch(function() {});
 };
 
 /**
@@ -812,13 +813,14 @@ Driver.prototype.BindEvents = function () {
         // Set instrument name to default
         $("#def_instrument").val(config[tel].defaultInstrument);
         // Set project number to default if not compatible with telescope
-        Driver.telescopeName = tel;
-        const valid = driver.validateProjectNumber(Driver.defaultProject);
-        if (! valid[2]) {
-            Driver._defaultProject = false;
-            Driver._defaultProject = Driver.defaultProject;
-            $("#def_project").val(Driver.defaultProject);
-        }
+        driver.setTelescopeName(tel).then(function() {
+            const valid = driver.validateProjectNumber(Driver.defaultProject);
+            if (! valid[2]) {
+                Driver._defaultProject = false;
+                Driver._defaultProject = Driver.defaultProject;
+                $("#def_project").val(Driver.defaultProject);
+            }
+        });
     });
 
     // Help button
@@ -833,10 +835,14 @@ Driver.prototype.BindEvents = function () {
     // Sample targets and target box
     $("#targetBlanks").click(function () {
         driver.CMeditor.setValue(Driver.BlankFields);
-        driver.targets.validateAndFormatTargets();
+        driver.targets.validateAndFormatTargets()
+            .then(function() {})
+            .catch(function() {});
     });
     $("#targets").blur(function () {
-        driver.targets.validateAndFormatTargets();
+        driver.targets.validateAndFormatTargets()
+            .then(function() {})
+            .catch(function() {});
     });
     $("#tcsExport").click(function () {
         driver.targets.ExportTCSCatalogue();
@@ -933,27 +939,8 @@ Driver.prototype.EvtClick_Config = function () {
     });
 };
 
-/**
- * @memberof Driver
- */
-Driver.prototype.CallbackUpdateDefaults = function () {
-    if ($("#configsubmit").val() === "false") {
-        return;
-    }
-    let re, k, resetTel = false, resetCol = false;
-    helper.LogEntry("Updating default parameters...");
-    re = $("#def_telescope").val().trim();
-    if (re !== Driver.telescopeName) {
-        if ($.inArray(re, Object.keys(config)) !== -1) {
-            Driver.telescopeName = re;
-            // Recalculate ephemerides
-            driver.Callback_SetDate();
-            helper.LogSuccess(`<i>Telescope name</i> set to <i>${re}</i>.`);
-            resetTel = true;
-        } else {
-            helper.LogError("Error 49: <i>Telescope name</i> was not updated since the input was invalid.");
-        }
-    }
+Driver.prototype.CallbackUpdateDefaults_postTelUpdate = function (resetTel) {
+    let re, k, resetCol = false;
     re = $("#def_epoch").val().trim();
     if (re !== Driver.defaultEpoch) {
         if (re === "1950" || re === "2000") {
@@ -1040,7 +1027,7 @@ Driver.prototype.CallbackUpdateDefaults = function () {
                 this.targets.Targets[k].resetColours();
             }
         }
-        if (resetCol || resetTel) {
+        if (resetTel || resetCol) {
             this.Refresh();
         }
     }
@@ -1063,6 +1050,33 @@ Driver.prototype.CallbackUpdateDefaults = function () {
     localStorage.setItem("opt_schedule_between", $('input[type="radio"][name="opt_schedule_between"]:checked').val());
     localStorage.setItem("opt_show_lastobstime", $("#opt_show_lastobstime").is(":checked"));
     helper.LogEntry("Done.");
+};
+
+/**
+ * @memberof Driver
+ */
+Driver.prototype.CallbackUpdateDefaults = function () {
+    if ($("#configsubmit").val() === "false") {
+        return;
+    }
+    helper.LogEntry("Updating default parameters...");
+    let re = $("#def_telescope").val().trim();
+    if (re !== Driver.telescopeName) {
+        if ($.inArray(re, Object.keys(config)) !== -1) {
+            helper.LogError("blax1");
+            driver.setTelescopeName(re).then(function() {
+                // Recalculate ephemerides
+                driver.Callback_SetDate();
+                helper.LogSuccess(`<i>Telescope name</i> set to <i>${re}</i>.`);
+                driver.CallbackUpdateDefaults_postTelUpdate(true);
+            });
+        } else {
+            helper.LogError("Error 49: <i>Telescope name</i> was not updated since the input was invalid.");
+            driver.CallbackUpdateDefaults_postTelUpdate(false);
+        }
+    } else {
+        driver.CallbackUpdateDefaults_postTelUpdate(false);
+    }
 };
 
 /**
@@ -1223,6 +1237,30 @@ Driver.prototype.validateProjectNumber = function (project) {
     return [form, reqlen, reok];
 };
 
+Driver.prototype.setTelescopeName = function(val) {
+    return new Promise(function(resolve, reject) {
+        if ($.inArray(val, Object.keys(config)) !== -1) {
+            if (Driver._telescopeName !== val) {
+                Driver._telescopeName = val;
+                $("#def_telescope").val(val);
+                // Background with telescope image
+                $("#canvasFrame").css("background-image", 'url(' + config[val].background + ')');
+                // Recalculate Skycam constants
+                driver.skyGraph.updateTelescope();
+                // Revalidate targets to recompute TCS lines
+                driver.targets.validateAndFormatTargets(true).then(function() {
+                    // Replot targets
+                    $("#dateSet").trigger("click");
+                    $("#plotTargets").trigger("click");
+                    resolve();
+                }).catch(function() { resolve(); });
+            }
+        } else {
+            return resolve();
+        }
+    });
+};
+
 /**
  * @memberof Driver
  */
@@ -1260,24 +1298,6 @@ Object.defineProperties(Driver, {
     "telescopeName": {
         get: function() {
             return this._telescopeName || "NOT";
-        }, set: function(val) {
-            /* Only update if we have a config entry for the telescope */
-            if ($.inArray(val, Object.keys(config)) !== -1) {
-                if (this._telescopeName !== val) {
-                    this._telescopeName = val;
-                    $("#def_telescope").val(val);
-                    // Background with telescope image
-                    $("#canvasFrame").css("background-image", 'url(' + config[val].background + ')');
-                    // Recalculate Skycam constants
-                    driver.skyGraph.updateTelescope();
-                    // Revalidate targets to recompute TCS lines
-                    driver.targets.validateAndFormatTargets(true).then(function() {
-                        // Replot targets
-                        $("#dateSet").trigger("click");
-                        $("#plotTargets").trigger("click");
-                    });
-                }
-            }
         }},
     "updSchedText": {
         get: function () {

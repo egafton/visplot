@@ -1055,6 +1055,165 @@ TargetList.prototype.inputHasChanged = function (_newinput, _oldinput) {
     return (_newinput !== _oldinput);
 };
 
+TargetList.prototype.processTargetListAfterSIMBAD = function(lines) {
+    this.VisibleLines = [];
+    this.TargetsLines = [];
+    this.FormattedLines = [];
+    // Determine maximum width of the various fields
+    this.MaxLen = {
+        Name: 0,
+        RA: 0,
+        Dec: 0,
+        Exp: 0,
+        AM: 0,
+        ProposalId: 0,
+        Type: 0,
+        OBData: 0,
+        TCSpmra: 0,
+        TCSpmdec: 0,
+        Skypa: 0
+    };
+    this.BadWolfStart = [];
+    this.BadWolfEnd = [];
+    for (let i = 0; i < lines.length; i += 1) {
+        if (lines[i].trim() === "") {
+            this.FormattedLines.push(null);
+            continue;
+        }
+        const words = this.extractLineInfo(i + 1, lines[i].trim());
+        if (words === false) {
+            return false;
+        }
+        const mLTN = driver.graph.maxLenTgtName + (words[0][0] == "#" ? 1 : 0);
+        if (words[0].length > mLTN) {
+            words[0] = words[0].substr(0, mLTN);
+        }
+        if (words[0].length > this.MaxLen.Name) {
+            this.MaxLen.Name = words[0].length;
+        }
+        if (words[3].length > this.MaxLen.RA) {
+            this.MaxLen.RA = words[3].length;
+        }
+        if (words[6].length > this.MaxLen.Dec) {
+            this.MaxLen.Dec = words[6].length;
+        }
+        if (words[8].length > this.MaxLen.Exp) {
+            this.MaxLen.Exp = words[8].length;
+        }
+        if (words[9].length > this.MaxLen.ProposalId) {
+            this.MaxLen.ProposalId = words[9].length;
+        }
+        if (words[10].length > this.MaxLen.AM) {
+            this.MaxLen.AM = words[10].length;
+        }
+        if (words[11].length > this.MaxLen.Type) {
+            this.MaxLen.Type = words[11].length;
+        }
+        if (words[12].length > this.MaxLen.OBData) {
+            this.MaxLen.OBData = words[12].length;
+        }
+        if (words[13].length > this.MaxLen.Skypa) {
+            this.MaxLen.Skypa = words[13].length;
+        }
+        let j;
+        j = (parseInt(words[this.ReqLineLen + 1]) + "").length + (words[this.ReqLineLen + 1] < 0 && words[this.ReqLineLen + 1] > -1 ? 1 : 0);
+        if (j > this.MaxLen.TCSpmra) {
+            this.MaxLen.TCSpmra = j;
+        }
+        j = (parseInt(words[this.ReqLineLen + 3]) + "").length + (words[this.ReqLineLen + 3] < 0 && words[this.ReqLineLen + 3] > -1 ? 1 : 0);
+        if (j > this.MaxLen.TCSpmdec) {
+            this.MaxLen.TCSpmdec = j;
+        }
+        this.FormattedLines.push(words);
+    }
+    this.InputStats = {Empty: 0, Commented: 0, Actual: 0};
+    this.TCSlines = [];
+    for (let i = 0; i < this.FormattedLines.length; i += 1) {
+        if (this.FormattedLines[i] === null) {
+            this.VisibleLines.push("");
+            this.InputStats.Empty += 1;
+            continue;
+        }
+        const words = this.FormattedLines[i];
+        const badwolf = $.inArray(words[0], helper.offlineStrings) !== -1;
+        const padded = [
+            helper.pad(words[0], this.MaxLen.Name, false, " "),
+            helper.pad(words[1], 2, true, badwolf ? " " : "0"),
+            helper.pad(words[2], 2, true, badwolf ? " " : "0"),
+            helper.pad(words[3], this.MaxLen.RA, false, " "),
+            helper.pad(badwolf ? words[4] : helper.padTwoDigits(words[4]), 3, true, " "),
+            helper.pad(words[5], 2, true, badwolf ? " " : "0"),
+            helper.pad(words[6], this.MaxLen.Dec, false, " "),
+            helper.pad(words[7], 4, true, " "),
+            helper.pad(words[8], this.MaxLen.Exp, true, " "),
+            helper.pad(words[9], this.MaxLen.ProposalId, false, " "),
+            helper.pad(words[10], this.MaxLen.AM, false, " "),
+            helper.pad(words[11], this.MaxLen.Type, false, " "),
+            helper.pad(words[12], this.MaxLen.OBData, false, " "),
+            helper.pad(words[13], this.MaxLen.Skypa, false, " ")
+        ];
+        this.VisibleLines.push(padded.join(" "));
+        if (words[0][0] == "#") {
+            this.InputStats.Commented += 1;
+            continue;
+        }
+        if (!badwolf) {
+            this.InputStats.Actual += 1;
+            if ($.inArray(Driver.telescopeName, ["NOT", "WHT", "INT"]) >= 0) {
+                this.TCSlines.push(helper.pad(words[0].replace(/[^A-Za-z0-9\_\+\-]+/g, ""), this.MaxLen.Name, false, " ") + " " +
+                    helper.padTwoDigits(words[1]) + ":" +
+                    helper.padTwoDigits(words[2]) + ":" +
+                    helper.pad(parseFloat(words[this.ReqLineLen]).toFixed(2).toString(), 5, true, "0") + " " +
+                    helper.pad(helper.padTwoDigits(words[4]), 3, true, " ") + ":" +
+                    helper.pad(words[5], 2, true, "0") + ":" +
+                    helper.pad(parseFloat(words[this.ReqLineLen + 2]).toFixed(1).toString(), 4, true, "0") + " " +
+                    helper.pad(words[7], 4, " ") + " " +
+                    helper.pad(parseFloat(words[this.ReqLineLen + 1]).toFixed(2).toString(), this.MaxLen.TCSpmra + 3, true, " ") + " " +
+                    helper.pad(parseFloat(words[this.ReqLineLen + 3]).toFixed(2).toString(), this.MaxLen.TCSpmdec + 3, true, " ") + " " +
+                    "0.0");
+            } else if ($.inArray(Driver.telescopeName, ["HJST", "OST"]) >= 0) {
+                this.TCSlines.push(
+                    helper.pad(this.InputStats.Actual.toString(), 2, true, " ") + " " +
+                    '"' + helper.pad(words[0].replace(/[^A-Za-z0-9\_\+\-]+/g, ""), this.MaxLen.Name, false, " ") + '" ' +
+                    helper.padTwoDigits(words[1]) + " " +
+                    helper.padTwoDigits(words[2]) + " " +
+                    helper.pad(parseFloat(words[this.ReqLineLen]).toFixed(2).toString(), 5, true, "0") + " " +
+                    helper.pad(helper.padTwoDigits(words[4]), 3, true, " ") + " " +
+                    helper.pad(words[5], 2, true, "0") + " " +
+                    helper.pad(parseFloat(words[this.ReqLineLen + 2]).toFixed(1).toString(), 4, true, "0") + " " +
+                    helper.pad(parseFloat(words[7]).toFixed(1).toString(), 6, " ") + " " +
+                    helper.pad(parseFloat(words[this.ReqLineLen + 1]).toFixed(2).toString(), this.MaxLen.TCSpmra + 3, true, " ") + " " +
+                    helper.pad(parseFloat(words[this.ReqLineLen + 3]).toFixed(2).toString(), this.MaxLen.TCSpmdec + 3, true, " "));
+            }
+            this.TargetsLines.push(padded.join(" "));
+        }
+    }
+
+    if (this.InputStats.Actual === 0) {
+        if (this.InputStats.Commented > 0 || this.InputStats.Empty > 0) {
+            helper.LogError("Error 2: no valid targets found (input consists of " +
+                    (this.InputStats.Commented > 0 ? helper.plural(this.InputStats.Commented, "commented-out line") + (this.InputStats.Empty > 0 ? " and " : "") : "") +
+                    (this.InputStats.Empty > 0 ? helper.plural(this.InputStats.Empty, "empty line") : "") + ").");
+        } else {
+            helper.LogError("Error 3: no targets given.");
+        }
+        return false;
+    }
+
+    this.checkForDuplicates();
+
+    /* Save scroll position, update, and scroll back */
+    let scrollInfo = driver.CMeditor.getScrollInfo();
+    driver.CMeditor.setValue(this.VisibleLines.join("\n"));
+    driver.CMeditor.scrollTo(scrollInfo.left, scrollInfo.top);
+    $("#targets_actual").val(this.TargetsLines.join("\n"));
+    helper.LogEntry(`Done. Target list looks properly formatted (${helper.plural(this.InputStats.Actual, "target")}).`);
+    this.InputText = driver.CMeditor.getValue();
+    this.InputValid = true;
+    $("#tcsExport").prop("disabled", false);
+    return true;
+}
+
 /**
  * @memberof TargetList
  * @description Format the list of targets that already has the correct syntax
@@ -1085,169 +1244,36 @@ TargetList.prototype.validateAndFormatTargets = function (force = false) {
         const lines = helper.extractLines(tgts);
         let idsToRetrieve = Array();
         // Check if we need to retrieve any targets from SIMBAD
-        for (let i = 0; i < lines.length; i += 1) {
-            if (lines[i].trim() === "" || lines[i].startsWith("#")) continue;
-            const words = lines[i].split(/\s+/g);
-            if (words.length === 1) {
-                idsToRetrieve.push(words[0]);
+        for (const line of lines) {
+            if (line.trim() === "" || line.startsWith("#")) continue;
+            if (line.startsWith('"') && line.endsWith('"')) {
+                idsToRetrieve.push(line.substring(1, line.length - 1));
+            } else {
+                const words = line.split(/\s+/g);
+                if (words.length === 1) {
+                    idsToRetrieve.push(words[0]);
+                }
             }
         }
         if (idsToRetrieve.length > 0) {
             helper.LogEntry(`Will attempt to retrive the following targets from SIMBAD: ${idsToRetrieve.join(', ')}. This may take a while...`);
             let deferreds = Array();
             for (const id of idsToRetrieve) {
-                deferreds[id] = $.get(`https://simbad.cds.unistra.fr/simbad/sim-id?output.format=ASCII&Ident=${id}`);
+                deferreds[id] = $.get(`https://simbad.cds.unistra.fr/simbad/sim-id?output.format=ASCII&Ident=${encodeURIComponent(id)}`);
             }
             $.when(...Object.values(deferreds)).then(function() {
                 helper.LogEntry("Results received from SIMBAD, will proceed to parse the targets.")
                 for (const [id, deferred] of Object.entries(deferreds)) {
-                    driver.resolvedIdentifiers[id] = helper.parseSIMBADResponse(deferred.responseText);
-                }
-                thisList.VisibleLines = [];
-                thisList.TargetsLines = [];
-                thisList.FormattedLines = [];
-                // Determine maximum width of the various fields
-                thisList.MaxLen = {Name: 0, RA: 0, Dec: 0, Exp: 0, AM: 0, ProposalId: 0, Type: 0, OBData: 0, TCSpmra: 0, TCSpmdec: 0, Skypa: 0};
-                thisList.BadWolfStart = [];
-                thisList.BadWolfEnd = [];
-                for (let i = 0; i < lines.length; i += 1) {
-                    if (lines[i].trim() === "") {
-                        thisList.FormattedLines.push(null);
-                        continue;
-                    }
-                    const words = thisList.extractLineInfo(i + 1, lines[i].trim());
-                    if (words === false) {
-                        return reject();
-                    }
-                    const mLTN = driver.graph.maxLenTgtName + (words[0][0] == "#" ? 1 : 0);
-                    if (words[0].length > mLTN) {
-                        words[0] = words[0].substr(0, mLTN);
-                    }
-                    if (words[0].length > thisList.MaxLen.Name) {
-                        thisList.MaxLen.Name = words[0].length;
-                    }
-                    if (words[3].length > thisList.MaxLen.RA) {
-                        thisList.MaxLen.RA = words[3].length;
-                    }
-                    if (words[6].length > thisList.MaxLen.Dec) {
-                        thisList.MaxLen.Dec = words[6].length;
-                    }
-                    if (words[8].length > thisList.MaxLen.Exp) {
-                        thisList.MaxLen.Exp = words[8].length;
-                    }
-                    if (words[9].length > thisList.MaxLen.ProposalId) {
-                        thisList.MaxLen.ProposalId = words[9].length;
-                    }
-                    if (words[10].length > thisList.MaxLen.AM) {
-                        thisList.MaxLen.AM = words[10].length;
-                    }
-                    if (words[11].length > thisList.MaxLen.Type) {
-                        thisList.MaxLen.Type = words[11].length;
-                    }
-                    if (words[12].length > thisList.MaxLen.OBData) {
-                        thisList.MaxLen.OBData = words[12].length;
-                    }
-                    if (words[13].length > thisList.MaxLen.Skypa) {
-                        thisList.MaxLen.Skypa = words[13].length;
-                    }
-                    let j;
-                    j = (parseInt(words[thisList.ReqLineLen + 1]) + "").length + (words[thisList.ReqLineLen + 1] < 0 && words[thisList.ReqLineLen + 1] > -1 ? 1 : 0);
-                    if (j > thisList.MaxLen.TCSpmra) {
-                        thisList.MaxLen.TCSpmra = j;
-                    }
-                    j = (parseInt(words[thisList.ReqLineLen + 3]) + "").length + (words[thisList.ReqLineLen + 3] < 0 && words[thisList.ReqLineLen + 3] > -1 ? 1 : 0);
-                    if (j > thisList.MaxLen.TCSpmdec) {
-                        thisList.MaxLen.TCSpmdec = j;
-                    }
-                    thisList.FormattedLines.push(words);
-                }
-                thisList.InputStats = {Empty: 0, Commented: 0, Actual: 0};
-                thisList.TCSlines = [];
-                for (let i = 0; i < thisList.FormattedLines.length; i += 1) {
-                    if (thisList.FormattedLines[i] === null) {
-                        thisList.VisibleLines.push("");
-                        thisList.InputStats.Empty += 1;
-                        continue;
-                    }
-                    const words = thisList.FormattedLines[i];
-                    const badwolf = $.inArray(words[0], helper.offlineStrings) !== -1;
-                    const padded = [
-                        helper.pad(words[0], thisList.MaxLen.Name, false, " "),
-                        helper.pad(words[1], 2, true, badwolf ? " " : "0"),
-                        helper.pad(words[2], 2, true, badwolf ? " " : "0"),
-                        helper.pad(words[3], thisList.MaxLen.RA, false, " "),
-                        helper.pad(badwolf ? words[4] : helper.padTwoDigits(words[4]), 3, true, " "),
-                        helper.pad(words[5], 2, true, badwolf ? " " : "0"),
-                        helper.pad(words[6], thisList.MaxLen.Dec, false, " "),
-                        helper.pad(words[7], 4, true, " "),
-                        helper.pad(words[8], thisList.MaxLen.Exp, true, " "),
-                        helper.pad(words[9], thisList.MaxLen.ProposalId, false, " "),
-                        helper.pad(words[10], thisList.MaxLen.AM, false, " "),
-                        helper.pad(words[11], thisList.MaxLen.Type, false, " "),
-                        helper.pad(words[12], thisList.MaxLen.OBData, false, " "),
-                        helper.pad(words[13], thisList.MaxLen.Skypa, false, " ")
-                    ];
-                    thisList.VisibleLines.push(padded.join(" "));
-                    if (words[0][0] == "#") {
-                        thisList.InputStats.Commented += 1;
-                        continue;
-                    }
-                    if (!badwolf) {
-                        thisList.InputStats.Actual += 1;
-                        if ($.inArray(Driver.telescopeName, ["NOT", "WHT", "INT"]) >= 0) {
-                            thisList.TCSlines.push(helper.pad(words[0].replace(/[^A-Za-z0-9\_\+\-]+/g, ""), thisList.MaxLen.Name, false, " ") + " " +
-                                helper.padTwoDigits(words[1]) + ":" +
-                                helper.padTwoDigits(words[2]) + ":" +
-                                helper.pad(parseFloat(words[thisList.ReqLineLen]).toFixed(2).toString(), 5, true, "0") + " " +
-                                helper.pad(helper.padTwoDigits(words[4]), 3, true, " ") + ":" +
-                                helper.pad(words[5], 2, true, "0") + ":" +
-                                helper.pad(parseFloat(words[thisList.ReqLineLen + 2]).toFixed(1).toString(), 4, true, "0") + " " +
-                                helper.pad(words[7], 4, " ") + " " +
-                                helper.pad(parseFloat(words[thisList.ReqLineLen + 1]).toFixed(2).toString(), thisList.MaxLen.TCSpmra + 3, true, " ") + " " +
-                                helper.pad(parseFloat(words[thisList.ReqLineLen + 3]).toFixed(2).toString(), thisList.MaxLen.TCSpmdec + 3, true, " ") + " " +
-                                "0.0");
-                        } else if ($.inArray(Driver.telescopeName, ["HJST", "OST"]) >= 0) {
-                            thisList.TCSlines.push(
-                                helper.pad(thisList.InputStats.Actual.toString(), 2, true, " ") + " " +
-                                '"' + helper.pad(words[0].replace(/[^A-Za-z0-9\_\+\-]+/g, ""), thisList.MaxLen.Name, false, " ") + '" ' +
-                                helper.padTwoDigits(words[1]) + " " +
-                                helper.padTwoDigits(words[2]) + " " +
-                                helper.pad(parseFloat(words[thisList.ReqLineLen]).toFixed(2).toString(), 5, true, "0") + " " +
-                                helper.pad(helper.padTwoDigits(words[4]), 3, true, " ") + " " +
-                                helper.pad(words[5], 2, true, "0") + " " +
-                                helper.pad(parseFloat(words[thisList.ReqLineLen + 2]).toFixed(1).toString(), 4, true, "0") + " " +
-                                helper.pad(parseFloat(words[7]).toFixed(1).toString(), 6, " ") + " " +
-                                helper.pad(parseFloat(words[thisList.ReqLineLen + 1]).toFixed(2).toString(), thisList.MaxLen.TCSpmra + 3, true, " ") + " " +
-                                helper.pad(parseFloat(words[thisList.ReqLineLen + 3]).toFixed(2).toString(), thisList.MaxLen.TCSpmdec + 3, true, " "));
-                        }
-                        thisList.TargetsLines.push(padded.join(" "));
+                    const resolution = helper.parseSIMBADResponse(deferred.responseText);
+                    driver.resolvedIdentifiers[id] = resolution;
+                    if (resolution === null) {
+                        helper.LogError(`Target identifier unknown to SIMBAD: ${id}`)
                     }
                 }
-
-                if (thisList.InputStats.Actual === 0) {
-                    if (thisList.InputStats.Commented > 0 || thisList.InputStats.Empty > 0) {
-                        helper.LogError("Error 2: no valid targets found (input consists of " +
-                                (thisList.InputStats.Commented > 0 ? helper.plural(thisList.InputStats.Commented, "commented-out line") + (thisList.InputStats.Empty > 0 ? " and " : "") : "") +
-                                (thisList.InputStats.Empty > 0 ? helper.plural(thisList.InputStats.Empty, "empty line") : "") + ").");
-                    } else {
-                        helper.LogError("Error 3: no targets given.");
-                    }
-                    return reject();
-                }
-
-                thisList.checkForDuplicates();
-
-                /* Save scroll position, update, and scroll back */
-                let scrollInfo = driver.CMeditor.getScrollInfo();
-                driver.CMeditor.setValue(thisList.VisibleLines.join("\n"));
-                driver.CMeditor.scrollTo(scrollInfo.left, scrollInfo.top);
-                $("#targets_actual").val(thisList.TargetsLines.join("\n"));
-                helper.LogEntry(`Done. Target list looks properly formatted (${helper.plural(thisList.InputStats.Actual, "target")}).`);
-                thisList.InputText = driver.CMeditor.getValue();
-                thisList.InputValid = true;
-                $("#tcsExport").prop("disabled", false);
-                return resolve();
+                return thisList.processTargetListAfterSIMBAD(lines) ? resolve() : reject();
             });
+        } else {
+            return thisList.processTargetListAfterSIMBAD(lines) ? resolve() : reject();
         }
     });
 };
@@ -1285,7 +1311,12 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
     // Split by white spaces and colons
     let words = linetext.split(/\s+/g);
     // Check if this is a known identifier
-    if (words.length === 1) {
+    if (linetext.startsWith('"') && linetext.endsWith('"')) {
+        const identifier = linetext.substring(1, linetext.length - 1);
+        if (identifier in driver.resolvedIdentifiers) {
+            words = `${identifier.replaceAll(" ", "_")} ${driver.resolvedIdentifiers[identifier]}`.split(/\s+/g);
+        }
+    } else if (words.length === 1) {
         if (words[0] in driver.resolvedIdentifiers) {
             words = `${words[0]} ${driver.resolvedIdentifiers[words[0]]}`.split(/\s+/g);
         }

@@ -108,9 +108,11 @@ helper.parseSIMBADResponse = function (responseText) {
     if (ca === null) return null;
     const pmRegex = new RegExp(/Proper motions:\s+([+\-\d\.]+)\s+([+\-\d\.]+)/g);
     const pa = pmRegex.exec(responseText);
-    if (pa === null) return null;
-    const ret = `${ca[1]} ${ca[2]} ${ca[3]}/${(parseFloat(pa[1])/1000).toFixed(5)} ${ca[4]} ${ca[5]} ${ca[6]}/${(parseFloat(pa[2])/1000).toFixed(5)}`;
-    return ret;
+    if (pa === null) {
+        return `${ca[1]} ${ca[2]} ${ca[3]} ${ca[4]} ${ca[5]} ${ca[6]}`;
+    } else {
+        return `${ca[1]} ${ca[2]} ${ca[3]}/${(parseFloat(pa[1])/1000).toFixed(5)} ${ca[4]} ${ca[5]} ${ca[6]}/${(parseFloat(pa[2])/1000).toFixed(5)}`;
+    }
 };
 
 helper.getCoordinates = function(xcent, ycent, x, y, r, lst) {
