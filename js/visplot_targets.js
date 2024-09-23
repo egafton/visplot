@@ -16,7 +16,7 @@ function TargetList() {
     this.nTargets = 0;
     this.Targets = [];
     this.Offline = [];
-    this.InputText = null;
+    this.InputText = "";
     this.VisibleLines = null;   // including empty lines and comments
     this.TargetsLines = null;   // only the lines that contain proper targets
     this.FormattedLines = null; // contains arrays or null values
@@ -1055,37 +1055,24 @@ TargetList.prototype.inputHasChanged = function (_newinput, _oldinput) {
     return (_newinput !== _oldinput);
 };
 
-/**
- * @memberof TargetList
- * @description Format the list of targets that already has the correct syntax
- *     by adding spaces so that the various columns fall nicely under each
- *     other.
- */
-TargetList.prototype.validateAndFormatTargets = function (force = false) {
-    // Retrieve content of #targets textarea
-    const tgts = driver.CMeditor.getValue();
-    if (!this.inputHasChanged(tgts, this.InputText) && this.InputValid && !force) {
-        helper.LogEntry("Target input list has not changed, no need to revalidate.");
-        return true;
-    } else {
-        helper.LogEntry("Validating and formatting target input list...");
-    }
-    $("#tcsExport").prop("disabled", true);
-    this.InputValid = false;
-    if (tgts.length === 0) {
-        if (force) {
-            return true;
-        }
-        helper.LogError("Error 1: Please fill in the <i>Targets</i> field.");
-        return false;
-    }
-    // Split it into lines
-    const lines = helper.extractLines(tgts);
+TargetList.prototype.processTargetListAfterSIMBAD = function(lines) {
     this.VisibleLines = [];
     this.TargetsLines = [];
     this.FormattedLines = [];
     // Determine maximum width of the various fields
-    this.MaxLen = {Name: 0, RA: 0, Dec: 0, Exp: 0, AM: 0, ProposalId: 0, Type: 0, OBData: 0, TCSpmra: 0, TCSpmdec: 0, Skypa: 0};
+    this.MaxLen = {
+        Name: 0,
+        RA: 0,
+        Dec: 0,
+        Exp: 0,
+        AM: 0,
+        ProposalId: 0,
+        Type: 0,
+        OBData: 0,
+        TCSpmra: 0,
+        TCSpmdec: 0,
+        Skypa: 0
+    };
     this.BadWolfStart = [];
     this.BadWolfEnd = [];
     for (let i = 0; i < lines.length; i += 1) {
@@ -1095,7 +1082,7 @@ TargetList.prototype.validateAndFormatTargets = function (force = false) {
         }
         const words = this.extractLineInfo(i + 1, lines[i].trim());
         if (words === false) {
-            return false; // Does not validate
+            return false;
         }
         const mLTN = driver.graph.maxLenTgtName + (words[0][0] == "#" ? 1 : 0);
         if (words[0].length > mLTN) {
@@ -1225,6 +1212,70 @@ TargetList.prototype.validateAndFormatTargets = function (force = false) {
     this.InputValid = true;
     $("#tcsExport").prop("disabled", false);
     return true;
+}
+
+/**
+ * @memberof TargetList
+ * @description Format the list of targets that already has the correct syntax
+ *     by adding spaces so that the various columns fall nicely under each
+ *     other.
+ */
+TargetList.prototype.validateAndFormatTargets = function (force = false) {
+    const thisList = this;
+    return new Promise(function(resolve, reject) {
+        // Retrieve content of #targets textarea
+        const tgts = driver.CMeditor.getValue();
+        if (!thisList.inputHasChanged(tgts, thisList.InputText) && thisList.InputValid && !force) {
+            helper.LogEntry("Target input list has not changed, no need to revalidate.");
+            return resolve();
+        } else {
+            helper.LogEntry("Validating and formatting target input list...");
+        }
+        $("#tcsExport").prop("disabled", true);
+        thisList.InputValid = false;
+        if (tgts.length === 0) {
+            if (force) {
+                return resolve();
+            }
+            helper.LogError("Error 1: Please fill in the <i>Targets</i> field.");
+            return reject();
+        }
+        // Split it into lines
+        const lines = helper.extractLines(tgts);
+        let idsToRetrieve = Array();
+        // Check if we need to retrieve any targets from SIMBAD
+        for (const line of lines) {
+            if (line.trim() === "" || line.startsWith("#")) continue;
+            if (line.startsWith('"') && line.endsWith('"')) {
+                idsToRetrieve.push(line.substring(1, line.length - 1));
+            } else {
+                const words = line.split(/\s+/g);
+                if (words.length === 1) {
+                    idsToRetrieve.push(words[0]);
+                }
+            }
+        }
+        if (idsToRetrieve.length > 0) {
+            helper.LogEntry(`Will attempt to retrive the following targets from SIMBAD: ${idsToRetrieve.join(', ')}. This may take a while...`);
+            let deferreds = Array();
+            for (const id of idsToRetrieve) {
+                deferreds[id] = $.get(`https://simbad.cds.unistra.fr/simbad/sim-id?output.format=ASCII&Ident=${encodeURIComponent(id)}`);
+            }
+            $.when(...Object.values(deferreds)).then(function() {
+                helper.LogEntry("Results received from SIMBAD, will proceed to parse the targets.")
+                for (const [id, deferred] of Object.entries(deferreds)) {
+                    const resolution = helper.parseSIMBADResponse(deferred.responseText);
+                    driver.resolvedIdentifiers[id] = resolution;
+                    if (resolution === null) {
+                        helper.LogError(`Error 61: Target identifier unknown to SIMBAD: ${id}`)
+                    }
+                }
+                return thisList.processTargetListAfterSIMBAD(lines) ? resolve() : reject();
+            });
+        } else {
+            return thisList.processTargetListAfterSIMBAD(lines) ? resolve() : reject();
+        }
+    });
 };
 
 /**
@@ -1259,6 +1310,17 @@ TargetList.prototype.ExportTCSCatalogue = function () {
 TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
     // Split by white spaces and colons
     let words = linetext.split(/\s+/g);
+    // Check if this is a known identifier
+    if (linetext.startsWith('"') && linetext.endsWith('"')) {
+        const identifier = linetext.substring(1, linetext.length - 1);
+        if (identifier in driver.resolvedIdentifiers) {
+            words = `${identifier.replaceAll(" ", "_")} ${driver.resolvedIdentifiers[identifier]}`.split(/\s+/g);
+        }
+    } else if (words.length === 1) {
+        if (words[0] in driver.resolvedIdentifiers) {
+            words = `${words[0]} ${driver.resolvedIdentifiers[words[0]]}`.split(/\s+/g);
+        }
+    }
     // Sanity check: minimum number of fields
     if (words.length <= 1) {
         helper.LogError(`Error 6: Incorrect syntax on Line #${linenumber}; for each object you must provide at least the Name, RA and Dec!`);

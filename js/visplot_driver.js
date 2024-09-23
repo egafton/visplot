@@ -88,8 +88,11 @@ function Driver() {
      * 
      * 3.7 - Replaced MSZT with Local Time (DST included if applicable),
      *       using Moment.js.
+     *
+     * 3.8 - Can now retrieve coordinates and proper motions from SIMBAD.
+     *     - Now providing a Dockerfile and docker-compose.yml for easy testing.
      */
-    this.version = "3.7";
+    this.version = "3.8";
     helper.LogSuccess(`Hello, this is Visplot version ${this.version}`);
 
     /* HTML5 canvas, context and Graph class - related variables */
@@ -133,6 +136,7 @@ function Driver() {
     this.scheduleMode = false;
     this.rescheduling = false;
     this.night = null;
+    this.resolvedIdentifiers = Array();
     this.targets = new TargetList();
     this.RequestedScheduleType = 0;
     /* Types of request:
@@ -156,8 +160,9 @@ function Driver() {
         styleActiveLine: { nonEmpty: false },
         extraKeys: {
             Tab: function () {
-                driver.targets.validateAndFormatTargets();
-                $("#plotTargets").focus();
+                driver.targets.validateAndFormatTargets().then(function() {
+                    $("#plotTargets").focus();
+                }).catch(function() {});
             },
         }
     });
@@ -201,7 +206,8 @@ Driver.prototype.ParseOBInfoIfAny = function () {
             this.ob = true;
             if (this.obdata.Telescope.length) {
                 helper.LogEntry(`Setting telescope to <i>${this.obdata.Telescope}</i>.`);
-                Driver.telescopeName = this.obdata.Telescope;
+                driver.setTelescopeName(this.obdata.Telescope)
+                    .then(function() {});
             }
         } else {
             helper.LogError("Error 35: Could not decode JSON object. Falling back to standard (non-OB) visplot...");
@@ -237,9 +243,9 @@ Driver.prototype.Callback_SetDate = function (obj) {
         }
         this.obprocessed = true;
         this.CMeditor.setValue(lines.join("\n"));
-        if (this.targets.validateAndFormatTargets()) {
+        this.targets.validateAndFormatTargets().then(function() {
             $("#plotTargets").trigger("click");
-        }
+        }).catch(function() {});
     }
 };
 
@@ -326,41 +332,40 @@ Driver.prototype.BtnEvt_PlotTargets = function () {
         helper.LogError("Error 41: Night not initialized. Click on [Set] first!");
         return;
     }
-    if (!this.targets.validateAndFormatTargets()) {
-        return;
-    }
-    if (this.RequestedScheduleType !== 1 && this.scheduleMode) {
-        if (!confirm("Are you sure you want to replot the targets?\nThe current schedule WILL BE LOST!")) {
-            return;
-        }
-    }
-    if (this.RequestedScheduleType === 1) {
-        const ret = this.targets.prepareScheduleForUpdate();
-        if (ret === "") { // nothing to do, since the input form has not been changed
-            return;
-        }
-        if (ret === false) { // reschedule at will, since we are not in the middle of the night
-            this.RequestedScheduleType = 2;
-        } else { // we are in the middle of the night...
-            if (ret === true) { // ... but there are no new targets; just redo the schedule and replot
-                this.Callback_UpdateSchedule();
-            } else { // ... and there are new targets;
-                helper.LogEntry("Calculating altitudes for the new targets. Please wait...");
-                driver.Callback_SetTargets($("#added_targets").val());
+    this.targets.validateAndFormatTargets().then(function() {
+        if (driver.RequestedScheduleType !== 1 && driver.scheduleMode) {
+            if (!confirm("Are you sure you want to replot the targets?\nThe current schedule WILL BE LOST!")) {
+                return;
             }
         }
-    }
-    $("#plotTargets").prop("disabled", true);
-    if (this.RequestedScheduleType !== 1) {
-        if (this.RequestedScheduleType === 2 && !(this.targets.inputHasChanged($("#targets_actual").val(), this.targets.ComputedTargets))) {
-            helper.LogEntry("No need to recompute altitudes. Proceeding to scheduling.");
-            this.Callback_UpdateSchedule();
-        } else {
-            helper.LogEntry("Calculating altitudes for all targets. Please wait...");
-            driver.Callback_SetTargets($("#targets_actual").val());
+        if (driver.RequestedScheduleType === 1) {
+            const ret = driver.targets.prepareScheduleForUpdate();
+            if (ret === "") { // nothing to do, since the input form has not been changed
+                return;
+            }
+            if (ret === false) { // reschedule at will, since we are not in the middle of the night
+                driver.RequestedScheduleType = 2;
+            } else { // we are in the middle of the night...
+                if (ret === true) { // ... but there are no new targets; just redo the schedule and replot
+                    driver.Callback_UpdateSchedule();
+                } else { // ... and there are new targets;
+                    helper.LogEntry("Calculating altitudes for the new targets. Please wait...");
+                    driver.Callback_SetTargets($("#added_targets").val());
+                }
+            }
         }
-    }
-    $("#plotTargets").prop("disabled", false);
+        $("#plotTargets").prop("disabled", true);
+        if (driver.RequestedScheduleType !== 1) {
+            if (driver.RequestedScheduleType === 2 && !(driver.targets.inputHasChanged($("#targets_actual").val(), driver.targets.ComputedTargets))) {
+                helper.LogEntry("No need to recompute altitudes. Proceeding to scheduling.");
+                driver.Callback_UpdateSchedule();
+            } else {
+                helper.LogEntry("Calculating altitudes for all targets. Please wait...");
+                driver.Callback_SetTargets($("#targets_actual").val());
+            }
+        }
+        $("#plotTargets").prop("disabled", false);
+    }).catch(function() {});
 };
 
 /**
@@ -808,13 +813,14 @@ Driver.prototype.BindEvents = function () {
         // Set instrument name to default
         $("#def_instrument").val(config[tel].defaultInstrument);
         // Set project number to default if not compatible with telescope
-        Driver.telescopeName = tel;
-        const valid = driver.validateProjectNumber(Driver.defaultProject);
-        if (! valid[2]) {
-            Driver._defaultProject = false;
-            Driver._defaultProject = Driver.defaultProject;
-            $("#def_project").val(Driver.defaultProject);
-        }
+        driver.setTelescopeName(tel).then(function() {
+            const valid = driver.validateProjectNumber(Driver.defaultProject);
+            if (! valid[2]) {
+                Driver._defaultProject = false;
+                Driver._defaultProject = Driver.defaultProject;
+                $("#def_project").val(Driver.defaultProject);
+            }
+        });
     });
 
     // Help button
@@ -829,10 +835,14 @@ Driver.prototype.BindEvents = function () {
     // Sample targets and target box
     $("#targetBlanks").click(function () {
         driver.CMeditor.setValue(Driver.BlankFields);
-        driver.targets.validateAndFormatTargets();
+        driver.targets.validateAndFormatTargets()
+            .then(function() {})
+            .catch(function() {});
     });
     $("#targets").blur(function () {
-        driver.targets.validateAndFormatTargets();
+        driver.targets.validateAndFormatTargets()
+            .then(function() {})
+            .catch(function() {});
     });
     $("#tcsExport").click(function () {
         driver.targets.ExportTCSCatalogue();
@@ -929,27 +939,8 @@ Driver.prototype.EvtClick_Config = function () {
     });
 };
 
-/**
- * @memberof Driver
- */
-Driver.prototype.CallbackUpdateDefaults = function () {
-    if ($("#configsubmit").val() === "false") {
-        return;
-    }
-    let re, k, resetTel = false, resetCol = false;
-    helper.LogEntry("Updating default parameters...");
-    re = $("#def_telescope").val().trim();
-    if (re !== Driver.telescopeName) {
-        if ($.inArray(re, Object.keys(config)) !== -1) {
-            Driver.telescopeName = re;
-            // Recalculate ephemerides
-            driver.Callback_SetDate();
-            helper.LogSuccess(`<i>Telescope name</i> set to <i>${re}</i>.`);
-            resetTel = true;
-        } else {
-            helper.LogError("Error 49: <i>Telescope name</i> was not updated since the input was invalid.");
-        }
-    }
+Driver.prototype.CallbackUpdateDefaults_postTelUpdate = function (resetTel) {
+    let re, k, resetCol = false;
     re = $("#def_epoch").val().trim();
     if (re !== Driver.defaultEpoch) {
         if (re === "1950" || re === "2000") {
@@ -1036,7 +1027,7 @@ Driver.prototype.CallbackUpdateDefaults = function () {
                 this.targets.Targets[k].resetColours();
             }
         }
-        if (resetCol || resetTel) {
+        if (resetTel || resetCol) {
             this.Refresh();
         }
     }
@@ -1059,6 +1050,32 @@ Driver.prototype.CallbackUpdateDefaults = function () {
     localStorage.setItem("opt_schedule_between", $('input[type="radio"][name="opt_schedule_between"]:checked').val());
     localStorage.setItem("opt_show_lastobstime", $("#opt_show_lastobstime").is(":checked"));
     helper.LogEntry("Done.");
+};
+
+/**
+ * @memberof Driver
+ */
+Driver.prototype.CallbackUpdateDefaults = function () {
+    if ($("#configsubmit").val() === "false") {
+        return;
+    }
+    helper.LogEntry("Updating default parameters...");
+    let re = $("#def_telescope").val().trim();
+    if (re !== Driver.telescopeName) {
+        if ($.inArray(re, Object.keys(config)) !== -1) {
+            driver.setTelescopeName(re).then(function() {
+                // Recalculate ephemerides
+                driver.Callback_SetDate();
+                helper.LogSuccess(`<i>Telescope name</i> set to <i>${re}</i>.`);
+                driver.CallbackUpdateDefaults_postTelUpdate(true);
+            });
+        } else {
+            helper.LogError("Error 49: <i>Telescope name</i> was not updated since the input was invalid.");
+            driver.CallbackUpdateDefaults_postTelUpdate(false);
+        }
+    } else {
+        driver.CallbackUpdateDefaults_postTelUpdate(false);
+    }
 };
 
 /**
@@ -1219,6 +1236,30 @@ Driver.prototype.validateProjectNumber = function (project) {
     return [form, reqlen, reok];
 };
 
+Driver.prototype.setTelescopeName = function(val) {
+    return new Promise(function(resolve, reject) {
+        if ($.inArray(val, Object.keys(config)) !== -1) {
+            if (Driver._telescopeName !== val) {
+                Driver._telescopeName = val;
+                $("#def_telescope").val(val);
+                // Background with telescope image
+                $("#canvasFrame").css("background-image", 'url(' + config[val].background + ')');
+                // Recalculate Skycam constants
+                driver.skyGraph.updateTelescope();
+                // Revalidate targets to recompute TCS lines
+                driver.targets.validateAndFormatTargets(true).then(function() {
+                    // Replot targets
+                    $("#dateSet").trigger("click");
+                    $("#plotTargets").trigger("click");
+                    resolve();
+                }).catch(function() { resolve(); });
+            }
+        } else {
+            return resolve();
+        }
+    });
+};
+
 /**
  * @memberof Driver
  */
@@ -1256,24 +1297,6 @@ Object.defineProperties(Driver, {
     "telescopeName": {
         get: function() {
             return this._telescopeName || "NOT";
-        }, set: function(val) {
-            /* Only update if we have a config entry for the telescope */
-            if ($.inArray(val, Object.keys(config)) !== -1) {
-                if (this._telescopeName !== val) {
-                    this._telescopeName = val;
-                    $("#def_telescope").val(val);
-                    // Background with telescope image
-                    $("#canvasFrame").css("background-image", 'url(' + config[val].background + ')');
-                    // Recalculate Skycam constants
-                    driver.skyGraph.updateTelescope();
-                    // Revalidate targets to recompute TCS lines
-                    if (driver.targets.validateAndFormatTargets(true)) {
-                        // Replot targets
-                        $("#dateSet").trigger("click");
-                        $("#plotTargets").trigger("click");
-                    }
-                }
-            }
         }},
     "updSchedText": {
         get: function () {

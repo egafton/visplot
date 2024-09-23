@@ -129,47 +129,48 @@ serializer.loadDocument = function (e) {
             driver.obprocessed = obj.driver.obprocessed;
             driver.nightInitialized = obj.driver.nightInitialized;
             driver.scheduleMode = obj.driver.scheduleMode;
-            Driver.telescopeName = obj.driver.telescopeName;
-            Driver.defaultEpoch = obj.driver.defaultEpoch;
-            Driver.defaultProject = obj.driver.defaultProject;
-            Driver.defaultAM = obj.driver.defaultAM;
-            Driver.defaultType = obj.driver.defaultType;
-            Driver.defaultObstime = obj.driver.defaultObstime;
-            for (let k in Driver.FillColors) {
-                Driver.FillColors = [k, obj.driver.FillColors[k]];
-                Driver.TextColors = [k, obj.driver.TextColors[k]];
-            }
-            Object.setPrototypeOf = Object.setPrototypeOf || function (obj, proto) {
-                obj.__proto__ = proto;
-                return obj;
-            };
-            let deserialize = function (object) {
-                Object.setPrototypeOf(object, window[object["#"]].prototype);
-                return object;
-            };
-            driver.night = Object.setPrototypeOf(obj.night, Night.prototype);
-            driver.graph = Object.setPrototypeOf(obj.graph, Graph.prototype);
-            driver.targets = Object.setPrototypeOf(obj.targets, TargetList.prototype);
-            for (let i = 0; i < obj.targets.nTargets; i += 1) {
-                Object.setPrototypeOf(driver.targets.Targets[i], Target.prototype);
-            }
-            helper.LogEntry("Done.");
-            $("#targets_actual").val(obj.ta);
-            $("#dateY").val(driver.night.year);
-            $("#dateM").val(helper.padTwoDigits(driver.night.month));
-            $("#dateD").val(helper.padTwoDigits(driver.night.day));
-            driver.CMeditor.setValue(obj.tgts);
-            driver.graph.ctx = driver.context;
-            driver.graph.canvas = driver.canvas;
-            driver.nightInitialized = true;
-            driver.Refresh();
-            if (driver.scheduleMode) {
-                driver.targets.display_scheduleStatistics();
-                $("#planNight").val(Driver.updSchedText);
-            }
-            $("#tcsExport").removeAttr("disabled");
-            $("#planNight").removeAttr("disabled");
-            $("#saveDoc").removeAttr("disabled");
+            driver.setTelescopeName(obj.driver.telescopeName).then(function() {
+                Driver.defaultEpoch = obj.driver.defaultEpoch;
+                Driver.defaultProject = obj.driver.defaultProject;
+                Driver.defaultAM = obj.driver.defaultAM;
+                Driver.defaultType = obj.driver.defaultType;
+                Driver.defaultObstime = obj.driver.defaultObstime;
+                for (let k in Driver.FillColors) {
+                    Driver.FillColors = [k, obj.driver.FillColors[k]];
+                    Driver.TextColors = [k, obj.driver.TextColors[k]];
+                }
+                Object.setPrototypeOf = Object.setPrototypeOf || function (obj, proto) {
+                    obj.__proto__ = proto;
+                    return obj;
+                };
+                let deserialize = function (object) {
+                    Object.setPrototypeOf(object, window[object["#"]].prototype);
+                    return object;
+                };
+                driver.night = Object.setPrototypeOf(obj.night, Night.prototype);
+                driver.graph = Object.setPrototypeOf(obj.graph, Graph.prototype);
+                driver.targets = Object.setPrototypeOf(obj.targets, TargetList.prototype);
+                for (let i = 0; i < obj.targets.nTargets; i += 1) {
+                    Object.setPrototypeOf(driver.targets.Targets[i], Target.prototype);
+                }
+                helper.LogEntry("Done.");
+                $("#targets_actual").val(obj.ta);
+                $("#dateY").val(driver.night.year);
+                $("#dateM").val(helper.padTwoDigits(driver.night.month));
+                $("#dateD").val(helper.padTwoDigits(driver.night.day));
+                driver.CMeditor.setValue(obj.tgts);
+                driver.graph.ctx = driver.context;
+                driver.graph.canvas = driver.canvas;
+                driver.nightInitialized = true;
+                driver.Refresh();
+                if (driver.scheduleMode) {
+                    driver.targets.display_scheduleStatistics();
+                    $("#planNight").val(Driver.updSchedText);
+                }
+                $("#tcsExport").removeAttr("disabled");
+                $("#planNight").removeAttr("disabled");
+                $("#saveDoc").removeAttr("disabled");
+            });
         }).catch(function (e) {
             helper.LogError(`Error 46: Could not open the file because it has an invalid format (${e}).`);
             return;
