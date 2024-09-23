@@ -11,7 +11,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-* `docker` and `docker-compose`;
+* Docker;
 * a modern browser with HTML5 support (Visplot may load but not display correctly on older browsers, or it may fail to load at all);
 
 ### Starting the container
