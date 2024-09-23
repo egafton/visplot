@@ -1267,7 +1267,7 @@ TargetList.prototype.validateAndFormatTargets = function (force = false) {
                     const resolution = helper.parseSIMBADResponse(deferred.responseText);
                     driver.resolvedIdentifiers[id] = resolution;
                     if (resolution === null) {
-                        helper.LogError(`Target identifier unknown to SIMBAD: ${id}`)
+                        helper.LogError(`Error 61: Target identifier unknown to SIMBAD: ${id}`)
                     }
                 }
                 return thisList.processTargetListAfterSIMBAD(lines) ? resolve() : reject();

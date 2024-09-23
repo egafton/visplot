@@ -89,8 +89,8 @@ function Driver() {
      * 3.7 - Replaced MSZT with Local Time (DST included if applicable),
      *       using Moment.js.
      *
-     * 3.8 - Visplot can now query SIMBAD by identifier to retrieve coordinates
-     *       and proper motions.
+     * 3.8 - Can now retrieve coordinates and proper motions from SIMBAD.
+     *     - Now providing a Dockerfile and docker-compose.yml for easy testing.
      */
     this.version = "3.8";
     helper.LogSuccess(`Hello, this is Visplot version ${this.version}`);
@@ -1063,7 +1063,6 @@ Driver.prototype.CallbackUpdateDefaults = function () {
     let re = $("#def_telescope").val().trim();
     if (re !== Driver.telescopeName) {
         if ($.inArray(re, Object.keys(config)) !== -1) {
-            helper.LogError("blax1");
             driver.setTelescopeName(re).then(function() {
                 // Recalculate ephemerides
                 driver.Callback_SetDate();
