@@ -1,6 +1,5 @@
 /**
- * @author ega
- * @copyright (c) 2016-2024 ega, NOT/ING.
+ * @copyright (c) 2016-2024 ega, irl.
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -86,7 +85,9 @@ Night.prototype.setEphemerides = function (obj) {
     let next = sla.djcl(this.Sunset);
     this.tSunset = [next.iy, next.im, next.id, ut1[0], ut1[1], parseFloat(ut1[2]+"."+ut1[3])];
     this.ENauTwilight = utczero + sla.dtf2d(ut2[0], ut2[1], ut2[2]);
+    if (ut2[0] < ut1[0]) this.ENauTwilight += 1;
     this.EAstTwilight = utczero + sla.dtf2d(ut3[0], ut3[1], ut3[2]);
+    if (ut3[0] < ut1[0]) this.EAstTwilight += 1;
     let sret = sla.rdplan(this.Sunset + this.dut, "Sun", Driver.obs_lon_rad, Driver.obs_lat_rad);
     let mret = sla.rdplan(this.Sunset + this.dut, "Moon", Driver.obs_lon_rad, Driver.obs_lat_rad);
     let sep = sla.dsep(sret.ra, sret.dec, mret.ra, mret.dec);
@@ -110,7 +111,9 @@ Night.prototype.setEphemerides = function (obj) {
     next = sla.djcl(this.Sunrise);
     this.tSunrise = [next.iy, next.im, next.id, ut1[0], ut1[1], parseFloat(ut1[2]+"."+ut1[3])];
     this.MNauTwilight = utczero + sla.dtf2d(ut2[0], ut2[1], ut2[2]);
+    if (ut2[0] > ut1[0]) this.MNauTwilight -= 1;
     this.MAstTwilight = utczero + sla.dtf2d(ut3[0], ut3[1], ut3[2]);
+    if (ut3[0] > ut1[0]) this.MAstTwilight -= 1;
     sret = sla.rdplan(this.Sunrise + this.dut, "Sun", Driver.obs_lon_rad, Driver.obs_lat_rad);
     mret = sla.rdplan(this.Sunrise + this.dut, "Moon", Driver.obs_lon_rad, Driver.obs_lat_rad);
     sep = sla.dsep(sret.ra, sret.dec, mret.ra, mret.dec);
