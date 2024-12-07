@@ -90,8 +90,10 @@ function Driver() {
      *
      * 3.8 - Can now retrieve coordinates and proper motions from SIMBAD.
      *     - Now providing a Dockerfile and docker-compose.yml for easy testing.
+     *
+     * 3.9 - Added Kennon Observatory.
      */
-    this.version = "3.8";
+    this.version = "3.9";
     helper.LogSuccess(`Hello, this is Visplot version ${this.version}`);
 
     /* HTML5 canvas, context and Graph class - related variables */
