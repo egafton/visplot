@@ -652,7 +652,7 @@ config["CDK"] = {
     instruments: {
         "CCD": {
             type: "optical",
-            fov: 16,
+            fov: 30,
             flip: null
         }
     },
