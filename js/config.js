@@ -1,7 +1,6 @@
 /**
  * @file Configuration file for the different telescopes supported by Visplot.
- * @author ega
- * @copyright (c) 2016-2024 ega, NOT/ING.
+ * @copyright (c) 2016-2024 ega, irl.
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -559,7 +558,6 @@ config["HJST"] = {
     timezoneName: "US/Central"
 };
 
-
 /**
  * Configuration for the 10m Hobby-Eberly Telescope.
  */
@@ -608,6 +606,59 @@ config["HJST"] = {
 
     // When all else fails, what to use?
     defaultInstrument: "VIRUS",
+
+    // Time zone as defined in momentjs
+    timezoneName: "US/Central"
+};
+
+/**
+ * Configuration for the 10m Hobby-Eberly Telescope.
+ */
+config["CDK"] = {
+    // Name of the observatory site
+    site: "Kennon Observatory",
+
+    // Full name of the telescope
+    name: "Kennon Observatory CDK 17in",
+
+    // Latitude in degrees, +North
+    latitude: 34.36425,
+
+    // Longitude in degrees, +East
+    longitude: -89.5364444,
+
+    // Altitude above sea level, in metres
+    altitude: 0,
+
+    // Lowest limit in zenith distance for observing, in degrees; null if N/A
+    zenithLimit: null,
+
+    // Lowest limit in elevation for observing, in degrees
+    lowestLimit: null,
+
+    // Highest limit in elevation for observing, in degrees
+    highestLimit: null,
+
+    // Lowest limit for unvignetted observations, in degrees; null if N/A
+    vignetteLimit: null,
+
+    // Limits based on declination (for equatorial mounts); null if N/A
+    declinationLimit: null,
+
+    // Background image for plot
+    background: "img/telescopes/Kennon.jpg",
+
+    // Instrument definitions; fov in arcminutes
+    instruments: {
+        "CCD": {
+            type: "optical",
+            fov: 16,
+            flip: null
+        }
+    },
+
+    // When all else fails, what to use?
+    defaultInstrument: "CCD",
 
     // Time zone as defined in momentjs
     timezoneName: "US/Central"
