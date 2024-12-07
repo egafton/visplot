@@ -628,7 +628,7 @@ config["CDK"] = {
     longitude: -89.5364444,
 
     // Altitude above sea level, in metres
-    altitude: 0,
+    altitude: 150,
 
     // Lowest limit in zenith distance for observing, in degrees; null if N/A
     zenithLimit: null,
