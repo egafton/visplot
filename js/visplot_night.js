@@ -180,7 +180,7 @@ Night.prototype.setEphemerides = function (obj) {
         stopUTC += 1;
     }
     utczero = sla.djcl(this.Sunset);
-    let djutc = sla.cldj(utczero.iy, utczero.im, utczero.id) + sla.dtf2d(firstUTC%24, 0, 0) + Math.ceil(firstUTC/24);
+    let djutc = sla.cldj(utczero.iy, utczero.im, utczero.id) + sla.dtf2d(firstUTC%24, 0, 0) + Math.floor(firstUTC/24);
     this.UTCtimes = [];
     this.UTClabels = [];
     this.LocalTimelabels = [];
