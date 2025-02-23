@@ -612,7 +612,7 @@ config["HJST"] = {
 };
 
 /**
- * Configuration for the 10m Hobby-Eberly Telescope.
+ * Configuration for the 17in Kennon Observatory
  */
 config["CDK"] = {
     // Name of the observatory site
@@ -662,4 +662,57 @@ config["CDK"] = {
 
     // Time zone as defined in momentjs
     timezoneName: "US/Central"
+};
+
+/**
+ * Configuration for the Dark Sky Observatory, Appalachian State University
+ */
+config["DSO"] = {
+    // Name of the observatory site
+    site: "Appalachian State University",
+
+    // Full name of the telescope
+    name: "Dark Sky Observatory 32in",
+
+    // Latitude in degrees, +North
+    latitude: 36.234528,
+
+    // Longitude in degrees, +East
+    longitude: -81.412417,
+
+    // Altitude above sea level, in metres
+    altitude: 1000,
+
+    // Lowest limit in zenith distance for observing, in degrees; null if N/A
+    zenithLimit: null,
+
+    // Lowest limit in elevation for observing, in degrees
+    lowestLimit: null,
+
+    // Highest limit in elevation for observing, in degrees
+    highestLimit: null,
+
+    // Lowest limit for unvignetted observations, in degrees; null if N/A
+    vignetteLimit: null,
+
+    // Limits based on declination (for equatorial mounts); null if N/A
+    declinationLimit: null,
+
+    // Background image for plot
+    background: "img/telescopes/DSO.jpg",
+
+    // Instrument definitions; fov in arcminutes
+    instruments: {
+        "CCD": {
+            type: "optical",
+            fov: 30,
+            flip: null
+        }
+    },
+
+    // When all else fails, what to use?
+    defaultInstrument: "CCD",
+
+    // Time zone as defined in momentjs
+    timezoneName: "US/Eastern"
 };

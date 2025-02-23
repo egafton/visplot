@@ -1351,9 +1351,9 @@ Object.defineProperties(Driver, {
     "plotTitle": {
         get: function () {
             return `Altitudes at ${this.telescopeName}, ` +
-                   config[this.telescopeName].site + ", " +
-                    (this.obs_lon_deg < 0 ? 360+this.obs_lon_deg : this.obs_lon_deg).toFixed(4) + "E +" +
-                    this.obs_lat_deg.toFixed(4) + ", " + this.obs_alt.toFixed(0) + " m above sea level";
+                   (config[this.telescopeName].site !== null ? config[this.telescopeName].site + ", " : "") +
+                   (this.obs_lon_deg < 0 ? 360+this.obs_lon_deg : this.obs_lon_deg).toFixed(4) + "E +" +
+                   this.obs_lat_deg.toFixed(4) + "N, " + this.obs_alt.toFixed(0) + " m above sea level";
         }},
     "plotCopyright": {
         get: function () {
