@@ -374,6 +374,6 @@ SkyGraph.prototype.display_time = function () {
         this.ctx.fillStyle = "black";
         this.ctx.font = `10pt ${this.fontFamily}`;
         this.ctx.textAlign = "right";
-        this.ctx.fillText(`Percentage of clear, dark sky (experimental): ${this.percentClearSky}%`, this.imx, this.imy + 23);
+        //this.ctx.fillText(`Percentage of clear, dark sky (experimental): ${this.percentClearSky}%`, this.imx, this.imy + 23);
     }
 };
