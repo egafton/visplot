@@ -121,6 +121,8 @@ helper.getCoordinates = function(xcent, ycent, x, y, r, lst) {
         return helper.getCoordinates_HJST(xcent, ycent, x, y, r, lst);
     } else if ($.inArray(Driver.telescopeName, ["CAHA"]) >= 0) {
         return helper.getCoordinates_HJST(xcent, ycent, x, y, r, lst);
+    }  else if ($.inArray(Driver.telescopeName, ["DSO"]) >= 0) {
+        return helper.getCoordinates_DSO(xcent, ycent, x, y, r, lst);
     } else {
         return null;
     }
@@ -167,6 +169,37 @@ helper.getCoordinates_HJST = function (xcent, ycent, x, y, r, lst) {
     y = y - ycent;
     let newR = Math.sqrt(x * x + y * y);
     let newTheta = helper.rad2deg(Math.atan2(y, x) - helper.deg2rad(90) - helper.deg2rad(5));
+    r = Math.max(r, newR);
+    newR = newR - 3;
+    const n = (r - newR) / r;
+    newR = 6.686 + 47.324 * n + 135.465 * n * n - 187.185 * n * n * n + 87.754 * n * n * n * n;
+    if (newR > r) {
+        myArray[0] = "low";
+    } else {
+        myArray[0] = Math.round(newR);
+        if (myArray[0] > 90) {
+            myArray[0] = 90;
+        }
+    }
+    newTheta = 180 - newTheta;
+    if (newTheta >= 360) {
+        newTheta = newTheta - 360;
+    }
+    myArray[1] = Math.round(newTheta);
+    const val = helper.radec(newR, newTheta, lst);
+    myArray[2] = helper.HMS(val[0], "h", "m", "s");
+    myArray[3] = helper.HMS(val[1], "°", "'", '"');
+    return myArray;
+};
+/**
+ * Convert pixel coordinates in DSO SkyCam image to Az/Alt and RA/Dec
+ */
+helper.getCoordinates_DSO = function (xcent, ycent, x, y, r, lst) {
+    const myArray = new Array(4); /* Exception to Google style rule 5.2.2 */
+    x = x - xcent;
+    y = y - ycent;
+    let newR = Math.sqrt(x * x + y * y);
+    let newTheta = helper.rad2deg(Math.atan2(y, x) - helper.deg2rad(90) + helper.deg2rad(66));
     r = Math.max(r, newR);
     newR = newR - 3;
     const n = (r - newR) / r;
