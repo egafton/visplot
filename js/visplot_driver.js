@@ -92,8 +92,11 @@ function Driver() {
      *     - Now providing a Dockerfile and docker-compose.yml for easy testing.
      *
      * 3.9 - Added Kennon Observatory.
+     *
+     * 3.10 - Added Dark Sky Observatory.
+     *      - Fixed initial default instrument list.
      */
-    this.version = "3.9";
+    this.version = "3.10";
     helper.LogSuccess(`Hello, this is Visplot version ${this.version}`);
 
     /* HTML5 canvas, context and Graph class - related variables */
