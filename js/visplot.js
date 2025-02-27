@@ -130,9 +130,12 @@ $(document).ready(function () {
         }
         
     } else {
-        /* Default image for default telescope */
-        $("#canvasFrame").css("background-image", 'url(' + config[Driver.telescopeName].background + ')');
-        postInitialization();
+        /* Set default telescope telescope */
+        helper.LogEntry(`Default telescope is <i>${Driver.telescopeName}</i>`);
+        driver.setTelescopeName(Driver.telescopeName).then(function() {
+            driver.UpdateInstrumentList();
+            postInitialization();
+        });
     }
 });
 
