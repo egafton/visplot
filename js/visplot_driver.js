@@ -95,8 +95,10 @@ function Driver() {
      *
      * 3.10 - Added Dark Sky Observatory.
      *      - Fixed initial default instrument list.
+     *
+     * 3.11 - Added Clarence T. Jones Observatory.
      */
-    this.version = "3.10";
+    this.version = "3.11";
     helper.LogSuccess(`Hello, this is Visplot version ${this.version}`);
 
     /* HTML5 canvas, context and Graph class - related variables */
