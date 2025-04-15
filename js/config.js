@@ -716,3 +716,56 @@ config["DSO"] = {
     // Time zone as defined in momentjs
     timezoneName: "US/Eastern"
 };
+
+/**
+ * Configuration for the Clarence T. Jones Observatory, University of Tennessee at Chattanooga
+ */
+config["CTJO"] = {
+    // Name of the observatory site
+    site: "University of Tennessee at Chattanooga",
+
+    // Full name of the telescope
+    name: "Clarence T. Jones Observatory 20.5in",
+
+    // Latitude in degrees, +North
+    latitude: 35.017564,
+
+    // Longitude in degrees, +East
+    longitude: -85.235289,
+
+    // Altitude above sea level, in metres
+    altitude: 225,
+
+    // Lowest limit in zenith distance for observing, in degrees; null if N/A
+    zenithLimit: null,
+
+    // Lowest limit in elevation for observing, in degrees
+    lowestLimit: null,
+
+    // Highest limit in elevation for observing, in degrees
+    highestLimit: null,
+
+    // Lowest limit for unvignetted observations, in degrees; null if N/A
+    vignetteLimit: null,
+
+    // Limits based on declination (for equatorial mounts); null if N/A
+    declinationLimit: null,
+
+    // Background image for plot
+    background: "img/telescopes/CTJO.jpg",
+
+    // Instrument definitions; fov in arcminutes
+    instruments: {
+        "default": {
+            type: "optical",
+            fov: 30,
+            flip: null
+        }
+    },
+
+    // When all else fails, what to use?
+    defaultInstrument: "default",
+
+    // Time zone as defined in momentjs
+    timezoneName: "US/Eastern"
+};
