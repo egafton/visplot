@@ -97,8 +97,10 @@ function Driver() {
      *      - Fixed initial default instrument list.
      *
      * 3.11 - Added Clarence T. Jones Observatory.
+     *
+     * 3.12 - Added Catalina Sky Survey 1.5m telescope.
      */
-    this.version = "3.11";
+    this.version = "3.12";
     helper.LogSuccess(`Hello, this is Visplot version ${this.version}`);
 
     /* HTML5 canvas, context and Graph class - related variables */

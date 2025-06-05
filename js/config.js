@@ -221,6 +221,60 @@ config["INT"] = {
     timezoneName: "Atlantic/Canary"
 };
 
+
+/**
+ * Configuration for the Catalina Sky Survey 1.5m telescope on Mt. Lemmon
+ */
+config["CSS"] = {
+    // Name of the observatory site
+    site: "Mt. Lemmon",
+
+    // Full name of the telescope
+    name: "Catalina Sky Survey 1.5m",
+
+    // Latitude in degrees, +North
+    latitude: 32.442754,
+
+    // Longitude in degrees, +East
+    longitude: -110.78872,
+
+    // Altitude above sea level, in metres
+    altitude: 2789,
+
+    // Lowest limit in zenith distance for observing, in degrees; null if N/A
+    zenithLimit: null,
+
+    // Lowest limit in elevation for observing, in degrees
+    lowestLimit: null,
+
+    // Highest limit in elevation for observing, in degrees
+    highestLimit: null,
+
+    // Lowest limit for unvignetted observations, in degrees; null if N/A
+    vignetteLimit: null,
+
+    // Limits based on declination (for equatorial mounts); null if N/A
+    declinationLimit: null,
+
+    // Background image for plot
+    background: "img/telescopes/CSS.jpg",
+
+    // Instrument definitions; fov in arcminutes
+    instruments: {
+        "default": {
+            type: "optical",
+            fov: 135,
+            flip: null
+        }
+    },
+
+    // When all else fails, what to use?
+    defaultInstrument: "default",
+
+    // Time zone as defined in momentjs
+    timezoneName: "America/Phoenix"
+};
+
 /**
  * Configuration for the 2.2m telescope at the Calar Alto Observatory.
  */
