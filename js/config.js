@@ -276,6 +276,59 @@ config["CSS"] = {
 };
 
 /**
+ * Configuration for the Wyoming Infrared Observatory 2.3m telescope on Jelm Mt.
+ */
+config["WIRO"] = {
+    // Name of the observatory site
+    site: "Jelm Mt.",
+
+    // Full name of the telescope
+    name: "Wyoming Infrared Observatory 2.3m",
+
+    // Latitude in degrees, +North
+    latitude: 41.097055,
+
+    // Longitude in degrees, +East
+    longitude: -105.976527,
+
+    // Altitude above sea level, in metres
+    altitude: 2943,
+
+    // Lowest limit in zenith distance for observing, in degrees; null if N/A
+    zenithLimit: null,
+
+    // Lowest limit in elevation for observing, in degrees
+    lowestLimit: null,
+
+    // Highest limit in elevation for observing, in degrees
+    highestLimit: null,
+
+    // Lowest limit for unvignetted observations, in degrees; null if N/A
+    vignetteLimit: null,
+
+    // Limits based on declination (for equatorial mounts); null if N/A
+    declinationLimit: null,
+
+    // Background image for plot
+    background: "img/telescopes/WIRO.jpg",
+
+    // Instrument definitions; fov in arcminutes
+    instruments: {
+        "WDP": {
+            type: "optical",
+            fov: 39,
+            flip: null
+        }
+    },
+
+    // When all else fails, what to use?
+    defaultInstrument: "WDP",
+
+    // Time zone as defined in momentjs
+    timezoneName: "America/Denver"
+};
+
+/**
  * Configuration for the 2.2m telescope at the Calar Alto Observatory.
  */
 config["CAHA"] = {
