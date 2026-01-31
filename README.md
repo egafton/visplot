@@ -25,3 +25,4 @@ Test that the installation has been successful by navigating to `http://localhos
 ## License
 
 Visplot is released under the GNU General Public License, version 3 (GPL3) license. See [`LICENSE.md`](LICENSE.md) for the full text of the license.
+
