@@ -1,0 +1,12 @@
+/* Visplot theme */
+
+.wy-nav-content {
+    max-width: 1200px !important;
+}
+
+
+
+/* Changing color of borde around icon*/
+.wy-side-nav-search{
+    background-color: #1E2A61;
+}
