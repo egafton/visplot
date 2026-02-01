@@ -189,6 +189,17 @@ Currently available predefined targets include:
   both hemispheres. These are intended for routine calibration observations
   and can be loaded with a single click.
 
+Current Time Indicator
+======================
+
+During an observing night, Visplot displays a vertical red line on the main
+plot area that indicates the current time. This provides a real-time reference
+so you can easily see which targets are currently observable.
+
+.. image:: figs/night_redline.png
+   :alt: Visibility plot with current time indicator
+   :width: 700px
+
 
 Advanced Features
 =================
@@ -212,14 +223,24 @@ Click :guilabel:`Configuration` to adjust default settings:
 SkyCam Integration
 ------------------
 
-The :guilabel:`Show SkyCam` button opens a live view of the sky camera, with targets overlaid if plotted.
+The :guilabel:`Show SkyCam` button opens a live view from the sky camera
+associated with the selected telescope.
 
 .. image:: figs/skycam.png
    :alt: SkyCam view with targets
    :width: 700px
 
-In the web interface, this option currently works only with telescopes located
-at the El Roque de Los Muchachos Observatory.
+If Visplot has access to the necessary coordinate transformations, the plotted
+targets will be overlaid directly on the camera image. In some environments,
+for example within the intranet of the NOT, the current telescope pointing is
+also displayed.
+
+In the public web interface, this feature is currently available only for some
+telescopes, such as those located at the El Roque de los Muchachos Observatory.
+
+This view can be particularly useful during partially cloudy nights, as it
+allows you to quickly identify targets that are clear of clouds and adjust
+your observing plan accordingly.
 
 
 Manual Reordering
@@ -234,7 +255,7 @@ Click on a target's number in the plot to see:
 
 - Observation details: Proposal, Type, RA, Dec, Epoch, Moon distance, Obstime, and Instrument
 - Finding chart from Aladin
-- Option to mark as observed (only works when the observing night is in progress)
+- Option to mark as observed (only works when the observing night is in progress and you have :guilabel:`Schedule observations`).
 
 .. image:: figs/target_details.png
    :alt: Target details popup
