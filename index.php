@@ -56,8 +56,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
                     Date:
                     <input type="text" id="dateY" /> &ndash; <input type="text" id="dateM" /> &ndash; <input type="text" id="dateD" />
                     <input type="button" value="Set" id="dateSet" /><br/><br/>
-                    <span class="middle">Targets:
-                        <input type="button" value="Blank fields" id="targetBlanks" />
+                    <span class="middle">Predefined targets:<br/>
+                        <span class="middlesep">Blank fields:</span>
+                        <input type="button" value="Northern" id="targetBlanksNorth" />
+                        <input type="button" value="Southern" id="targetBlanksSouth" />
+                        <br/>
+                        <span class="middlesep">Spectrophotometric standards:</span>
+                        <input type="button" value="Northern" id="targetStandardsNorth" />
+                        <input type="button" value="Southern" id="targetStandardsSouth" />
                     </span><br/>
                     <textarea id="targets"></textarea><br/>
                     <input type="hidden" id="targets_actual" /><input type="hidden" id="added_targets" />
