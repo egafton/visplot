@@ -43,7 +43,7 @@ the steps described in :ref:`custom_install`.
 
 
 User Interface Overview
-=======================
+-------------------------
 
 The Visplot interface consists of two main areas: a sidebar on the left and a
 main canvas area on the right.
@@ -62,7 +62,7 @@ main canvas area on the right.
 
 
 Basic Workflow
-==============
+-----------------
 
 1. **Set the Observing Date**: Enter the desired date in the Date fields and click :guilabel:`Set`. This loads the ephemerides for the selected night. By default, the date is set to today.
 
@@ -92,6 +92,47 @@ Basic Workflow
 6. **Export Results**: Use the export buttons to save plots or target lists in various formats.
 
 7. **Save**: Click :guilabel:`Save` to download a Visplot-formatted file containing the full session state. This file can later be reloaded using the   :guilabel:`Browse...` button. This is particularly useful when preparing observing nights in advance.. 
+
+Predefined Targets
+----------------------
+
+Visplot includes a set of predefined targets that can be loaded directly with a single click from the interface. These are intended to cover common use cases and speed up night preparation. To do so, simply press the :guilabel:`Northern` or :guilabel:`Sourthern` buttons corresponding to either the blank fields or the
+spectrophotometric standards. The selected targets will be loaded directly to
+the target list, where they can be plotted, scheduled, and modified as usual.
+
+.. warning:: 
+
+    When you load the predefined targets, they will overwrite whatever targets  you currently have in the targets list.
+
+
+
+Currently available predefined targets include:
+
+- **Blank fields**:
+
+  Blank fields are available for both the Northern and Southern Hemispheres.
+  These can be useful for calibration, testing, or filler observations.
+
+- **Spectrophotometric standards**:
+
+  A list of commonly used spectrophotometric standard stars is provided for
+  both hemispheres. These are intended for routine calibration observations
+  and can be loaded with a single click.
+
+Current Time Indicator
+------------------------
+
+During an observing night, Visplot displays a vertical red line on the main
+plot area that indicates the current time. This provides a real-time reference
+so you can easily see which targets are currently observable.
+
+.. image:: figs/night_redline.png
+   :alt: Visibility plot with current time indicator
+   :width: 700px
+
+
+
+
 
 Input Syntax
 ============
@@ -163,49 +204,11 @@ Examples
 
    Offline UTC[20:30-22:30]
 
-Predefined Targets
-==================
-
-Visplot includes a set of predefined targets that can be loaded directly with a single click from the interface. These are intended to cover common use cases and speed up night preparation. To do so, simply press the :guilabel:`Northern` or :guilabel:`Sourthern` buttons corresponding to either the blank fields or the
-spectrophotometric standards. The selected targets will be loaded directly to
-the target list, where they can be plotted, scheduled, and modified as usual.
-
-.. warning:: 
-
-    When you load the predefined targets, they will overwrite whatever targets  you currently have in the targets list.
 
 
-
-Currently available predefined targets include:
-
-- **Blank fields**:
-
-  Blank fields are available for both the Northern and Southern Hemispheres.
-  These can be useful for calibration, testing, or filler observations.
-
-- **Spectrophotometric standards**:
-
-  A list of commonly used spectrophotometric standard stars is provided for
-  both hemispheres. These are intended for routine calibration observations
-  and can be loaded with a single click.
-
-Current Time Indicator
-======================
-
-During an observing night, Visplot displays a vertical red line on the main
-plot area that indicates the current time. This provides a real-time reference
-so you can easily see which targets are currently observable.
-
-.. image:: figs/night_redline.png
-   :alt: Visibility plot with current time indicator
-   :width: 700px
-
-
-Advanced Features
-=================
 
 Configuration
--------------
+================
 
 Click :guilabel:`Configuration` to adjust default settings:
 
@@ -221,7 +224,7 @@ Click :guilabel:`Configuration` to adjust default settings:
    :width: 700px
 
 SkyCam Integration
-------------------
+====================
 
 The :guilabel:`Show SkyCam` button opens a live view from the sky camera
 associated with the selected telescope.
@@ -244,12 +247,12 @@ your observing plan accordingly.
 
 
 Manual Reordering
------------------
+==================
 
 After scheduling, drag and drop targets on the right side of the plot to reorder them manually. Visplot will attempt to reschedule the remaining targets accordingly.
 
 Viewing Target Details
-----------------------
+=======================
 
 Click on a target's number in the plot to see:
 
@@ -262,21 +265,13 @@ Click on a target's number in the plot to see:
    :width: 700px
 
 Export Options
---------------
+==============
 
 - **Export PNG**: Save the current plot as an image
 - **TCS format**: Export targets in Telescope Control System format
 - **Save**: Download a compressed file with all data for later loading
 
-Helper
-=======
 
-The tool also includes a :guilabel:`Help` button, which contains most of this
-tutorial and can be accessed directly from the interface.
-
-.. image:: figs/helper.png
-   :alt: Target details popup
-   :width: 700px
 
 Troubleshooting
 ===============
@@ -285,6 +280,8 @@ Troubleshooting
 - Check that dates and coordinates are in the correct format
 - Verify that constraints are realistic for the selected night
 - If targets do not appear, ensure the date is set and :guilabel:`Plot targets` has been clicked
+
+.. _logger:
 
 Logger
 -------
@@ -317,8 +314,21 @@ Where you can identify:
 - and the proposed solution:  ``for each object you must provide at least the Name, RA and Dec!``.
 
 
+Community and Support
+=======================
 
-For more help, refer to the built-in Help section in Visplot, consult the GitHub
-issues page, or join the Visplot Google Group at:
 
-visplot (at) googlegroups.com
+If you need additional help using Visplot, there are several resources
+available:
+
+- **Built-in Help**: The :guilabel:`Help` button in the interface contains  guidance for most features and reproduces much of this tutorial.
+
+  .. image:: figs/helper.png
+     :alt: Visplot Help panel
+     :width: 700px
+
+- **GitHub Issues**: For bug reports or feature requests, consult the `issues page <issues>`_ in our documentation.
+
+- **Visplot Google Group**: Join the community to ask questions, share  experiences, and get support from other users:
+
+    visplot (at) googlegroups.com

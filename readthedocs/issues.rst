@@ -4,7 +4,9 @@
 Reporting Issues or Requesting Features
 ******************************************
 
-Visplot is an open-source project, and we greatly value feedback from the community. The best way to report bugs, request new features, or suggest improvements is through the :guilabel:`Issues` page on our GitHub repository: https://github.com/egafton/visplot/issues.
+Visplot is an open-source project, and we greatly value feedback from the community. The best way to report bugs, request new features, or suggest improvements is through the :guilabel:`Issues` page on our GitHub repository: 
+
+    https://github.com/egafton/visplot/issues.
 
 .. image:: figs/github-issues.png
    :width: 700
@@ -18,11 +20,17 @@ Reporting a Bug
 When reporting a bug, providing detailed information helps us reproduce and fix the issue quickly. Please include as much of the following as possible:
 
 * **Environment**: Specify whether you're using the web interface (https://www.visplot.com/) or a local/custom installation (e.g., Docker setup).
+
 * **Steps to Reproduce**: A clear, step-by-step description of the actions that led to the bug.
+
 * **Expected Behavior**: What you expected to happen.
+
 * **Actual Behavior**: What actually happened, including any error messages.
-* **Screenshots or Logs**: If applicable, attach screenshots of the issue or relevant console logs.
+
+* **Screenshots or Logs**: If applicable, attach screenshots of the issue or relevant console logs. Including the :ref:`logger` output from Visplot is especially helpful for diagnosing issues quickly.
+
 * **Browser/OS Details**: For web interface issues, include your browser version, operating system, and any relevant extensions.
+
 * **Additional Context**: Any other information that might be helpful, such as the date/time of the issue or recent changes to your setup.
 
 Example of a reported bug:
@@ -54,13 +62,19 @@ Visplot supports multiple telescopes, and we're always happy to add new ones to 
 * **Name of Telescope/Observatory**: The full name and any common abbreviations.
 
 * **Location Details**:
+
   * Latitude (in degrees, positive for North)
+
   * Longitude (in degrees, positive for East)
+
   * Elevation (in meters above sea level)
 
 * **Observing Constraints**:
+
   * Minimum elevation (in degrees)
+
   * Collision points (if any, for equatorial telescopes)
+
   * Zenith exclusion zones (if any, for alt-azimuth telescopes)
 
 * **Additional Notes**: Any other relevant details, such as time zone, typical observing hours, or special constraints.
@@ -90,13 +104,19 @@ If you're interested in contributing code fixes or new features directly:
 
 .. For more details, see the `CONTRIBUTING.md` file in the repository (if available) or check the repository's README.
 
-Support and Community
+Community and Support
 =====================
 
-For general questions, discussions, or support that doesn't fit into a bug report or feature request, consider:
+For general questions, discussions, or support outside of bug reports or
+feature requests:
 
-* Checking the `Tutorial <tutorial.html>`_ and other documentation pages.
+* Use the :doc:`tutorial </tutorial>` and other documentation pages.
 
-* Contacting the maintainers directly via email.
+* Join the Visplot Google Group to ask questions, share experiences, and get
+  help from the community:
+
+  visplot (at) googlegroups.com
+
+* Browse or report issues in the `issues page <issues>`_.
 
 Thank you for helping improve Visplot!
