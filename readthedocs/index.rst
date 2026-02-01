@@ -9,17 +9,20 @@ Visplot documentation
 
 Visplot is a visibility plot and observation scheduling tool for telescopes. It allows automatic, nearly-optimal scheduling of an entire observing night.
 
-Whereas you are using the `Web interface <https://www.visplot.com/>`__ or a :doc:`custom installation </custom_install>`,  this :doc:`tutorial </tutorial>` covers the common usage of visplot. 
+Whether you are using the `Web interface <https://www.visplot.com/>`__ or a :doc:`custom installation </custom_install>`,  this documentation will guide you
+through the common usage of Visplot, from first steps to more advanced options.
 
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-   links
+   about
+   getting_started
+   tutorial
    webinterface
    custom_install
-   tutorial
+   links
    issues
    news
 
@@ -28,4 +31,6 @@ Whereas you are using the `Web interface <https://www.visplot.com/>`__ or a :doc
 Attribution
 ============
 
-If you use Visplot in your work, please cite our webinterface: https://www.visplot.com/
+If you use Visplot in your work, please cite our webinterface: 
+
+https://www.visplot.com/
