@@ -785,6 +785,54 @@ config["TNG"] = {
     altitude: 2359,
     timezoneName: "Atlantic/Canary"
 }
+config["Mercator Telescope"] = {
+    site: "Roque de Los Muchachos",
+    name: "Mercator Telescope 1.2m",
+    latitude: 28.76240,
+    longitude: -17.87849,
+    altitude: 2331,
+    timezoneName: "Atlantic/Canary"
+}
+config["GTC"] = {
+    site: "Roque de Los Muchachos",
+    name: "Gran Telescopio Canarias 10.4m",
+    latitude: 28.75666,
+    longitude: -17.89200,
+    altitude: 2267,
+    timezoneName: "Atlantic/Canary"
+}
+config["LBT"] = {
+    site: "Mt. Graham",
+    name: "Large Binocular Telescope 2×8.4m",
+    latitude: 32.70130,
+    longitude: -109.88918,
+    altitude: 3221,
+    timezoneName: "America/Phoenix"
+}
+config["MMT"] = {
+    site: "Mt. Hopkins",
+    name: "MMT Observatory 6.5m",
+    latitude: 31.68896,
+    longitude: -110.88516,
+    altitude: 2616,
+    timezoneName: "America/Phoenix"
+}
+config["Hale Telescope"] = {
+    site: "Palomar Observatory",
+    name: "Hale Telescope 200in",
+    latitude: 33.35629,
+    longitude: -116.86490,
+    altitude: 1713,
+    timezoneName: "US/Pacific"
+}
+config["Magellan Telescopes"] = {
+    site: "Las Campanas Observatory",
+    name: "Magellan Telescopes 2×6.5m",
+    latitude: -29.01421,
+    longitude: -70.69243,
+    altitude: 2392,
+    timezoneName: "America/Santiago"
+}
 config["La Silla Observatory"] = {
     name: "La Silla Observatory",
     latitude: -29.25586,
@@ -824,6 +872,14 @@ config["Hooker Telescope"] = {
     altitude: 1742,
     timezoneName: "US/Pacific"
 }
+config["Shane Telescope"] = {
+    site: "Lick Observatory",
+    name: "Shane Telescope 120in",
+    latitude: 37.34308,
+    longitude: -121.63715,
+    altitude: 1283,
+    timezoneName: "US/Pacific"
+}
 config["SALT"] = {
     site: "South African Astronomical Observatory",
     name: "Southern African Large Telescope 9.2m",
@@ -840,16 +896,14 @@ config["Carlos Sánchez Telescope"] = {
     altitude: 2390,
     timezoneName: "Atlantic/Canary"
 }
-config["1.3m Telescope"] = {
-    site: "Skinakas Observatory",
+config["Skinakas Observatory 1.3m"] = {
     name: "Skinakas Observatory 1.3m",
     latitude: 35.21180,
     longitude: 24.89901,
     altitude: 1750,
     timezoneName: "Europe/Athens"
 }
-config["2m Telescope"] = {
-    site: "Tautenburg Observatory",
+config["Tautenburg Observatory 2m"] = {
     name: "Tautenburg Observatory 2m",
     latitude: 50.98016,
     longitude: 11.71123,

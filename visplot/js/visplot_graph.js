@@ -713,6 +713,14 @@ Graph.prototype.drawBackground = function () {
     this.plotRotatedText("Airmass", this.pt(8), this.xend + 1.3 * this.tickLength, this.yend - 3, "left", "middle");
     this.plotRotatedText("Altitude", this.pt(11), this.xleftarrows + 10, 0.5 * (this.ystart + this.yend), "center", "middle");
 
+    // Warning, if applicable
+    if (Driver.obs_lowestLimit === null && Driver.obs_highestLimit === null && Driver.obs_lowerHatch === null && Driver.obs_declinationLimit === null) {
+        this.ctx.fillStyle = "red";
+        this.plotRotatedText("No telescope-specific altitude or collision limits are defined.", this.pt(10), this.xleftlabels + 10, this.transformYLocation(15), "left", "middle")
+        this.plotRotatedText("Schedule may include unsafe pointings. Use with caution!", this.pt(10), this.xleftlabels + 35, this.transformYLocation(15), "left", "middle")
+        this.ctx.fillStyle = "black";
+    }
+
     // Lower hatch and opening limits text
     this.ctx.font = `${this.pt(8)} ${this.fontFamily}`;
     this.ctx.textAlign = "left";
@@ -744,7 +752,7 @@ Graph.prototype.drawBackground = function () {
     if (Driver.obs_highestLimit !== null) {
         this.ctx.fillText(`${Driver.telescopeName} highest limit`,
                           this.xleftlabels, this.transformYLocation(Driver.obs_highestLimit + 2));
-        this.ctx.fillText(`(${Driver.obs_highestLimit.toFixed(Driver.telescopeName == "HET" ? 1 : 0)}°)`,
+        this.ctx.fillText(`(${Driver.obs_highestLimit.toFixed(Driver.telescopeName == "HET" || Driver.telescopeName == "WHT" ? 1 : 0)}°)`,
                           this.xleftlabels, this.transformYLocation(Driver.obs_highestLimit));
         this.ctx.fillText("⟶", this.xleftarrows, this.transformYLocation(Driver.obs_highestLimit));
         this.plotHorizontalLine(this.xstart, this.xend, this.transformYLocation(Driver.obs_highestLimit), [1, 2, 3, 2], 1);
