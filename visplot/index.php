@@ -87,7 +87,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
                 <div id="footer">
                     <div id="footer-inner">
                     ©2016–<span id="footer-year"></span> ega, irl.
-                    Running Visplot version <a target="_blank" id="footer-version"></a><span id="footer-date"></span>.<br/>
+                    Running Visplot version <a target="_blank" id="footer-version"></a><span id="footer-date"></span>.
+                    Please see the <a target="_blank" href="https://visplot.readthedocs.io/">documentation</a>.<br/>
                     Released under the <a target="_blank" href="https://github.com/egafton/visplot/blob/master/LICENSE.md">GNU General Public License v3.0</a>.
                     Report bugs and feature requests in the <a target="_blank" href="https://github.com/egafton/visplot/issues"><i>Issues</i> section</a> on GitHub.
                     </div> <!-- #footer-inner -->
@@ -179,6 +180,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
         </div> <!-- #config-container -->
         <div id="help-container"><div id="help">
             <div id="help-left">
+                <span class="sh1"><b>Note:</b> This is a minimal description of how to use Visplot. For the full documentation, please visit our <a target="_blank" href="https://visplot.readthedocs.io/">Read the Docs page</a>.</span>
+                <br/>
+
                 <span class="sh0">Workflow</span>
                 • Set the observing date in the <i>Date</i> field and press <i>Set</i>. This will populate the graph with the ephemerides for that night. By default, the page is pre-loaded for today's observing night (after noon) or for last night (before noon).<br/>
                 • Fill in the list of targets according to the rules given below (alternatively, the list of targets may be pre-filled by the OB generator if the page is accessed from there) and press <i>Plot targets</i>.<br/>
