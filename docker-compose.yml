@@ -3,11 +3,11 @@ services:
   visplot:
     container_name: visplot
     build:
-      context: ./
+      context: ./setup/
       dockerfile: Dockerfile
     image: php:8.1-apache
     restart: always
     ports:
       - 8888:80
     volumes:
-      - ./:/var/www/html/
+      - ./visplot/:/var/www/html/
