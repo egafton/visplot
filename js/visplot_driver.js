@@ -1,5 +1,5 @@
 /**
- * @copyright (c) 2016-2024 ega, irl.
+ * @copyright (c) 2016-2026 ega, irl.
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -102,8 +102,12 @@ function Driver() {
      *
      * 3.13 - Added VLT. New lists of blanks (https://doi.org/10.1111/j.1365-2966.2012.21883.x)
      *        and spectrophotometric standards, for the Northern and Southern hemispheres.
+     *
+     * 4.0  - Expanded list of telescopes; added a map and replaced the dropdown
+     *        with an incremental search box. Simplified telescope configuration
+     *        objects (null values need not be provided any more).
      */
-    this.version = "3.13";
+    this.version = "4.0";
     helper.LogSuccess(`Hello, this is Visplot version ${this.version}`);
 
     /* HTML5 canvas, context and Graph class - related variables */
@@ -182,6 +186,13 @@ function Driver() {
     this.reObj = null;   // Object that is being moved/rescheduled on the RHS
     this.reY = null;     // Tracking of mouse y-position during said rescheduling
     this.mouseInsideObject = -1;
+    this.theDefaultInstruments = {
+        default: {
+            fov: 6,
+            type: "optical",
+            flip: null
+        }
+    }
 
     /* Update footer */
     $("#footer-year").text((new Date()).getUTCFullYear());
@@ -200,6 +211,46 @@ function Driver() {
             }
         }))
         .catch(error => { });
+}
+
+Driver.prototype.SetupMap = function() {
+    /* Load map */
+    const tileSource = "https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+    this.map = L.map('map', {
+        attributionControl: false,
+        zoomControl: true,
+        fullscreenControl: true,
+        worldCopyJump: true
+    });
+    var myAttrControl = L.control.attribution().addTo(this.map);
+    myAttrControl.setPrefix('');
+    L.tileLayer(tileSource, {
+        minZoom: 2,
+        maxZoom: 19
+    }).addTo(this.map);
+
+    function refreshMap() {
+        driver.map.setView([30, 0], 0);
+    }
+
+    refreshMap();
+    $("#viewall").on('click', refreshMap);
+
+    var markers = L.markerClusterGroup({maxClusterRadius: 30});
+    for (const key in config) {
+        markers.addLayer(L.marker({lng: config[key].longitude, lat: config[key].latitude}, {alt: key})
+                          .bindTooltip(config[key].name)
+                          .on("click", function(e) {console.log(e); })
+                        );
+    }
+    this.map.addLayer(markers);
+    this.map.on('zoomend', function() {
+        if (driver.map.getZoom() <= 2) {
+            $("#viewall").hide();
+        } else {
+            $("#viewall").show();
+        }
+    });
 }
 
 /**
@@ -601,13 +652,13 @@ Driver.prototype.EvtFrame_Click = function (e) {
             let ra = obj.J2000[0] * sla.r2d;
             let dec = obj.J2000[1] * sla.r2d;
             let instrument = obj.Instrument;
-            if (!(instrument in config[Driver.telescopeName].instruments)) {
+            if (!(instrument in Driver.instruments)) {
                 /* Got a weird instrument? Just show the default FoV*/
-                instrument = config[Driver.telescopeName].defaultInstrument;
+                instrument = Driver.defaultInstrument;
             }
-            const fov = config[Driver.telescopeName].instruments[instrument].fov / 60;
-            const flip = config[Driver.telescopeName].instruments[instrument].flip;
-            const surveyName = config[Driver.telescopeName].instruments[instrument].type == "optical"
+            const fov = Driver.instruments[instrument].fov / 60;
+            const flip = Driver.instruments[instrument].flip;
+            const surveyName = Driver.instruments[instrument].type == "optical"
                 ? "P/DSS2/color"
                 : "P/2MASS/color";
             $("#details_map_hang").html(surveyName);
@@ -750,7 +801,7 @@ Driver.prototype.EvySkycm_MouseOut = function () {
 Driver.prototype.UpdateInstrumentList = function () {
     const tel = $("#def_telescope").val();
     $("#def_instrument option").remove();
-    for (const key in config[tel].instruments) {
+    for (const key in (config[tel].instruments || driver.theDefaultInstruments)) {
         $("#def_instrument").append(new Option(key, key));
     }
     return tel;
@@ -822,7 +873,7 @@ Driver.prototype.BindEvents = function () {
     }).on("change", function () {
         const tel = driver.UpdateInstrumentList();
         // Set instrument name to default
-        $("#def_instrument").val(config[tel].defaultInstrument);
+        $("#def_instrument").val(config[tel].defaultInstrument || "default");
         // Set project number to default if not compatible with telescope
         driver.setTelescopeName(tel).then(function () {
             const valid = driver.validateProjectNumber(Driver.defaultProject);
@@ -962,6 +1013,9 @@ Driver.prototype.EvtClick_Config = function () {
         src: "#config-container",
         type: "inline",
         touch: false,
+        afterShow: function() {
+            driver.map.invalidateSize();
+        },
         beforeClose: function () {
             driver.CallbackUpdateDefaults();
         }
@@ -1072,7 +1126,6 @@ Driver.prototype.CallbackUpdateDefaults_postTelUpdate = function (resetTel) {
     localStorage.setItem("defaultObstime", Driver.defaultObstime);
     localStorage.setItem("defaultOBInfo", Driver.defaultOBInfo);
     localStorage.setItem("opt_reschedule_later", $("#opt_reschedule_later").is(":checked"));
-    localStorage.setItem("opt_away_from_zenith", $("#opt_away_from_zenith").is(":checked"));
     localStorage.setItem("opt_maintain_order", $("#opt_maintain_order").is(":checked"));
     localStorage.setItem("opt_reorder_targets", $("#opt_reorder_targets").is(":checked"));
     localStorage.setItem("opt_allow_over_axis", $("#opt_allow_over_axis").is(":checked"));
@@ -1272,7 +1325,7 @@ Driver.prototype.setTelescopeName = function (val) {
                 Driver._telescopeName = val;
                 $("#def_telescope").val(val);
                 // Background with telescope image
-                $("#canvasFrame").css("background-image", 'url(' + config[val].background + ')');
+                $("#canvasFrame").css("background-image", 'url(' + (config[val].background || 'img/telescopes/default.jpg') + ')');
                 // Recalculate Skycam constants
                 driver.skyGraph.updateTelescope();
                 // Revalidate targets to recompute TCS lines
@@ -1376,23 +1429,28 @@ Object.defineProperties(Driver, {
     },
     "obs_lowestLimit": {
         get: function () {
-            return config[this.telescopeName].lowestLimit;
+            return config[this.telescopeName].lowestLimit || null;
         }
     },
     "obs_highestLimit": {
         get: function () {
-            return config[this.telescopeName].highestLimit;
+            return config[this.telescopeName].highestLimit || null;
+        }
+    },
+    "obs_declinationLimit": {
+        get: function () {
+            return config[this.telescopeName].declinationLimit || null;
         }
     },
     "obs_lowerHatch": {
         get: function () {
-            return config[this.telescopeName].vignetteLimit;
+            return config[this.telescopeName].vignetteLimit || null;
         }
     },
     "plotTitle": {
         get: function () {
             return `Altitudes at ${this.telescopeName}, ` +
-                (config[this.telescopeName].site !== null ? config[this.telescopeName].site + ", " : "") +
+                ('site' in config[this.telescopeName] && config[this.telescopeName].site !== null ? config[this.telescopeName].site + ", " : "") +
                 (this.obs_lon_deg < 0 ? 360 + this.obs_lon_deg : this.obs_lon_deg).toFixed(4) + "E " +
                 (this.obs_lat_deg > 0 ? `+${this.obs_lat_deg.toFixed(4)}N` : `${Math.abs(this.obs_lat_deg).toFixed(4)}S`) +
                 ", " + this.obs_alt.toFixed(0) + " m above sea level";
@@ -1444,9 +1502,14 @@ Object.defineProperties(Driver, {
     },
     "defaultOBInfo": {
         get: function () {
-            return this._defaultOBInfo || config[Driver.telescopeName].defaultInstrument;
+            return this._defaultOBInfo || (config[Driver.telescopeName].defaultInstrument || 'default');
         }, set: function (val) {
             this._defaultOBInfo = val;
+        }
+    },
+    "defaultInstrument": {
+        get: function () {
+            return config[Driver.telescopeName].defaultInstrument || 'default'
         }
     },
     "defaultSkyPA": {
@@ -1454,6 +1517,11 @@ Object.defineProperties(Driver, {
             return this._defaultSkyPA || "0";
         }, set: function (val) {
             this._defaultSkyPA = val;
+        }
+    },
+    "instruments": {
+        get: function() {
+            return config[Driver.telescopeName].instruments || driver.theDefaultInstruments
         }
     },
     "skyCamLink": {

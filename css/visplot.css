@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2024 ega, irl
+ * Copyright (c) 2016-2026 ega, irl
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -475,4 +475,26 @@ p.pp2 {
         box-shadow: 2px 2px 8px rgba(255, 255, 255, 0);
         border-radius: 16px;
     }
+}
+
+#map {
+    width: 970px;
+    height: 500px;
+}
+.marker-cluster-small {
+    background-color: rgba(140, 190, 230, 1);
+}
+.marker-cluster-small div {
+    background-color: rgba(50, 141, 221, 0.6);
+}
+.marker-cluster div {
+    font-size: 15px;
+}
+#viewall {
+    position: absolute;
+    top: 12px;
+    left: 50px;
+    padding: 3px;
+    z-index: 999;
+    display: none;
 }

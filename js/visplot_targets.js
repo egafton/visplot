@@ -1,5 +1,5 @@
 /**
- * @copyright (c) 2016-2024 ega, irl.
+ * @copyright (c) 2016-2026 ega, irl.
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -62,9 +62,7 @@ function Target(k, obj) {
     this.MinMoonDistance = Math.round(obj.mdist);
     this.MinMoonDistanceTime = obj.mdisttime;
     this.ProjectNumber = obj.project;
-    this.RestrictionMaxAlt = (config[Driver.telescopeName].zenithLimit !== null && $("#opt_away_from_zenith").is(":checked"))
-        ? 90 - config[Driver.telescopeName].zenithLimit
-        : 90;
+    this.RestrictionMaxAlt = Driver.obs_highestLimit || 90;
     this.MaxAirmass = obj.airmass;
     this.RestrictionMinAlt = helper.AirmassToAltitude(this.MaxAirmass);
     this.RestrictionMinUTC = obj.UTstart; //night.ENauTwilight;
@@ -102,7 +100,7 @@ function Target(k, obj) {
     this.ReconstructedMinimumInput = `${this.Name} ${this.inputRA} ${this.inputDec} ${this.Epoch}`;
     this.Comments = null;
 
-    let dfun = config[Driver.telescopeName].declinationLimit;
+    let dfun = Driver.obs_declinationLimit;
     this.DecLimit_MinimumAlt = null;
     this.DecLimit_MinimumAltAzEast = null;
     this.DecLimit_MinimumAltAzWest = null;

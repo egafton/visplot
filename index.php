@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2016-2024 ega, irl.
+ * Copyright (c) 2016-2026 ega, irl.
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -37,6 +37,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" type="text/css" media="screen" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.59.4/codemirror.min.css" type="text/css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" type="text/css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" type="text/css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" type="text/css" />
+    <link rel="stylesheet" href="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css" type="text/css" />
     <link rel="stylesheet" href="css/aladin.min.css" type="text/css" />
     <link rel="stylesheet" href="css/visplot.css?" type="text/css" />
 </head>
@@ -112,7 +116,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
         </div> <!-- #tcscat -->
         <div id="config-container">
             <h2 class="fancyhead">Configure Visplot</h2>
-            <div id="config"><div id="config-left">
+            <div id="map-container">
+                <div id="mapDiv">
+                    <div id="map">
+                        <button id="viewall">View all</button>
+                    </div>
+                </div>
+            </div><!-- #map-container --><div id="config">
+            <div id="config-left">
                 <span class="middle"><span class="llbl">Telescope name:</span>
                     <select id="def_telescope" name="def_telescope"></select>
                 </span>
@@ -151,7 +162,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
             <div id="config-right">
                 <h2 class="h2-instr">Scheduling algorithm</h2><br/>
                 <span class="middle"><label for="opt_reschedule_later"><input type="checkbox" name="opt_reschedule_later" id="opt_reschedule_later" checked="checked" /> Do not schedule in the past during an observing night</label></span><br/>
-                <span class="middle"><label for="opt_away_from_zenith"><input type="checkbox" name="opt_away_from_zenith" id="opt_away_from_zenith" checked="checked" /> Do not observe at altitudes higher than the zenith tracking limit</label></span><br/>
                 <span class="middle"><label for="opt_maintain_order"><input type="checkbox" name="opt_maintain_order" id="opt_maintain_order" /> Always schedule targets in their input order</label></span><br/>
                 <span class="middle"><label for="opt_reorder_targets"><input type="checkbox" name="opt_reorder_targets" id="opt_reorder_targets" checked="checked" /> Relabel targets according to the schedule order</label></span><br/>
                 <span class="middle"><label for="opt_allow_over_axis"><input type="checkbox" name="opt_allow_over_axis" id="opt_allow_over_axis" /> Allow observations over-the-axis (equatorial mounts only)</label></span><br/>
@@ -257,6 +267,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.59.4/addon/mode/simple.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.5.0/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+    <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js'></script>
     <!-- Locally-hosted, 3rd party libraries -->
     <script src="js/aladin.min.js?" type="text/javascript" charset="utf-8"></script>
     <script src="js/jsplitter.js?" type="text/javascript" charset="utf-8"></script>

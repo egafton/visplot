@@ -1,6 +1,6 @@
 /**
  * @file Configuration file for the different telescopes supported by Visplot.
- * @copyright (c) 2016-2024 ega, irl.
+ * @copyright (c) 2016-2026 ega, irl.
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -32,20 +32,14 @@ config["NOT"] = {
     // Altitude above sea level, in metres
     altitude: 2382,
 
-    // Lowest limit in zenith distance for observing, in degrees; null if N/A
-    zenithLimit: 2,
-
     // Lowest limit in elevation for observing, in degrees
     lowestLimit: 6,
 
-    // Highest limit in elevation for observing, in degrees; null if N/A
-    highestLimit: null,
+    // Highest limit in elevation for observing, in degrees
+    highestLimit: 88,
 
-    // Lowest limit for unvignetted observations, in degrees; null if N/A
+    // Lowest limit for unvignetted observations, in degrees
     vignetteLimit: 35,
-
-    // Limits based on declination (for equatorial mounts); null if N/A
-    declinationLimit: null,
 
     // Background image for plot
     background: "img/telescopes/NOT.jpg",
@@ -105,20 +99,14 @@ config["WHT"] = {
     // Altitude above sea level, in metres
     altitude: 2344,
 
-    // Lowest limit in zenith distance for observing, in degrees; null if N/A
-    zenithLimit: 0.2,
-
     // Lowest limit in elevation for observing, in degrees
     lowestLimit: 12,
 
-    // Highest limit in elevation for observing, in degrees; null if N/A
-    highestLimit: null,
+    // Highest limit in elevation for observing, in degrees
+    highestLimit: 89.8,
 
-    // Lowest limit for unvignetted observations, in degrees; null if N/A
+    // Lowest limit for unvignetted observations, in degrees
     vignetteLimit: 25,
-
-    // Limits based on declination (for equatorial mounts); null if N/A
-    declinationLimit: null,
 
     // Background image for plot
     background: "img/telescopes/WHT.jpg",
@@ -173,19 +161,16 @@ config["INT"] = {
     // Altitude above sea level, in metres
     altitude: 2347,
 
-    // Lowest limit in zenith distance for observing, in degrees; null if N/A
-    zenithLimit: 1,
-
     // Lowest limit in elevation for observing, in degrees
     lowestLimit: 20,
 
-    // Highest limit in elevation for observing, in degrees; null if N/A
-    highestLimit: null,
+    // Highest limit in elevation for observing, in degrees
+    highestLimit: 89,
 
-    // Lowest limit for unvignetted observations, in degrees; null if N/A
+    // Lowest limit for unvignetted observations, in degrees
     vignetteLimit: 33,
 
-    // Limits based on declination (for equatorial mounts); null if N/A
+    // Limits based on declination (for equatorial mounts)
     declinationLimit: ["alt(dec)", function (dec) {
         // Lowest elevation as a function of declination
         // Taken from https://www.ing.iac.es/Astronomy/telescopes/int/int_pointing_limits.html
@@ -241,21 +226,6 @@ config["CSS"] = {
     // Altitude above sea level, in metres
     altitude: 2789,
 
-    // Lowest limit in zenith distance for observing, in degrees; null if N/A
-    zenithLimit: null,
-
-    // Lowest limit in elevation for observing, in degrees
-    lowestLimit: null,
-
-    // Highest limit in elevation for observing, in degrees
-    highestLimit: null,
-
-    // Lowest limit for unvignetted observations, in degrees; null if N/A
-    vignetteLimit: null,
-
-    // Limits based on declination (for equatorial mounts); null if N/A
-    declinationLimit: null,
-
     // Background image for plot
     background: "img/telescopes/CSS.jpg",
 
@@ -286,28 +256,13 @@ config["WIRO"] = {
     name: "Wyoming Infrared Observatory 2.3m",
 
     // Latitude in degrees, +North
-    latitude: 41.097055,
+    latitude: 41.097096,
 
     // Longitude in degrees, +East
-    longitude: -105.976527,
+    longitude: -105.977128,
 
     // Altitude above sea level, in metres
     altitude: 2943,
-
-    // Lowest limit in zenith distance for observing, in degrees; null if N/A
-    zenithLimit: null,
-
-    // Lowest limit in elevation for observing, in degrees
-    lowestLimit: null,
-
-    // Highest limit in elevation for observing, in degrees
-    highestLimit: null,
-
-    // Lowest limit for unvignetted observations, in degrees; null if N/A
-    vignetteLimit: null,
-
-    // Limits based on declination (for equatorial mounts); null if N/A
-    declinationLimit: null,
 
     // Background image for plot
     background: "img/telescopes/WIRO.jpg",
@@ -339,27 +294,18 @@ config["CAHA"] = {
     name: "CAHA 2.2m",
 
     // Latitude in degrees, +North
-    latitude: 37.220791,
+    latitude: 37.223151,
 
     // Longitude in degrees, +East
-    longitude: -2.546847,
+    longitude: -2.546075,
 
     // Altitude above sea level, in metres
     altitude: 2168,
 
-    // Lowest limit in zenith distance for observing, in degrees; null if N/A
-    zenithLimit: null,
-
     // Lowest limit in elevation for observing, in degrees
     lowestLimit: 10.9,
 
-    // Highest limit in elevation for observing, in degrees; null if N/A
-    highestLimit: null,
-
-    // Lowest limit for unvignetted observations, in degrees; null if N/A
-    vignetteLimit: null,
-
-    // Limits based on declination (for equatorial mounts); null if N/A
+    // Limits based on declination (for equatorial mounts)
     declinationLimit: ["alt(dec)", function (dec) {
         // Lowest elevation as a function of declination
         if (dec < -37) {
@@ -400,28 +346,13 @@ config["OAJ"] = {
     name: "OAJ 2.5m",
 
     // Latitude in degrees, +North
-    latitude: 40.0418,
+    latitude: 40.042018,
 
     // Longitude in degrees, +East
-    longitude: -1.0163,
+    longitude: -1.016382,
 
     // Altitude above sea level, in metres
     altitude: 1957,
-
-    // Lowest limit in zenith distance for observing, in degrees; null if N/A
-    zenithLimit: null,
-
-    // Lowest limit in elevation for observing, in degrees
-    lowestLimit: null,
-
-    // Highest limit in elevation for observing, in degrees; null if N/A
-    highestLimit: null,
-
-    // Lowest limit for unvignetted observations, in degrees; null if N/A
-    vignetteLimit: null,
-
-    // Limits based on declination (for equatorial mounts); null if N/A
-    declinationLimit: null,
 
     // Background image for plot
     background: "img/telescopes/OAJ.jpg",
@@ -461,20 +392,11 @@ config["Subaru"] = {
     // Altitude above sea level, in metres
     altitude: 4163,
 
-    // Lowest limit in zenith distance for observing, in degrees; null if N/A
-    zenithLimit: 1,
-
     // Lowest limit in elevation for observing, in degrees
     lowestLimit: 15,
 
-    // Highest limit in elevation for observing, in degrees; null if N/A
-    highestLimit: null,
-
-    // Lowest limit for unvignetted observations, in degrees; null if N/A
-    vignetteLimit: null,
-
-    // Limits based on declination (for equatorial mounts); null if N/A
-    declinationLimit: null,
+    // Highest limit in elevation for observing, in degrees
+    highestLimit: 89,
 
     // Background image for plot
     background: "img/telescopes/Subaru.jpg",
@@ -526,27 +448,18 @@ config["HJST"] = {
     name: "Harlan J. Smith Telescope 2.7m",
 
     // Latitude in degrees, +North
-    latitude: 30.671583,
+    latitude: 30.671743,
 
     // Longitude in degrees, +East
-    longitude: -104.021561,
+    longitude: -104.022024,
 
     // Altitude above sea level, in metres
     altitude: 2075,
 
-    // Lowest limit in zenith distance for observing, in degrees; null if N/A
-    zenithLimit: null,
-
     // Lowest limit in elevation for observing, in degrees
     lowestLimit: 20,
 
-    // Highest limit in elevation for observing, in degrees; null if N/A
-    highestLimit: null,
-
-    // Lowest limit for unvignetted observations, in degrees; null if N/A
-    vignetteLimit: null,
-
-    // Limits based on declination (for equatorial mounts); null if N/A
+    // Limits based on declination (for equatorial mounts)
     declinationLimit: ["alt(az)", function (az, west = false, instr = null) {
         // Lowest alt as a function of az
         let spline = helper.bspleval(
@@ -623,28 +536,22 @@ config["OST"] = {
     name: "Otto Struve Telescope 2.1m",
 
     // Latitude in degrees, +North
-    latitude: 30.679709,
+    latitude: 30.67150,
 
     // Longitude in degrees, +East
-    longitude: -104.024823,
+    longitude: -104.02281,
 
     // Altitude above sea level, in metres
     altitude: 2070,
 
-    // Lowest limit in zenith distance for observing, in degrees; null if N/A
-    zenithLimit: 1,
-
     // Lowest limit in elevation for observing, in degrees
     lowestLimit: 10,
 
-    // Highest limit in elevation for observing, in degrees; null if N/A
-    highestLimit: null,
+    // Highest limit in elevation for observing, in degrees
+    highestLimit: 89,
 
-    // Lowest limit for unvignetted observations, in degrees; null if N/A
+    // Lowest limit for unvignetted observations, in degrees
     vignetteLimit: 20,
-
-    // Limits based on declination (for equatorial mounts); null if N/A
-    declinationLimit: null,
 
     // Background image for plot
     background: "img/telescopes/OST.jpg",
@@ -684,20 +591,11 @@ config["HET"] = {
     // Altitude above sea level, in metres
     altitude: 2026,
 
-    // Lowest limit in zenith distance for observing, in degrees; null if N/A
-    zenithLimit: null,
-
     // Lowest limit in elevation for observing, in degrees
     lowestLimit: 46.6,
 
     // Highest limit in elevation for observing, in degrees
     highestLimit: 63.4,
-
-    // Lowest limit for unvignetted observations, in degrees; null if N/A
-    vignetteLimit: null,
-
-    // Limits based on declination (for equatorial mounts); null if N/A
-    declinationLimit: null,
 
     // Background image for plot
     background: "img/telescopes/HET.jpg",
@@ -737,21 +635,6 @@ config["CDK"] = {
     // Altitude above sea level, in metres
     altitude: 150,
 
-    // Lowest limit in zenith distance for observing, in degrees; null if N/A
-    zenithLimit: null,
-
-    // Lowest limit in elevation for observing, in degrees
-    lowestLimit: null,
-
-    // Highest limit in elevation for observing, in degrees
-    highestLimit: null,
-
-    // Lowest limit for unvignetted observations, in degrees; null if N/A
-    vignetteLimit: null,
-
-    // Limits based on declination (for equatorial mounts); null if N/A
-    declinationLimit: null,
-
     // Background image for plot
     background: "img/telescopes/Kennon.jpg",
 
@@ -782,28 +665,13 @@ config["DSO"] = {
     name: "Dark Sky Observatory 32in",
 
     // Latitude in degrees, +North
-    latitude: 36.234528,
+    latitude: 36.25292,
 
     // Longitude in degrees, +East
-    longitude: -81.412417,
+    longitude: -81.41507,
 
     // Altitude above sea level, in metres
     altitude: 1000,
-
-    // Lowest limit in zenith distance for observing, in degrees; null if N/A
-    zenithLimit: null,
-
-    // Lowest limit in elevation for observing, in degrees
-    lowestLimit: null,
-
-    // Highest limit in elevation for observing, in degrees
-    highestLimit: null,
-
-    // Lowest limit for unvignetted observations, in degrees; null if N/A
-    vignetteLimit: null,
-
-    // Limits based on declination (for equatorial mounts); null if N/A
-    declinationLimit: null,
 
     // Background image for plot
     background: "img/telescopes/DSO.jpg",
@@ -835,28 +703,13 @@ config["CTJO"] = {
     name: "Clarence T. Jones Observatory 20.5in",
 
     // Latitude in degrees, +North
-    latitude: 35.017564,
+    latitude: 35.01744,
 
     // Longitude in degrees, +East
-    longitude: -85.235289,
+    longitude: -85.23533,
 
     // Altitude above sea level, in metres
     altitude: 225,
-
-    // Lowest limit in zenith distance for observing, in degrees; null if N/A
-    zenithLimit: null,
-
-    // Lowest limit in elevation for observing, in degrees
-    lowestLimit: null,
-
-    // Highest limit in elevation for observing, in degrees
-    highestLimit: null,
-
-    // Lowest limit for unvignetted observations, in degrees; null if N/A
-    vignetteLimit: null,
-
-    // Limits based on declination (for equatorial mounts); null if N/A
-    declinationLimit: null,
 
     // Background image for plot
     background: "img/telescopes/CTJO.jpg",
@@ -896,20 +749,11 @@ config["VLT"] = {
     // Altitude above sea level, in metres
     altitude: 2636,
 
-    // Lowest limit in zenith distance for observing, in degrees; null if N/A
-    zenithLimit: 3,
-
     // Lowest limit in elevation for observing, in degrees
     lowestLimit: 20,
 
-    // Highest limit in elevation for observing, in degrees; null if N/A
-    highestLimit: null,
-
-    // Lowest limit for unvignetted observations, in degrees; null if N/A
-    vignetteLimit: null,
-
-    // Limits based on declination (for equatorial mounts); null if N/A
-    declinationLimit: null,
+    // Highest limit in elevation for observing, in degrees
+    highestLimit: 87,
 
     // Background image for plot
     background: "img/telescopes/VLT.jpg",
@@ -929,3 +773,86 @@ config["VLT"] = {
     // Time zone as defined in momentjs
     timezoneName: "America/Santiago"
 };
+
+/**
+ * Configuration for other telescopes (no details).
+ */
+config["TNG"] = {
+    site: "Roque de Los Muchachos",
+    name: "Telescopio Nazionale Galileo 3.6m",
+    latitude: 28.75411,
+    longitude: -17.88910,
+    altitude: 2359,
+    timezoneName: "Atlantic/Canary"
+}
+config["La Silla Observatory"] = {
+    name: "La Silla Observatory",
+    latitude: -29.25586,
+    longitude: -70.73889,
+    altitude: 2400,
+    timezoneName: "America/Santiago"
+}
+config["W. M. Keck Observatory"] = {
+    site: "Mauna Kea",
+    name: "Keck Telescopes 2×10m",
+    latitude: 19.82638,
+    longitude: -155.47441,
+    altitude: 4145,
+    timezoneName: "US/Hawaii"
+}
+config["Gemini North"] = {
+    site: "Mauna Kea",
+    name: "Gemini North 8.1m",
+    latitude: 19.82376,
+    longitude: -155.46909,
+    altitude: 4213,
+    timezoneName: "US/Hawaii"
+}
+config["Gemini South"] = {
+    site: "Cerro Pachón",
+    name: "Gemini South 8.1m",
+    latitude: -30.24068,
+    longitude: -70.73654,
+    altitude: 2722,
+    timezoneName: "America/Santiago"
+}
+config["Hooker Telescope"] = {
+    site: "Mt. Wilson",
+    name: "Hooker Telescope 100in",
+    latitude: 34.22588,
+    longitude: -118.05721,
+    altitude: 1742,
+    timezoneName: "US/Pacific"
+}
+config["SALT"] = {
+    site: "South African Astronomical Observatory",
+    name: "Southern African Large Telescope 9.2m",
+    latitude: -32.37588,
+    longitude: 20.81083,
+    altitude: 1798,
+    timezoneName: "Africa/Johannesburg"
+}
+config["Carlos Sánchez Telescope"] = {
+    site: "Teide Observatory",
+    name: "Carlos Sánchez Infrared Telescope 1.52m",
+    latitude: 28.30049,
+    longitude: -16.51086,
+    altitude: 2390,
+    timezoneName: "Atlantic/Canary"
+}
+config["1.3m Telescope"] = {
+    site: "Skinakas Observatory",
+    name: "Skinakas Observatory 1.3m",
+    latitude: 35.21180,
+    longitude: 24.89901,
+    altitude: 1750,
+    timezoneName: "Europe/Athens"
+}
+config["2m Telescope"] = {
+    site: "Tautenburg Observatory",
+    name: "Tautenburg Observatory 2m",
+    latitude: 50.98016,
+    longitude: 11.71123,
+    altitude: 341,
+    timezoneName: "Europe/Berlin"
+}

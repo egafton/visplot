@@ -1,5 +1,5 @@
 /**
- * @copyright (c) 2016-2024 ega, irl.
+ * @copyright (c) 2016-2026 ega, irl.
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -101,10 +101,6 @@ $(document).ready(function () {
                     helper.LogEntry(`Restoring <i>opt_reschedule_later</i> to <i>${localStorage.opt_reschedule_later}</i>`);
                     $("#opt_reschedule_later").prop("checked", localStorage.opt_reschedule_later === "true");
                 }
-                if ("opt_away_from_zenith" in localStorage) {
-                    helper.LogEntry(`Restoring <i>opt_away_from_zenith</i> to <i>${localStorage.opt_away_from_zenith}</i>`);
-                    $("#opt_away_from_zenith").prop("checked", localStorage.opt_away_from_zenith === "true");
-                }
                 if ("opt_maintain_order" in localStorage) {
                     helper.LogEntry(`Restoring <i>opt_maintain_order</i> to <i>${localStorage.opt_maintain_order}</i>`);
                     $("#opt_maintain_order").prop("checked", localStorage.opt_maintain_order === "true");
@@ -190,4 +186,9 @@ function postInitialization() {
     setInterval(function() {
         driver.Callback_ShowCurrentTime();
     }, 5000);
+
+    /*
+     Set up the map.
+     */
+    driver.SetupMap();
 }
