@@ -240,7 +240,9 @@ Driver.prototype.SetupMap = function() {
     for (const key in config) {
         markers.addLayer(L.marker({lng: config[key].longitude, lat: config[key].latitude}, {alt: key})
                           .bindTooltip(config[key].name)
-                          .on("click", function(e) {console.log(e); })
+                          .on("click", function(e) {
+                              $("#def_telescope").val(key).trigger("change");
+                          })
                         );
     }
     this.map.addLayer(markers);
