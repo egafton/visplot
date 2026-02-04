@@ -11,16 +11,16 @@ build:
   jobs:
     install:
       - pip install sphinx
-      - python -m pip install --exists-action=w --no-cache-dir -r readthedocs/requirements.txt
+      - python -m pip install --exists-action=w --no-cache-dir -r docs/requirements.txt
 
 # Build documentation in the readthedocs/ directory with Sphinx
 sphinx:
   builder: html
-  configuration: readthedocs/conf.py
+  configuration: docs/conf.py
 
 # Optional but recommended, declare the Python requirements required
 # to build your documentation
 # See https://docs.readthedocs.io/en/stable/guides/reproducible-builds.html
 python:
   install:
-  - requirements: readthedocs/requirements.txt
+  - requirements: docs/requirements.txt

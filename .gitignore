@@ -6,4 +6,4 @@ cgi-bin/
 test/
 __init__.py
 *.pyc
-readthedocs/_build/
+docs/_build
