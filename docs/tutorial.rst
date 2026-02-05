@@ -6,7 +6,7 @@ The Visplot tutorial
 
 .. Add some icon substitutions
 
-.. |collapse_sidebar| image:: ../img/sidebar.png
+.. |collapse_sidebar| image:: ../visplot/img/sidebar.png
     :height: 2ex
 
 Introduction
@@ -20,7 +20,7 @@ constraints such as airmass limits, time windows, telescope configuration, and
 instrument limitations, so you do not have to keep all of them in your head at
 once.
 
-.. image:: ../img/snapshot.png
+.. image:: figs/snapshot.png
    :alt: Visplot main interface
    :width: 600px
 

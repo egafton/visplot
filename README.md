@@ -1,7 +1,7 @@
 # Visplot
 Visibility plot and observation scheduling tool for telescopes. It allows automatic, nearly-optimal scheduling of an entire observing night.
 
-![Visplot](https://raw.githubusercontent.com/egafton/visplot/master/img/snapshot.png "Snapshot of Visplot")
+![Visplot](https://raw.githubusercontent.com/egafton/visplot/master/docs/figs/snapshot.png "Snapshot of Visplot")
 
 ## Using Visplot
 The latest version of Visplot is hosted publicly at [https://www.visplot.com](https://www.visplot.com). You can use it without installing anything on your computer.
