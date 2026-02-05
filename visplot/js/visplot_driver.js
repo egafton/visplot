@@ -706,40 +706,26 @@ Driver.prototype.InitializeDate = function () {
         day = parseInt(this.obdata.Date.substr(6, 2));
         datemsg = `Date set to ${year}-${helper.padTwoDigits(month)}-${helper.padTwoDigits(day)}, as provided by the OB queue.`;
     } else {
-        const zone = moment.tz.zone(config[Driver.telescopeName].timezoneName);
-        const now = new Date();
-        config[Driver.telescopeName].timezone = (-zone.utcOffset(now) / 60);
-        config[Driver.telescopeName].timezone_abbr = zone.abbr(now);
-        helper.LogEntry(`Today is ${now.toUTCString()}, time zone set to ${config[Driver.telescopeName].timezoneName} (${Driver.obs_timezone_abbr}), which is UTC${helper.timezone(Driver.obs_timezone)}`);
-        day = now.getUTCDate();
-        month = now.getUTCMonth() + 1;
-        year = now.getUTCFullYear();
-        const localTimeAtTel = now.getUTCHours() + Driver.obs_timezone;
-        let prevDay = false;
-        if (localTimeAtTel < 0) {
-            prevDay = true;
-            helper.LogEntry(`Setting date to yesterday because the local time at the telescope is ${helper.padTwoDigits(helper.mod(localTimeAtTel, 24))}:${helper.padTwoDigits(now.getUTCMinutes())}`);
-        } else if (localTimeAtTel < 12) {
-            prevDay = true;
-            helper.LogEntry(`Setting date to yesterday because at the telescope it is still morning (local time ${helper.padTwoDigits(localTimeAtTel)}:${helper.padTwoDigits(now.getUTCMinutes())})`);
-        }
-        if (prevDay) {
-            if (day == 1) {
-                if (month === 1) {
-                    year = year - 1;
-                    month = 12;
-                    day = 31;
-                } else {
-                    month = month - 1;
-                    day = helper.numberOfDays(year, month); // Set day to last day of previous month
-                }
-            } else {
-                day--;
-            }
-            datemsg = `Default date set to ${year}-${helper.padTwoDigits(month)}-${helper.padTwoDigits(day)} (last night).`;
+        const timezoneName = config[Driver.telescopeName].timezoneName; // cache
+        const zone = moment.tz.zone(timezoneName); // time zone at the telescope
+        const localTimeAtTel = moment.tz(timezoneName); // local time at the telescope
+        config[Driver.telescopeName].timezone = (-zone.utcOffset(localTimeAtTel) / 60); // e.g., -11
+        config[Driver.telescopeName].timezone_abbr = zone.abbr(localTimeAtTel); // e.g., WEST
+        helper.LogEntry(`Current time at the telescope is ${localTimeAtTel.format()}, time zone set to ${timezoneName} (${Driver.obs_timezone_abbr}), which is UTC${helper.timezone(Driver.obs_timezone)}`);
+        let thedate;
+        const localHourAtTel = localTimeAtTel.hour();
+        if (localHourAtTel < 12) {
+            helper.LogEntry(`Setting date to yesterday because at the telescope it is still morning (local time ${localTimeAtTel.format('HH:MM')})`);
+            thedate = localTimeAtTel.subtract(1, "days");
+            datemsg = `Default date set to ${thedate.format('YYYY-MM-DD')} (last night).`;
         } else {
-            datemsg = `Default date set to ${year}-${helper.padTwoDigits(month)}-${helper.padTwoDigits(day)}.`;
+            helper.LogEntry(`Setting date to today because the local hour at the telescope is ${localTimeAtTel.format('HH:MM')}`);
+            thedate = localTimeAtTel;
+            datemsg = `Default date set to ${thedate.format('YYYY-MM-DD')}.`;
         }
+        year = thedate.year();
+        month = thedate.month() + 1;
+        day = thedate.date();
     }
     $("#dateY").val(year);
     $("#dateM").val(helper.padTwoDigits(month));

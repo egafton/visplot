@@ -833,6 +833,13 @@ config["Magellan Telescopes"] = {
     altitude: 2392,
     timezoneName: "America/Santiago"
 }
+config["Haleakala Observatory"] = {
+    name: "Haleakala Observatory",
+    latitude: 20.70799,
+    longitude: -156.25680,
+    altitude: 3052,
+    timezoneName: "US/Hawaii"
+}
 config["La Silla Observatory"] = {
     name: "La Silla Observatory",
     latitude: -29.25586,
@@ -862,6 +869,22 @@ config["Gemini South"] = {
     latitude: -30.24068,
     longitude: -70.73654,
     altitude: 2722,
+    timezoneName: "America/Santiago"
+}
+config["TAO"] = {
+    site: "Cerro Chajnantor",
+    name: "Tokyo Atacama Observatory 6.5m",
+    latitude: -22.98607,
+    longitude: -67.74214,
+    altitude: 5640,
+    timezoneName: "America/Santiago"
+}
+config["LSST"] = {
+    site: "Cerro Pachón",
+    name: "Vera C. Rubin Observatory 8.4m",
+    latitude: -30.24464,
+    longitude: -70.74933,
+    altitude: 2672,
     timezoneName: "America/Santiago"
 }
 config["Hooker Telescope"] = {
@@ -909,4 +932,12 @@ config["Tautenburg Observatory 2m"] = {
     longitude: 11.71123,
     altitude: 341,
     timezoneName: "Europe/Berlin"
+}
+config["AAT"] = {
+    site: "Siding Spring Observatory",
+    name: "Anglo-Australian Telescope 3.9m",
+    latitude: -31.27539,
+    longitude: 149.06721,
+    altitude: 1164,
+    timezoneName: "Australia/Sydney"
 }

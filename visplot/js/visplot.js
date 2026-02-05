@@ -57,9 +57,11 @@ $(document).ready(function () {
     }
 
     // Populate the telescope select input
-    for (const key in config) {
-        $("#def_telescope").append(new Option(config[key].name, key));
-    }
+    Object.entries(config)
+        .sort(([, a], [, b]) => a.name.localeCompare(b.name))
+        .forEach(([key, value]) => {
+            $("#def_telescope").append(new Option(value.name, key));
+        });
 
     /*
      * If there is a configuration saved in localStorage (this is a nice

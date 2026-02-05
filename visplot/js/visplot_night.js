@@ -43,14 +43,20 @@ Night.prototype.setEphemerides = function (obj) {
     // Compute UTC, UT1 and TT values (expressed in MJD format) of Midnight (UT);
     // Since we assume certain quantities to be constant throughout
     // the night (equation of equinoxes, TT-UTC, etc.), precompute them.
-    this.utcMidnight = sla.cldj(this.year, this.month, this.day) + 1 - Driver.obs_timezone / 24;
+
+    // Midnight tonight at the telescope
+    const telMidnight = moment.tz(`${this.year}-${helper.padTwoDigits(this.month)}-${helper.padTwoDigits(this.day)}`, config[Driver.telescopeName].timezoneName).add(1, "days");
+    // Convert it to UTC
+    const utcMidnight = telMidnight.clone().tz("UTC");
+    // Convert it to MJD (include the fractional day)
+    this.utcMidnight = sla.cldj(utcMidnight.year(), utcMidnight.month() + 1, utcMidnight.date()) + utcMidnight.hour() / 24
     this.ut1Midnight = this.utcMidnight + Driver.current_dut;
     this.dut = sla.dtt(this.utcMidnight) / sla.d2s;
     this.ttMidnight = this.utcMidnight + this.dut;
     this.eqeqx = sla.eqeqx(this.ttMidnight);
 
     /* How is refraction handled? */
-    /* For setting/rising: NAO uses a refraction value of 34 arcminutes at the horizon,
+    /* For setting/rising: typical quoted value is 34 arcminutes at the horizon,
      * which is approximately equal to what SLALIB gives at sea-level.
      * However, at high altitude (low pressure) this can be smaller by about 10 arcminutes, so that
      * needs to be adjusted */

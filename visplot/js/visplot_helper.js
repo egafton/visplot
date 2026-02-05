@@ -739,14 +739,20 @@ helper.stl = function(utc, eqeqx) {
  * @param {String} pm - Whether to catch the body rising ("-") or setting ("+")
  */
 helper.utarc = function(altitude, tsouth, dec, pm) {
-    const cost = (Math.sin(altitude) - Math.sin(Driver.obs_lat_rad) * Math.sin(dec)) /
-            (Math.cos(Driver.obs_lat_rad) * Math.cos(dec));
-    const t = sla.r2d * Math.acos(cost) / 15;
-    if (pm === "+") {
-        return sla.dr2tf(6, ((tsouth + t) % 24) / 24 * sla.d2pi).ihmsf;
-    } else {
-        return sla.dr2tf(6, ((tsouth - t) % 24) / 24 * sla.d2pi).ihmsf;
+    if (pm !== "+" && pm !== "-") {
+        throw new Error("pm must be '+' (setting) or '-' (rising)");
     }
+    const sinφ = Math.sin(Driver.obs_lat_rad);
+    const cosφ = Math.cos(Driver.obs_lat_rad);
+    const cost = (Math.sin(altitude) - sinφ * Math.sin(dec)) / (cosφ * Math.cos(dec));
+    // Object never reaches requested altitude
+    if (cost > 1 || cost < -1) {
+        return null;
+    }
+    const H = Math.acos(cost);  // radians
+    const t = sla.r2d * H / 15; // hours
+    const time = (tsouth + (pm === "+" ? t : -t) + 24) % 24;
+    return sla.dr2tf(6, time / 24 * sla.d2pi).ihmsf;
 };
 
 /**
