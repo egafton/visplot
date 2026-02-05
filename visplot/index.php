@@ -6,6 +6,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. See LICENSE.md.
  */
+$version = "4.0";
 session_start();
 if (isset($_SESSION["obinfo"])) {
     $_POST["obinfo"] = $_SESSION["obinfo"];
@@ -42,7 +43,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" type="text/css" />
     <link rel="stylesheet" href="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css" type="text/css" />
     <link rel="stylesheet" href="css/aladin.min.css" type="text/css" />
-    <link rel="stylesheet" href="css/visplot.css?" type="text/css" />
+    <link rel="stylesheet" href="css/visplot.css?v=<?php echo($version);?>" type="text/css" />
+    <script type="text/javascript">window.version = "<?php echo($version);?>";</script>
 </head>
 
 <body class="fixed-left">
@@ -265,7 +267,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
-    <script src="js/moment-timezone-with-data.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.59.4/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.59.4/addon/selection/active-line.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.59.4/addon/mode/simple.min.js"></script>
@@ -275,21 +276,22 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
     <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
     <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js'></script>
     <!-- Locally-hosted, 3rd party libraries -->
-    <script src="js/aladin.min.js?" type="text/javascript" charset="utf-8"></script>
-    <script src="js/jsplitter.js?" type="text/javascript" charset="utf-8"></script>
+    <script src="js/aladin.min.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
+    <script src="js/jsplitter.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
+    <script src="js/moment-timezone-with-data.min.js?v=<?php echo($version);?>"></script>
     <!-- Configuration files -->
-    <script src="js/config.js?" type="text/javascript" charset="utf-8"></script>
+    <script src="js/config.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
     <!-- Main JS code -->
-    <script src="js/visplot_slacoeffs.js?" type="text/javascript" charset="utf-8"></script>
-    <script src="js/visplot_sla.js?" type="text/javascript" charset="utf-8"></script>
-    <script src="js/visplot.js?" type="text/javascript" charset="utf-8"></script>
-    <script src="js/visplot_driver.js?" type="text/javascript" charset="utf-8"></script>
-    <script src="js/visplot_night.js?" type="text/javascript" charset="utf-8"></script>
-    <script src="js/visplot_graph.js?" type="text/javascript" charset="utf-8"></script>
-    <script src="js/visplot_targets.js?" type="text/javascript" charset="utf-8"></script>
-    <script src="js/visplot_helper.js?" type="text/javascript" charset="utf-8"></script>
-    <script src="js/visplot_serializer.js?" type="text/javascript" charset="utf-8"></script>
-    <script src="js/visplot_skygraph.js?" type="text/javascript" charset="utf-8"></script>
+    <script src="js/visplot_slacoeffs.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
+    <script src="js/visplot_sla.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
+    <script src="js/visplot.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
+    <script src="js/visplot_driver.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
+    <script src="js/visplot_night.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
+    <script src="js/visplot_graph.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
+    <script src="js/visplot_targets.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
+    <script src="js/visplot_helper.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
+    <script src="js/visplot_serializer.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
+    <script src="js/visplot_skygraph.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
     <!-- OB data goes in its own hidden variables -->
     <?php if ($obpost) { echo '<input type="hidden" id="obinfo" value="'.rawurlencode($obinfo).'" /> '; } ?>
 </body>

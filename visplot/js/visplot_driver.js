@@ -105,10 +105,9 @@ function Driver() {
      *
      * 4.0  - Expanded list of telescopes; added a map and replaced the dropdown
      *        with an incremental search box. Simplified telescope configuration
-     *        objects (null values need not be provided any more).
+     *        objects (null values need not be provided any more). Fixed some bugs.
      */
-    this.version = "4.0";
-    helper.LogSuccess(`Hello, this is Visplot version ${this.version}`);
+    helper.LogSuccess(`Hello, this is Visplot version ${window.version}`);
 
     /* HTML5 canvas, context and Graph class - related variables */
     this.canvas = document.getElementById("canvasFrame");
@@ -196,12 +195,12 @@ function Driver() {
 
     /* Update footer */
     $("#footer-year").text((new Date()).getUTCFullYear());
-    $("#footer-version").text(this.version);
-    $("#footer-version").attr("href", `https://github.com/egafton/visplot/tree/v${this.version}`);
+    $("#footer-version").text(window.version);
+    $("#footer-version").attr("href", `https://github.com/egafton/visplot/tree/v${window.version}`);
     fetch(`https://api.github.com/repos/egafton/visplot/tags`)
         .then(res => res.json())
         .then(res => res.forEach(tag => {
-            if (tag.name === `v${this.version}`) {
+            if (tag.name === `v${window.version}`) {
                 fetch(`https://api.github.com/repos/egafton/visplot/commits/${tag.commit.sha}`)
                     .then(res => res.json())
                     .then(res => {
