@@ -212,7 +212,7 @@ Configuration
 
 Click :guilabel:`Configuration` to adjust default settings:
 
-- Telescope selection
+- Telescope selection: dropbox or interactive selection on the map.
 - Default epoch, observing time, and project ID
 - Maximum airmass
 - Observation types and colors

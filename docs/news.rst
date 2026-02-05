@@ -11,6 +11,26 @@ and what we have quietly fixed while no one was looking.
 February 2026
 ==============
 
+* New version of the web interface released!
+
+  Visplot just got a fresh update, with support for many more telescopes and a
+  brand-new interactive map to help you choose your observing location with a
+  click (or two).
+
+  Please note that not all telescopes come with the same level of detailed
+  specifications. Facilities with unknown or incomplete constraints are now
+  clearly marked with a vertical red banner stating:
+
+    .. warning::
+
+        "No telescope-specific altitude or collision limits are defined. 
+        
+        Schedule may include unsafe pointings. Use with caution!"
+
+  As always, we warmly welcome feedback from the community — it is what keeps
+  Visplot growing in the right direction.
+
+
 * New telescope available:
 
   The VLT has officially joined the Visplot family! After noticing that some
