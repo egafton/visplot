@@ -292,6 +292,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
     <script src="js/visplot_helper.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
     <script src="js/visplot_serializer.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
     <script src="js/visplot_skygraph.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
+    <?php include '.ga'; ?>
     <!-- OB data goes in its own hidden variables -->
     <?php if ($obpost) { echo '<input type="hidden" id="obinfo" value="'.rawurlencode($obinfo).'" /> '; } ?>
 </body>
