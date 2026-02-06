@@ -90,8 +90,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
                     <div id="footer-inner">
                     ©2016–<span id="footer-year"></span> ega, irl.
                     Running Visplot version <a target="_blank" id="footer-version"></a><span id="footer-date"></span>.
-                    Please see the <a target="_blank" href="https://visplot.readthedocs.io/">documentation</a>.<br/>
                     Released under the <a target="_blank" href="https://github.com/egafton/visplot/blob/master/LICENSE.md">GNU General Public License v3.0</a>.
+                    Please see the <a target="_blank" href="https://visplot.readthedocs.io/">documentation</a>.
                     Report bugs and feature requests in the <a target="_blank" href="https://github.com/egafton/visplot/issues"><i>Issues</i> section</a> on GitHub.
                     </div> <!-- #footer-inner -->
                 </div> <!-- #footer -->
