@@ -840,11 +840,28 @@ config["Haleakala Observatory"] = {
     altitude: 3052,
     timezoneName: "US/Hawaii"
 }
-config["La Silla Observatory"] = {
-    name: "La Silla Observatory",
-    latitude: -29.25586,
-    longitude: -70.73889,
+config["MPG/ESO"] = {
+    site: "La Silla Observatory",
+    name: "MPG/ESO Telescope 2.2m",
+    latitude: -29.25784,
+    longitude: -70.73660,
+    altitude: 2375,
+    timezoneName: "America/Santiago"
+}
+config["ESO"] = {
+    site: "La Silla Observatory",
+    name: "ESO Telescope 3.6m",
+    latitude: -29.26100,
+    longitude: -70.73160,
     altitude: 2400,
+    timezoneName: "America/Santiago"
+}
+config["NTT"] = {
+    site: "La Silla Observatory",
+    name: "New Technology Telescope 3.58m",
+    latitude: -29.25892,
+    longitude: -70.73374,
+    altitude: 2375,
     timezoneName: "America/Santiago"
 }
 config["W. M. Keck Observatory"] = {
