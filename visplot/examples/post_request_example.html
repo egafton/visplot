@@ -1,0 +1,68 @@
+<html>
+    <body></body>
+    <script type="text/javascript">
+        const object = {
+            Telescope: "NOT",
+            Date: "20170920",
+            nTargets: 2,
+            Targets: {
+                target1: {
+                    Name: "C3",
+                    GroupID: "c3",
+                    BlockID: "ob",
+                    RA: "00:02:13.6",
+                    Dec: "67:25:03.7",
+                    Epoch: "2000.00",
+                    PM: {
+                        RA: "0.0",
+                        Dec: "0.0"
+                    },
+                    ObsTime: "2194",
+                    Instrument: "FIES",
+                    Mode: "SPEC",
+                    Imtype: "science",
+                    Weather: "Thin Clouds",
+                    Moon: "Any",
+                    Moondist: "Any",
+                    Seeing: "9.9",
+                    Proposal: "54-901",
+                    Constraint: "3.50",
+                    Type: "Staff"
+                },
+                target2: {
+                    Name: "PS1J0147+4630",
+                    GroupID: "bessel_r_6",
+                    BlockID: "3x30s",
+                    RA: "01:47:10.1",
+                    Dec: "46:30:43",
+                    Epoch: "2000.00",
+                    PM: {
+                        RA: "0.00",
+                        Dec: "0.00"
+                    },
+                    ObsTime: "404",
+                    Instrument: "ALFOSC",
+                    Mode: "IMA",
+                    Imtype: "science",
+                    Weather: "Thin Clouds",
+                    Moon: "Any",
+                    Moondist: "Any",
+                    Seeing: "1.0",
+                    Proposal: "55-412",
+                    Constraint: "2.00",
+                    Type: "Fast-Track"
+                }
+            }
+        };
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = "https://www.visplot.com/";
+        form.style.visibility = "hidden";
+        const input = document.createElement("input");
+        input.name = "obinfo";
+        input.value = JSON.stringify(object);
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+    </script>
+</html>
