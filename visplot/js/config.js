@@ -958,3 +958,10 @@ config["AAT"] = {
     altitude: 1164,
     timezoneName: "Australia/Sydney"
 }
+config["Armagh Observatory"] = {
+    name: "Armagh Observatory",
+    latitude: 54.35211,
+    longitude: -6.64855,
+    altitude: 61,
+    timezoneName: "Europe/Belfast"
+}
