@@ -19,7 +19,7 @@ for pre-populating the target input box on the Visplot website with OB informati
 2. The script will automatically submit the OB data to the Visplot website,
    and will redirect you there.
 
-### Or:
+#### Or:
 Go to https://www.visplot.com/examples/post_request_example.html
 
 ### 2. `session_example.php`
@@ -35,5 +35,5 @@ to the main README.md file, and that Visplot is running at http://localhost:8888
 4. The OB data will be set in the session and you will be redirected to the
    Visplot main page, with the pre-populated target input box.
 
-### Or:
+#### Or:
 Go to https://www.visplot.com/examples/session_example.php
