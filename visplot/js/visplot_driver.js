@@ -1436,9 +1436,10 @@ Object.defineProperties(Driver, {
     },
     "plotTitle": {
         get: function () {
+            const lon = this.obs_lon_deg < 0 ? 360 + this.obs_lon_deg : this.obs_lon_deg;
             return `Altitudes at ${this.telescopeName}, ` +
                 ('site' in config[this.telescopeName] && config[this.telescopeName].site !== null ? config[this.telescopeName].site + ", " : "") +
-                (this.obs_lon_deg < 0 ? 360 + this.obs_lon_deg : this.obs_lon_deg).toFixed(4) + "E " +
+                (lon <= 180 ? lon.toFixed(4) + "E " : (360 - lon).toFixed(4) + "W ") +
                 (this.obs_lat_deg > 0 ? `+${this.obs_lat_deg.toFixed(4)}N` : `${Math.abs(this.obs_lat_deg).toFixed(4)}S`) +
                 ", " + this.obs_alt.toFixed(0) + " m above sea level";
         }
