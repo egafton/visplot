@@ -19,6 +19,9 @@ for pre-populating the target input box on the Visplot website with OB informati
 2. The script will automatically submit the OB data to the Visplot website,
    and will redirect you there.
 
+### Or:
+Go to https://www.visplot.com/examples/post_request_example.html
+
 ### 2. `session_example.php`
 This file demonstrates how to set OB information as a session parameter for a local
 installation of Visplot. The OB data is stored in the PHP session and the user is
@@ -31,3 +34,6 @@ to the main README.md file, and that Visplot is running at http://localhost:8888
 2. Access the file via the browser (http://localhost:8888/examples/session_example.php).
 4. The OB data will be set in the session and you will be redirected to the
    Visplot main page, with the pre-populated target input box.
+
+### Or:
+Go to https://www.visplot.com/examples/session_example.php
