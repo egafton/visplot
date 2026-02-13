@@ -194,4 +194,6 @@ $object = array(
 
 session_start();
 $_SESSION['obinfo'] = json_encode($object);
-header('Location:http://localhost:8888');
+$protocol = $_SERVER['PROTOCOL'] = isset($_SERVER['HTTPS']) && !empty($_SERVER['HTTPS']) ? 'https' : 'http';
+$host = $_SERVER['HTTP_HOST'];
+header("Location:${protocol}://${host}");
