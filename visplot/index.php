@@ -6,7 +6,104 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. See LICENSE.md.
  */
-$version = "4.0";
+$version = "4.1";
+/*
+* Version history (with brief changelog):
+*
+* 1.0 - Initial version, in use at the NOT until 2021
+*     - Altitude computations performed on the server side (pyephem)
+*
+* 2.0 - First version hosted on github
+*     - Includes a ported subset of slalib
+*     - All computations now performed on the client side
+*
+* 2.1 - Improved handling of OB data
+*     - Different Aladin surveys used for optical vs infrared instruments
+*     - Many bug fixes (part of them reported by NOT staff)
+*     - Syntax highlight for line comments
+*     - Revamped Configuration and Help sections
+*     - Updated 3rd party libraries
+*
+* 2.2 - Aladin is hosted locally, and allows arbitrary position angles
+*     - Aladin FoV is now instrument-specific, as defined in config.js
+*     - Many bug fixes (part of them reported by NOT staff)
+*
+* 2.3 - Added CATServer OB type
+*
+* 2.4 - Added more telescopes, and support for telescopes in different
+*       time zones.
+*     - Now storing configuration in the browser's localStorage.
+*
+* 2.5 - Added declination limits for equatorial-mount telescopes,
+*       either as ha(dec) or as alt(dec).
+*     - Updated README file and included a screenshot of Visplot.
+*     - Added footer with misc. information and links to GitHub.
+*     - Changed UT to UTC, since that is what we are using.
+*     - Telescope name and default AM are now saved upon serialization.
+*     - Each telescope now has its own background image.
+*
+* 2.6 - Updated collision map for HJST.
+*     - Added the possibility of observing over-the-axis in equatorial
+*       mount telescopes.
+*     - Telescope lowest limit now enforced in the scheduling algorithm.
+*
+* 2.7 - Added support for different TCS catalogue formats.
+*     - Target list in TCS format can now be exported to disk.
+*     - Added support for different skycams, and simplified & improved
+*       the spherical geometry calculations mapping pixels to alt/az.
+*     - Observations can now be scheduled between sunset/sunrise,
+*       between nautical twilights, or between astronomical twilights.
+*
+* 3.0 - Redesigned user interface: only the plot is visible by default,
+*       while all the settings are available in a collapsible sidebar.
+*     - The sidebar can be resized at will ("split pane"), while the
+*       plot will adjust to fill the remaining space.
+*     - Stopped logging milliseconds.
+*     - Fixed some minor bugs.
+*     - Major changes to the AladinLite applet, which now allows arbitrary
+*       sky PAs and flipping in x/y.
+*     - Added legend for over-the-axis observations.
+*     - All options are now saved between sessions, including checkboxes.
+*     - Added support for RA/Dec input in decimal degrees.
+*
+* 3.1 - Now displaying two backlinks to the NOT OB queue (staff and
+*       public).
+*     - Added support for the HET.
+*
+* 3.2 - First version hosted at https://www.visplot.com
+*
+* 3.3 - Merged pull request that adds the CAHA 2.2m telescope.
+*
+* 3.4 - Added OAJ observatory.
+*
+* 3.5 - Fixed morning twilights during DST change.
+*
+* 3.6 - Added Subaru telescope.
+*
+* 3.7 - Replaced MSZT with Local Time (DST included if applicable),
+*       using Moment.js.
+*
+* 3.8 - Can now retrieve coordinates and proper motions from SIMBAD.
+*     - Now providing a Dockerfile and docker-compose.yml for easy testing.
+*
+* 3.9 - Added Kennon Observatory.
+*
+* 3.10 - Added Dark Sky Observatory.
+*      - Fixed initial default instrument list.
+*
+* 3.11 - Added Clarence T. Jones Observatory.
+*
+* 3.12 - Added Catalina Sky Survey 1.5m telescope.
+*
+* 3.13 - Added VLT. New lists of blanks (https://doi.org/10.1111/j.1365-2966.2012.21883.x)
+*        and spectrophotometric standards, for the Northern and Southern hemispheres.
+*
+* 4.0  - Expanded list of telescopes; added a map and replaced the dropdown
+*        with an incremental search box. Simplified telescope configuration
+*        objects (null values need not be provided any more). Fixed some bugs.
+*
+* 4.1  - Showing W/E in telescope longitude; added more observatories.
+*/
 session_start();
 if (isset($_SESSION["obinfo"])) {
     $_POST["obinfo"] = $_SESSION["obinfo"];
