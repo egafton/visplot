@@ -151,6 +151,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
     <div style="display:flex">
         <div id="sidebar">
             <div id="sidebarpad">
+                <div id="vpname"><img src="img/visplot.png" /></div>
                 <div id="left_upper">
                     <div id="upperBtnDiv">
                         <input type="button" value="Configuration" id="configBtn" />
