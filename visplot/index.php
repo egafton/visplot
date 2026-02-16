@@ -6,7 +6,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. See LICENSE.md.
  */
-$version = "4.1";
+$version = "4.2";
 /*
 * Version history (with brief changelog):
 *
@@ -103,6 +103,8 @@ $version = "4.1";
 *        objects (null values need not be provided any more). Fixed some bugs.
 *
 * 4.1  - Showing W/E in telescope longitude; added more observatories.
+*
+* 4.2  - Added title in sidebar.
 */
 session_start();
 if (isset($_SESSION["obinfo"])) {
