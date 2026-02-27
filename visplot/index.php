@@ -129,6 +129,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
 } else {
     $obpost = FALSE;
 }
+$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' 
+             || $_SERVER['SERVER_PORT'] == 443)
+            ? "https://" 
+            : "http://";
+$baseurl = $protocol . $_SERVER['HTTP_HOST'] . "/";
 ?><!DOCTYPE HTML>
 <html lang="en">
 
@@ -144,8 +149,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" type="text/css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" type="text/css" />
     <link rel="stylesheet" href="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css" type="text/css" />
-    <link rel="stylesheet" href="css/aladin.min.css" type="text/css" />
-    <link rel="stylesheet" href="css/visplot.css?v=<?php echo($version);?>" type="text/css" />
+    <link rel="stylesheet" href="<?php echo($baseurl);?>css/aladin.min.css" type="text/css" />
+    <link rel="stylesheet" href="<?php echo($baseurl);?>css/visplot.css?v=<?php echo($version);?>" type="text/css" />
     <script type="text/javascript">window.version = "<?php echo($version);?>";</script>
 </head>
 
@@ -379,22 +384,22 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
     <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
     <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js'></script>
     <!-- Locally-hosted, 3rd party libraries -->
-    <script src="js/aladin.min.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
-    <script src="js/jsplitter.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
-    <script src="js/moment-timezone-with-data.min.js?v=<?php echo($version);?>"></script>
+    <script src="<?php echo($baseurl);?>js/aladin.min.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
+    <script src="<?php echo($baseurl);?>js/jsplitter.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
+    <script src="<?php echo($baseurl);?>js/moment-timezone-with-data.min.js?v=<?php echo($version);?>"></script>
     <!-- Configuration files -->
-    <script src="js/config.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
+    <script src="<?php echo($baseurl);?>js/config.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
     <!-- Main JS code -->
-    <script src="js/visplot_slacoeffs.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
-    <script src="js/visplot_sla.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
-    <script src="js/visplot.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
-    <script src="js/visplot_driver.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
-    <script src="js/visplot_night.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
-    <script src="js/visplot_graph.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
-    <script src="js/visplot_targets.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
-    <script src="js/visplot_helper.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
-    <script src="js/visplot_serializer.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
-    <script src="js/visplot_skygraph.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
+    <script src="<?php echo($baseurl);?>js/visplot_slacoeffs.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
+    <script src="<?php echo($baseurl);?>js/visplot_sla.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
+    <script src="<?php echo($baseurl);?>js/visplot.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
+    <script src="<?php echo($baseurl);?>js/visplot_driver.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
+    <script src="<?php echo($baseurl);?>js/visplot_night.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
+    <script src="<?php echo($baseurl);?>js/visplot_graph.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
+    <script src="<?php echo($baseurl);?>js/visplot_targets.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
+    <script src="<?php echo($baseurl);?>js/visplot_helper.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
+    <script src="<?php echo($baseurl);?>js/visplot_serializer.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
+    <script src="<?php echo($baseurl);?>js/visplot_skygraph.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
     <?php
         include '.ga';
         # OB data goes in its own hidden variables
