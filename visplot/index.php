@@ -403,7 +403,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
         }
         # Default telescope specified?
         if (isset($_GET['telescope']) && $_SERVER['REQUEST_METHOD'] === 'GET') {
-            echo '<input type="hidden" id="default_telescope" value="'.rawurlencode($_GET['telescope']).'" /> ';
+            echo '<input type="hidden" id="default_telescope" value="'.rawurlencode(strtoupper($_GET['telescope'])).'" /> ';
         }
     ?>
 </body>
