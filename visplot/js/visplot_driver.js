@@ -1217,7 +1217,7 @@ Driver.prototype.setTelescopeName = function (val) {
                 Driver._telescopeName = val;
                 $("#def_telescope").val(val);
                 // Background with telescope image
-                $("#canvasFrame").css("background-image", 'url(' + (config[val].background || 'img/telescopes/default.jpg') + ')');
+                $("#canvasFrame").css("background-image", 'url(' + window.baseurl + (config[val].background || 'img/telescopes/default.jpg') + ')');
                 // Recalculate Skycam constants
                 driver.skyGraph.updateTelescope();
                 // Revalidate targets to recompute TCS lines

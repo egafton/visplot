@@ -158,7 +158,7 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
 
 <head>
     <title>NOT/Visplot</title>
-    <link rel="icon" type="image/x-icon" href="img/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="<?php echo($baseurl);?>img/favicon.ico">
     <meta name="description" content="Visibility plot and observation scheduling tool.">
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -175,12 +175,12 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
 
 <body class="fixed-left">
     <div id="toggle-sidebar">
-        <img src="img/sidebar.png" />
+        <img src="<?php echo($baseurl);?>img/sidebar.png" />
     </div>
     <div style="display:flex">
         <div id="sidebar">
             <div id="sidebarpad">
-                <div id="vpname"><img src="img/visplot.png" /></div>
+                <div id="vpname"><img src="<?php echo($baseurl);?>img/visplot.png" /></div>
                 <div id="left_upper">
                     <div id="upperBtnDiv">
                         <input type="button" value="Configuration" id="configBtn" />
@@ -419,6 +419,8 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
     <script src="<?php echo($baseurl);?>js/visplot_helper.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
     <script src="<?php echo($baseurl);?>js/visplot_serializer.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
     <script src="<?php echo($baseurl);?>js/visplot_skygraph.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
+    <!-- Other things -->
+    <script type="text/javascript">window.baseurl='<?php echo($baseurl);?>';</script>
     <?php
         include '.ga';
         # OB data goes in its own hidden variables
