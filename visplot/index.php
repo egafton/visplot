@@ -129,11 +129,30 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" and
 } else {
     $obpost = FALSE;
 }
-$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' 
-             || $_SERVER['SERVER_PORT'] == 443)
-            ? "https://" 
-            : "http://";
-$baseurl = $protocol . $_SERVER['HTTP_HOST'] . "/";
+function get_scheme() {
+    // Standard HTTPS
+    if (
+        (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || $_SERVER['SERVER_PORT'] == 443
+    ) {
+        return 'https';
+    }
+    // Reverse proxy / Cloudflare / Load balancer
+    if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+        return $_SERVER['HTTP_X_FORWARDED_PROTO'];
+    }
+    if (!empty($_SERVER['HTTP_X_FORWARDED_SSL'])
+        && $_SERVER['HTTP_X_FORWARDED_SSL'] === 'on') {
+        return 'https';
+    }
+    if (!empty($_SERVER['HTTP_CF_VISITOR'])) {
+        if (strpos($_SERVER['HTTP_CF_VISITOR'], 'https') !== false) {
+            return 'https';
+        }
+    }
+    return 'http';
+}
+$baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
 ?><!DOCTYPE HTML>
 <html lang="en">
 
