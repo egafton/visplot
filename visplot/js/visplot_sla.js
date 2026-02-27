@@ -4591,6 +4591,28 @@ sla.map = function (rm, dm, pr, pd, px, rv, eq, date) {
 };
 
 /**
+ * @summary **HA, Dec to Parallactic Angle**
+ * @param {Number} ha - hour angle in radians (geocentric apparent)
+ * @param {Number} dec - declination in radians (geocentric apparent)
+ * @param {Number} phi - latitude in radians (geodetic)
+ * @returns {Number} Parallactic angle, in the range -pi to +pi.
+ * @description HA, Dec to Parallactic Angle.
+ * 1. The parallactic angle at a point in the sky is the position
+ *    angle of the vertical, i.e. the angle between the direction to
+ *    the pole and to the zenith.  In precise applications care must
+ *    be taken only to use geocentric apparent HA,Dec and to consider
+ *    separately the effects of atmospheric refraction and telescope
+ *    mount errors.
+ * 2. At the pole a zero result is returned.
+ */
+sla.pa = function (ha, dec, phi) {
+    const cp = Math.cos(phi);
+    const sqsz = cp * Math.sin(ha);
+    const cqsz = Math.sin(phi)*Math.cos(dec) - cp * Math.sin(dec)*Math.cos(ha);
+    return sqsz !== 0 || cqsz !== 0 ? Math.atan2(sqsz, cqsz) : 0;
+};
+
+/**
  * @summary **Polar Motion**
  * @param {Number} elongm - mean longitude of the site (radians, east +ve)
  * @param {Number} phim - mean geodetic latitude of the site (radians)
@@ -5528,6 +5550,10 @@ sla.performUnitTestsWrapped = function () {
     assertAlmostEqual(ret.dpsi, 3.523550954747999709e-5, 12);
     assertAlmostEqual(ret.deps, -4.143371566683342e-5, 12);
     assertAlmostEqual(ret.eps0, 0.4091014592901651, 12);
+
+    /* sla_PA */
+    assertAlmostEqual(sla.pa(-1.567, 1.5123, 0.987), -1.486288540423851, 12);
+    assertAlmostEqual(sla.pa(0, 0.789, 0.789), 0, 12);
 
     /* sla_POLMO */
     ret = sla.polmo(0.7, -0.5, 1e-6, -2e-6);
