@@ -68,69 +68,85 @@ $(document).ready(function () {
      * feature of modern browsers), copy its entries over on to the default
      * config.
      */
+    /* Override telescope name if specified via GET */
+    let forcetel = null;
+    if ($("#default_telescope").length) {
+        forcetel = $("#default_telescope").val();
+        helper.LogEntry(`Telescope <i>${forcetel}</i> specified via GET`)
+    }
     if ("visplot" in localStorage) {
         helper.LogEntry("Found existing visplot configuration in the browser, restoring...");
         if ("telescopeName" in localStorage) {
-            helper.LogEntry(`Restoring telescope name to <i>${localStorage.telescopeName}</i>`);
-            driver.setTelescopeName(localStorage.telescopeName).then(function() {
-                driver.UpdateInstrumentList();
+            if (forcetel === null || localStorage.telescopeName === forcetel) {
+                helper.LogEntry(`Restoring telescope name to <i>${localStorage.telescopeName}</i>`);
+                driver.setTelescopeName(localStorage.telescopeName).then(function() {
+                    driver.UpdateInstrumentList();
 
-                if ("defaultEpoch" in localStorage) {
-                    helper.LogEntry(`Restoring default epoch to <i>${localStorage.defaultEpoch}</i>`);
-                    Driver.defaultEpoch = localStorage.defaultEpoch;
-                }
-                if ("defaultProject" in localStorage) {
-                    helper.LogEntry(`Restoring default proposal ID to <i>${localStorage.defaultProject}</i>`);
-                    Driver.defaultProject = localStorage.defaultProject;
-                }
-                if ("defaultType" in localStorage) {
-                    helper.LogEntry(`Restoring default observation type to <i>${localStorage.defaultType}</i>`);
-                    Driver.defaultType = localStorage.defaultType;
-                }
-                if ("defaultAM" in localStorage) {
-                    helper.LogEntry(`Restoring default maximum airmass to <i>${localStorage.defaultAM}</i>`);
-                    Driver.defaultAM = localStorage.defaultAM;
-                }
-                if ("defaultObstime" in localStorage) {
-                    helper.LogEntry(`Restoring default observing time to <i>${localStorage.defaultObstime}</i>`);
-                    Driver.defaultObstime = localStorage.defaultObstime;
-                }
-                if ("defaultOBInfo" in localStorage) {
-                    helper.LogEntry(`Restoring default instrument name to <i>${localStorage.defaultOBInfo}</i>`);
-                    Driver.defaultOBInfo = localStorage.defaultOBInfo;
-                }
-                if ("opt_reschedule_later" in localStorage) {
-                    helper.LogEntry(`Restoring <i>opt_reschedule_later</i> to <i>${localStorage.opt_reschedule_later}</i>`);
-                    $("#opt_reschedule_later").prop("checked", localStorage.opt_reschedule_later === "true");
-                }
-                if ("opt_maintain_order" in localStorage) {
-                    helper.LogEntry(`Restoring <i>opt_maintain_order</i> to <i>${localStorage.opt_maintain_order}</i>`);
-                    $("#opt_maintain_order").prop("checked", localStorage.opt_maintain_order === "true");
-                }
-                if ("opt_reorder_targets" in localStorage) {
-                    helper.LogEntry(`Restoring <i>opt_reorder_targets</i> to <i>${localStorage.opt_reorder_targets}</i>`);
-                    $("#opt_reorder_targets").prop("checked", localStorage.opt_reorder_targets === "true");
-                }
-                if ("opt_allow_over_axis" in localStorage) {
-                    helper.LogEntry(`Restoring <i>opt_allow_over_axis</i> to <i>${localStorage.opt_allow_over_axis}</i>`);
-                    $("#opt_allow_over_axis").prop("checked", localStorage.opt_allow_over_axis === "true");
-                }
-                if ("opt_schedule_between" in localStorage) {
-                    helper.LogEntry(`Restoring <i>opt_schedule_between</i> to <i>${localStorage.opt_schedule_between}</i>`);
-                    $(`#${localStorage.opt_schedule_between}`).prop("checked", true);
-                }
-                if ("opt_show_lastobstime" in localStorage) {
-                    helper.LogEntry(`Restoring <i>opt_show_lastobstime</i> to <i>${localStorage.opt_show_lastobstime}</i>`);
-                    $("#opt_show_lastobstime").prop("checked", localStorage.opt_show_lastobstime === "true");
-                }
-                postInitialization();
-            });
+                    if ("defaultEpoch" in localStorage) {
+                        helper.LogEntry(`Restoring default epoch to <i>${localStorage.defaultEpoch}</i>`);
+                        Driver.defaultEpoch = localStorage.defaultEpoch;
+                    }
+                    if ("defaultProject" in localStorage) {
+                        helper.LogEntry(`Restoring default proposal ID to <i>${localStorage.defaultProject}</i>`);
+                        Driver.defaultProject = localStorage.defaultProject;
+                    }
+                    if ("defaultType" in localStorage) {
+                        helper.LogEntry(`Restoring default observation type to <i>${localStorage.defaultType}</i>`);
+                        Driver.defaultType = localStorage.defaultType;
+                    }
+                    if ("defaultAM" in localStorage) {
+                        helper.LogEntry(`Restoring default maximum airmass to <i>${localStorage.defaultAM}</i>`);
+                        Driver.defaultAM = localStorage.defaultAM;
+                    }
+                    if ("defaultObstime" in localStorage) {
+                        helper.LogEntry(`Restoring default observing time to <i>${localStorage.defaultObstime}</i>`);
+                        Driver.defaultObstime = localStorage.defaultObstime;
+                    }
+                    if ("defaultOBInfo" in localStorage) {
+                        helper.LogEntry(`Restoring default instrument name to <i>${localStorage.defaultOBInfo}</i>`);
+                        Driver.defaultOBInfo = localStorage.defaultOBInfo;
+                    }
+                    if ("opt_reschedule_later" in localStorage) {
+                        helper.LogEntry(`Restoring <i>opt_reschedule_later</i> to <i>${localStorage.opt_reschedule_later}</i>`);
+                        $("#opt_reschedule_later").prop("checked", localStorage.opt_reschedule_later === "true");
+                    }
+                    if ("opt_maintain_order" in localStorage) {
+                        helper.LogEntry(`Restoring <i>opt_maintain_order</i> to <i>${localStorage.opt_maintain_order}</i>`);
+                        $("#opt_maintain_order").prop("checked", localStorage.opt_maintain_order === "true");
+                    }
+                    if ("opt_reorder_targets" in localStorage) {
+                        helper.LogEntry(`Restoring <i>opt_reorder_targets</i> to <i>${localStorage.opt_reorder_targets}</i>`);
+                        $("#opt_reorder_targets").prop("checked", localStorage.opt_reorder_targets === "true");
+                    }
+                    if ("opt_allow_over_axis" in localStorage) {
+                        helper.LogEntry(`Restoring <i>opt_allow_over_axis</i> to <i>${localStorage.opt_allow_over_axis}</i>`);
+                        $("#opt_allow_over_axis").prop("checked", localStorage.opt_allow_over_axis === "true");
+                    }
+                    if ("opt_schedule_between" in localStorage) {
+                        helper.LogEntry(`Restoring <i>opt_schedule_between</i> to <i>${localStorage.opt_schedule_between}</i>`);
+                        $(`#${localStorage.opt_schedule_between}`).prop("checked", true);
+                    }
+                    if ("opt_show_lastobstime" in localStorage) {
+                        helper.LogEntry(`Restoring <i>opt_show_lastobstime</i> to <i>${localStorage.opt_show_lastobstime}</i>`);
+                        $("#opt_show_lastobstime").prop("checked", localStorage.opt_show_lastobstime === "true");
+                    }
+                    postInitialization();
+                });
+            } else {
+                helper.LogEntry(`Saved telescope (${localStorage.telescopeName}) differs from telescope specified with GET (${forcetel}). Overriding browser settings`)
+                driver.setTelescopeName(forcetel).then(function() {
+                    driver.UpdateInstrumentList();
+                    postInitialization();
+                });
+            }
         }
-        
     } else {
+        if (forcetel === null) {
+            forcetel = Driver.telescopeName;
+        }
         /* Set default telescope telescope */
-        helper.LogEntry(`Default telescope is <i>${Driver.telescopeName}</i>`);
-        driver.setTelescopeName(Driver.telescopeName).then(function() {
+        helper.LogEntry(`Default telescope is <i>${forcetel}</i>`);
+        driver.setTelescopeName(forcetel).then(function() {
             driver.UpdateInstrumentList();
             postInitialization();
         });
