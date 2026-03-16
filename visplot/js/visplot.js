@@ -110,10 +110,6 @@ $(document).ready(function () {
                         helper.LogEntry(`Restoring <i>opt_reschedule_later</i> to <i>${localStorage.opt_reschedule_later}</i>`);
                         $("#opt_reschedule_later").prop("checked", localStorage.opt_reschedule_later === "true");
                     }
-                    if ("opt_maintain_order" in localStorage) {
-                        helper.LogEntry(`Restoring <i>opt_maintain_order</i> to <i>${localStorage.opt_maintain_order}</i>`);
-                        $("#opt_maintain_order").prop("checked", localStorage.opt_maintain_order === "true");
-                    }
                     if ("opt_reorder_targets" in localStorage) {
                         helper.LogEntry(`Restoring <i>opt_reorder_targets</i> to <i>${localStorage.opt_reorder_targets}</i>`);
                         $("#opt_reorder_targets").prop("checked", localStorage.opt_reorder_targets === "true");

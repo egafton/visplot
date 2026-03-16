@@ -30,6 +30,7 @@ function Night(y, m, d) {
     this.UTCtimes = [];                     // Position of full hours (8UT, 9UT, etc) in terms of MJD-UTC
     this.UTClabels = [];                    // UTC labels corresponding to UTCtimes ("8", "9", etc)
     this.LocalTimelabels = [];              // Local Time labels corresponding to UTCtimes ("8", "9", etc)
+    this.LSTangles = [];                    // LST angles corresponding to UTCtimes
     this.LSTlabels = [];                    // LST labels corresponding to UTCtimes
 }
 
@@ -150,6 +151,7 @@ Night.prototype.setEphemerides = function (obj) {
     this.rmoon = [];
     this.ramoon = [];
     this.decmoon = [];
+    this.LSTangles = [];
     for (let i = 0; i < this.Nx; i += 1) {          // ... and its initialization
         const ut = this.Sunset + this.xstep * i;
         this.xaxis.push(ut);
@@ -172,6 +174,9 @@ Night.prototype.setEphemerides = function (obj) {
         const ell = 0.5*Math.PI - sla.refz(ret.zob, this.ref.refa, this.ref.refb);
         this.ymoon.push(helper.rad2deg(ell));
         this.rmoon.push(0.5*diam);
+        // LST angles
+        const lstangle = sla.dranrm(sla.gmst(ut) + Driver.obs_lon_rad) + this.eqeqx;
+        this.LSTangles.push(lstangle);
     }
     this.DateSunset = new Date(Date.UTC(this.tSunset[0], this.tSunset[1]-1, this.tSunset[2], this.tSunset[3], this.tSunset[4], this.tSunset[5], 0));
     this.DateSunrise = new Date(Date.UTC(this.tSunrise[0], this.tSunrise[1]-1, this.tSunrise[2], this.tSunrise[3], this.tSunrise[4], this.tSunrise[5], 0));

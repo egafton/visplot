@@ -366,7 +366,7 @@ Driver.prototype.EvtFrame_MouseMove = function (e) {
             if (this.mouseInsideObject !== i) {
                 this.mouseInsideObject = i;
                 this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                this.graph.drawTargets(this.targets.Targets);
+                this.graph.drawTargets(this.targets.Targets, true);
                 this.graph.highlightTarget(obj);
                 this.graph.drawEphemerides();
                 this.graph.drawBackground();
@@ -505,7 +505,7 @@ Driver.prototype.EvtFrame_Click = function (e) {
     for (let i = 0; i < this.targets.nTargets; i += 1) {
         let obj = this.targets.Targets[i];
         if (this.insideObject(x, y, obj)) {
-            let moonHasSet = obj.Scheduled ? (this.night.ymoon[helper.EphemTimeToIndex(obj.ScheduledMidTime)] < 0) : false;
+            let moonHasSet = obj.Scheduled ? (this.night.ymoon[helper.MJDToIndex(obj.ScheduledMidTime)] < 0) : false;
             let LunarPhase = moonHasSet ? "D" :
                 (this.night.MoonIllumination <= 40 ? "D" : (
                     this.night.MoonIllumination <= 70 ? (obj.MinMoonDistance <= 90 ? "G" : "D")
@@ -519,7 +519,7 @@ Driver.prototype.EvtFrame_Click = function (e) {
                 `<p class="pp">Dec: <b>${obj.Dec.replace("-", "–")}</b></p>` +
                 `<p class="pp">Epoch: <b>${obj.Epoch == "1950" ? "B1950" : "J2000"}</b></p>` +
                 `<p class="pp">Moon Distance: <span title="${helper.LunarPhaseExplanation(LunarPhase)}"><b>${obj.MinMoonDistance}°</b> (${LunarPhase})</span></p>` +
-                `<p class="pp">Moon Closest At: <b>${helper.EphemDateToHM(obj.MinMoonDistanceTime, true)} UTC</b></p>` +
+                `<p class="pp">Moon Closest At: <b>${helper.MJDToHM(obj.MinMoonDistanceTime, true)} UTC</b></p>` +
                 `<p class="pp">Obstime: <b>${obj.ExptimeSeconds.toFixed(0)} s</b> (${obj.ExptimeHM})</p>` +
                 (obj.ExtraInfo === null && obj.BacklinkToOBQueue === null && obj.Instrument !== null
                     ? `<p class="pp">Instrument: <b>${obj.Instrument}</b></p>`
@@ -536,7 +536,7 @@ Driver.prototype.EvtFrame_Click = function (e) {
                     : "") +
                 (this.scheduleMode
                     ? (obj.Scheduled
-                        ? `<p class="pp">Suggested UTC: <b>${helper.EphemDateToHM(obj.ScheduledStartTime)}–${helper.EphemDateToHM(obj.ScheduledEndTime)}</b></p>`
+                        ? `<p class="pp">Suggested UTC: <b>${helper.MJDToHM(obj.ScheduledStartTime)}–${helper.MJDToHM(obj.ScheduledEndTime)}</b></p>`
                         : `<p class="pp">Not scheduled for observation.</p>`)
                     + `<p class="pp2"><span style="display:inline-block;width:80px">Started:</span><input type="text" class="inpshort" id="actual_start" /></p>`
                     + `<p class="pp2"><span style="display:inline-block;width:80px">Finished:</span><input type="text" class="inpshort" id="actual_end" /></p>`
@@ -786,30 +786,32 @@ Driver.prototype.BindEvents = function () {
         });
     });
 
+    const expandWith = function(text) {
+        const val = driver.CMeditor.getValue();
+        if (val.trim().length === 0) {
+            driver.CMeditor.setValue(`${val}${text}`);
+        } else if (val.substr(val.length - 1) === "\n") {
+            driver.CMeditor.setValue(`${val}\n${text}`);
+        } else {
+            driver.CMeditor.setValue(`${val}\n\n${text}`);
+        }
+        driver.targets.validateAndFormatTargets()
+            .then(function () { })
+            .catch(function () { });
+    };
+
     // Sample targets and target box
     $("#targetBlanksNorth").click(function () {
-        driver.CMeditor.setValue(Driver.BlankFieldsNorth);
-        driver.targets.validateAndFormatTargets()
-            .then(function () { })
-            .catch(function () { });
+        expandWith(Driver.BlankFieldsNorth);
     });
     $("#targetBlanksSouth").click(function () {
-        driver.CMeditor.setValue(Driver.BlankFieldsSouth);
-        driver.targets.validateAndFormatTargets()
-            .then(function () { })
-            .catch(function () { });
+        expandWith(Driver.BlankFieldsSouth);
     });
     $("#targetStandardsNorth").click(function () {
-        driver.CMeditor.setValue(Driver.StandardsNorth);
-        driver.targets.validateAndFormatTargets()
-            .then(function () { })
-            .catch(function () { });
+        expandWith(Driver.StandardsNorth);
     });
     $("#targetStandardsSouth").click(function () {
-        driver.CMeditor.setValue(Driver.StandardsSouth);
-        driver.targets.validateAndFormatTargets()
-            .then(function () { })
-            .catch(function () { });
+        expandWith(Driver.StandardsSouth);
     });
     $("#targets").blur(function () {
         driver.targets.validateAndFormatTargets()
@@ -1018,7 +1020,6 @@ Driver.prototype.CallbackUpdateDefaults_postTelUpdate = function (resetTel) {
     localStorage.setItem("defaultObstime", Driver.defaultObstime);
     localStorage.setItem("defaultOBInfo", Driver.defaultOBInfo);
     localStorage.setItem("opt_reschedule_later", $("#opt_reschedule_later").is(":checked"));
-    localStorage.setItem("opt_maintain_order", $("#opt_maintain_order").is(":checked"));
     localStorage.setItem("opt_reorder_targets", $("#opt_reorder_targets").is(":checked"));
     localStorage.setItem("opt_allow_over_axis", $("#opt_allow_over_axis").is(":checked"));
     localStorage.setItem("opt_schedule_between", $('input[type="radio"][name="opt_schedule_between"]:checked').val());
@@ -1126,7 +1127,7 @@ Driver.prototype.Refresh = function () {
         graph.xaxis.push(graph.xstart + graph.width * (driver.night.xaxis[i] - driver.night.Sunset) / driver.night.wnight);
     }
     targets.setTargetsSize();
-    graph.drawTargets(targets.Targets);
+    graph.drawTargets(targets.Targets, driver.mouseInsideObject > -1);
     graph.drawEphemerides();
     if (driver.nightInitialized) {
         graph.drawBackground();
@@ -1136,6 +1137,9 @@ Driver.prototype.Refresh = function () {
             if (targets.nTargets > 0) {
                 graph.drawTargetNames(targets.Targets);
             }
+        }
+        if (driver.mouseInsideObject > -1) {
+            this.graph.highlightTarget(targets.Targets[driver.mouseInsideObject]);
         }
     }
 };

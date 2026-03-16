@@ -29,7 +29,7 @@ function TargetList() {
     this.StartingAt = null;
     this.Warning1 = [];
     this.Warning2 = [];
-    this.ReqLineLen = 14;
+    this.ReqLineLen = 15;
 }
 
 /**
@@ -47,26 +47,25 @@ function Target(k, obj) {
     this.shortRA = (obj.ra.indexOf(".") > -1) ? obj.ra.substr(0, obj.ra.indexOf(".")) : obj.ra;
     this.shortDec = (obj.dec.indexOf(".") > -1) ? obj.dec.substr(0, obj.dec.indexOf(".")) : obj.dec;
     this.J2000 = obj.J2000;
-    this.Exptime = obj.exptime;
-    this.ExptimeSeconds = Math.round(this.Exptime * 86400);
-    this.Exptime = Math.floor(this.Exptime / driver.night.xstep) * driver.night.xstep;
-    let hrs = Math.floor(this.ExptimeSeconds / 3600);
-    let min = Math.round((this.ExptimeSeconds - hrs * 3600) / 60);
-    this.ExptimeHM = `${hrs > 0 ? hrs.toFixed(0) + "h " : ""}${min.toFixed(0)}m`;
+    this.SetExptime(obj.exptime);
     this.ZenithTime = obj.zenithtime;
     this.Graph = obj.line;
     this.Azimuth = obj.azim;
     this.FullType = obj.type;
     this.SkyPA = obj.skypa;
+    this.Priority = obj.priority;
     this.Type = (obj.type.indexOf("/") === -1 ? obj.type : obj.type.substring(0, obj.type.indexOf("/")));
+    this.MoonDistance = obj.moondist;
+    this.PAngles = obj.pangles;
     this.MinMoonDistance = Math.round(obj.mdist);
     this.MinMoonDistanceTime = obj.mdisttime;
     this.ProjectNumber = obj.project;
-    this.RestrictionMaxAlt = Driver.obs_highestLimit || 90;
-    this.MaxAirmass = obj.airmass;
-    this.RestrictionMinAlt = helper.AirmassToAltitude(this.MaxAirmass);
-    this.RestrictionMinUTC = obj.UTstart; //night.ENauTwilight;
-    this.RestrictionMaxUTC = obj.UTend;   //night.MNauTwilight;
+    this.RestrictionMinAlt = helper.AirmassToAltitude(obj.maxam);
+    this.RestrictionMaxAlt = Math.min(Driver.obs_highestLimit || 90, helper.AirmassToAltitude(obj.minam));
+    this.RestrictionMinUTC = obj.minut;
+    this.RestrictionMaxUTC = obj.maxut;
+    this.RestrictionMinMoonDistance = obj.minmdist;
+    this.RestrictionMaxMoonDistance = obj.maxmdist;
     this.observable = [];
     this.Scheduled = false;
     this.FillSlot = obj.fillslot;
@@ -119,6 +118,16 @@ function Target(k, obj) {
     }
 }
 
+Target.prototype.SetExptime = function (exptime) {
+    if (exptime === null) return;
+    this.Exptime = exptime;
+    this.ExptimeSeconds = Math.round(this.Exptime * 86400);
+    this.Exptime = Math.floor(this.Exptime / driver.night.xstep) * driver.night.xstep;
+    let hrs = Math.floor(this.ExptimeSeconds / 3600);
+    let min = Math.round((this.ExptimeSeconds - hrs * 3600) / 60);
+    this.ExptimeHM = `${hrs > 0 ? hrs.toFixed(0) + "h " : ""}${min.toFixed(0)}m`;
+};
+
 /**
  * @memberof TargetList
  */
@@ -128,31 +137,16 @@ TargetList.prototype.targetStringToJSON = function (line) {
     let dat = line.split(/\s+/);
     let obj = {};
     obj.name = dat[0];
-    obj.airmass = parseFloat(dat[10]);
-    if (isNaN(obj.airmass)) {
-        let uts = helper.ExtractUTRange(dat[10]);
-        obj.UTstart = Math.max(night.global_UTstart, uts[0]);
-        obj.UTend = Math.min(night.global_UTend, uts[1]);
-        obj.airmass = 9.9;
-        obj.fillslot = dat[8] == "*";
-        if (obj.fillslot) {
-            obj.exptime = obj.UTend - obj.UTstart;
-        } else {
-            obj.exptime = parseFloat(dat[8])/86400.0;
-        }
-    } else {
-        obj.UTstart = night.global_UTstart;
-        obj.UTend = night.global_UTend;
-        obj.fillslot = false;
-        obj.exptime = parseFloat(dat[8])/86400.0;
-    }
     obj.project = dat[9];
     obj.epoch = parseFloat(dat[7]);
     obj.line = Array();
     obj.azim = Array();
+    obj.moondist = Array();
+    obj.pangles = Array();
     obj.type = dat[11];
     obj.obdata = dat[12];
     obj.skypa = parseFloat(dat[13]);
+    obj.priority = parseFloat(dat[14]);
     obj.constraints = dat[10];
     let rax = dat[3].split("/");
     let decx = dat[6]. split("/");
@@ -167,14 +161,57 @@ TargetList.prototype.targetStringToJSON = function (line) {
     if (decneg) {
         dec *= -1;
     }
+
+    obj.minam = 1;
+    obj.maxam = parseFloat(dat[10]);
+    obj.minmdist = 0;
+    obj.maxmdist = 180;
+    obj.minut = night.global_UTstart;
+    obj.maxut = night.global_UTend;
+    // Not a float?
+    if (isNaN(obj.maxam)) {
+        obj.maxam = 9.9;
+        const arr = dat[10].split(",");
+        for (const constr of arr) {
+            let uts = helper.ExtractUTRange(constr, ra);
+            if (uts !== null) {
+                obj.minut = Math.max(obj.minut, uts[0]);
+                obj.maxut = Math.min(obj.maxut, uts[1]);
+            } else {
+                uts = helper.ExtractAMRange(constr);
+                if (uts !== null) {
+                    obj.minam = Math.max(obj.minam, uts[0]);
+                    obj.maxam = Math.min(obj.maxam, uts[1]);
+                } else {
+                    uts = helper.ExtractMoonRange(constr);
+                    if (uts !== null) {
+                        obj.minmdist = Math.max(obj.minmdist, uts[0]);
+                        obj.maxmdist = Math.min(obj.maxmdist, uts[1]);
+                    } else {
+                        helper.LogError(`Could not parse airmass/UTC/moon distance constraint from string <i>${dat[10]}</i> for target <i>${dat[0]}</i>. Please check the format of the input and the documentation.`);
+                    }
+                }
+            }
+        }
+    }
+    if (dat[8] === "*") {
+        obj.fillslot = true;
+        obj.exptime = null;
+    } else {
+        obj.fillslot = false;
+        obj.exptime = parseFloat(dat[8])/86400.0;
+    }
     let minmdist = 9999;
     let iminmdist = 0;
     for (let i=0; i<night.Nx; i+=1) {
         let mdist = sla.r2d * sla.dsep(night.ramoon[i], night.decmoon[i], ra, dec);
+        obj.moondist.push(mdist);
         if (mdist < minmdist) {
             minmdist = mdist;
             iminmdist = i;
         }
+        const pa = sla.dranrm(sla.pa(night.LSTangles[i] - ra, dec, Driver.obs_lat_rad));
+        obj.pangles.push(sla.r2d * pa);
     }
     obj.mdist = minmdist;
     obj.mdisttime = night.xaxis[iminmdist];
@@ -474,7 +511,7 @@ TargetList.prototype.optimize_interchangeNeighbours = function (scheduleorder) {
 /**
  * @memberof TargetList
  */
-TargetList.prototype.optimize_moveToLaterTimesIfRising = function (scheduleorder, crossOtherObjects) {
+TargetList.prototype.optimize_moveToLaterTimesIfRising = function (scheduleorder) {
     let i, obj, j, kj, curtime, overlaps, amif;
     for (i = scheduleorder.length - 1; i >= 0; i -= 1) {
         obj = this.Targets[scheduleorder[i]];
@@ -490,7 +527,7 @@ TargetList.prototype.optimize_moveToLaterTimesIfRising = function (scheduleorder
         let bestalt = obj.AltMidTime;
         let besttime = obj.ScheduledStartTime;
         // Move to the right as much as possible
-        for (curtime = Math.min(((i == scheduleorder.length - 1 || crossOtherObjects) ? driver.night.Sunrise : this.Targets[scheduleorder[i + 1]].ScheduledStartTime), obj.LastPossibleTime, driver.night.Sunset + Math.floor((2 * obj.ZenithTime - obj.ScheduledMidTime - driver.night.Sunset) / driver.night.xstep) * driver.night.xstep);
+        for (curtime = Math.min(driver.night.Sunrise, obj.LastPossibleTime, driver.night.Sunset + Math.floor((2 * obj.ZenithTime - obj.ScheduledMidTime - driver.night.Sunset) / driver.night.xstep) * driver.night.xstep);
                 curtime > obj.ScheduledStartTime;
                 curtime -= driver.night.xstep) {
             overlaps = false;
@@ -658,79 +695,59 @@ TargetList.prototype.display_scheduleStatistics = function () {
     }
 };
 
-/**
- * @memberof TargetList
- */
-TargetList.prototype.schedule_inOriginalOrder = function (startingAt) {
-    let order = [];
-    let prevschedule = [];
-    let i, j = 0, k, obj;
-    for (i = 0; i < this.nTargets; i += 1) {
-        if (this.Targets[i].Observed) {
-            prevschedule.push(i);
-            continue;
-        }
-        this.Targets[i].Scheduled = false;
-        if (this.Targets[i].ObservableTonight === false) {
-            continue;
-        }
-        order[j++] = i;
-    }
-    let SchedulableObjects = j;
-
-    // Start the earliest possible
-    let firstSchedulableTime = driver.night.Sunrise;
-    let lastSchedulableTime = driver.night.Sunset;
-    for (i = 0; i < SchedulableObjects; i += 1) {
-        k = order[i];
-        if (this.Targets[k].FirstPossibleTime < firstSchedulableTime) {
-            firstSchedulableTime = this.Targets[k].FirstPossibleTime;
-        }
-        if (this.Targets[k].LastPossibleTime > lastSchedulableTime) {
-            lastSchedulableTime = this.Targets[k].LastPossibleTime;
-        }
-    }
-    if (firstSchedulableTime < startingAt) {
-        firstSchedulableTime = startingAt;
-    }
-    // Start scheduling
+TargetList.prototype.schedule_withWeights = function (startingAt) {
+    let curidx = startingAt;
+    const wp = 2;
+    const wu = 1;
+    const wa = 1;
+    const ws = 1;
+    const maxpriority = Math.max.apply(Math, this.Targets.map(function (o) { return o.Priority; }));
+    let lastaz = null;
     let scheduleorder = [];
-    // However, before anything else we schedule the monitoring programmes that have highest priority and MUST fill their entire time slot
-    for (i = 0; i < SchedulableObjects; i += 1) {
-        k = order[i];
-        if (this.Targets[k].FillSlot === true) {
-            obj = this.Targets[k];
-            obj.Schedule(obj.RestrictionMinUTC);
-            scheduleorder.push(k);
-        }
-    }
-
-    // Now go through all the other objects
-    let curtime = firstSchedulableTime;
-    i = 0;
     while (true) {
-        if ((scheduleorder.length >= SchedulableObjects) || (curtime >= lastSchedulableTime)) {
-            break;
+        if (curidx >= driver.night.Nx) break;
+        const curtime = driver.night.xaxis[curidx];
+        const weights = [];
+        // Get a list of all targets that can be scheduled at this time,
+        // together with their weighted priority
+        for (let i = 0; i < this.nTargets; i += 1) {
+            const tgt = this.Targets[i];
+            if (tgt.Observed) {
+                continue;
+            }
+            if (tgt.Scheduled) {
+                continue;
+            }
+            if (!this.canSchedule(tgt, curtime)) {
+                continue;
+            }
+            // Calculate weight
+            const priority = tgt.Priority / maxpriority; // 0-1;
+            const urgency = 1 / (tgt.LastPossibleTime - curtime + 1); // 0-1, becomes 1 at the last possible time
+            const altitude = Math.sin(sla.d2r * tgt.Graph[curidx]); // 0-1, the higher the altitude the better
+            const slewing = lastaz === null ? 1 : 1-helper.angDist(tgt.Azimuth[curidx], lastaz) / 180; // 0-1, 1 if no slewing, 0 if 180 deg slewing
+            weights[i] = wp * priority + wu * urgency + wa * altitude + ws * slewing;
         }
-
-        k = order[i];
-        obj = this.Targets[k];
-        if (obj.Scheduled === true) {
-            i += 1;
+        let maxKey = null;
+        let maxVal = -Infinity;
+        for (const [key, val] of Object.entries(weights)) {
+            if (val > maxVal) {
+                maxVal = val;
+                maxKey = Number(key);
+            }
+        }
+        if (maxKey === null) {
+            curidx += 1;
             continue;
         }
-        if (this.canSchedule(obj, curtime)) {
-            obj.Schedule(curtime);
-            curtime += obj.Exptime;
-            scheduleorder.push(k);
-            i += 1;
-            continue;
-        } else {
-            curtime += driver.night.xstep;
-        }
-    }
-    console.log("inOriginalOrder: ", scheduleorder);
-    return prevschedule.concat(scheduleorder);
+        scheduleorder.push(maxKey);
+        const obj = this.Targets[maxKey];
+        obj.Schedule(curtime);
+        curidx += Math.ceil(obj.Exptime / driver.night.xstep);
+        lastaz = obj.Azimuth[curidx-1];
+    };
+    console.log("withWeights: ", scheduleorder);
+    return scheduleorder;
 };
 
 /**
@@ -791,7 +808,10 @@ TargetList.prototype.schedule_inOrderOfSetting = function (startingAt) {
         k = order[i];
         if (this.Targets[k].FillSlot === true) {
             obj = this.Targets[k];
-            obj.Schedule(obj.RestrictionMinUTC);
+            if (obj.nAllowed > 0) {
+                obj.SetExptime(obj.endAllowed[0] - obj.beginAllowed[0]);
+            }
+            obj.Schedule(obj.beginAllowed[0]); // Attention, this might lead to overlaps! But the user decided so!
             scheduleorder.push(k);
         }
     }
@@ -867,7 +887,7 @@ TargetList.prototype.scheduleAndOptimize_givenOrder = function (newscheduleorder
         }
     }
 
-    this.optimize_moveToLaterTimesIfRising(scheduleorder, false);
+    this.optimize_moveToLaterTimesIfRising(scheduleorder);
     if ($("#opt_reorder_targets").is(":checked")) {
         this.reorder_accordingToScheduling(scheduleorder);
     }
@@ -962,7 +982,7 @@ TargetList.prototype.prepareScheduleForUpdate = function () {
     helper.LogEntry("  New targets (will insert): " + adding.length +
             (adding.length > 0 ? ` (<i>${adding.join(", ")}</i>)` : ""));
     // Unchanged targets remain unchanged. Nothing to do
-    // Then update the existing targets (no need to call the ajax script for that)
+    // Then update the existing targets (no need to perform the astrometry again for them)
     if (updated.length > 0) {
         this.resetWarnings();
         let newdata, obj; // change: first do badwolf
@@ -985,7 +1005,7 @@ TargetList.prototype.prepareScheduleForUpdate = function () {
         this.Targets = newTargets;
         this.nTargets = newTargets.length;
     }
-    // Finally, call the ajax script to get the altitudes for the new targets
+    // Finally, perform the astrometry for the new targets
     if (adding.length > 0) {
         return "tgts";
     } else {
@@ -998,18 +1018,10 @@ TargetList.prototype.prepareScheduleForUpdate = function () {
  */
 TargetList.prototype.doSchedule = function (start, reorder) {
     let scheduleorder;
-    let maintainorder = $("#opt_maintain_order").is(":checked");
-    if (maintainorder) {
-        scheduleorder = this.schedule_inOriginalOrder(start);
-    } else {
-        scheduleorder = this.schedule_inOrderOfSetting(start);
-        this.optimize_interchangeNeighbours(scheduleorder);
-    }
+    scheduleorder = this.schedule_withWeights(0);
+    this.optimize_interchangeNeighbours(scheduleorder);
     if (reorder) {
-        this.optimize_moveToLaterTimesIfRising(scheduleorder, !maintainorder);
-        if (!maintainorder) {
-            this.optimize_interchangeNeighbours(scheduleorder);
-        }
+        this.optimize_moveToLaterTimesIfRising(scheduleorder);
         if ($("#opt_reorder_targets").is(":checked")) {
             this.reorder_accordingToScheduling(scheduleorder);
         }
@@ -1068,7 +1080,8 @@ TargetList.prototype.processTargetListAfterSIMBAD = function(lines) {
         OBData: 0,
         TCSpmra: 0,
         TCSpmdec: 0,
-        Skypa: 0
+        Skypa: 0,
+        Priority: 0
     };
     this.BadWolfStart = [];
     this.BadWolfEnd = [];
@@ -1112,6 +1125,9 @@ TargetList.prototype.processTargetListAfterSIMBAD = function(lines) {
         if (words[13].length > this.MaxLen.Skypa) {
             this.MaxLen.Skypa = words[13].length;
         }
+        if (words[14].length > this.MaxLen.Priority) {
+            this.MaxLen.Priority = words[14].length;
+        }
         let j;
         j = (parseInt(words[this.ReqLineLen + 1]) + "").length + (words[this.ReqLineLen + 1] < 0 && words[this.ReqLineLen + 1] > -1 ? 1 : 0);
         if (j > this.MaxLen.TCSpmra) {
@@ -1147,7 +1163,8 @@ TargetList.prototype.processTargetListAfterSIMBAD = function(lines) {
             helper.pad(words[10], this.MaxLen.AM, false, " "),
             helper.pad(words[11], this.MaxLen.Type, false, " "),
             helper.pad(words[12], this.MaxLen.OBData, false, " "),
-            helper.pad(words[13], this.MaxLen.Skypa, false, " ")
+            helper.pad(words[13], this.MaxLen.Skypa, false, " "),
+            helper.pad(words[14], this.MaxLen.Priority, false, " ")
         ];
         this.VisibleLines.push(padded.join(" "));
         if (words[0][0] == "#") {
@@ -1346,7 +1363,7 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
                 this.BadWolfEnd.push(UTr[1]);
             }
         }
-        return [words[0], "", "", "", "", "", "", "", "*", "", words[q], "", "", ""];
+        return [words[0], "", "", "", "", "", "", "", "*", "", words[q], "", "", "", ""];
     }
     if ((words.length === 6 && words[2].indexOf(":") === -1) ||
         (words.length === 2 && words[0].indexOf(":") !== -1 && words[1].indexOf(":") !== -1 ) ||
@@ -1393,19 +1410,21 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
         words = [words[0], words[1], words[2], words[3] + (parseFloat(words[8]) !== 0 ? "/" + words[8] : ""), words[4], words[5], words[6] + (parseFloat(words[9]) !== 0 ? "/" + words[9] : ""), words[7]].concat([Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo]);
     }
     if (words.length == 7) {
-        words = words.concat([Driver.defaultEpoch, Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo, Driver.defaultSkyPA]);
+        words = words.concat([Driver.defaultEpoch, Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo, Driver.defaultSkyPA, "1"]);
     } else if (words.length == 8) {
-        words = words.concat([Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo, Driver.defaultSkyPA]);
+        words = words.concat([Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo, Driver.defaultSkyPA, "1"]);
     } else if (words.length == 9) {
-        words = words.concat([Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo, Driver.defaultSkyPA]);
+        words = words.concat([Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo, Driver.defaultSkyPA, "1"]);
     } else if (words.length == 10) {
-        words = words.concat([Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo, Driver.defaultSkyPA]);
+        words = words.concat([Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo, Driver.defaultSkyPA, "1"]);
     } else if (words.length == 11) {
-        words = words.concat([Driver.defaultType, Driver.defaultOBInfo, Driver.defaultSkyPA]);
+        words = words.concat([Driver.defaultType, Driver.defaultOBInfo, Driver.defaultSkyPA, "1"]);
     } else if (words.length == 12) {
-        words = words.concat([Driver.defaultOBInfo, Driver.defaultSkyPA]);
+        words = words.concat([Driver.defaultOBInfo, Driver.defaultSkyPA, "1"]);
     } else if (words.length == 13) {
-        words = words.concat([Driver.defaultSkyPA]);
+        words = words.concat([Driver.defaultSkyPA, "1"]);
+    } else if (words.length == 14) {
+        words = words.concat(["1"])
     }
     // Sanity check: there must now be exactly this.ReqLineLen entries in the array
     if (words.length !== this.ReqLineLen) {
@@ -1506,6 +1525,11 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
         helper.LogError(`Error 28: Incorrect syntax: [EPOCH] must be either 2000 or 1950 on line #${linenumber}!`);
         return false;
     }
+    /* Validate exptime */
+    if (helper.notInt(words[8]) && words[8] != "*") {
+        helper.LogError(`Error 33: Incorrect syntax: non-integer value detected in [OBSTIME] on line #${linenumber}!`);
+        return false;
+    }
     /* Validate the proposal id; different telescopes use different formats */
     const valid = driver.validateProjectNumber(words[9]);
     const form = valid[0];
@@ -1521,18 +1545,36 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
     }
     /* Validate constraints */
     if (helper.notFloat(words[10])) {
-        if (!(words[10].startsWith("UT[") || words[10].startsWith("UTC") || words[10].startsWith("LST[")) ||
-            words[10].slice(-1) != "]" || words[10].indexOf("-") == -1) {
+        const arr = words[10].split(",");
+        let good = true;
+        for (const constr of arr) {
+            if (!helper.notFloat(constr)) continue;
+            if (constr.startsWith("UT[") || constr.startsWith("UTC[") || constr.startsWith("LST[") || constr.startsWith("HA[") || constr.startsWith("AM[") || constr.startsWith("MOON[")) {
+                if (constr.slice(-1) != "]" || constr.indexOf("-") == -1) {
+                    good = false;
+                    break;
+                }
+            } else if (constr.startsWith("AM")) {
+                if (!helper.filterFloat(constr.slice(2))) {
+                    good = false;
+                    break;
+                }
+            } else if (constr.startsWith("MOON")) {
+                if (!helper.filterFloat(constr.slice(4))) {
+                    good = false;
+                    break;
+                }
+            } else {
+                good = false;
+                break;
+            }
+        }
+        if (!good) {
             helper.LogError(`Error 31: Incorrect syntax: [CONSTRAINTS] should either be a float (e.g., 2.0), a UTC range (e.g., UTC[20:00-23:00]) or an LST range (e.g. LST[2-4:30]) on line #${linenumber}!`);
             return false;
         }
         if (helper.notInt(words[8]) && words[8] != "*") {
             helper.LogError(`Error 32: Incorrect syntax: non-integer value detected in [OBSTIME] on line #${linenumber}!`);
-            return false;
-        }
-    } else {
-        if (helper.notInt(words[8])) {
-            helper.LogError(`Error 33: Incorrect syntax: non-integer value detected in [OBSTIME] on line #${linenumber}!`);
             return false;
         }
     }
@@ -1555,6 +1597,11 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
     /* Sky PA must be a float */
     if (helper.notFloat(words[13])) {
         helper.LogError(`Error 60: Incorrect syntax: non-float value detected in [SKYPA] on line #${linenumber}!`);
+        return false;
+    }
+    /* Priority must be a float */
+    if (helper.notFloat(words[14])) {
+        helper.LogError(`Error 62: Incorrect syntax: non-float value detected in [PRIORITY] on line #${linenumber}!`);
         return false;
     }
     return words;
@@ -1604,6 +1651,7 @@ TargetList.prototype.checkForDuplicates = function () {
 Target.prototype.canObserve = function (idx) {
     const time = driver.night.xaxis[idx];
     const altitude = this.Graph[idx];
+    const moondist = this.MoonDistance[idx];
 
     if (Driver.obs_lowestLimit !== null && altitude < Driver.obs_lowestLimit) {
         return 0;
@@ -1611,8 +1659,9 @@ Target.prototype.canObserve = function (idx) {
     if (Driver.obs_highestLimit !== null && altitude > Driver.obs_highestLimit) {
         return 0;
     }
-    if ((this.RestrictionMinUTC <= time && this.RestrictionMaxUTC >= time &&
-            this.RestrictionMinAlt <= altitude && this.RestrictionMaxAlt >= altitude) === false) {
+    if (!(this.RestrictionMinUTC <= time && this.RestrictionMaxUTC >= time &&
+            this.RestrictionMinAlt <= altitude && this.RestrictionMaxAlt >= altitude &&
+            this.RestrictionMinMoonDistance <= moondist && this.RestrictionMaxMoonDistance >= moondist)) {
         return 0;
     }
     for (let i = 0; i < driver.targets.Offline.length; i += 1) {
@@ -1715,7 +1764,7 @@ Target.prototype.preCompute = function () {
     for (let i = this.nAllowed; i >= 0; i--) {
         if (this.beginAllowed[i] + this.Exptime <= this.endAllowed[i]) {
             const lpt = this.endAllowed[i] - this.Exptime;
-            this.iLastPossibleTime = helper.EphemTimeToIndex(lpt);
+            this.iLastPossibleTime = helper.MJDToIndex(lpt);
             this.LastPossibleTime = driver.night.Sunset + this.iLastPossibleTime * driver.night.xstep + this.ZenithTime / 1e9;
             this.ObservableTonight = true;
             return;
@@ -1728,7 +1777,7 @@ Target.prototype.preCompute = function () {
  * @memberof Target
  */
 Target.prototype.getAltitude = function (time) {
-    let ii = helper.EphemTimeToIndex(time);
+    let ii = helper.MJDToIndex(time);
     return this.Graph[ii];
 };
 
@@ -1757,8 +1806,8 @@ Target.prototype.ComputePositionSchedLabel = function () {
     const dist = driver.graph.CircleSize * 1.2;
     xshift = dist * Math.sin(angle);
     yshift = dist * Math.cos(angle);
-    this.xmid = driver.graph.xaxis[helper.EphemTimeToIndex(this.ScheduledMidTime)] - xshift;
-    this.ymid = driver.graph.yend - driver.graph.degree * this.Graph[helper.EphemTimeToIndex(this.ScheduledMidTime)] - yshift;
+    this.xmid = driver.graph.xaxis[helper.MJDToIndex(this.ScheduledMidTime)] - xshift;
+    this.ymid = driver.graph.yend - driver.graph.degree * this.Graph[helper.MJDToIndex(this.ScheduledMidTime)] - yshift;
 };
 
 /**
@@ -1769,9 +1818,9 @@ Target.prototype.Schedule = function (start) {
     this.ScheduledStartTime = start;
     this.ScheduledEndTime = start + this.Exptime;
     this.ScheduledMidTime = start + 0.5 * this.Exptime;
-    this.AltStartTime = this.Graph[helper.EphemTimeToIndex(this.ScheduledStartTime)];
-    this.AltEndTime = this.Graph[helper.EphemTimeToIndex(this.ScheduledEndTime)];
-    this.AltMidTime = this.Graph[helper.EphemTimeToIndex(this.ScheduledMidTime)];
+    this.AltStartTime = this.Graph[helper.MJDToIndex(this.ScheduledStartTime)];
+    this.AltEndTime = this.Graph[helper.MJDToIndex(this.ScheduledEndTime)];
+    this.AltMidTime = this.Graph[helper.MJDToIndex(this.ScheduledMidTime)];
     this.ComputePositionSchedLabel();
 };
 

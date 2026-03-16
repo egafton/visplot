@@ -10,6 +10,11 @@
  */
 "use strict";
 
+String.prototype.rsplit = function(sep, maxsplit) {
+    var split = this.split(sep || /s+/);
+    return maxsplit ? [ split.slice(0, -maxsplit).join(sep) ].concat(split.slice(-maxsplit)) : split;
+};
+
 /**
  * @namespace
  */
@@ -71,9 +76,9 @@ helper.AltitudeToAirmass = function (altitude) {
 };
 
 /**
- * Convert an ephem time to an index in the night array ("xaxis")
+ * Convert MJD to an index in the night array ("xaxis")
  */
-helper.EphemTimeToIndex = function (time) {
+helper.MJDToIndex = function (time) {
     return Math.round((time - driver.night.Sunset) / driver.night.xstep);
 };
 
@@ -333,9 +338,9 @@ helper.degtosex = function (time, prec, sep1, sep2, sep3) {
 };
 
 /**
- * Convert a Python.ephem date (stored as a float) to H:MM format
+ * Convert MJD to H:MM format
  */
-helper.EphemDateToHM = function (d, padHours=false) {
+helper.MJDToHM = function (d, padHours=false) {
     let t = new Date(driver.night.DateSunset);
     t.setUTCSeconds(t.getUTCSeconds() + (d - driver.night.Sunset) * 86400);
     const ss = t.getUTCSeconds();
@@ -356,10 +361,9 @@ helper.EphemDateToHM = function (d, padHours=false) {
 };
 
 /**
- * Convert a Python.ephem date (stored as a float) to H:MM format
- * in the local time at the telescope.
+ * Convert MJD to H:MM format in the local time at the telescope.
  */
-helper.EphemDateToHMLocal = function (d, utcOffset, padHours=false) {
+helper.MJDToHMLocal = function (d, utcOffset, padHours=false) {
     let t = new Date(driver.night.DateSunset);
     t.setUTCSeconds(t.getUTCSeconds() + (d - driver.night.Sunset) * 86400);
     const ss = t.getUTCSeconds();
@@ -401,7 +405,7 @@ helper.LSTToAngle = function (text) {
 /**
  *
  */
-helper.LSTToEphemDate = function (str) {
+helper.LSTToMJD = function (str) {
     let rad1 = helper.LSTToAngle(str[0]);
     let rad2 = helper.LSTToAngle(str[1]);
     if (rad1 === -1 || rad2 === -1) {
@@ -440,9 +444,9 @@ helper.LSTToEphemDate = function (str) {
 };
 
 /**
- * Convert a H:MM or H:MM:SS or H.d format to a Python.ephem date.
+ * Convert a H:MM or H:MM:SS or H.d format to MJD.
  */
-helper.HMToEphemDate = function (text) {
+helper.HMToMJD = function (text) {
     const jsunset = driver.night.DateSunset;
     const easy = helper.filterFloat(text);
     let hh, mm, ss;
@@ -668,28 +672,83 @@ helper.plural = function (num, what) {
 /**
  *
  */
-helper.ExtractLSTRange = function (str) {
-    if (str.startsWith("UT[") || str.startsWith("UTC[")) {
-        return helper.ExtractUTRange(str);
+helper.ExtractAMRange = function (str) {
+    if (!str.startsWith("AM")) {
+        return null;
     }
-    if (str.slice(-1) !== "]" || str.indexOf("-") === -1) {
+    if (str.startsWith("AM[") && str.slice(-1) !== "]") {
         return false;
     }
-    const pos = str.indexOf("[");
-    const inner = str.substr(pos+1, str.length - pos - 2);
-    str = inner.split("-");
-    if (str.length !== 2) {
-        return false;
+    /* Possible formats are: AM<high> equivalent to AM[1-<high>]; and AM[<low>-<high>]; return the pair of airmasses as floats */
+    if (str.indexOf("[") === -1) {
+        // Make sure it is a float
+        const high = helper.filterFloat(str.slice(2));
+        if (isNaN(high) || high < 1) {
+            return false;
+        }
+        return [1, high];
+    } else {
+        if (str.indexOf("-") === -1) {
+            return false;
+        }
+        const pos = str.indexOf("[");
+        const inner = str.substr(pos+1, str.length - pos - 2);
+        str = inner.split("-");
+        if (str.length !== 2) {
+            return false;
+        }
+        const low = helper.filterFloat(str[0]);
+        const high = helper.filterFloat(str[1]);
+        if (isNaN(low) || isNaN(high) || low < 1 || high < 1 || low > high) {
+            return false;
+        }
+        return [low, high];
     }
-    return helper.LSTToEphemDate(str);
 };
 
 /**
  *
  */
-helper.ExtractUTRange = function (str) {
-    if (str.startsWith("LST[")) {
-        return helper.ExtractLSTRange(str);
+helper.ExtractMoonRange = function (str) {
+    if (!str.startsWith("MOON")) {
+        return null;
+    }
+    if (str.startsWith("MOON[") && str.slice(-1) !== "]") {
+        return false;
+    }
+    /* Possible formats are: MOON<low> equivalent to MOON[<low>-180]; and MOON[<low>-<high>]; return the pair of moon distances as floats */
+    if (str.indexOf("[") === -1) {
+        // Make sure it is a float
+        const low = helper.filterFloat(str.slice(4));
+        if (isNaN(low) || low > 180) {
+            return false;
+        }
+        return [low, 180];
+    } else {
+        if (str.indexOf("-") === -1) {
+            return false;
+        }
+        const pos = str.indexOf("[");
+        const inner = str.substr(pos+1, str.length - pos - 2);
+        str = inner.split("-");
+        if (str.length !== 2) {
+            return false;
+        }
+        const low = helper.filterFloat(str[0]);
+        const high = helper.filterFloat(str[1]);
+        if (isNaN(low) || isNaN(high) || low < 1 || high < 1 || low > high) {
+            return false;
+        }
+        return [low, high];
+    }
+};
+
+/**
+ *
+ */
+helper.ExtractLSTRange = function (str) {
+    if (!str.startsWith("LST[")) {
+        return null;
     }
     if (str.slice(-1) !== "]" || str.indexOf("-") === -1) {
         return false;
@@ -700,8 +759,54 @@ helper.ExtractUTRange = function (str) {
     if (str.length !== 2) {
         return false;
     }
-    let ut1 = helper.HMToEphemDate(str[0]);
-    let ut2 = helper.HMToEphemDate(str[1]);
+    return helper.LSTToMJD(str);
+};
+
+/**
+ *
+ */
+helper.ExtractHARange = function (str, ra) {
+    if (!str.startsWith("HA[")) {
+        return null;
+    }
+    if (str.slice(-1) !== "]" || str.indexOf("-") === -1) {
+        return false;
+    }
+    const pos = str.indexOf("[");
+    const inner = str.substr(pos+1, str.length - pos - 2);
+    str = inner.rsplit("-", 1);
+    if (str.length !== 2) {
+        return false;
+    }
+    const ra_h = helper.rad2deg(ra) / 15;
+    const lst = [parseFloat(str[0]) + ra_h, parseFloat(str[1]) + ra_h];
+    return helper.LSTToMJD(lst);
+};
+
+/**
+ *
+ */
+helper.ExtractUTRange = function (str, ra = null) {
+    if (!str.startsWith("UT[") && !str.startsWith("UTC[")) {
+        if (str.startsWith("LST[")) {
+            return helper.ExtractLSTRange(str);
+        }
+        if (str.startsWith("HA["))  {
+            return helper.ExtractHARange(str, ra || 0);
+        }
+        return null;
+    }
+    if (str.slice(-1) !== "]" || str.indexOf("-") === -1) {
+        return false;
+    }
+    const pos = str.indexOf("[");
+    const inner = str.substr(pos+1, str.length - pos - 2);
+    str = inner.split("-");
+    if (str.length !== 2) {
+        return false;
+    }
+    let ut1 = helper.HMToMJD(str[0]);
+    let ut2 = helper.HMToMJD(str[1]);
     if (ut1 === -1 || ut2 === -1) {
         return false;
     }
@@ -847,3 +952,8 @@ helper.zeros = function(dimensions) {
     }
     return npts == 1 ? y[0] : y;
 };
+
+helper.angDist = function(a, b) {
+    let d = Math.abs(a - b) % 360;
+    return d > 180 ? 360 - d : d;
+}

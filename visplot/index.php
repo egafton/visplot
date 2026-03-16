@@ -6,7 +6,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. See LICENSE.md.
  */
-$version = "4.3";
+$version = "5.0a";
 /*
 * Version history (with brief changelog):
 *
@@ -108,6 +108,16 @@ $version = "4.3";
 *
 * 4.3  - Added sla.pa function.
 *      - Default telescope can now be specified via a GET parameter.
+*
+* 5.0a - Added more user constraints in addition to UTC and LST:
+*        HA, MOON and AM.
+*      - Blanks and standards are now appended to the list of targets, they no
+*        longer overwrite it.
+*      - Added moon distance and parallactic angle overlays when hovering
+*        over a target.
+*      - Added support for target priorities during scheduling.
+*      - Implemented weight-based scheduling (taking into account priorities,
+*        setting time, altitudes and slewing time).
 */
 session_start();
 if (isset($_SESSION["obinfo"])) {
@@ -189,7 +199,7 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
                     Date:
                     <input type="text" id="dateY" /> &ndash; <input type="text" id="dateM" /> &ndash; <input type="text" id="dateD" />
                     <input type="button" value="Set" id="dateSet" /><br/><br/>
-                    <span class="middle">Predefined targets:<br/>
+                    <span class="middle">Append predefined targets:<br/>
                         <span class="middlesep">Blank fields:</span>
                         <input type="button" value="Northern" id="targetBlanksNorth" />
                         <input type="button" value="Southern" id="targetBlanksSouth" />
@@ -292,7 +302,6 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
             <div id="config-right">
                 <h2 class="h2-instr">Scheduling algorithm</h2><br/>
                 <span class="middle"><label for="opt_reschedule_later"><input type="checkbox" name="opt_reschedule_later" id="opt_reschedule_later" checked="checked" /> Do not schedule in the past during an observing night</label></span><br/>
-                <span class="middle"><label for="opt_maintain_order"><input type="checkbox" name="opt_maintain_order" id="opt_maintain_order" /> Always schedule targets in their input order</label></span><br/>
                 <span class="middle"><label for="opt_reorder_targets"><input type="checkbox" name="opt_reorder_targets" id="opt_reorder_targets" checked="checked" /> Relabel targets according to the schedule order</label></span><br/>
                 <span class="middle"><label for="opt_allow_over_axis"><input type="checkbox" name="opt_allow_over_axis" id="opt_allow_over_axis" /> Allow observations over-the-axis (equatorial mounts only)</label></span><br/>
                 <span class="middle">Schedule observations between:</label></span><br/>
@@ -326,7 +335,7 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
                 The program may then reschedule some or all of the other targets so that all of them continue to fit their respective constraints, in their new order. In rare cases, a manual reordering may results in one or few targets becoming de-scheduled, which normally means that with the new order it is not possible for all the targets to be observed according to their respective (UTC, airmass, altitude, etc.) constraints.<br/>
                 <br/>
                 <span class="sh0">Input syntax</span>
-                • <code>[NAME] [RA]/[pmRA] [DEC]/[pmDEC] [EPOCH] [OBSTIME] [PROJECT] [CONSTRAINTS] [TYPE] [OBINFO] [SKYPA]</code>,
+                • <code>[NAME] [RA]/[pmRA] [DEC]/[pmDEC] [EPOCH] [OBSTIME] [PROJECT] [CONSTRAINTS] [TYPE] [OBINFO] [SKYPA] [PRIORITY]</code>,
 
                 <span class="sh1">where:</span>
                 • <code>[NAME]</code> is the object name, without spaces;<br/>
@@ -341,9 +350,12 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
                 Iff <code>[TYPE]</code> is set to <code>Staff</code>, it is allowed to add a slash and 2-3 initials to identify for which member of the staff the observations are taken (e.g., <code>Staff/JHT</code>, <code>Staff/TP</code>, etc.).<br/>
                 • <code>[OBINFO]</code> is information passed automatically when the page is loaded from an OB queue; it allows Visplot to generate backlinks to the OB queue, as well as show additional information about each target. At the moment the system is only integrated with the NOT OB queue. Alternatively, one can pass an instrument name in this field (e.g., <code>GCMS</code>). In all other cases, the value should be <code>default</code>.<br/>
                 • <code>[SKYPA]</code> is the Sky Position Angle in degrees, with 0=North up, 90=East up, etc. Used for the orientation of the finding chart only.<br/>
+                • <code>[PRIORITY]</code> is the priority of the given target; the higher the number, the higher the priority; by default, all targets have priority 1.<br/>
             </div> <!-- #help-left -->
             <div id="help-right">
-                <span class="sh1"><b>Note:</b> The fields <code>[EPOCH]</code>, <code>[OBSTIME]</code>, <code>[PROJECT]</code>, <code>[CONSTRAINTS]</code>, <code>[TYPE]</code>, <code>[OBINFO]</code> and <code>[SKYPA]</code> are optional, and will be filled with default values (i.e., <code>2000 600 54-199 2.0 Staff default 0</code>) if missing.</span><br/>
+                <span class="sh1"><b>Note:</b> The fields <code>[EPOCH]</code>, <code>[OBSTIME]</code>, <code>[PROJECT]</code>, <code>[CONSTRAINTS]</code>,
+                    <code>[TYPE]</code>, <code>[OBINFO]</code>, <code>[SKYPA]</code> and <code>[PRIORITY]</code> are optional, and will be filled with
+                    default values (i.e., <code>2000 600 54-199 2.0 Staff default 0 1</code>) if missing.</span><br/>
 
                 <span class="sh1"><b>Examples of valid input formats:</b></span>
                 • <code>EQPsc 23 34 34 -01 19 36</code><br/>

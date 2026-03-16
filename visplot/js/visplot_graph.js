@@ -140,7 +140,7 @@ Graph.prototype.drawRHSofSchedule = function () {
                               (driver.reObj == i && driver.rescheduling) ? "blue" : "black",
                               this.targetsx + 15, y, "left", "bottom");
             } else {
-                this.plotText(`${obj.Name.substr(0, this.maxLenTgtName)} (${obj.ProjectNumber}; UTC ${helper.EphemDateToHM(obj.ScheduledStartTime)})`,
+                this.plotText(`${obj.Name.substr(0, this.maxLenTgtName)} (${obj.ProjectNumber}; UTC ${helper.MJDToHM(obj.ScheduledStartTime)})`,
                               "8pt",
                               (driver.reObj == i && driver.rescheduling) ? "blue" : "black",
                               this.targetsx + 15, y, "left", "bottom");
@@ -167,7 +167,7 @@ Graph.prototype.drawRHSofSchedule = function () {
         y += this.targetsyskip;
         if (this.doubleTargets) {
             if (obj.Scheduled) {
-                this.plotText(`${obj.shortRA} ${obj.shortDec} (UTC ${helper.EphemDateToHM(obj.ScheduledStartTime)})`,
+                this.plotText(`${obj.shortRA} ${obj.shortDec} (UTC ${helper.MJDToHM(obj.ScheduledStartTime)})`,
                               this.legendSize,
                               (driver.reObj == i && driver.rescheduling) ? "blue" : "black",
                               this.targetsx + 15, y, "left", "bottom");
@@ -209,8 +209,8 @@ Graph.prototype.drawSchedule = function () {
             continue;
         }
         const obj = driver.targets.Targets[i];
-        const iScheduledStartTime = helper.EphemTimeToIndex(obj.ScheduledStartTime);
-        const iScheduledEndTime = helper.EphemTimeToIndex(obj.ScheduledEndTime);
+        const iScheduledStartTime = helper.MJDToIndex(obj.ScheduledStartTime);
+        const iScheduledEndTime = helper.MJDToIndex(obj.ScheduledEndTime);
 
         this.ctx.strokeStyle = obj.LabelStrokeColor;
         this.ctx.beginPath();
@@ -248,8 +248,8 @@ Graph.prototype.drawSchedule = function () {
             continue;
         }
         const obj = driver.targets.Targets[i];
-        const iScheduledStartTime = helper.EphemTimeToIndex(obj.ScheduledStartTime);
-        const iScheduledEndTime = helper.EphemTimeToIndex(obj.ScheduledEndTime);
+        const iScheduledStartTime = helper.MJDToIndex(obj.ScheduledStartTime);
+        const iScheduledEndTime = helper.MJDToIndex(obj.ScheduledEndTime);
         this.ctx.strokeStyle = obj.LabelStrokeColor;
         this.ctx.beginPath();
         this.ctx.moveTo(this.xaxis[iScheduledStartTime], this.yend + 2.6);
@@ -332,13 +332,40 @@ Graph.prototype.highlightTarget = function (target) {
             this.ctx.fillStyle = "black";
         }
     }
+    let addedSymbols = 0;
+    // Add moon distances
+    for (let j = 0; j < target.Graph.length; j += 1) {
+        if (target.Graph[j] < 10) continue;
+        const x = driver.graph.xaxis[j];
+        let y = driver.graph.yend - driver.graph.degree * target.Graph[j];
+        this.plotText(`☽︎ ${Math.round(target.MoonDistance[j])}°`, "10pt", target.LabelStrokeColor, x, y + 20, "center", "top");
+        this.plotText(`∡ ${Math.round(target.PAngles[j])}°`, "10pt", target.LabelStrokeColor, x, y + 40, "center", "top");
+        addedSymbols += 1;
+        j += 100;
+    }
+    this.ctx.restore();
+    this.ctx.save();
+    this.ctx.strokeStyle = "black";
+    this.ctx.font = `${this.pt(8)} ${this.fontFamily}`;
+    this.ctx.textAlign = "left";
+    this.ctx.textBaseline = "middle";
+    if (addedSymbols > 0) {
+        let legendAlt = 64;
+        if (Driver.telescopeName == "HET") {
+            legendAlt = 34;
+        }
+        this.ctx.fillText(`Numbers below curve`, this.xleftlabels, this.transformYLocation(legendAlt));
+        this.ctx.fillText(`are Moon distance (☽︎)`, this.xleftlabels, this.transformYLocation(legendAlt-2));
+        this.ctx.fillText(`and P.A. (∡) at the`, this.xleftlabels, this.transformYLocation(legendAlt-4));
+        this.ctx.fillText(`corresponding times`, this.xleftlabels, this.transformYLocation(legendAlt-6));
+    }
     this.ctx.restore();
 };
 
 /**
  * @memberof Graph
  */
-Graph.prototype.drawTargets = function (Targets) {
+Graph.prototype.drawTargets = function (Targets, grayed_out = false) {
     this.ctx.save();
     this.ctx.strokeStyle = "black";
     this.ctx.beginPath();
@@ -347,10 +374,17 @@ Graph.prototype.drawTargets = function (Targets) {
     this.ctx.clip();
     this.ctx.setLineDash([]);
     const strokes = [], dashes = [], lws = [];
-    strokes[0] = "#aaa";
-    strokes[1] = "#000";
-    strokes[2] = "#f55";
-    strokes[3] = "#000";
+    if (grayed_out) {
+        strokes[0] = "rgba(170, 170, 170, 0.3)";
+        strokes[1] = "rgba(0, 0, 0, 0.3)";
+        strokes[2] = "rgba(255, 85, 85, 0.3)";
+        strokes[3] = "rgba(0, 0, 0, 0.3)";
+    } else {
+        strokes[0] = "rgb(170, 170, 170)";
+        strokes[1] = "rgb(0, 0, 0)";
+        strokes[2] = "rgb(255, 85, 85)";
+        strokes[3] = "rgb(0, 0, 0)";
+    }
     dashes[0] = [];
     dashes[1] = [];
     dashes[2] = [1,3];
@@ -479,7 +513,7 @@ Graph.prototype.drawTargetNames = function (Targets) {
  */
 Graph.prototype.drawEphemerides = function () {
     /*
-     Convert the night.xaxis array (which is in units of ephem.Date) to a graph.axis array
+     Convert the night.xaxis array (which is in MJD) to a graph.axis array
      (containing the corresponding HTML5 canvas positions, in (sub)pixels
      */
     this.xaxis = [];
@@ -526,26 +560,26 @@ Graph.prototype.drawEphemerides = function () {
     this.ctx.fillText("S.set", this.xstart, this.ystart - 22);
     this.ctx.fillText("S.rise", this.xend, this.ystart - 22);
     // Plot the sunset and sunrise times
-    this.ctx.fillText(helper.EphemDateToHMLocal(driver.night.Sunset, Driver.obs_timezone), this.xstart, this.ystart - 10);
-    this.ctx.fillText(helper.EphemDateToHMLocal(driver.night.Sunrise, Driver.obs_timezone), this.xend, this.ystart - 10);
+    this.ctx.fillText(helper.MJDToHMLocal(driver.night.Sunset, Driver.obs_timezone), this.xstart, this.ystart - 10);
+    this.ctx.fillText(helper.MJDToHMLocal(driver.night.Sunrise, Driver.obs_timezone), this.xend, this.ystart - 10);
     // Plot the twilights labels and corresponding dashed vertical lines
     const twiStyle = [6, 5];
     let xtemp;
     xtemp = this.transformXLocation(driver.night.ENauTwilight);
     this.ctx.fillText("Nau", xtemp, this.ystart - 22);
-    this.ctx.fillText(helper.EphemDateToHMLocal(driver.night.ENauTwilight, Driver.obs_timezone), xtemp - 3.5, this.ystart - 10);
+    this.ctx.fillText(helper.MJDToHMLocal(driver.night.ENauTwilight, Driver.obs_timezone), xtemp - 3.5, this.ystart - 10);
     this.plotVerticalLine(this.ystart, this.yend, xtemp, twiStyle, 1.2);
     xtemp = this.transformXLocation(driver.night.MNauTwilight);
     this.ctx.fillText("Nau", xtemp, this.ystart - 22);
-    this.ctx.fillText(helper.EphemDateToHMLocal(driver.night.MNauTwilight, Driver.obs_timezone), xtemp + 1, this.ystart - 10);
+    this.ctx.fillText(helper.MJDToHMLocal(driver.night.MNauTwilight, Driver.obs_timezone), xtemp + 1, this.ystart - 10);
     this.plotVerticalLine(this.ystart, this.yend, xtemp, twiStyle, 1.2);
     xtemp = this.transformXLocation(driver.night.EAstTwilight);
     this.ctx.fillText("Ast", xtemp, this.ystart - 22);
-    this.ctx.fillText(helper.EphemDateToHMLocal(driver.night.EAstTwilight, Driver.obs_timezone), xtemp + 4, this.ystart - 10);
+    this.ctx.fillText(helper.MJDToHMLocal(driver.night.EAstTwilight, Driver.obs_timezone), xtemp + 4, this.ystart - 10);
     this.plotVerticalLine(this.ystart, this.yend, xtemp, twiStyle, 1.2);
     xtemp = this.transformXLocation(driver.night.MAstTwilight);
     this.ctx.fillText("Ast", xtemp, this.ystart - 22);
-    this.ctx.fillText(helper.EphemDateToHMLocal(driver.night.MAstTwilight, Driver.obs_timezone), xtemp - 1, this.ystart - 10);
+    this.ctx.fillText(helper.MJDToHMLocal(driver.night.MAstTwilight, Driver.obs_timezone), xtemp - 1, this.ystart - 10);
     this.plotVerticalLine(this.ystart, this.yend, xtemp, twiStyle, 1.2);
     this.ctx.textAlign = "center";
 
@@ -621,16 +655,16 @@ Graph.prototype.drawEphemerides = function () {
         if ((driver.night.Moonrise >= driver.night.Sunset) && (driver.night.Moonrise <= driver.night.Sunrise)) {
             this.ctx.fillText("Moon rises:", this.xleftlabels, this.transformYLocation(71));
             if (driver.obs_timezone === 0) {
-                this.ctx.fillText(`${helper.EphemDateToHM(driver.night.Moonrise)} UTC`, this.xleftlabels, this.transformYLocation(69));
+                this.ctx.fillText(`${helper.MJDToHM(driver.night.Moonrise)} UTC`, this.xleftlabels, this.transformYLocation(69));
             } else {
-                this.ctx.fillText(`${helper.EphemDateToHMLocal(driver.night.Moonrise, Driver.obs_timezone)} ${Driver.obs_timezone_abbr}`, this.xleftlabels, this.transformYLocation(69));
+                this.ctx.fillText(`${helper.MJDToHMLocal(driver.night.Moonrise, Driver.obs_timezone)} ${Driver.obs_timezone_abbr}`, this.xleftlabels, this.transformYLocation(69));
             }
         } else if ((driver.night.Moonset >= driver.night.Sunset) && (driver.night.Moonset <= driver.night.Sunrise)) {
             this.ctx.fillText("Moon sets:", this.xleftlabels, this.transformYLocation(71));
             if (driver.obs_timezone === 0) {
-                this.ctx.fillText(`${helper.EphemDateToHM(driver.night.Moonset)} UTC`, this.xleftlabels, this.transformYLocation(69));
+                this.ctx.fillText(`${helper.MJDToHM(driver.night.Moonset)} UTC`, this.xleftlabels, this.transformYLocation(69));
             } else {
-                this.ctx.fillText(`${helper.EphemDateToHMLocal(driver.night.Moonset, Driver.obs_timezone)} ${Driver.obs_timezone_abbr}`, this.xleftlabels, this.transformYLocation(69));
+                this.ctx.fillText(`${helper.MJDToHMLocal(driver.night.Moonset, Driver.obs_timezone)} ${Driver.obs_timezone_abbr}`, this.xleftlabels, this.transformYLocation(69));
             }
         }
     }
