@@ -702,7 +702,7 @@ TargetList.prototype.schedule_withWeights = function (startingAt) {
     const wa = 1;
     const ws = 1;
     const maxpriority = Math.max.apply(Math, this.Targets.map(function (o) { return o.Priority; }));
-    let lastaz = null;
+    let lastra = null, lastdec = null;
     let scheduleorder = [];
     while (true) {
         if (curidx >= driver.night.Nx) break;
@@ -733,7 +733,7 @@ TargetList.prototype.schedule_withWeights = function (startingAt) {
                 const priority = tgt.Priority / maxpriority; // 0-1;
                 const urgency = 1 / (tgt.LastPossibleTime - curtime + 1); // 0-1, becomes 1 at the last possible time
                 const altitude = Math.sin(sla.d2r * tgt.Graph[curidx]); // 0-1, the higher the altitude the better
-                const slewing = lastaz === null ? 1 : 1-helper.angDist(tgt.Azimuth[curidx], lastaz) / 180; // 0-1, 1 if no slewing, 0 if 180 deg slewing
+                const slewing = lastra === null ? 1 : 1-sla.dsep(lastra, lastdec, tgt.RA_rad, tgt.Dec_rad) / Math.PI; // 0-1, 1 if no slewing, 0 if 180 deg slewing
                 weights[i] = wp * priority + wu * urgency + wa * altitude + ws * slewing;
             }
         }
@@ -753,7 +753,8 @@ TargetList.prototype.schedule_withWeights = function (startingAt) {
         const obj = this.Targets[maxKey];
         obj.Schedule(curtime);
         curidx += Math.ceil(obj.Exptime / driver.night.xstep);
-        lastaz = obj.Azimuth[curidx-1];
+        lastra = obj.RA_rad;
+        lastdec = obj.Dec_rad;
     };
     console.log("withWeights: ", scheduleorder);
     return scheduleorder;
@@ -1028,7 +1029,6 @@ TargetList.prototype.prepareScheduleForUpdate = function () {
 TargetList.prototype.doSchedule = function (start, reorder) {
     let scheduleorder;
     scheduleorder = this.schedule_withWeights(0);
-    this.optimize_interchangeNeighbours(scheduleorder);
     if (reorder) {
         this.optimize_moveToLaterTimesIfRising(scheduleorder);
         if ($("#opt_reorder_targets").is(":checked")) {
