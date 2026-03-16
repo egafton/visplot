@@ -167,12 +167,12 @@ SkyGraph.prototype.setup = function (triggered) {
                 }
             },
             error: function (msg) {
-                helper.LogError(`Error 57: ${msg}`);
+                helper.LogError(msg);
             }
         });
     }
     catch (e) {
-        helper.LogError(`Error 58: ${e.message}`);
+        helper.LogError(e.message);
     }
 };
 

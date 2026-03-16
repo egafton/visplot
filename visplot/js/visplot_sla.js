@@ -5651,6 +5651,6 @@ sla.performUnitTests = function () {
         sla.performUnitTestsWrapped();
         helper.LogSuccess("slalib unit tests completed - everything OK");
     } catch (error) {
-        helper.LogError(`Error 59: slalib unit tests failed: ${error}, ${error.stack}`);
+        helper.LogError(`slalib unit tests failed: ${error}, ${error.stack}`);
     }
 };

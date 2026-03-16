@@ -61,7 +61,8 @@ serializer.saveDocument = function () {
                 defaultObstime: Driver.defaultObstime,
                 FillColors: Driver.FillColors,
                 TextColors: Driver.TextColors
-            }
+            },
+            version: window.version
         }));
         zip.generateAsync({
             mimeType: "application/octet-stream",
@@ -73,7 +74,7 @@ serializer.saveDocument = function () {
         });
         helper.LogEntry("Done.");
     } catch (e) {
-        helper.LogError(`Error 42: <i>${e}</i>`);
+        helper.LogError(`<i>${e}</i>`);
     }
 };
 
@@ -97,7 +98,7 @@ serializer.saveDocument = function () {
         saveAs(blob, filename);
         helper.LogEntry("Done.");
     } catch (e) {
-        helper.LogError(`Error 42: <i>${e}</i>`);
+        helper.LogError(`<i>${e}</i>`);
     }
 };
 
@@ -108,20 +109,23 @@ serializer.loadDocument = function (e) {
     helper.LogEntry("Importing schedule from the given file...");
     const files = e.target.files; // FileList object
     if (files === false || files === null || files === undefined || files.length != 1) {
-        helper.LogError("Error 43: Failed to load the file.");
+        helper.LogError("Failed to load the file.");
         return;
     }
     const new_zip = new JSZip();
     new_zip.loadAsync(files[0]).then(function (zip) {
         if (zip === false || zip === null || zip === undefined) {
-            helper.LogError("Error 44: Could not open the file because it has an invalid format.");
+            helper.LogError("Could not open the file because it has an invalid format.");
             return;
         }
         new_zip.file("visplot.txt").async("string").then(function (txt) {
             const obj = JSON.parse(txt);
             if (obj === false || obj === null || obj === undefined || obj.night === null || obj.night === undefined || obj.graph === null || obj.graph === undefined || obj.driver === null || obj.driver === undefined || obj.targets === null || obj.targets === undefined) {
-                helper.LogError("Error 45: Could not open the file because it has an invalid format.");
+                helper.LogError("Could not open the file because it has an invalid format.");
                 return;
+            }
+            if (obj.version === undefined || obj.version != window.version) {
+                helper.LogWarning(`The file ${files[0].name} has been produced with a different version of Visplot. Some functionality may be limited or unavailable.`)
             }
             driver.ob = obj.driver.ob;
             driver.obdata = obj.driver.obdata;
@@ -171,11 +175,11 @@ serializer.loadDocument = function (e) {
                 $("#saveDoc").removeAttr("disabled");
             });
         }).catch(function (e) {
-            helper.LogError(`Error 46: Could not open the file because it has an invalid format (${e}).`);
+            helper.LogError(`Could not open the file because it has an invalid format (${e}).`);
             return;
         });
     }).catch(function (e) {
-        helper.LogError(`Error 47: Could not open the file because it has an invalid format (${e}).`);
+        helper.LogError(`Could not open the file because it has an invalid format (${e}).`);
         return;
     });
 };

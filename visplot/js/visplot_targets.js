@@ -171,7 +171,7 @@ TargetList.prototype.targetStringToJSON = function (line) {
     // Not a float?
     if (isNaN(obj.maxam)) {
         obj.maxam = 9.9;
-        const arr = dat[10].split(",");
+        const arr = dat[10].toUpperCase().split(",");
         for (const constr of arr) {
             let uts = helper.ExtractUTRange(constr, ra);
             if (uts !== null) {
@@ -429,10 +429,10 @@ TargetList.prototype.resetWarnings = function () {
  */
 TargetList.prototype.warnUnobservable = function () {
     if (this.Warning1.length > 0) {
-        helper.LogWarning("Warning: Target" + (this.Warning1.length === 1 ? "" : "s") + " <i>" + this.Warning1.join(", ") + "</i> cannot possibly be scheduled for this night, as " + (this.Warning1.length === 1 ? "it" : "they") + " will never fit the airmass/UTC constraints.");
+        helper.LogWarning("Target" + (this.Warning1.length === 1 ? "" : "s") + " <i>" + this.Warning1.join(", ") + "</i> cannot possibly be scheduled for this night, as " + (this.Warning1.length === 1 ? "it" : "they") + " will never fit the airmass/UTC constraints.");
     }
     if (this.Warning2.length > 0) {
-        helper.LogWarning("Warning: Target" + (this.Warning2.length === 1 ? "" : "s") + " <i>" + this.Warning2.join(", ") + "</i> cannot possibly be scheduled for this night, as " + (this.Warning2.length === 1 ? "it" : "they") + " will not fit the airmass/UTC constraints for long enough to perform the observations.");
+        helper.LogWarning("Target" + (this.Warning2.length === 1 ? "" : "s") + " <i>" + this.Warning2.join(", ") + "</i> cannot possibly be scheduled for this night, as " + (this.Warning2.length === 1 ? "it" : "they") + " will not fit the airmass/UTC constraints for long enough to perform the observations.");
     }
 };
 
@@ -718,15 +718,24 @@ TargetList.prototype.schedule_withWeights = function (startingAt) {
             if (tgt.Scheduled) {
                 continue;
             }
-            if (!this.canSchedule(tgt, curtime)) {
-                continue;
+            // Monitoring programmes that fill their slot get the highest priority, as decided by the user
+            if (tgt.FillSlot && tgt.nAllowed > 0) {
+                if (tgt.beginAllowed[0] > curtime || tgt.endAllowed[0] < curtime) {
+                    continue;
+                }
+                tgt.SetExptime(tgt.endAllowed[0] - curtime);
+                weights[i] = 9999;
+            } else {
+                if (!this.canSchedule(tgt, curtime)) {
+                    continue;
+                }
+                // Calculate weight
+                const priority = tgt.Priority / maxpriority; // 0-1;
+                const urgency = 1 / (tgt.LastPossibleTime - curtime + 1); // 0-1, becomes 1 at the last possible time
+                const altitude = Math.sin(sla.d2r * tgt.Graph[curidx]); // 0-1, the higher the altitude the better
+                const slewing = lastaz === null ? 1 : 1-helper.angDist(tgt.Azimuth[curidx], lastaz) / 180; // 0-1, 1 if no slewing, 0 if 180 deg slewing
+                weights[i] = wp * priority + wu * urgency + wa * altitude + ws * slewing;
             }
-            // Calculate weight
-            const priority = tgt.Priority / maxpriority; // 0-1;
-            const urgency = 1 / (tgt.LastPossibleTime - curtime + 1); // 0-1, becomes 1 at the last possible time
-            const altitude = Math.sin(sla.d2r * tgt.Graph[curidx]); // 0-1, the higher the altitude the better
-            const slewing = lastaz === null ? 1 : 1-helper.angDist(tgt.Azimuth[curidx], lastaz) / 180; // 0-1, 1 if no slewing, 0 if 180 deg slewing
-            weights[i] = wp * priority + wu * urgency + wa * altitude + ws * slewing;
         }
         let maxKey = null;
         let maxVal = -Infinity;
@@ -1205,11 +1214,11 @@ TargetList.prototype.processTargetListAfterSIMBAD = function(lines) {
 
     if (this.InputStats.Actual === 0) {
         if (this.InputStats.Commented > 0 || this.InputStats.Empty > 0) {
-            helper.LogError("Error 2: no valid targets found (input consists of " +
+            helper.LogError("No valid targets found (input consists of " +
                     (this.InputStats.Commented > 0 ? helper.plural(this.InputStats.Commented, "commented-out line") + (this.InputStats.Empty > 0 ? " and " : "") : "") +
                     (this.InputStats.Empty > 0 ? helper.plural(this.InputStats.Empty, "empty line") : "") + ").");
         } else {
-            helper.LogError("Error 3: no targets given.");
+            helper.LogError("No targets given.");
         }
         return false;
     }
@@ -1251,7 +1260,7 @@ TargetList.prototype.validateAndFormatTargets = function (force = false) {
             if (force) {
                 return resolve();
             }
-            helper.LogError("Error 1: Please fill in the <i>Targets</i> field.");
+            helper.LogError("Please fill in the <i>Targets</i> field.");
             return reject();
         }
         // Split it into lines
@@ -1281,7 +1290,7 @@ TargetList.prototype.validateAndFormatTargets = function (force = false) {
                     const resolution = helper.parseSIMBADResponse(deferred.responseText);
                     driver.resolvedIdentifiers[id] = resolution;
                     if (resolution === null) {
-                        helper.LogError(`Error 61: Target identifier unknown to SIMBAD: ${id}`)
+                        helper.LogError(`Target identifier unknown to SIMBAD: ${id}`)
                     }
                 }
                 return thisList.processTargetListAfterSIMBAD(lines) ? resolve() : reject();
@@ -1298,11 +1307,11 @@ TargetList.prototype.validateAndFormatTargets = function (force = false) {
 TargetList.prototype.ExportTCSCatalogue = function () {
     helper.LogEntry("Exporting catalogue in TCS format...");
     if (!this.InputValid) {
-        helper.LogError("Error 4: the list of targets appears to be invalid... Aborting.");
+        helper.LogError("The list of targets appears to be invalid... Aborting.");
         return;
     }
     if (this.TCSlines.length === 0) {
-        helper.LogError("Error 5: catalogue contains no targets. Aborting.");
+        helper.LogError("Catalogue contains no targets. Aborting.");
         return;
     }
 
@@ -1337,17 +1346,17 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
     }
     // Sanity check: minimum number of fields
     if (words.length <= 1) {
-        helper.LogError(`Error 6: Incorrect syntax on Line #${linenumber}; for each object you must provide at least the Name, RA and Dec!`);
+        helper.LogError(`Incorrect syntax on Line #${linenumber}; for each object you must provide at least the Name, RA and Dec!`);
         return false;
     }
     if ($.inArray(words[0], helper.offlineStrings) !== -1) {
         if (words.length < 2 || words.length > 3) {
-            helper.LogError(`Error 7: Incorrect syntax on Line #${linenumber}; for offline time you must provide a valid UTC range!`);
+            helper.LogError(`Incorrect syntax on Line #${linenumber}; for offline time you must provide a valid UTC range!`);
             return false;
         }
         if (words.length == 3) {
             if (words[1] != "*") {
-                helper.LogError(`Error 8: Incorrect syntax on Line #${linenumber}; offline time must take "*" as [OBSTIME] argument!`);
+                helper.LogError(`Incorrect syntax on Line #${linenumber}; offline time must take "*" as [OBSTIME] argument!`);
                 return false;
             }
         }
@@ -1356,7 +1365,7 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
         if (!words[0].startsWith("#")) {
             let UTr = helper.ExtractUTRange(words[q]), ut1, ut2;
             if (UTr === false) {
-                helper.LogError(`Error 9: Incorrect syntax in [CONSTRAINTS] on line #${linenumber}: the UTC range must be a valid interval (e.g., [20:00-23:00] or [1-2])!`);
+                helper.LogError(`Incorrect syntax in [CONSTRAINTS] on line #${linenumber}: the UTC range must be a valid interval (e.g., [20:00-23:00] or [1-2])!`);
                 return false;
             } else {
                 this.BadWolfStart.push(UTr[0]);
@@ -1379,7 +1388,7 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
         words = words.slice(0, 1).concat(ra_arr).concat(dec_arr);
     }
     if (words.length < 2) {
-        helper.LogError(`Error 10: Incorrect syntax on Line #${linenumber}; for each object you must provide at least the Name, RA and Dec!`);
+        helper.LogError(`Incorrect syntax on Line #${linenumber}; for each object you must provide at least the Name, RA and Dec!`);
         return false;
     }
     if (words[1].indexOf(":") > -1) {
@@ -1391,7 +1400,7 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
         words = words.slice(0, 1).concat(ra_arr).concat(words.slice(2));
     }
     if (words.length < 5) {
-        helper.LogError(`Error 11: Incorrect syntax on Line #${linenumber}; for each object you must provide at least the Name, RA and Dec!`);
+        helper.LogError(`Incorrect syntax on Line #${linenumber}; for each object you must provide at least the Name, RA and Dec!`);
         return false;
     }
     if (words[4].indexOf(":") > -1) {
@@ -1403,7 +1412,7 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
         words = words.slice(0, 4).concat(dec_arr).concat(words.slice(5));
     }
     if (words.length < 7) {
-        helper.LogError(`Error 12: Incorrect syntax on Line #${linenumber}; for each object you must provide at least the Name, RA and Dec!`);
+        helper.LogError(`Incorrect syntax on Line #${linenumber}; for each object you must provide at least the Name, RA and Dec!`);
         return false;
     }
     if (words.length === 11 && (parseFloat(words[7]) == 2000 || parseFloat(words[7]) == 1950) && !helper.notFloat(words[8]) && !helper.notFloat(words[9]) && !helper.notFloat(words[10])) {
@@ -1428,37 +1437,37 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
     }
     // Sanity check: there must now be exactly this.ReqLineLen entries in the array
     if (words.length !== this.ReqLineLen) {
-        helper.LogError(`Error 13: Incorrect syntax: the number of entries on line #${linenumber} is incorrect: ${words}!`);
+        helper.LogError(`Incorrect syntax: the number of entries on line #${linenumber} is incorrect: ${words}!`);
         return false;
     }
     let rax;
     // Sanity check: input syntax for all parameters
     /* RA hours, minutes must be integer */
     if (helper.notInt(words[1]) || helper.notInt(words[2])) {
-        helper.LogError(`Error 14: Incorrect syntax: non-integer value detected in [RA] on line #${linenumber}!`);
+        helper.LogError(`Incorrect syntax: non-integer value detected in [RA] on line #${linenumber}!`);
         return false;
     }
     /* RA hours between 0 and 23 */
     rax = parseInt(words[1]);
     if (rax < 0 || rax > 23) {
-        helper.LogError(`Error 15: Incorrect syntax: the "hours" part of [RA] must be an integer between 0 and 23 on line #${linenumber}!`);
+        helper.LogError(`Incorrect syntax: the "hours" part of [RA] must be an integer between 0 and 23 on line #${linenumber}!`);
         return false;
     }
     /* RA minutes between 0 and 59 */
     rax = parseInt(words[2]);
     if (rax < 0 || rax > 59) {
-        helper.LogError(`Error 16: Incorrect syntax: the "minutes" part of [RA] must be an integer between 0 and 59 on line #${linenumber}!`);
+        helper.LogError(`Incorrect syntax: the "minutes" part of [RA] must be an integer between 0 and 59 on line #${linenumber}!`);
         return false;
     }
     /* RA seconds and proper motion */
     if (words[3].indexOf("/") > -1) {
         rax = words[3].split("/");
         if (rax.length !== 2) {
-            helper.LogError(`Error 17: Incorrect syntax for [pmRA] on line #${linenumber}!`);
+            helper.LogError(`Incorrect syntax for [pmRA] on line #${linenumber}!`);
             return false;
         } else {
             if (helper.notFloat(rax[0]) || helper.notFloat(rax[1])) {
-                helper.LogError(`Error 18: Incorrect syntax: non-float value detected in [RA]/[pmRA] on line #${linenumber}!`);
+                helper.LogError(`Incorrect syntax: non-float value detected in [RA]/[pmRA] on line #${linenumber}!`);
                 return false;
             }
         }
@@ -1466,7 +1475,7 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
         words[this.ReqLineLen + 1] = parseFloat(rax[1]);
         words[this.ReqLineLen + 1] = Math.max(-1000, Math.min(1000, words[this.ReqLineLen + 1]));
     } else if (helper.notFloat(words[3])) {
-        helper.LogError(`Error 19: Incorrect syntax: non-integer value detected in [RA] on line #${linenumber}!`);
+        helper.LogError(`Incorrect syntax: non-integer value detected in [RA] on line #${linenumber}!`);
         return false;
     } else {
         words[this.ReqLineLen] = parseFloat(words[3]);
@@ -1474,35 +1483,35 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
     }
     /* RA seconds, integer part between 0 and 59 */
     if (parseInt(words[this.ReqLineLen]) < 0 || parseInt(words[this.ReqLineLen]) > 59) {
-        helper.LogError(`Error 20: Incorrect syntax: the integer part of "seconds" in [RA] must be a number between 0 and 59 on line #${linenumber}!`);
+        helper.LogError(`Incorrect syntax: the integer part of "seconds" in [RA] must be a number between 0 and 59 on line #${linenumber}!`);
         return false;
     }
     /* Dec degrees, arcminutes must be integer */
     if (helper.notInt(words[4]) || helper.notInt(words[5])) {
-        helper.LogError(`Error 21: Incorrect syntax: non-integer value detected in [DEC] on line #${linenumber}!`);
+        helper.LogError(`Incorrect syntax: non-integer value detected in [DEC] on line #${linenumber}!`);
         return false;
     }
     /* Dec degrees between -89 and +89 */
     rax = parseInt(words[4]);
     if (rax < -89 || rax > 89) {
-        helper.LogError(`Error 22: Incorrect syntax: the "degrees" part of [Dec] must be an integer between -89 and +89 on line #${linenumber}!`);
+        helper.LogError(`Incorrect syntax: the "degrees" part of [Dec] must be an integer between -89 and +89 on line #${linenumber}!`);
         return false;
     }
     /* Dec arcminutes between 0 and 59 */
     rax = parseInt(words[5]);
     if (rax < 0 || rax > 59) {
-        helper.LogError(`Error 23: Incorrect syntax: the "minutes" part of [Dec] must be an integer between 0 and 59 on line #${linenumber}!`);
+        helper.LogError(`Incorrect syntax: the "minutes" part of [Dec] must be an integer between 0 and 59 on line #${linenumber}!`);
         return false;
     }
     /* Dec arcseconds and proper motion */
     if (words[6].indexOf("/") > -1) {
         rax = words[6].split("/");
         if (rax.length !== 2) {
-            helper.LogError(`Error 24: Incorrect syntax for [pmDEC] on line #${linenumber}!`);
+            helper.LogError(`Incorrect syntax for [pmDEC] on line #${linenumber}!`);
             return false;
         } else {
             if (helper.notFloat(rax[0]) || helper.notFloat(rax[1])) {
-                helper.LogError(`Error 25: Incorrect syntax: non-float value detected in [DEC]/[pmDEC] on line #${linenumber}!`);
+                helper.LogError(`Incorrect syntax: non-float value detected in [DEC]/[pmDEC] on line #${linenumber}!`);
                 return false;
             }
         }
@@ -1510,7 +1519,7 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
         words[this.ReqLineLen + 3] = parseFloat(rax[1]);
         words[this.ReqLineLen + 3] = Math.max(-1000, Math.min(1000, words[this.ReqLineLen + 3]));
     } else if (helper.notFloat(words[6])) {
-        helper.LogError(`Error 26: Incorrect syntax: non-integer value detected in [DEC] on line #${linenumber}!`);
+        helper.LogError(`Incorrect syntax: non-integer value detected in [DEC] on line #${linenumber}!`);
         return false;
     } else {
         words[this.ReqLineLen + 2] = parseFloat(words[6]);
@@ -1518,16 +1527,16 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
     }
     /* Dec arcseconds, integer part between 0 and 59 */
     if (parseInt(words[this.ReqLineLen + 2]) < 0 || parseInt(words[this.ReqLineLen + 2]) > 59) {
-        helper.LogError(`Error 27: Incorrect syntax: the integer part of "arcseconds" in [Dec] must be a number between 0 and 59 on line #${linenumber}!`);
+        helper.LogError(`Incorrect syntax: the integer part of "arcseconds" in [Dec] must be a number between 0 and 59 on line #${linenumber}!`);
         return false;
     }
     if (helper.filterFloat(words[7]) !== 2000 && helper.filterFloat(words[7]) !== 1950) {
-        helper.LogError(`Error 28: Incorrect syntax: [EPOCH] must be either 2000 or 1950 on line #${linenumber}!`);
+        helper.LogError(`Incorrect syntax: [EPOCH] must be either 2000 or 1950 on line #${linenumber}!`);
         return false;
     }
     /* Validate exptime */
     if (helper.notInt(words[8]) && words[8] != "*") {
-        helper.LogError(`Error 33: Incorrect syntax: non-integer value detected in [OBSTIME] on line #${linenumber}!`);
+        helper.LogError(`Incorrect syntax: non-integer value detected in [OBSTIME] on line #${linenumber}!`);
         return false;
     }
     /* Validate the proposal id; different telescopes use different formats */
@@ -1536,16 +1545,16 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
     const reqlen = valid[1];
     const reok = valid[2];
     if (words[9].length !== reqlen) {
-        helper.LogError(`Error 29: Incorrect syntax: [PROJECT] (${words[9]}, ${words[9].length}, ${reqlen}) does not have the same length as ${form} on line #${linenumber}!`);
+        helper.LogError(`Incorrect syntax: [PROJECT] (${words[9]}, ${words[9].length}, ${reqlen}) does not have the same length as ${form} on line #${linenumber}!`);
         return false;
     }
     if (!reok) {
-        helper.LogError(`Error 30: Incorrect syntax: [PROJECT] (${words[9]}) does not respect the ${form} syntax on line #${linenumber}!`);
+        helper.LogError(`Incorrect syntax: [PROJECT] (${words[9]}) does not respect the ${form} syntax on line #${linenumber}!`);
         return false;
     }
     /* Validate constraints */
     if (helper.notFloat(words[10])) {
-        const arr = words[10].split(",");
+        const arr = words[10].toUpperCase().split(",");
         let good = true;
         for (const constr of arr) {
             if (!helper.notFloat(constr)) continue;
@@ -1570,11 +1579,11 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
             }
         }
         if (!good) {
-            helper.LogError(`Error 31: Incorrect syntax: [CONSTRAINTS] should either be a float (e.g., 2.0), a UTC range (e.g., UTC[20:00-23:00]) or an LST range (e.g. LST[2-4:30]) on line #${linenumber}!`);
+            helper.LogError(`Incorrect syntax: [CONSTRAINTS] should either be a float (e.g., 2.0), a UTC range (e.g., UTC[20:00-23:00]) or an LST range (e.g. LST[2-4:30]) on line #${linenumber}!`);
             return false;
         }
         if (helper.notInt(words[8]) && words[8] != "*") {
-            helper.LogError(`Error 32: Incorrect syntax: non-integer value detected in [OBSTIME] on line #${linenumber}!`);
+            helper.LogError(`Incorrect syntax: non-integer value detected in [OBSTIME] on line #${linenumber}!`);
             return false;
         }
     }
@@ -1582,7 +1591,7 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
     if ($.inArray(words[11], ["Monitor", "ToO", "SoftToO", "Payback", "Fast-Track", "Service", "CATService", "Visitor", "Staff"]) === -1) {
         let wl = words[11].length;
         if (words[11].indexOf("Staff/") !== 0 || (words[11].indexOf("Staff/") === 0 && (wl < 8 || wl > 9))) {
-            helper.LogError(`Error 34: Incorrect syntax: [TYPE] must be one of the following: <i>Monitor</i>, <i>ToO</i>, <i>SoftToO</i>, <i>Payback</i>, <i>Fast-Track</i>, <i>Service</i>, <i>CATService</i>, <i>Visitor</i>, <i>Staff</i>, on line #${linenumber}!`);
+            helper.LogError(`Incorrect syntax: [TYPE] must be one of the following: <i>Monitor</i>, <i>ToO</i>, <i>SoftToO</i>, <i>Payback</i>, <i>Fast-Track</i>, <i>Service</i>, <i>CATService</i>, <i>Visitor</i>, <i>Staff</i>, on line #${linenumber}!`);
             return false;
         }
     }
@@ -1590,18 +1599,18 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
     if (words[12] !== Driver.defaultOBInfo) {
         let arr = words[12].split(":");
         if (arr.length !== 4 && arr.length !== 1) {
-            helper.LogError(`Error 49: OB info is not valid on line #${linenumber}, it should be Instrument:Mode:GroupID:BlockID!`);
+            helper.LogError(`OB info is not valid on line #${linenumber}, it should be Instrument:Mode:GroupID:BlockID!`);
             return false;
         }
     }
     /* Sky PA must be a float */
     if (helper.notFloat(words[13])) {
-        helper.LogError(`Error 60: Incorrect syntax: non-float value detected in [SKYPA] on line #${linenumber}!`);
+        helper.LogError(`Incorrect syntax: non-float value detected in [SKYPA] on line #${linenumber}!`);
         return false;
     }
     /* Priority must be a float */
     if (helper.notFloat(words[14])) {
-        helper.LogError(`Error 62: Incorrect syntax: non-float value detected in [PRIORITY] on line #${linenumber}!`);
+        helper.LogError(`Incorrect syntax: non-float value detected in [PRIORITY] on line #${linenumber}!`);
         return false;
     }
     return words;
@@ -1636,7 +1645,7 @@ TargetList.prototype.checkForDuplicates = function () {
         }
     }
     if (duplicateList.length > 0) {
-        helper.LogWarning(`Warning: Duplicate lines detected: ${duplicateList.join(", ")}. Please check if that is what you actually intended, otherwise delete or comment out the duplicates.`);
+        helper.LogWarning(`Duplicate lines detected: ${duplicateList.join(", ")}. Please check if that is what you actually intended, otherwise delete or comment out the duplicates.`);
     }
 };
 

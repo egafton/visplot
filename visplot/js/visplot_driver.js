@@ -178,7 +178,7 @@ Driver.prototype.ParseOBInfoIfAny = function () {
                     .then(function () { });
             }
         } else {
-            helper.LogError("Error 35: Could not decode JSON object. Falling back to standard (non-OB) visplot...");
+            helper.LogError("Could not decode JSON object. Falling back to standard (non-OB) visplot...");
             this.ob = false;
         }
     }
@@ -263,20 +263,20 @@ Driver.prototype.BtnEvt_SetDate = function () {
     const month = helper.filterInt($("#dateM").val());
     const day = helper.filterInt($("#dateD").val());
     if (isNaN(year) || isNaN(month) || isNaN(day)) {
-        helper.LogError(`Error 36: Invalid date (${year}-${month}-${day}).`);
+        helper.LogError(`Invalid date (${year}-${month}-${day}).`);
         return;
     }
     if (year < 1988 || year > 2100) {
-        helper.LogError(`Error 37: Invalid year (${year}). Please enter a number between 1988 and 2100.`);
+        helper.LogError(`Invalid year (${year}). Please enter a number between 1988 and 2100.`);
         return;
     }
     if (month < 1 || month > 12) {
-        helper.LogError(`Error 38: Invalid month (${month}). Please enter a number between 1 and 12.`);
+        helper.LogError(`Invalid month (${month}). Please enter a number between 1 and 12.`);
         return;
     }
     const dmax = helper.numberOfDays(year, month);
     if (day < 1 || day > dmax) {
-        helper.LogError(`Error 39: Invalid day (${day}) for ${year}-${helper.padTwoDigits(month)}. Please enter a number between 1 and ${dmax}.`);
+        helper.LogError(`Invalid day (${day}) for ${year}-${helper.padTwoDigits(month)}. Please enter a number between 1 and ${dmax}.`);
         return;
     }
     const zone = moment.tz.zone(config[Driver.telescopeName].timezoneName);
@@ -293,11 +293,11 @@ Driver.prototype.BtnEvt_SetDate = function () {
  */
 Driver.prototype.BtnEvt_PlotTargets = function () {
     if (this.RequestedScheduleType < 1 || this.RequestedScheduleType > 3) {
-        helper.LogError("Error 40: Unknown value for Driver.ReqestedScheduleType.");
+        helper.LogError("Unknown value for Driver.RequestedScheduleType.");
         return;
     }
     if (!this.nightInitialized) {
-        helper.LogError("Error 41: Night not initialized. Click on [Set] first!");
+        helper.LogError("Night not initialized. Click on [Set] first!");
         return;
     }
     this.targets.validateAndFormatTargets().then(function () {
@@ -924,7 +924,7 @@ Driver.prototype.CallbackUpdateDefaults_postTelUpdate = function (resetTel) {
             Driver.defaultEpoch = re;
             helper.LogSuccess(`Default <i>Epoch</i> set to <i>${re}</i>.`);
         } else {
-            helper.LogError("Error 50: Default <i>Epoch</i> was not updated since the input was invalid (must be 1950 or 2000).");
+            helper.LogError("Default <i>Epoch</i> was not updated since the input was invalid (must be 1950 or 2000).");
         }
     }
     re = $("#def_project").val().trim();
@@ -933,7 +933,7 @@ Driver.prototype.CallbackUpdateDefaults_postTelUpdate = function (resetTel) {
         const form = valid[0];
         const reok = valid[2];
         if (!reok) {
-            helper.LogError(`Error 51: Default <i>Proposal ID</i> was not updated since the input was invalid (must have the form ${form}).`);
+            helper.LogError(`Default <i>Proposal ID</i> was not updated since the input was invalid (must have the form ${form}).`);
         } else {
             Driver.defaultProject = re;
             helper.LogSuccess(`Default <i>Proposal ID</i> set to <i>${re}</i>.`);
@@ -952,13 +952,13 @@ Driver.prototype.CallbackUpdateDefaults_postTelUpdate = function (resetTel) {
             Driver.defaultType = re;
             helper.LogSuccess(`Default <i>Observation type</i> set to <i>${re}</i>.`);
         } else {
-            helper.LogError("Error 52: Default <i>Observation type</i> was not updated since the input was invalid (must be one of the following: <i>Monitor</i>, <i>ToO</i>, <i>SoftToO</i>, <i>Payback</i>, <i>Fast-Track</i>, <i>Service</i>, <i>CATService</i>, <i>Visitor</i>, <i>Staff</i>)");
+            helper.LogError("Default <i>Observation type</i> was not updated since the input was invalid (must be one of the following: <i>Monitor</i>, <i>ToO</i>, <i>SoftToO</i>, <i>Payback</i>, <i>Fast-Track</i>, <i>Service</i>, <i>CATService</i>, <i>Visitor</i>, <i>Staff</i>)");
         }
     }
     re = $("#def_maxam").val().trim();
     if (re !== Driver.defaultAM) {
         if (helper.notFloat(re)) {
-            helper.LogError("Error 53: Default <i>Maximum airmass</i> was not updated since the input was invalid (must be a float).");
+            helper.LogError("Default <i>Maximum airmass</i> was not updated since the input was invalid (must be a float).");
         } else {
             Driver.defaultAM = re;
             helper.LogSuccess(`Default <i>Maximum airmass</i> set to <i>${re}</i>.`);
@@ -967,7 +967,7 @@ Driver.prototype.CallbackUpdateDefaults_postTelUpdate = function (resetTel) {
     re = $("#def_obstime").val().trim();
     if (re !== Driver.defaultObstime) {
         if (helper.notInt(re)) {
-            helper.LogError("Error 54: Default <i>Observing time</i> was not updated since the input was invalid (must be an integer).");
+            helper.LogError("Default <i>Observing time</i> was not updated since the input was invalid (must be an integer).");
         } else {
             Driver.defaultObstime = re;
             helper.LogSuccess(`Default <i>Observing time</i> set to <i>${re}</i>.`);
@@ -986,7 +986,7 @@ Driver.prototype.CallbackUpdateDefaults_postTelUpdate = function (resetTel) {
                 helper.LogSuccess(`<i>${k}/fill colour</i> has been set to <i>${re}</i>.`);
                 resetCol = true;
             } else {
-                helper.LogError(`Error 55: Input for <i>${k}/fill colour</i> is not a valid CSS colour (<i>${re}</i>).`);
+                helper.LogError(`Input for <i>${k}/fill colour</i> is not a valid CSS colour (<i>${re}</i>).`);
             }
         }
         re = $(`#def_tcol_${k.replace("-", "_")}`).val().trim();
@@ -996,7 +996,7 @@ Driver.prototype.CallbackUpdateDefaults_postTelUpdate = function (resetTel) {
                 helper.LogSuccess(`<i>${k}/text colour</i> has been set to <i>${re}</i>.`);
                 resetCol = true;
             } else {
-                helper.LogError(`Error 56: Input for <i>${k}/text colour</i> is not a valid CSS colour (<i>${re}</i>).`);
+                helper.LogError(`Input for <i>${k}/text colour</i> is not a valid CSS colour (<i>${re}</i>).`);
             }
         }
         if (resetCol) {
@@ -1045,7 +1045,7 @@ Driver.prototype.CallbackUpdateDefaults = function () {
                 driver.CallbackUpdateDefaults_postTelUpdate(true);
             });
         } else {
-            helper.LogError("Error 49: <i>Telescope name</i> was not updated since the input was invalid.");
+            helper.LogError("<i>Telescope name</i> was not updated since the input was invalid.");
             driver.CallbackUpdateDefaults_postTelUpdate(false);
         }
     } else {
@@ -1216,22 +1216,20 @@ Driver.prototype.validateProjectNumber = function (project) {
 
 Driver.prototype.setTelescopeName = function (val) {
     return new Promise(function (resolve, reject) {
-        if ($.inArray(val, Object.keys(config)) !== -1) {
-            if (Driver._telescopeName !== val) {
-                Driver._telescopeName = val;
-                $("#def_telescope").val(val);
-                // Background with telescope image
-                $("#canvasFrame").css("background-image", 'url(' + window.baseurl + (config[val].background || 'img/telescopes/default.jpg') + ')');
-                // Recalculate Skycam constants
-                driver.skyGraph.updateTelescope();
-                // Revalidate targets to recompute TCS lines
-                driver.targets.validateAndFormatTargets(true).then(function () {
-                    // Replot targets
-                    $("#dateSet").trigger("click");
-                    $("#plotTargets").trigger("click");
-                    resolve();
-                }).catch(function () { resolve(); });
-            }
+        if ($.inArray(val, Object.keys(config)) !== -1 && Driver._telescopeName !== val) {
+            Driver._telescopeName = val;
+            $("#def_telescope").val(val);
+            // Background with telescope image
+            $("#canvasFrame").css("background-image", 'url(' + window.baseurl + (config[val].background || 'img/telescopes/default.jpg') + ')');
+            // Recalculate Skycam constants
+            driver.skyGraph.updateTelescope();
+            // Revalidate targets to recompute TCS lines
+            driver.targets.validateAndFormatTargets(true).then(function () {
+                // Replot targets
+                $("#dateSet").trigger("click");
+                $("#plotTargets").trigger("click");
+                resolve();
+            }).catch(function () { resolve(); });
         } else {
             return resolve();
         }

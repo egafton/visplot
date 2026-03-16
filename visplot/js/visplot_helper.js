@@ -598,14 +598,14 @@ helper.LogEntry = function (msg) {
  *
  */
 helper.LogWarning = function (msg) {
-    helper.Log(msg, "loggerWarning");
+    helper.Log(`Warning: ${msg}`, "loggerWarning");
 };
 
 /**
  *
  */
 helper.LogError = function (msg) {
-    helper.Log(msg, "loggerError");
+    helper.Log(`Error: ${msg}`, "loggerError");
 };
 
 /**

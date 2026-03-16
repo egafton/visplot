@@ -338,8 +338,12 @@ Graph.prototype.highlightTarget = function (target) {
         if (target.Graph[j] < 10) continue;
         const x = driver.graph.xaxis[j];
         let y = driver.graph.yend - driver.graph.degree * target.Graph[j];
-        this.plotText(`☽︎ ${Math.round(target.MoonDistance[j])}°`, "10pt", target.LabelStrokeColor, x, y + 20, "center", "top");
-        this.plotText(`∡ ${Math.round(target.PAngles[j])}°`, "10pt", target.LabelStrokeColor, x, y + 40, "center", "top");
+        if (target.MoonDistance !== undefined) { // for older versions
+            this.plotText(`☽︎ ${Math.round(target.MoonDistance[j])}°`, "10pt", target.LabelStrokeColor, x, y + 20, "center", "top");
+        }
+        if (target.PAngles !== undefined) { // for older versions
+            this.plotText(`∡ ${Math.round(target.PAngles[j])}°`, "10pt", target.LabelStrokeColor, x, y + 40, "center", "top");
+        }
         addedSymbols += 1;
         j += 100;
     }
