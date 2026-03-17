@@ -74,7 +74,7 @@ serializer.saveDocument = function () {
         });
         helper.LogEntry("Done.");
     } catch (e) {
-        helper.LogError(`<i>${e}</i>`);
+        helper.LogException(e);
     }
 };
 
@@ -98,7 +98,7 @@ serializer.saveDocument = function () {
         saveAs(blob, filename);
         helper.LogEntry("Done.");
     } catch (e) {
-        helper.LogError(`<i>${e}</i>`);
+        helper.LogException(e);
     }
 };
 
@@ -175,11 +175,11 @@ serializer.loadDocument = function (e) {
                 $("#saveDoc").removeAttr("disabled");
             });
         }).catch(function (e) {
-            helper.LogError(`Could not open the file because it has an invalid format (${e}).`);
+            helper.LogException(e);
             return;
         });
     }).catch(function (e) {
-        helper.LogError(`Could not open the file because it has an invalid format (${e}).`);
+        helper.LogException(e);
         return;
     });
 };

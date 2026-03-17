@@ -616,6 +616,13 @@ helper.LogSuccess = function (msg) {
 };
 
 /**
+ * 
+ */
+helper.LogException = function (e) {
+    helper.LogError(`${e.message} -- ${e.stack.split("\n")[0]}`);
+};
+
+/**
  *
  */
 helper.Log = function (msg, cls) {

@@ -172,7 +172,7 @@ SkyGraph.prototype.setup = function (triggered) {
         });
     }
     catch (e) {
-        helper.LogError(e.message);
+        helper.LogException(e);
     }
 };
 
