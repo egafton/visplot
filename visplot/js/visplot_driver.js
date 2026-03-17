@@ -1577,9 +1577,9 @@ Object.defineProperties(Driver, {
                     Blank14+43 14:55:08.16 +43:30:10.4 
                     Blank15+26 15:31:05.76 +26:15:17.6 
                     Blank18+00 18:28:53.76 +00:03:40.3 
-                    Blank23+00 23:22:00.72 +00:38:05.8 
-                `.split("\n").map(function (e) {
-                return e.trim()
+                    Blank23+00 23:22:00.72 +00:38:05.8`
+            .split("\n").map(function (e) {
+                return `${e.trim()} 2000 ${Driver.defaultObstime} ${Driver.defaultProject} ${Driver.defaultAM},NT+AT`
             }).filter(Boolean).join("\n");
         }
     },
@@ -1606,9 +1606,9 @@ Object.defineProperties(Driver, {
                     Blank16-15 16:50:49.68 -15:22:04.8 
                     Blank18-03 18:28:03.12 -03:49:55.9 
                     Blank22-47 22:58:27.84 -47:34:36.8 
-                    Blank23-03 23:40:51.12 -03:53:58.6 
-                `.split("\n").map(function (e) {
-                return e.trim()
+                    Blank23-03 23:40:51.12 -03:53:58.6`
+            .split("\n").map(function (e) {
+                return `${e.trim()} 2000 ${Driver.defaultObstime} ${Driver.defaultProject} ${Driver.defaultAM},NT+AT`
             }).filter(Boolean).join("\n");
         }
     },

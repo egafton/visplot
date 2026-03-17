@@ -66,6 +66,7 @@ function Target(k, obj) {
     this.RestrictionMaxUTC = obj.maxut;
     this.RestrictionMinMoonDistance = obj.minmdist;
     this.RestrictionMaxMoonDistance = obj.maxmdist;
+    this.RestrictionTwilights = obj.twil;
     this.observable = [];
     this.Scheduled = false;
     this.FillSlot = obj.fillslot;
@@ -168,25 +169,25 @@ TargetList.prototype.targetStringToJSON = function (line) {
     obj.maxmdist = 180;
     obj.minut = night.global_UTstart;
     obj.maxut = night.global_UTend;
+    obj.twil = [];
     const arr = dat[10].toUpperCase().split(",");
     for (const constr of arr) {
         if (!helper.notFloat(constr)) {
             obj.maxam = parseFloat(constr);
             continue;
         }
-        if (constr == "NT") { // Allow scheduling during nautical twilights
-            obj.minut = night.Sunset;
-            obj.maxut = night.Sunrise;
-            continue;
-        }
-        if (constr == "AT") { // Allow scheduling during astronomical twilights
-            obj.minut = night.ENauTwilight;
-            obj.maxut = night.MNauTwilight;
-            continue;
-        }
-        if (constr == "DARK") { // Allow scheduling during dark time only
-            obj.minut = night.EAstTwilight;
-            obj.maxut = night.MAstTwilight;
+        if (constr.indexOf("NT") > -1 || constr.indexOf("AT") > -1 || constr.indexOf("DARK") > -1) {
+            obj.twil = constr.split("+");
+            if (constr.includes("NT")) {
+                obj.minut = night.Sunset;
+                obj.maxut = night.Sunrise;
+            } else if (constr.includes("AT")) {
+                obj.minut = night.ENauTwilight;
+                obj.maxut = night.MNauTwilight;
+            } else {
+                obj.minut = night.EAstTwilight;
+                obj.maxut = night.MAstTwilight;
+            }
             continue;
         }
         let uts = helper.ExtractUTRange(constr, ra);
@@ -1688,6 +1689,13 @@ Target.prototype.canObserve = function (idx) {
     }
     if (Driver.obs_highestLimit !== null && altitude > Driver.obs_highestLimit) {
         return 0;
+    }
+    if (this.RestrictionTwilights.length > 0) {
+        if (!this.RestrictionTwilights.includes("NT") && (time < driver.night.ENauTwilight || time > driver.night.MNauTwilight)) return 0;
+        if (!this.RestrictionTwilights.includes("AT") && (
+            (time > driver.night.ENauTwilight && time < driver.night.EAstTwilight) ||
+            (time > driver.night.MAstTwilight && time < driver.night.MNauTwilight))) return 0;
+        if (!this.RestrictionTwilights.includes("DARK") && (time > driver.night.EAstTwilight && time < driver.night.MAstTwilight)) return 0;
     }
     if (!(this.RestrictionMinUTC <= time && this.RestrictionMaxUTC >= time &&
             this.RestrictionMinAlt <= altitude && this.RestrictionMaxAlt >= altitude &&
