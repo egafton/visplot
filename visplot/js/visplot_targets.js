@@ -163,33 +163,48 @@ TargetList.prototype.targetStringToJSON = function (line) {
     }
 
     obj.minam = 1;
-    obj.maxam = parseFloat(dat[10]);
+    obj.maxam = 9.9;
     obj.minmdist = 0;
     obj.maxmdist = 180;
     obj.minut = night.global_UTstart;
     obj.maxut = night.global_UTend;
-    // Not a float?
-    if (isNaN(obj.maxam)) {
-        obj.maxam = 9.9;
-        const arr = dat[10].toUpperCase().split(",");
-        for (const constr of arr) {
-            let uts = helper.ExtractUTRange(constr, ra);
+    const arr = dat[10].toUpperCase().split(",");
+    for (const constr of arr) {
+        if (!helper.notFloat(constr)) {
+            obj.maxam = parseFloat(constr);
+            continue;
+        }
+        if (constr == "NT") { // Allow scheduling during nautical twilights
+            obj.minut = night.Sunset;
+            obj.maxut = night.Sunrise;
+            continue;
+        }
+        if (constr == "AT") { // Allow scheduling during astronomical twilights
+            obj.minut = night.ENauTwilight;
+            obj.maxut = night.MNauTwilight;
+            continue;
+        }
+        if (constr == "DARK") { // Allow scheduling during dark time only
+            obj.minut = night.EAstTwilight;
+            obj.maxut = night.MAstTwilight;
+            continue;
+        }
+        let uts = helper.ExtractUTRange(constr, ra);
+        if (uts !== null) {
+            obj.minut = Math.max(obj.minut, uts[0]);
+            obj.maxut = Math.min(obj.maxut, uts[1]);
+        } else {
+            uts = helper.ExtractAMRange(constr);
             if (uts !== null) {
-                obj.minut = Math.max(obj.minut, uts[0]);
-                obj.maxut = Math.min(obj.maxut, uts[1]);
+                obj.minam = Math.max(obj.minam, uts[0]);
+                obj.maxam = Math.min(obj.maxam, uts[1]);
             } else {
-                uts = helper.ExtractAMRange(constr);
+                uts = helper.ExtractMoonRange(constr);
                 if (uts !== null) {
-                    obj.minam = Math.max(obj.minam, uts[0]);
-                    obj.maxam = Math.min(obj.maxam, uts[1]);
+                    obj.minmdist = Math.max(obj.minmdist, uts[0]);
+                    obj.maxmdist = Math.min(obj.maxmdist, uts[1]);
                 } else {
-                    uts = helper.ExtractMoonRange(constr);
-                    if (uts !== null) {
-                        obj.minmdist = Math.max(obj.minmdist, uts[0]);
-                        obj.maxmdist = Math.min(obj.maxmdist, uts[1]);
-                    } else {
-                        helper.LogError(`Could not parse airmass/UTC/moon distance constraint from string <i>${dat[10]}</i> for target <i>${dat[0]}</i>. Please check the format of the input and the documentation.`);
-                    }
+                    helper.LogError(`Could not parse airmass/UTC/moon distance constraint from string <i>${dat[10]}</i> for target <i>${dat[0]}</i>. Please check the format of the input and the documentation.`);
                 }
             }
         }
@@ -709,7 +724,6 @@ TargetList.prototype.schedule_withWeights = function (startingAt) {
     for (let i = 0; i < this.nTargets; i += 1) {
         const tgt = this.Targets[i];
         if (tgt.FillSlot && tgt.nAllowed > 0) {
-            tgt.SetExptime(tgt.endAllowed[0] - tgt.beginAllowed[0]);
             tgt.Schedule(tgt.beginAllowed[0]); // Attention, this might lead to overlaps! But the user decided so!
             scheduleorder.push(i);
         }
@@ -818,11 +832,8 @@ TargetList.prototype.schedule_inOrderOfSetting = function (startingAt) {
     // However, before anything else we schedule the monitoring programmes that have highest priority and MUST fill their entire time slot
     for (i = 0; i < SchedulableObjects; i += 1) {
         k = order[i];
-        if (this.Targets[k].FillSlot === true) {
-            obj = this.Targets[k];
-            if (obj.nAllowed > 0) {
-                obj.SetExptime(obj.endAllowed[0] - obj.beginAllowed[0]);
-            }
+        obj = this.Targets[k];
+        if (obj.FillSlot && obj.nAllowed > 0) {
             obj.Schedule(obj.beginAllowed[0]); // Attention, this might lead to overlaps! But the user decided so!
             scheduleorder.push(k);
         }
@@ -1558,6 +1569,7 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
     if (helper.notFloat(words[10])) {
         const arr = words[10].toUpperCase().split(",");
         let good = true;
+        let periodset = false;
         for (const constr of arr) {
             if (!helper.notFloat(constr)) continue;
             if (constr.startsWith("UT[") || constr.startsWith("UTC[") || constr.startsWith("LST[") || constr.startsWith("HA[") || constr.startsWith("AM[") || constr.startsWith("MOON[")) {
@@ -1575,6 +1587,13 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
                     good = false;
                     break;
                 }
+            } else if (constr == "NT", "AT", "DARK") {
+                if (!periodset) {
+                    periodset = true;
+                    continue;
+                }
+                helper.LogError(`Conflicting constraints (NT, AT, DARK) specified on line #${linenumber}!`);
+                return false;
             } else {
                 good = false;
                 break;
@@ -1769,6 +1788,13 @@ Target.prototype.preCompute = function () {
         this.iLastPossibleTime = 0;
         this.LastPossibleTime = driver.night.Sunset;
         driver.targets.Warning1.push(this.Name);
+        return;
+    }
+    if (this.FillSlot) {
+        this.SetExptime(this.endAllowed[0] - this.beginAllowed[0]);
+        this.iLastPossibleTime = helper.MJDToIndex(this.beginAllowed[0]);
+        this.LastPossibleTime = driver.night.xaxis[this.iLastPossibleTime];
+        this.ObservableTonight = true;
         return;
     }
     this.FirstPossibleTime = this.beginAllowed[0];
