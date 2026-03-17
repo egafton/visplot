@@ -703,7 +703,17 @@ TargetList.prototype.schedule_withWeights = function (startingAt) {
     const ws = 1;
     const maxpriority = Math.max.apply(Math, this.Targets.map(function (o) { return o.Priority; }));
     let lastra = null, lastdec = null;
+    // Start scheduling
     let scheduleorder = [];
+    // However, before anything else we schedule the programmes that MUST fill their entire time slot
+    for (let i = 0; i < this.nTargets; i += 1) {
+        const tgt = this.Targets[i];
+        if (tgt.FillSlot && tgt.nAllowed > 0) {
+            tgt.SetExptime(tgt.endAllowed[0] - tgt.beginAllowed[0]);
+            tgt.Schedule(tgt.beginAllowed[0]); // Attention, this might lead to overlaps! But the user decided so!
+            scheduleorder.push(i);
+        }
+    }
     while (true) {
         if (curidx >= driver.night.Nx) break;
         const curtime = driver.night.xaxis[curidx];
@@ -719,23 +729,15 @@ TargetList.prototype.schedule_withWeights = function (startingAt) {
                 continue;
             }
             // Monitoring programmes that fill their slot get the highest priority, as decided by the user
-            if (tgt.FillSlot && tgt.nAllowed > 0) {
-                if (tgt.beginAllowed[0] > curtime || tgt.endAllowed[0] < curtime) {
-                    continue;
-                }
-                tgt.SetExptime(tgt.endAllowed[0] - curtime);
-                weights[i] = 9999;
-            } else {
-                if (!this.canSchedule(tgt, curtime)) {
-                    continue;
-                }
-                // Calculate weight
-                const priority = tgt.Priority / maxpriority; // 0-1;
-                const urgency = 1 / (tgt.LastPossibleTime - curtime + 1); // 0-1, becomes 1 at the last possible time
-                const altitude = Math.sin(sla.d2r * tgt.Graph[curidx]); // 0-1, the higher the altitude the better
-                const slewing = lastra === null ? 1 : 1-sla.dsep(lastra, lastdec, tgt.RA_rad, tgt.Dec_rad) / Math.PI; // 0-1, 1 if no slewing, 0 if 180 deg slewing
-                weights[i] = wp * priority + wu * urgency + wa * altitude + ws * slewing;
+            if (!this.canSchedule(tgt, curtime)) {
+                continue;
             }
+            // Calculate weight
+            const priority = tgt.Priority / maxpriority; // 0-1;
+            const urgency = 1 / (tgt.LastPossibleTime - curtime + 1); // 0-1, becomes 1 at the last possible time
+            const altitude = Math.sin(sla.d2r * tgt.Graph[curidx]); // 0-1, the higher the altitude the better
+            const slewing = lastra === null ? 1 : 1-sla.dsep(lastra, lastdec, tgt.RA_rad, tgt.Dec_rad) / Math.PI; // 0-1, 1 if no slewing, 0 if 180 deg slewing
+            weights[i] = wp * priority + wu * urgency + wa * altitude + ws * slewing;
         }
         let maxKey = null;
         let maxVal = -Infinity;
