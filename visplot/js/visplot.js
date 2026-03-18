@@ -106,6 +106,22 @@ $(document).ready(function () {
                         helper.LogEntry(`Restoring default instrument name to <i>${localStorage.defaultOBInfo}</i>`);
                         Driver.defaultOBInfo = localStorage.defaultOBInfo;
                     }
+                    if ("w_priority" in localStorage) {
+                        helper.LogEntry(`Restoring <i>Priority</i> weight to <i>${localStorage.w_priority}</i>`);
+                        Driver.w_priority = localStorage.w_priority;
+                    }
+                    if ("w_urgency" in localStorage) {
+                        helper.LogEntry(`Restoring <i>Urgency</i> weight to <i>${localStorage.w_urgency}</i>`);
+                        Driver.w_urgency = localStorage.w_urgency;
+                    }
+                    if ("w_altitude" in localStorage) {
+                        helper.LogEntry(`Restoring <i>Altitude</i> weight to <i>${localStorage.w_altitude}</i>`);
+                        Driver.w_altitude = localStorage.w_altitude;
+                    }
+                    if ("w_slewing" in localStorage) {
+                        helper.LogEntry(`Restoring <i>Slewing</i> weight to <i>${localStorage.w_slewing}</i>`);
+                        Driver.w_slewing = localStorage.w_slewing;
+                    }
                     if ("opt_reschedule_later" in localStorage) {
                         helper.LogEntry(`Restoring <i>opt_reschedule_later</i> to <i>${localStorage.opt_reschedule_later}</i>`);
                         $("#opt_reschedule_later").prop("checked", localStorage.opt_reschedule_later === "true");

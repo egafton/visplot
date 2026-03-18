@@ -6,7 +6,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. See LICENSE.md.
  */
-$version = "5.0a";
+$version = "5.0b";
 /*
 * Version history (with brief changelog):
 *
@@ -118,6 +118,10 @@ $version = "5.0a";
 *      - Added support for target priorities during scheduling.
 *      - Implemented weight-based scheduling (taking into account priorities,
 *        setting time, altitudes and slewing time).
+*
+* 5.0b - Added a few more telescopes.
+*      - Loading MathJax for displaying equations.
+*      - Scheduling weights are now configurable by the user.
 */
 session_start();
 if (isset($_SESSION["obinfo"])) {
@@ -178,6 +182,10 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" type="text/css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" type="text/css" />
     <link rel="stylesheet" href="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css" type="text/css" />
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="stylesheet" href="<?php echo($baseurl);?>css/aladin.min.css" type="text/css" />
     <link rel="stylesheet" href="<?php echo($baseurl);?>css/visplot.css?v=<?php echo($version);?>" type="text/css" />
     <script type="text/javascript">window.version = "<?php echo($version);?>";</script>
@@ -308,6 +316,12 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
                     <input type="radio" id="sunset-sunrise" name="opt_schedule_between" value="sunset-sunrise"><label for="sunset-sunrise">Sunset / Sunrise</label><br/>
                     <input type="radio" id="nautical" name="opt_schedule_between" value="nautical" checked="checked"><label for="nautical">Nautical twilights</label><br/>
                     <input type="radio" id="astronomical" name="opt_schedule_between" value="astronomical"><label for="astronomical">Astronomical twilights</label><br/>
+                <br/>
+                <span class="middle"><span class="llbl"><b>Scheduling weights $W_k$:</b></span><br/>
+                <span class="middle"><span class="rlbl">Priority</span><span class="llbl">$W_p \times p_i/p_{\rm max}$</span><input type="text" id="w_priority" class="inpshort" /></span></br>
+                <span class="middle"><span class="rlbl">Urgency</span><span class="llbl">$W_u \times 1/(t_i^{\rm max}-\tau+1)$</span><input type="text" id="w_urgency" class="inpshort" /></span><br/>
+                <span class="middle"><span class="rlbl">Altitude</span><span class="llbl">$W_a \times \sin a_i(\tau)$</span><input type="text" id="w_altitude" class="inpshort" /></span><br/>
+                <span class="middle"><span class="rlbl">Slewing</span><span class="llbl">$W_s \times (1-\Delta\theta_{i,j}/\pi)$</span><input type="text" id="w_slewing" class="inpshort" /></span><br/>
                 <br/>
                 <h2 class="h2-instr">Display settings</h2><br/>
                 <span class="middle"><label for="opt_show_lastobstime"><input type="checkbox" name="opt_show_lastobstime" id="opt_show_lastobstime" /> Mark last possible starting time</label></span><br/>

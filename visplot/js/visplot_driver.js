@@ -976,6 +976,10 @@ Driver.prototype.EvtClick_Config = function () {
         $("#def_maxam").val(Driver.defaultAM);
         $("#def_obstime").val(Driver.defaultObstime);
         $("#def_instrument").val(Driver.defaultOBInfo);
+        $("#w_priority").val(Driver.w_priority);
+        $("#w_urgency").val(Driver.w_urgency);
+        $("#w_altitude").val(Driver.w_altitude);
+        $("#w_slewing").val(Driver.w_slewing);
         for (let k in Driver.FillColors) {
             $(`#def_col_${k.replace("-", "_")}`).val(Driver.FillColors[k]);
             $(`#def_tcol_${k.replace("-", "_")}`).val(Driver.TextColors[k]);
@@ -1005,7 +1009,7 @@ Driver.prototype.CallbackUpdateDefaults_postTelUpdate = function (resetTel) {
                 Driver.defaultEpoch = re;
                 helper.LogSuccess(`Default <i>Epoch</i> set to <i>${re}</i>.`);
             } else {
-                helper.LogError("Default <i>Epoch</i> was not updated since the input was invalid (must be 1950 or 2000).");
+                helper.LogError(`Default <i>Epoch</i> was not updated since the input <i>${re}</i> is invalid (must be 1950 or 2000).`);
             }
         }
         re = $("#def_project").val().trim();
@@ -1014,7 +1018,7 @@ Driver.prototype.CallbackUpdateDefaults_postTelUpdate = function (resetTel) {
             const form = valid[0];
             const reok = valid[2];
             if (!reok) {
-                helper.LogError(`Default <i>Proposal ID</i> was not updated since the input was invalid (must have the form ${form}).`);
+                helper.LogError(`Default <i>Proposal ID</i> was not updated since the input <i>${re}</i> is invalid (must have the form ${form}).`);
             } else {
                 Driver.defaultProject = re;
                 helper.LogSuccess(`Default <i>Proposal ID</i> set to <i>${re}</i>.`);
@@ -1033,13 +1037,13 @@ Driver.prototype.CallbackUpdateDefaults_postTelUpdate = function (resetTel) {
                 Driver.defaultType = re;
                 helper.LogSuccess(`Default <i>Observation type</i> set to <i>${re}</i>.`);
             } else {
-                helper.LogError("Default <i>Observation type</i> was not updated since the input was invalid (must be one of the following: <i>Monitor</i>, <i>ToO</i>, <i>SoftToO</i>, <i>Payback</i>, <i>Fast-Track</i>, <i>Service</i>, <i>CATService</i>, <i>Visitor</i>, <i>Staff</i>)");
+                helper.LogError(`Default <i>Observation type</i> was not updated since the input <i>${re}</i> is invalid (must be one of the following: <i>Monitor</i>, <i>ToO</i>, <i>SoftToO</i>, <i>Payback</i>, <i>Fast-Track</i>, <i>Service</i>, <i>CATService</i>, <i>Visitor</i>, <i>Staff</i>)`);
             }
         }
         re = $("#def_maxam").val().trim();
         if (re !== Driver.defaultAM) {
             if (helper.notFloat(re)) {
-                helper.LogError("Default <i>Maximum airmass</i> was not updated since the input was invalid (must be a float).");
+                helper.LogError(`Default <i>Maximum airmass</i> was not updated since the input <i>${re}</i> is invalid (must be a float).`);
             } else {
                 Driver.defaultAM = re;
                 helper.LogSuccess(`Default <i>Maximum airmass</i> set to <i>${re}</i>.`);
@@ -1048,7 +1052,7 @@ Driver.prototype.CallbackUpdateDefaults_postTelUpdate = function (resetTel) {
         re = $("#def_obstime").val().trim();
         if (re !== Driver.defaultObstime) {
             if (helper.notInt(re)) {
-                helper.LogError("Default <i>Observing time</i> was not updated since the input was invalid (must be an integer).");
+                helper.LogError(`Default <i>Observing time</i> was not updated since the input <i>${re}</i> is invalid (must be an integer).`);
             } else {
                 Driver.defaultObstime = re;
                 helper.LogSuccess(`Default <i>Observing time</i> set to <i>${re}</i>.`);
@@ -1058,6 +1062,42 @@ Driver.prototype.CallbackUpdateDefaults_postTelUpdate = function (resetTel) {
         if (re !== Driver.defaultOBInfo) {
             Driver.defaultOBInfo = re;
             helper.LogSuccess(`Default <i>Instrument</i> set to <i>${re}</i>.`);
+        }
+        re = $("#w_priority").val().trim();
+        if (re !== Driver.w_priority) {
+            if (helper.notFloat(re)) {
+                helper.LogError(`<i>Priority</i> weight was not updated since the input <i>${re}</i> is invalid (must be a float).`);
+            } else {
+                Driver.w_priority = re;
+                helper.LogSuccess(`<i>Priority</i> weight set to <i>${re}</i>.`)
+            }
+        }
+        re = $("#w_urgency").val().trim();
+        if (re !== Driver.w_urgency) {
+            if (helper.notFloat(re)) {
+                helper.LogError(`<i>Urgency</i> weight was not updated since the input <i>${re}</i> is invalid (must be a float).`);
+            } else {
+                Driver.w_urgency = re;
+                helper.LogSuccess(`<i>Urgency</i> weight set to <i>${re}</i>.`)
+            }
+        }
+        re = $("#w_altitude").val().trim();
+        if (re !== Driver.w_altitude) {
+            if (helper.notFloat(re)) {
+                helper.LogError(`<i>Altitude</i> weight was not updated since the input <i>${re}</i> is invalid (must be a float).`);
+            } else {
+                Driver.w_altitude = re;
+                helper.LogSuccess(`<i>Altitude</i> weight set to <i>${re}</i>.`)
+            }
+        }
+        re = $("#w_slewing").val().trim();
+        if (re !== Driver.w_slewing) {
+            if (helper.notFloat(re)) {
+                helper.LogError(`<i>Slewing</i> weight was not updated since the input <i>${re}</i> is invalid (must be a float).`);
+            } else {
+                Driver.w_slewing = re;
+                helper.LogSuccess(`<i>Slewing</i> weight set to <i>${re}</i>.`)
+            }
         }
         for (k in Driver.FillColors) {
             re = $(`#def_col_${k.replace("-", "_")}`).val().trim();
@@ -1100,6 +1140,10 @@ Driver.prototype.CallbackUpdateDefaults_postTelUpdate = function (resetTel) {
         localStorage.setItem("defaultAM", Driver.defaultAM);
         localStorage.setItem("defaultObstime", Driver.defaultObstime);
         localStorage.setItem("defaultOBInfo", Driver.defaultOBInfo);
+        localStorage.setItem("w_priority", Driver.w_priority);
+        localStorage.setItem("w_urgency", Driver.w_urgency);
+        localStorage.setItem("w_altitude", Driver.w_altitude);
+        localStorage.setItem("w_slewing", Driver.w_slewing);
         localStorage.setItem("opt_reschedule_later", $("#opt_reschedule_later").is(":checked"));
         localStorage.setItem("opt_reorder_targets", $("#opt_reorder_targets").is(":checked"));
         localStorage.setItem("opt_allow_over_axis", $("#opt_allow_over_axis").is(":checked"));
@@ -1524,6 +1568,34 @@ Object.defineProperties(Driver, {
             return this._defaultSkyPA || "0";
         }, set: function (val) {
             this._defaultSkyPA = val;
+        }
+    },
+    "w_priority": {
+        get: function() {
+            return this._w_priority || 2;
+        }, set: function(val) {
+            this._w_priority = val;
+        }
+    },
+    "w_urgency": {
+        get: function() {
+            return this._w_urgency || 1;
+        }, set: function(val) {
+            this._w_urgency = val;
+        }
+    },
+    "w_altitude": {
+        get: function() {
+            return this._w_altitude || 1;
+        }, set: function(val) {
+            this._w_altitude = val;
+        }
+    },
+    "w_slewing": {
+        get: function() {
+            return this._w_slewing || 1;
+        }, set: function(val) {
+            this._w_slewing = val;
         }
     },
     "instruments": {

@@ -501,6 +501,12 @@ p.pp2 {
 .marker-cluster-small div {
     background-color: rgba(50, 141, 221, 0.6);
 }
+.marker-cluster-medium {
+    background-color: rgba(140, 190, 230, 1);
+}
+.marker-cluster-medium div {
+    background-color: rgba(50, 141, 221, 0.6);
+}
 .marker-cluster div {
     font-size: 15px;
 }

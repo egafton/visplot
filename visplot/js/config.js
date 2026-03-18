@@ -965,3 +965,19 @@ config["Armagh Observatory"] = {
     altitude: 61,
     timezoneName: "Europe/Belfast"
 }
+config["ARC"] = {
+    site: "Apache Point Observatory",
+    name: "ARC 3.5m",
+    latitude: 32.78038,
+    longitude: -105.82040,
+    altitude: 2788,
+    timezoneName: "America/Denver"
+}
+config["SDSS"] = {
+    site: "Apache Point Observatory",
+    name: "SDSS 2.5m",
+    latitude: 32.77959,
+    longitude: -105.82037,
+    altitude: 2788,
+    timezoneName: "America/Denver"
+}

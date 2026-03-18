@@ -713,10 +713,10 @@ TargetList.prototype.display_scheduleStatistics = function () {
 
 TargetList.prototype.schedule_withWeights = function (startingAt) {
     let curidx = startingAt;
-    const wp = 2;
-    const wu = 1;
-    const wa = 1;
-    const ws = 1;
+    const wp = Driver.w_priority;
+    const wu = Driver.w_urgency;
+    const wa = Driver.w_altitude;
+    const ws = Driver.w_slewing;
     const maxpriority = Math.max.apply(Math, this.Targets.map(function (o) { return o.Priority; }));
     let lastra = null, lastdec = null;
     // Start scheduling
