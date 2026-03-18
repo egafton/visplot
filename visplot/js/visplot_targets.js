@@ -1889,8 +1889,8 @@ Target.prototype.Update = function (obj) {
         this.RestrictionMaxUTC = driver.night.MNauTwilight;
     } else {
         isUTC = true;
-        ut1 = Math.max(night.ENauTwilight, UTr[0]);
-        ut2 = Math.min(night.MNauTwilight, UTr[1]);
+        ut1 = Math.max(driver.night.ENauTwilight, UTr[0]);
+        ut2 = Math.min(driver.night.MNauTwilight, UTr[1]);
         this.MaxAirmass = 9.9;
         this.RestrictionMinUTC = ut1;
         this.RestrictionMaxUTC = ut2;
