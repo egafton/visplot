@@ -442,7 +442,7 @@ config["Subaru"] = {
  */
 config["HJST"] = {
     // Name of the observatory site
-    site: "McDonald Observatory",
+    site: "Mt. Locke, McDonald Observatory",
 
     // Full name of the telescope
     name: "Harlan J. Smith Telescope 2.7m",
@@ -530,7 +530,7 @@ config["HJST"] = {
  */
 config["OST"] = {
     // Name of the observatory site
-    site: "McDonald Observatory",
+    site: "Mt. Locke, McDonald Observatory",
 
     // Full name of the telescope
     name: "Otto Struve Telescope 2.1m",
@@ -577,7 +577,7 @@ config["OST"] = {
  */
 config["HET"] = {
     // Name of the observatory site
-    site: "McDonald Observatory",
+    site: "Mt. Fowlkes, McDonald Observatory",
 
     // Full name of the telescope
     name: "Hobby-Eberly Telescope 10m",
@@ -904,6 +904,22 @@ config["LSST"] = {
     altitude: 2672,
     timezoneName: "America/Santiago"
 }
+config["SOAR"] = {
+    site: "Cerro Pachón",
+    name: "SOAR Telescope 4.1m",
+    latitude: -30.23790,
+    longitude: -70.73353,
+    altitude: 2738,
+    timezoneName: "America/Santiago"
+}
+config["Blanco 4m"] = {
+    site: "Cerro Tololo",
+    name: "Victor M. Blanco Telescope 4m",
+    latitude: -30.16974,
+    longitude: -70.80649,
+    altitude: 2207,
+    timezoneName: "America/Santiago"
+}
 config["Hooker Telescope"] = {
     site: "Mt. Wilson",
     name: "Hooker Telescope 100in",
@@ -980,4 +996,28 @@ config["SDSS"] = {
     longitude: -105.82037,
     altitude: 2788,
     timezoneName: "America/Denver"
+}
+config["Seimei Telescope"] = {
+    site: "Okayama Observatory",
+    name: "Seimei Telescope 3.8m",
+    latitude: 34.57687,
+    longitude: 133.59669,
+    altitude: 372,
+    timezoneName: "Asia/Tokyo"
+}
+config["Mayall Telescope"] = {
+    site: "Kitt Peak",
+    name: "Mayall Telescope 4m",
+    latitude: 31.96418,
+    longitude: -111.59998,
+    altitude: 2120,
+    timezoneName: "America/Phoenix"
+}
+config["OSN"] = {
+    site: "Sierra Nevada Observatory",
+    name: "OSN 1.5m",
+    latitude: 37.06289,
+    longitude: -3.38607,
+    altitude: 2896,
+    timezoneName: "Europe/Madrid"
 }

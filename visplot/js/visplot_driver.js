@@ -148,7 +148,7 @@ Driver.prototype.SetupMap = function() {
         var markers = L.markerClusterGroup({maxClusterRadius: 30});
         for (const key in config) {
             markers.addLayer(L.marker({lng: config[key].longitude, lat: config[key].latitude}, {alt: key})
-                            .bindTooltip(config[key].name)
+                            .bindTooltip(config[key].name + (config[key].site ? `, ${config[key].site}` : ""))
                             .on("click", function(e) {
                                 $("#def_telescope").val(key).trigger("change");
                             })
