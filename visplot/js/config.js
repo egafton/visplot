@@ -1021,3 +1021,58 @@ config["OSN"] = {
     altitude: 2896,
     timezoneName: "Europe/Madrid"
 }
+config["VISTA"] = {
+    site: "Cerro Paranal",
+    name: "VISTA 4.1m",
+    latitude: -24.61590,
+    longitude: -70.39749,
+    altitude: 2518,
+    timezoneName: "America/Santiago"
+}
+config["Wise Observatory 1m"] = {
+    name: "Wise Observatory 1m",
+    latitude: 30.59737,
+    longitude: 34.76217,
+    altitude: 875,
+    timezoneName: "Asia/Jerusalem"
+}
+config["TRAPPIST-North"] = {
+    site: "Oukaïmeden Observatory",
+    name: "TRAPPIST-North 60cm",
+    latitude: 31.20606,
+    longitude: -7.86653,
+    altitude: 2750,
+    timezoneName: "Africa/Casablanca"
+}
+config["TRAPPIST-South"] = {
+    site: "La Silla Observatory",
+    name: "TRAPPIST-South 60cm",
+    latitude: -29.25455,
+    longitude: -70.73940,
+    altitude: 2313,
+    timezoneName: "America/Santiago"
+}
+config["JS 2.15m"] = {
+    site: "Leoncito Astronomical Complex",
+    name: "Jorge Sahade Telescope 2.15m",
+    latitude: -31.79865,
+    longitude: -69.29568,
+    altitude: 2483,
+    timezoneName: "America/Argentina/San_Juan"
+}
+config["AlbaNova"] = {
+    site: "Stockholms universitet",
+    name: "AlbaNova Telescope 80cm",
+    latitude: 59.35344,
+    longitude: 18.05784,
+    altitude: 36,
+    timezoneName: "Europe/Stockholm"
+}
+config["MOA Telescope 1.8m"] = {
+    site: "Mt. John Observatory",
+    name: "MOA Telescope 1.8m",
+    latitude: -43.98520,
+    longitude: 170.46408,
+    altitude: 1029,
+    timezoneName: "Pacific/Auckland"
+}
