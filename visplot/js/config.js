@@ -23,6 +23,9 @@ config["NOT"] = {
     // Full name of the telescope
     name: "Nordic Optical Telescope 2.5m",
 
+    // Country
+    country: "Spain",
+
     // Latitude in degrees, +North
     latitude: 28.75723,
 
@@ -90,6 +93,9 @@ config["WHT"] = {
     // Full name of the telescope
     name: "William Herschel Telescope 4.2m",
 
+    // Country
+    country: "Spain",
+
     // Latitude in degrees, +North
     latitude: 28.76062,
 
@@ -151,6 +157,9 @@ config["INT"] = {
 
     // Full name of the telescope
     name: "Isaac Newton Telescope 2.5m",
+
+    // Country
+    country: "Spain",
 
     // Latitude in degrees, +North
     latitude: 28.76209,
@@ -217,6 +226,9 @@ config["CSS"] = {
     // Full name of the telescope
     name: "Catalina Sky Survey 1.5m",
 
+    // Country
+    country: "United States",
+
     // Latitude in degrees, +North
     latitude: 32.442754,
 
@@ -255,6 +267,9 @@ config["WIRO"] = {
     // Full name of the telescope
     name: "Wyoming Infrared Observatory 2.3m",
 
+    // Country
+    country: "United States",
+
     // Latitude in degrees, +North
     latitude: 41.097096,
 
@@ -292,6 +307,9 @@ config["CAHA"] = {
 
     // Full name of the telescope
     name: "CAHA 2.2m",
+
+    // Country
+    country: "Spain",
 
     // Latitude in degrees, +North
     latitude: 37.223151,
@@ -345,6 +363,9 @@ config["OAJ"] = {
     // Full name of the telescope
     name: "OAJ 2.5m",
 
+    // Country
+    country: "Spain",
+
     // Latitude in degrees, +North
     latitude: 40.042018,
 
@@ -382,6 +403,9 @@ config["Subaru"] = {
 
     // Full name of the Telescope
     name: "Subaru Telescope 8.3m",
+
+    // Country
+    country: "United States",
 
     // Latitude in degrees, +North
     latitude: 19.8256,
@@ -446,6 +470,9 @@ config["HJST"] = {
 
     // Full name of the telescope
     name: "Harlan J. Smith Telescope 2.7m",
+
+    // Country
+    country: "United States",
 
     // Latitude in degrees, +North
     latitude: 30.671743,
@@ -535,6 +562,9 @@ config["OST"] = {
     // Full name of the telescope
     name: "Otto Struve Telescope 2.1m",
 
+    // Country
+    country: "United States",
+
     // Latitude in degrees, +North
     latitude: 30.67150,
 
@@ -582,6 +612,9 @@ config["HET"] = {
     // Full name of the telescope
     name: "Hobby-Eberly Telescope 10m",
 
+    // Country
+    country: "United States",
+
     // Latitude in degrees, +North
     latitude: 30.681444,
 
@@ -626,6 +659,9 @@ config["CDK"] = {
     // Full name of the telescope
     name: "Kennon Observatory CDK 17in",
 
+    // Country
+    country: "United States",
+
     // Latitude in degrees, +North
     latitude: 34.36425,
 
@@ -663,6 +699,9 @@ config["DSO"] = {
 
     // Full name of the telescope
     name: "Dark Sky Observatory 32in",
+
+    // Country
+    country: "United States",
 
     // Latitude in degrees, +North
     latitude: 36.25292,
@@ -702,6 +741,9 @@ config["CTJO"] = {
     // Full name of the telescope
     name: "Clarence T. Jones Observatory 20.5in",
 
+    // Country
+    country: "United States",
+
     // Latitude in degrees, +North
     latitude: 35.01744,
 
@@ -739,6 +781,9 @@ config["VLT"] = {
 
     // Full name of the telescope
     name: "Very Large Telescope 4×8.2m",
+
+    // Country
+    country: "Chile",
 
     // Latitude in degrees, +North
     latitude: -24.6275,
@@ -780,6 +825,7 @@ config["VLT"] = {
 config["TNG"] = {
     site: "Roque de Los Muchachos",
     name: "Telescopio Nazionale Galileo 3.6m",
+    country: "Spain",
     latitude: 28.75411,
     longitude: -17.88910,
     altitude: 2359,
@@ -788,6 +834,7 @@ config["TNG"] = {
 config["Mercator Telescope"] = {
     site: "Roque de Los Muchachos",
     name: "Mercator Telescope 1.2m",
+    country: "Spain",
     latitude: 28.76240,
     longitude: -17.87849,
     altitude: 2331,
@@ -796,6 +843,7 @@ config["Mercator Telescope"] = {
 config["GTC"] = {
     site: "Roque de Los Muchachos",
     name: "Gran Telescopio Canarias 10.4m",
+    country: "Spain",
     latitude: 28.75666,
     longitude: -17.89200,
     altitude: 2267,
@@ -804,6 +852,7 @@ config["GTC"] = {
 config["LBT"] = {
     site: "Mt. Graham",
     name: "Large Binocular Telescope 2×8.4m",
+    country: "United States",
     latitude: 32.70130,
     longitude: -109.88918,
     altitude: 3221,
@@ -812,6 +861,7 @@ config["LBT"] = {
 config["MMT"] = {
     site: "Mt. Hopkins",
     name: "MMT Observatory 6.5m",
+    country: "United States",
     latitude: 31.68896,
     longitude: -110.88516,
     altitude: 2616,
@@ -820,6 +870,7 @@ config["MMT"] = {
 config["Hale Telescope"] = {
     site: "Palomar Observatory",
     name: "Hale Telescope 200in",
+    country: "United States",
     latitude: 33.35629,
     longitude: -116.86490,
     altitude: 1713,
@@ -828,6 +879,7 @@ config["Hale Telescope"] = {
 config["Magellan Telescopes"] = {
     site: "Las Campanas Observatory",
     name: "Magellan Telescopes 2×6.5m",
+    country: "Chile",
     latitude: -29.01421,
     longitude: -70.69243,
     altitude: 2392,
@@ -835,6 +887,7 @@ config["Magellan Telescopes"] = {
 }
 config["Haleakala Observatory"] = {
     name: "Haleakala Observatory",
+    country: "United States",
     latitude: 20.70799,
     longitude: -156.25680,
     altitude: 3052,
@@ -843,6 +896,7 @@ config["Haleakala Observatory"] = {
 config["MPG/ESO"] = {
     site: "La Silla Observatory",
     name: "MPG/ESO Telescope 2.2m",
+    country: "Chile",
     latitude: -29.25784,
     longitude: -70.73660,
     altitude: 2375,
@@ -851,6 +905,7 @@ config["MPG/ESO"] = {
 config["ESO"] = {
     site: "La Silla Observatory",
     name: "ESO Telescope 3.6m",
+    country: "Chile",
     latitude: -29.26100,
     longitude: -70.73160,
     altitude: 2400,
@@ -859,6 +914,7 @@ config["ESO"] = {
 config["NTT"] = {
     site: "La Silla Observatory",
     name: "New Technology Telescope 3.58m",
+    country: "Chile",
     latitude: -29.25892,
     longitude: -70.73374,
     altitude: 2375,
@@ -867,6 +923,7 @@ config["NTT"] = {
 config["W. M. Keck Observatory"] = {
     site: "Mauna Kea",
     name: "Keck Telescopes 2×10m",
+    country: "United States",
     latitude: 19.82638,
     longitude: -155.47441,
     altitude: 4145,
@@ -875,6 +932,7 @@ config["W. M. Keck Observatory"] = {
 config["Gemini North"] = {
     site: "Mauna Kea",
     name: "Gemini North 8.1m",
+    country: "United States",
     latitude: 19.82376,
     longitude: -155.46909,
     altitude: 4213,
@@ -883,6 +941,7 @@ config["Gemini North"] = {
 config["Gemini South"] = {
     site: "Cerro Pachón",
     name: "Gemini South 8.1m",
+    country: "Chile",
     latitude: -30.24068,
     longitude: -70.73654,
     altitude: 2722,
@@ -891,6 +950,7 @@ config["Gemini South"] = {
 config["TAO"] = {
     site: "Cerro Chajnantor",
     name: "Tokyo Atacama Observatory 6.5m",
+    country: "Chile",
     latitude: -22.98607,
     longitude: -67.74214,
     altitude: 5640,
@@ -899,6 +959,7 @@ config["TAO"] = {
 config["LSST"] = {
     site: "Cerro Pachón",
     name: "Vera C. Rubin Observatory 8.4m",
+    country: "Chile",
     latitude: -30.24464,
     longitude: -70.74933,
     altitude: 2672,
@@ -907,6 +968,7 @@ config["LSST"] = {
 config["SOAR"] = {
     site: "Cerro Pachón",
     name: "SOAR Telescope 4.1m",
+    country: "Chile",
     latitude: -30.23790,
     longitude: -70.73353,
     altitude: 2738,
@@ -915,6 +977,7 @@ config["SOAR"] = {
 config["Blanco 4m"] = {
     site: "Cerro Tololo",
     name: "Victor M. Blanco Telescope 4m",
+    country: "Chile",
     latitude: -30.16974,
     longitude: -70.80649,
     altitude: 2207,
@@ -923,6 +986,7 @@ config["Blanco 4m"] = {
 config["Hooker Telescope"] = {
     site: "Mt. Wilson",
     name: "Hooker Telescope 100in",
+    country: "United States",
     latitude: 34.22588,
     longitude: -118.05721,
     altitude: 1742,
@@ -931,6 +995,7 @@ config["Hooker Telescope"] = {
 config["Shane Telescope"] = {
     site: "Lick Observatory",
     name: "Shane Telescope 120in",
+    country: "United States",
     latitude: 37.34308,
     longitude: -121.63715,
     altitude: 1283,
@@ -939,6 +1004,7 @@ config["Shane Telescope"] = {
 config["SALT"] = {
     site: "South African Astronomical Observatory",
     name: "Southern African Large Telescope 9.2m",
+    country: "South Africa",
     latitude: -32.37588,
     longitude: 20.81083,
     altitude: 1798,
@@ -947,6 +1013,7 @@ config["SALT"] = {
 config["Carlos Sánchez Telescope"] = {
     site: "Teide Observatory",
     name: "Carlos Sánchez Infrared Telescope 1.52m",
+    country: "Spain",
     latitude: 28.30049,
     longitude: -16.51086,
     altitude: 2390,
@@ -954,6 +1021,7 @@ config["Carlos Sánchez Telescope"] = {
 }
 config["Skinakas Observatory 1.3m"] = {
     name: "Skinakas Observatory 1.3m",
+    country: "Greece",
     latitude: 35.21180,
     longitude: 24.89901,
     altitude: 1750,
@@ -961,6 +1029,7 @@ config["Skinakas Observatory 1.3m"] = {
 }
 config["Tautenburg Observatory 2m"] = {
     name: "Tautenburg Observatory 2m",
+    country: "Germany",
     latitude: 50.98016,
     longitude: 11.71123,
     altitude: 341,
@@ -969,6 +1038,7 @@ config["Tautenburg Observatory 2m"] = {
 config["AAT"] = {
     site: "Siding Spring Observatory",
     name: "Anglo-Australian Telescope 3.9m",
+    country: "Australia",
     latitude: -31.27539,
     longitude: 149.06721,
     altitude: 1164,
@@ -976,6 +1046,7 @@ config["AAT"] = {
 }
 config["Armagh Observatory"] = {
     name: "Armagh Observatory",
+    country: "United Kingdom",
     latitude: 54.35211,
     longitude: -6.64855,
     altitude: 61,
@@ -983,6 +1054,7 @@ config["Armagh Observatory"] = {
 }
 config["ARC"] = {
     site: "Apache Point Observatory",
+    country: "United States",
     name: "ARC 3.5m",
     latitude: 32.78038,
     longitude: -105.82040,
@@ -991,6 +1063,7 @@ config["ARC"] = {
 }
 config["SDSS"] = {
     site: "Apache Point Observatory",
+    country: "United States",
     name: "SDSS 2.5m",
     latitude: 32.77959,
     longitude: -105.82037,
@@ -1000,6 +1073,7 @@ config["SDSS"] = {
 config["Seimei Telescope"] = {
     site: "Okayama Observatory",
     name: "Seimei Telescope 3.8m",
+    country: "Japan",
     latitude: 34.57687,
     longitude: 133.59669,
     altitude: 372,
@@ -1008,6 +1082,7 @@ config["Seimei Telescope"] = {
 config["Mayall Telescope"] = {
     site: "Kitt Peak",
     name: "Mayall Telescope 4m",
+    country: "United States",
     latitude: 31.96418,
     longitude: -111.59998,
     altitude: 2120,
@@ -1016,6 +1091,7 @@ config["Mayall Telescope"] = {
 config["OSN"] = {
     site: "Sierra Nevada Observatory",
     name: "OSN 1.5m",
+    country: "Spain",
     latitude: 37.06289,
     longitude: -3.38607,
     altitude: 2896,
@@ -1024,6 +1100,7 @@ config["OSN"] = {
 config["VISTA"] = {
     site: "Cerro Paranal",
     name: "VISTA 4.1m",
+    country: "Chile",
     latitude: -24.61590,
     longitude: -70.39749,
     altitude: 2518,
@@ -1031,6 +1108,7 @@ config["VISTA"] = {
 }
 config["Wise Observatory 1m"] = {
     name: "Wise Observatory 1m",
+    country: "Israel",
     latitude: 30.59737,
     longitude: 34.76217,
     altitude: 875,
@@ -1039,6 +1117,7 @@ config["Wise Observatory 1m"] = {
 config["TRAPPIST-North"] = {
     site: "Oukaïmeden Observatory",
     name: "TRAPPIST-North 60cm",
+    country: "Morocco",
     latitude: 31.20606,
     longitude: -7.86653,
     altitude: 2750,
@@ -1047,6 +1126,7 @@ config["TRAPPIST-North"] = {
 config["TRAPPIST-South"] = {
     site: "La Silla Observatory",
     name: "TRAPPIST-South 60cm",
+    country: "Chile",
     latitude: -29.25455,
     longitude: -70.73940,
     altitude: 2313,
@@ -1055,6 +1135,7 @@ config["TRAPPIST-South"] = {
 config["JS 2.15m"] = {
     site: "Leoncito Astronomical Complex",
     name: "Jorge Sahade Telescope 2.15m",
+    country: "Argentina",
     latitude: -31.79865,
     longitude: -69.29568,
     altitude: 2483,
@@ -1063,6 +1144,7 @@ config["JS 2.15m"] = {
 config["AlbaNova"] = {
     site: "Stockholms universitet",
     name: "AlbaNova Telescope 80cm",
+    country: "Sweden",
     latitude: 59.35344,
     longitude: 18.05784,
     altitude: 36,
@@ -1071,8 +1153,25 @@ config["AlbaNova"] = {
 config["MOA Telescope 1.8m"] = {
     site: "Mt. John Observatory",
     name: "MOA Telescope 1.8m",
+    country: "New Zealand",
     latitude: -43.98520,
     longitude: 170.46408,
     altitude: 1029,
     timezoneName: "Pacific/Auckland"
+}
+config["Observatório do Valongo 0.42m"] = {
+    name: "Observatório do Valongo 0.42m",
+    country: "Brazil",
+    latitude: -22.89849,
+    longitude: -43.18669,
+    altitude: 23,
+    timezoneName: "America/Sao_Paulo"
+}
+config["Observatorio Astronómico Nacional 2.1m"] = {
+    name: "Observatorio Astronómico Nacional 2.1m",
+    country: "Mexico",
+    latitude: 31.04412,
+    longitude: -115.46368,
+    altitude: 2830,
+    timezoneName: "America/Tijuana"
 }

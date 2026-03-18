@@ -139,7 +139,7 @@ Driver.prototype.SetupMap = function() {
         }).addTo(this.map);
 
         function refreshMap() {
-            driver.map.setView([30, 0], 0);
+            driver.map.setView([30, 5], 0);
         }
 
         refreshMap();
@@ -1624,8 +1624,8 @@ Object.defineProperties(Driver, {
     },
     "BlankFieldsNorth": {
         get: function () {
-            return `# Northern blanks
-                    Blank00+06 00:06:57.17 +06:06:22.2 
+            return "# Northern blank fields\n" +
+                   `Blank00+06 00:06:57.17 +06:06:22.2 
                     Blank01+06 01:08:41.88 +06:23:43.5 
                     Blank01+14 01:35:06.00 +14:33:23.4 
                     Blank02+05 02:01:10.30 +05:06:56.2 
@@ -1658,8 +1658,8 @@ Object.defineProperties(Driver, {
     },
     "BlankFieldsSouth": {
         get: function () {
-            return `# Southern blanks
-                    Blank00-16 00:06:00.55 -16:15:04.3 
+            return "# Southern blank fields\n" +
+                   `Blank00-16 00:06:00.55 -16:15:04.3 
                     Blank00-11 00:59:31.22 -11:20:16.4 
                     Blank01-32 01:39:26.57 -32:50:56.8 
                     Blank02-13 02:33:30.00 -13:25:28.2 
@@ -1688,7 +1688,7 @@ Object.defineProperties(Driver, {
     },
     "StandardsNorth": {
         get: function () {
-            return `# Northern standards
+            return `# Northern spectrophotometric standards
                     HD19445     03:08:25.6/-0.22   +26:19:51/-0.83
                     GD71        05:52:27.51  +15:53:16.6
                     Hiltner600  06:45:13.37  +02:08:14.7
@@ -1709,7 +1709,7 @@ Object.defineProperties(Driver, {
     },
     "StandardsSouth": {
         get: function () {
-            return `# Southern standards
+            return `# Southern spectrophotometric standards
                     G158-100     00 33 54.32  -12 07 57.1  
                     CD-34d241    00 41 46.92  -33 39 08.5  
                     BPM16274     00 50 03.18  -52 08 17.4  

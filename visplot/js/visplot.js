@@ -60,7 +60,7 @@ $(document).ready(function () {
     Object.entries(config)
         .sort(([, a], [, b]) => a.name.localeCompare(b.name))
         .forEach(([key, value]) => {
-            $("#def_telescope").append(new Option(value.name, key));
+            $("#def_telescope").append(new Option(`${value.name} (${value.country})`, key));
         });
 
     /*
