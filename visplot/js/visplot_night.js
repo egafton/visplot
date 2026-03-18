@@ -190,6 +190,9 @@ Night.prototype.setEphemerides = function (obj) {
     if (this.tSunrise[4] > 55) {
         stopUTC += 1;
     }
+    if (stopUTC > 24) {
+        stopUTC -= 24;
+    }
     utczero = sla.djcl(this.Sunset);
     let djutc = sla.cldj(utczero.iy, utczero.im, utczero.id) + sla.dtf2d(firstUTC%24, 0, 0) + Math.floor(firstUTC/24);
     this.UTCtimes = [];
@@ -197,9 +200,6 @@ Night.prototype.setEphemerides = function (obj) {
     this.LocalTimelabels = [];
     this.LSTlabels = [];
     while (firstUTC != stopUTC) {
-        if (firstUTC == 25) {
-            firstUTC = 1;
-        }
         this.UTCtimes.push(djutc);
         this.UTClabels.push(firstUTC.toString());
         if (Driver.obs_timezone != 0) {
@@ -209,6 +209,9 @@ Night.prototype.setEphemerides = function (obj) {
         stl = sla.dr2tf(1, sla.dranrm(sla.gmst(djutc) + Driver.obs_lon_rad) + this.eqeqx);
         this.LSTlabels.push(`${stl.ihmsf[0]}:${stl.ihmsf[1] < 10 ? "0" : ""}${stl.ihmsf[1].toFixed(0)}`);
         firstUTC += 1;
+        if (firstUTC > 24) {
+            firstUTC -= 24;
+        }
         djutc += 1/24;
     }
     this.MoonIllMin = Math.max(Math.floor(Math.min(this.MoonIllStart, this.MoonIllEnd)), 0);

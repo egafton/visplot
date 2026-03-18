@@ -1175,3 +1175,28 @@ config["Observatorio Astronómico Nacional 2.1m"] = {
     altitude: 2830,
     timezoneName: "America/Tijuana"
 }
+config["Byurakan Observatory 2.6m"] = {
+    name: "Byurakan Observatory 2.6m",
+    country: "Armenia",
+    latitude: 40.33029,
+    longitude: 44.27338,
+    altitude: 1406,
+    timezoneName: "Asia/Yerevan"
+}
+config["Lulin Observatory 1m"] = {
+    name: "Lulin Observatory 1m",
+    country: "Taiwan",
+    latitude: 23.46937,
+    longitude: 120.87264,
+    altitude: 2862,
+    timezoneName: "Asia/Taipei"
+}
+config["AZT-20"] = {
+    site: "Assy-Turgen Observatory",
+    name: "AZT-20 1.5m",
+    country: "Kazakhstan",
+    latitude: 43.22485,
+    longitude: 77.87101,
+    altitude: 2750,
+    timezoneName: "Asia/Almaty"
+}

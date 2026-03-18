@@ -307,7 +307,11 @@ Driver.prototype.BtnEvt_SetDate = function () {
         const zone = moment.tz.zone(config[Driver.telescopeName].timezoneName);
         const tstamp = new Date(year, month - 1, day, 20);
         config[Driver.telescopeName].timezone = (-zone.utcOffset(tstamp) / 60);
-        config[Driver.telescopeName].timezone_abbr = zone.abbr(tstamp);
+        let abbr = zone.abbr(tstamp);
+        if (abbr[0] == "+" || abbr[0] == "-") {
+            abbr = `UTC${abbr}`;
+        }
+        config[Driver.telescopeName].timezone_abbr = abbr;
         helper.LogEntry(`Initializing date to ${year}-${helper.padTwoDigits(month)}-${helper.padTwoDigits(day)}; time zone set to ${config[Driver.telescopeName].timezoneName} (${Driver.obs_timezone_abbr}), which is UTC${helper.timezone(Driver.obs_timezone)}`);
         this.night = new Night(year, month, day);
         driver.Callback_SetDate();
@@ -671,7 +675,11 @@ Driver.prototype.InitializeDate = function () {
             const zone = moment.tz.zone(timezoneName); // time zone at the telescope
             const localTimeAtTel = moment.tz(timezoneName); // local time at the telescope
             config[Driver.telescopeName].timezone = (-zone.utcOffset(localTimeAtTel) / 60); // e.g., -11
-            config[Driver.telescopeName].timezone_abbr = zone.abbr(localTimeAtTel); // e.g., WEST
+            let abbr = zone.abbr(localTimeAtTel);
+            if (abbr[0] == "+" || abbr[0] == "-") {
+                abbr = `UTC${abbr}`;
+            }
+            config[Driver.telescopeName].timezone_abbr = abbr; // e.g., WEST
             helper.LogEntry(`Current time at the telescope is ${localTimeAtTel.format()}, time zone set to ${timezoneName} (${Driver.obs_timezone_abbr}), which is UTC${helper.timezone(Driver.obs_timezone)}`);
             let thedate;
             const localHourAtTel = localTimeAtTel.hour();
