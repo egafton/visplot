@@ -977,18 +977,18 @@ TargetList.prototype.prepareScheduleForUpdate = function () {
         return "";
     }
 
-    if ($("#opt_reschedule_later").is(":checked")) {
-        let now = new Date();
-        helper.LogEntry("Current time: " + now.toUTCString());
-        if (now > driver.night.DateSunset && now < driver.night.DateSunrise) {
+    let now = new Date();
+    helper.LogEntry("Current time: " + now.toUTCString());
+    if (now > driver.night.DateSunset && now < driver.night.DateSunrise) {
+        if ($("#opt_reschedule_later").is(":checked")) {
             helper.LogWarning("Attention: the night has already started, so we will only reschedule after the current time. The previously observed objects will NOT be affected, but objects scheduled in the past that have not yet been observed may be rescheduled in the future, if there is enough free time.");
             this.StartingAt = driver.night.Sunset + (now - driver.night.DateSunset) / 1000 / 86400;
         } else {
             helper.LogWarning("We are not currently in the middle of the observing night. Scheduling as usual...");
-            return false;
+            this.StartingAt = driver.night.Sunset;
         }
     } else {
-        this.StartingAt = driver.night.Sunset;
+        return false;
     }
 
     let fnn = function (idx) {
