@@ -619,8 +619,12 @@ helper.LogSuccess = function (msg) {
  * 
  */
 helper.LogException = function (e) {
-    console.error(e);
-    helper.LogError(`${e.message} -- ${e.stack.split("\n")[0]}`);
+    if (!e) return;
+    if (e.hasOwnProperty("message")) {
+        helper.LogError(`${e.message} -- ${e.stack.split("\n")[0]}`);
+    } else {
+        helper.LogError(`${e}`);
+    }
 };
 
 /**
@@ -795,7 +799,7 @@ helper.ExtractHARange = function (str, ra) {
  *
  */
 helper.ExtractUTRange = function (str, ra = null) {
-    if (!str.startsWith("UT[") && !str.startsWith("UTC[")) {
+    if (!str.startsWith("UTC[")) {
         if (str.startsWith("LST[")) {
             return helper.ExtractLSTRange(str);
         }
@@ -891,9 +895,7 @@ helper.validColour = function(stringToTest) {
  */
 helper.offlineStrings = [
     "Offline",
-    "BadWolf",
-    "#Offline",
-    "#BadWolf"
+    "BadWolf"
 ];
 
 /**

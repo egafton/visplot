@@ -406,7 +406,7 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
                 <span class="sh0">Alternative syntax for non-schedulable time</span>
                 The software can avoid scheduling observations in a given interval (e.g., when the telescope is offline due to bad weather or technical problems, or for the visitor's half of a shared night, etc.).<br/>
                 The syntax to add an offline period is:<br/>
-                • <code>Offline UT[20:30-22:30]</code><br/>
+                • <code>Offline UTC[20:30-22:30]</code><br/>
                 • <code>Offline LST[23-3.5]</code><br/>
                 In this example, the system will not schedule any observations in the given UTC or LST range. One can define as many such intervals as desired.<br/>
                 <br/>

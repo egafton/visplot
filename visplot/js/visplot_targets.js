@@ -1109,15 +1109,20 @@ TargetList.prototype.processTargetListAfterSIMBAD = function(lines) {
     this.BadWolfStart = [];
     this.BadWolfEnd = [];
     for (let i = 0; i < lines.length; i += 1) {
-        if (lines[i].trim() === "") {
+        const line = lines[i].trim();
+        if (line === "") {
             this.FormattedLines.push(null);
+            continue;
+        }
+        if (line[0] === "#") {
+            this.FormattedLines.push([line]);
             continue;
         }
         const words = this.extractLineInfo(i + 1, lines[i].trim());
         if (words === false) {
             return false;
         }
-        const mLTN = driver.graph.maxLenTgtName + (words[0][0] == "#" ? 1 : 0);
+        const mLTN = driver.graph.maxLenTgtName;
         if (words[0].length > mLTN) {
             words[0] = words[0].substr(0, mLTN);
         }
@@ -1170,6 +1175,11 @@ TargetList.prototype.processTargetListAfterSIMBAD = function(lines) {
             this.InputStats.Empty += 1;
             continue;
         }
+        if (this.FormattedLines[i][0].startsWith("#")) {
+            this.VisibleLines.push(this.FormattedLines[i][0]);
+            this.InputStats.Commented += 1;
+            continue;
+        }
         const words = this.FormattedLines[i];
         const badwolf = $.inArray(words[0], helper.offlineStrings) !== -1;
         const padded = [
@@ -1190,10 +1200,6 @@ TargetList.prototype.processTargetListAfterSIMBAD = function(lines) {
             helper.pad(words[14], this.MaxLen.Priority, false, " ")
         ];
         this.VisibleLines.push(padded.join(" "));
-        if (words[0][0] == "#") {
-            this.InputStats.Commented += 1;
-            continue;
-        }
         if (!badwolf) {
             this.InputStats.Actual += 1;
             if ($.inArray(Driver.telescopeName, ["NOT", "WHT", "INT"]) >= 0) {
@@ -1365,7 +1371,7 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
     }
     if ($.inArray(words[0], helper.offlineStrings) !== -1) {
         if (words.length < 2 || words.length > 3) {
-            helper.LogError(`Incorrect syntax on Line #${linenumber}; for offline time you must provide a valid UTC range!`);
+            helper.LogError(`Incorrect syntax on Line #${linenumber}; for offline time you must provide a valid UTC or LST range!`);
             return false;
         }
         if (words.length == 3) {
@@ -1375,16 +1381,13 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
             }
         }
         let q = (words.length == 2) ? 1 : 2;
-        /* Ignore if commented */
-        if (!words[0].startsWith("#")) {
-            let UTr = helper.ExtractUTRange(words[q]), ut1, ut2;
-            if (UTr === false) {
-                helper.LogError(`Incorrect syntax in [CONSTRAINTS] on line #${linenumber}: the UTC range must be a valid interval (e.g., [20:00-23:00] or [1-2])!`);
-                return false;
-            } else {
-                this.BadWolfStart.push(UTr[0]);
-                this.BadWolfEnd.push(UTr[1]);
-            }
+        let UTr = helper.ExtractUTRange(words[q]);
+        if (UTr === null || UTr === false) {
+            helper.LogError(`Incorrect syntax in [CONSTRAINTS] on line #${linenumber}: the UTC/LST range must be a valid interval (e.g., [20:00-23:00] or [1-2])!`);
+            return false;
+        } else {
+            this.BadWolfStart.push(UTr[0]);
+            this.BadWolfEnd.push(UTr[1]);
         }
         return [words[0], "", "", "", "", "", "", "", "*", "", words[q], "", "", "", ""];
     }
@@ -1573,7 +1576,7 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
         let periodset = false;
         for (const constr of arr) {
             if (!helper.notFloat(constr)) continue;
-            if (constr.startsWith("UT[") || constr.startsWith("UTC[") || constr.startsWith("LST[") || constr.startsWith("HA[") || constr.startsWith("AM[") || constr.startsWith("MOON[")) {
+            if (constr.startsWith("UTC[") || constr.startsWith("LST[") || constr.startsWith("HA[") || constr.startsWith("AM[") || constr.startsWith("MOON[")) {
                 if (constr.slice(-1) != "]" || constr.indexOf("-") == -1) {
                     good = false;
                     break;
