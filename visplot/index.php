@@ -280,6 +280,7 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
             </div><!-- #map-container -->
             <div id="telselect"><span class="llbl">Telescope:</span>
                 <select id="def_telescope" name="def_telescope"></select> <span class="lpad">(<span id="num_telescopes"></span> entries)</span>
+                <button id="zoom_to_telescope">Zoom to telescope</button>
             </div><div id="config">
             <div id="config-left">
                 <h2 class="h2-instr">Default values</h2><br/>

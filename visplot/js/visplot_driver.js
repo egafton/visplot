@@ -198,6 +198,17 @@ Driver.prototype.SetupMap = function() {
                 $("#viewall").show();
             }
         });
+        $('#zoom_to_telescope').on('click', function() {
+            const key = $('#def_telescope').val();
+            if (!key) {
+                return;
+            }
+            const telescope = config[key];
+            if (!telescope || !telescope.latitude || !telescope.longitude) {
+                return;
+            }
+            driver.map.setView([telescope.latitude, telescope.longitude], 16);
+        });
     } catch (e) {
         helper.LogException(e);
     }

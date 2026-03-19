@@ -537,3 +537,6 @@ p.pp2 {
 .leaflet-control-zoom-fullscreen {
     margin-top: 4px;
 }
+#zoom_to_telescope {
+    float: right;
+}
