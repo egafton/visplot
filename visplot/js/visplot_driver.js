@@ -205,15 +205,19 @@ Driver.prototype.SetupMap = function() {
 
 Driver.prototype.highlightCurrentTelescope = function () {
     try{
-        for (const key in this.markersByKey) {
-            if (key === Driver.telescopeName) {
-                this.markersByKey[key].setIcon(this.redPin);
-            } else {
-                this.markersByKey[key].setIcon(this.bluePin);
+        if (this.markersByKey) {
+            for (const key in this.markersByKey) {
+                if (key === Driver.telescopeName) {
+                    this.markersByKey[key].setIcon(this.redPin);
+                } else {
+                    this.markersByKey[key].setIcon(this.bluePin);
+                }
             }
         }
-        // Refresh clusters to update icons
-        this.markers.refreshClusters();
+        if (this.markers) {
+            // Refresh clusters to update icons
+            this.markers.refreshClusters();
+        }
     } catch (e) {
         helper.LogException(e);
     }
@@ -898,14 +902,7 @@ Driver.prototype.BindEvents = function () {
             $.fancybox.close();
         }
     });
-    $("#def_telescope").on("keydown", function (e) {
-        if (e.which == 13) {
-            $("#configsubmit").val("true");
-            $.fancybox.close();
-        }
-    }).on("click", function (e) {
-        $(this).focus();
-    }).on("change", function () {
+    $("#def_telescope").on("change", function () {
         const tel = driver.UpdateInstrumentList();
         // Set instrument name to default
         $("#def_instrument").val(config[tel].defaultInstrument || "default");
@@ -1031,6 +1028,26 @@ Driver.prototype.BindEvents = function () {
     serializer.BindEvents();
 };
 
+Driver.prototype.perWordMatcher = function(params, data) {
+    // If there’s no search term, return all
+    if ($.trim(params.term) === '') {
+        return data;
+    }
+
+    // Split the search term into words
+    const terms = params.term.toLowerCase().split(/\s+/);
+    const text = data.text.toLowerCase();
+
+    // Only include items that match ALL terms
+    for (let i = 0; i < terms.length; i++) {
+        if (!text.includes(terms[i])) {
+            return null; // no match
+        }
+    }
+
+    return data;
+};
+
 /**
  * @memberof Driver
  */
@@ -1057,6 +1074,19 @@ Driver.prototype.EvtClick_Config = function () {
             touch: false,
             afterShow: function() {
                 driver.map.invalidateSize();
+                if (!window.selectInitialized) {
+                    setTimeout(() => {
+                        $('#def_telescope').select2({
+                            placeholder: "Start typing or select on the map",
+                            minimumResultsForSearch: 0, // always show search input
+                            width: '600px',
+                            dropdownParent: $('.fancybox-content'),
+                            dropdownCssClass: 'select2-dropdown-below',
+                            matcher: driver.perWordMatcher
+                        });
+                    }, 0); // 0 ms lets Fancybox finish DOM updates
+                    window.selectInitialized = true;
+                }
             },
             beforeClose: function () {
                 driver.CallbackUpdateDefaults();

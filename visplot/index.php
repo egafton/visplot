@@ -126,6 +126,7 @@ $version = "5.0c";
 * 5.0c - Added locations (region/province/island and country) to list of telescopes.
 *      - Added more telescopes.
 *      - Added UTC offset to plot x-axis label.
+*      - Highlighting the current telescope on the map.
 *      - Telescope list now supports incremental search.
 */
 session_start();
@@ -182,6 +183,7 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" type="text/css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.59.4/codemirror.min.css" type="text/css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" type="text/css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" type="text/css" />
@@ -277,7 +279,7 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
                 </div>
             </div><!-- #map-container -->
             <div id="telselect"><span class="llbl">Telescope:</span>
-                <select id="def_telescope" name="def_telescope"></select> <span class="lpad"><span id="num_telescopes"></span> entries. Start typing to search.</span>
+                <select id="def_telescope" name="def_telescope"></select> <span class="lpad">(<span id="num_telescopes"></span> entries)</span>
             </div><div id="config">
             <div id="config-left">
                 <h2 class="h2-instr">Default values</h2><br/>
@@ -430,6 +432,7 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
     <!-- Cloud-hosted, 3rd party libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.59.4/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.59.4/addon/selection/active-line.min.js"></script>

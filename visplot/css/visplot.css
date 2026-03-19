@@ -529,3 +529,8 @@ p.pp2 {
     z-index: 999;
     display: none;
 }
+.select2-dropdown-below {
+    top: auto !important;
+    bottom: auto !important;
+    transform: none !important; /* prevent the “flip” */
+}
