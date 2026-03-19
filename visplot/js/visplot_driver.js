@@ -145,16 +145,52 @@ Driver.prototype.SetupMap = function() {
         refreshMap();
         $("#viewall").on('click', refreshMap);
 
-        var markers = L.markerClusterGroup({maxClusterRadius: 30});
+        // Store markers by key
+        this.markersByKey = {};
+        this.redPin = L.icon({
+            iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
+        this.bluePin = L.icon({
+            iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png",
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
+        this.markers = L.markerClusterGroup({
+            maxClusterRadius: 30,
+            iconCreateFunction: function(cluster) {
+                // Get all markers in the cluster
+                const childMarkers = cluster.getAllChildMarkers();
+                // If selected telescope is in this cluster, use red style
+                const containsSelected = childMarkers.some(m => m.options.alt === Driver.telescopeName);
+                const c = containsSelected ? 'red-cluster' : 'blue-cluster';
+                return L.divIcon({
+                    html: `<div><span>${cluster.getChildCount()}</span></div>`,
+                    className: `marker-cluster ${c}`,
+                    iconSize: L.point(40, 40)
+                });
+            }
+        });
         for (const key in config) {
-            markers.addLayer(L.marker({lng: config[key].longitude, lat: config[key].latitude}, {alt: key})
-                            .bindTooltip(config[key].name + (config[key].site ? `, ${config[key].site}` : "") + ` (${config[key].location})`)
-                            .on("click", function(e) {
-                                $("#def_telescope").val(key).trigger("change");
-                            })
-                            );
+            const marker = L.marker(
+                {lng: config[key].longitude, lat: config[key].latitude}, {icon: this.bluePin, alt: key}
+            ).bindTooltip(
+                config[key].name + (config[key].site ? `, ${config[key].site}` : "") + ` (${config[key].location})`
+            ).on("click", function(e) {
+                $("#def_telescope").val(key).trigger("change");
+            });
+            this.markers.addLayer(marker);
+            this.markersByKey[key] = marker;
         }
-        this.map.addLayer(markers);
+        this.map.addLayer(this.markers);
+        driver.highlightCurrentTelescope();
         this.map.on('zoomend', function() {
             if (driver.map.getZoom() <= 2) {
                 $("#viewall").hide();
@@ -166,6 +202,22 @@ Driver.prototype.SetupMap = function() {
         helper.LogException(e);
     }
 }
+
+Driver.prototype.highlightCurrentTelescope = function () {
+    try{
+        for (const key in this.markersByKey) {
+            if (key === Driver.telescopeName) {
+                this.markersByKey[key].setIcon(this.redPin);
+            } else {
+                this.markersByKey[key].setIcon(this.bluePin);
+            }
+        }
+        // Refresh clusters to update icons
+        this.markers.refreshClusters();
+    } catch (e) {
+        helper.LogException(e);
+    }
+};
 
 /**
  * @memberof Driver
@@ -1387,6 +1439,8 @@ Driver.prototype.setTelescopeName = function (val) {
             if ($.inArray(val, Object.keys(config)) !== -1 && Driver._telescopeName !== val) {
                 Driver._telescopeName = val;
                 $("#def_telescope").val(val);
+                // Mark on map
+                driver.highlightCurrentTelescope();
                 // Background with telescope image
                 $("#canvasFrame").css("background-image", 'url(' + window.baseurl + (config[val].background || 'img/telescopes/default.jpg') + ')');
                 // Recalculate Skycam constants

@@ -509,20 +509,17 @@ p.pp2 {
     width: 970px;
     height: 500px;
 }
-.marker-cluster-small {
+.blue-cluster {
     background-color: rgba(140, 190, 230, 1);
 }
-.marker-cluster-small div {
-    background-color: rgba(50, 141, 221, 0.6);
+.red-cluster {
+    background-color: rgb(207, 60, 60, 1);
 }
-.marker-cluster-medium {
-    background-color: rgba(140, 190, 230, 1);
-}
-.marker-cluster-medium div {
-    background-color: rgba(50, 141, 221, 0.6);
-}
-.marker-cluster div {
+.blue-cluster div,
+.red-cluster div {
+    text-align: center;
     font-size: 15px;
+    background-color: rgba(50, 141, 221, 1);
 }
 #viewall {
     position: absolute;
