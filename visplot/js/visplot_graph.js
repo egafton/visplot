@@ -640,7 +640,7 @@ Graph.prototype.drawEphemerides = function () {
             this.xmid, this.yend + 40);
     } else {
         this.ctx.fillText(
-            `Local Time (${Driver.obs_timezone_abbr}), starting night ${driver.night.year}-` +
+            `Local Time (${Driver.obs_timezone_description}), starting night ${driver.night.year}-` +
             `${helper.padTwoDigits(driver.night.month)}-${helper.padTwoDigits(driver.night.day)}`,
             this.xmid, this.yend + 46);
     }

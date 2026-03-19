@@ -237,8 +237,8 @@ body {
     padding: 3px;
 }
 
-span.middle,
-span.middlesep {
+.middle,
+.middlesep {
     vertical-align: middle;
 }
 
@@ -266,9 +266,23 @@ span.sh1 {
     display: block;
 }
 
+div#telselect {
+    margin-top: 10px;
+    width: 100%;
+}
+
 span.llbl {
     display: inline-block;
+    width: 120px;
+}
+
+span.eqs {
+    display: inline-block;
     width: 160px;
+}
+
+span.lpad {
+    margin-left: 10px;
 }
 
 span.rlbl {
@@ -330,7 +344,7 @@ span.rlbl {
 }
 
 .defdetails {
-    padding-left: 163px;
+    padding-left: 123px;
     margin-bottom: 5px;
     display: block;
     font-size: 10px;

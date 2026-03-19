@@ -6,7 +6,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. See LICENSE.md.
  */
-$version = "5.0b";
+$version = "5.0c";
 /*
 * Version history (with brief changelog):
 *
@@ -122,6 +122,11 @@ $version = "5.0b";
 * 5.0b - Added a few more telescopes.
 *      - Loading MathJax for displaying equations.
 *      - Scheduling weights are now configurable by the user.
+*
+* 5.0c - Added locations (region/province/island and country) to list of telescopes.
+*      - Added more telescopes.
+*      - Added UTC offset to plot x-axis label.
+*      - Telescope list now supports incremental search.
 */
 session_start();
 if (isset($_SESSION["obinfo"])) {
@@ -270,33 +275,33 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
                         <button id="viewall">View all</button>
                     </div>
                 </div>
-            </div><!-- #map-container --><div id="config">
+            </div><!-- #map-container -->
+            <div id="telselect"><span class="llbl">Telescope:</span>
+                <select id="def_telescope" name="def_telescope"></select> <span class="lpad"><span id="num_telescopes"></span> entries. Start typing to search.</span>
+            </div><div id="config">
             <div id="config-left">
-                <span class="middle"><span class="llbl">Telescope name:</span>
-                    <select id="def_telescope" name="def_telescope"></select>
-                </span>
-                <br/>
-                <span class="middle"><span class="llbl">Default epoch:</span><input type="text" id="def_epoch"/></span><br/>
+                <h2 class="h2-instr">Default values</h2><br/>
+                <span class="middle"><span class="llbl">Epoch:</span><input type="text" id="def_epoch"/></span><br/>
                 <span class="defdetails">Must be <code>1950</code> or <code>2000</code>.</span>
 
-                <span class="middle"><span class="llbl">Default observing time:</span><input type="text" id="def_obstime"/></span><br/>
+                <span class="middle"><span class="llbl">Observing time:</span><input type="text" id="def_obstime"/></span><br/>
                 <span class="defdetails">Must be an integer.</span>
 
-                <span class="middle"><span class="llbl">Default proposal ID:</span><input type="text" id="def_project"/></span><br/>
+                <span class="middle"><span class="llbl">Proposal ID:</span><input type="text" id="def_project"/></span><br/>
                 <span class="defdetails">Must have the form <code>NN-NNN</code> (for NOT), <code>NNN-27NN</code> (for HJST), <code>NNN-21NN</code> (for OST), <code>UTNNN-NNN</code> (for HET).</span>
 
-                <span class="middle"><span class="llbl">Default maximum airmass:</span><input type="text" id="def_maxam"/></span><br/>
+                <span class="middle"><span class="llbl">Maximum airmass:</span><input type="text" id="def_maxam"/></span><br/>
                 <span class="defdetails">Must be a float.</span>
 
-                <span class="middle"><span class="llbl">Default observation type:</span><input type="text" id="def_type"/></span><br/>
+                <span class="middle"><span class="llbl">Observation type:</span><input type="text" id="def_type"/></span><br/>
                 <span class="defdetails">Must be one of the following: <code>Monitor</code>, <code>ToO</code>, <code>SoftToO</code>, <code>Payback</code>, <code>Fast-Track</code>, <code>Service</code>, <code>CATService</code>, <code>Visitor</code>, or <code>Staff</code>.</span>
 
-                <span class="middle"><span class="llbl">Default instrument:</span>
+                <span class="middle"><span class="llbl">Instrument:</span>
                     <select id="def_instrument" name="def_instrument"></select>
                 </span>
-                <br/>
+                <br/><br/>
 
-                <span class="middle"><span class="llbl">Default colours:</span><span class="rlbl">Monitor</span><input type="text" id="def_col_Monitor" /><input type="text" id="def_tcol_Monitor" /></span><br/>
+                <span class="middle"><span class="llbl">Colours:</span><span class="rlbl">Monitor</span><input type="text" id="def_col_Monitor" /><input type="text" id="def_tcol_Monitor" /></span><br/>
                 <span class="middle"><span class="llbl"></span><span class="rlbl">ToO</span><input type="text" id="def_col_ToO" /><input type="text" id="def_tcol_ToO" /></span><br/>
                 <span class="middle"><span class="llbl"></span><span class="rlbl">SoftToO</span><input type="text" id="def_col_SoftToO" /><input type="text" id="def_tcol_SoftToO" /></span><br/>
                 <span class="middle"><span class="llbl"></span><span class="rlbl">Payback</span><input type="text" id="def_col_Payback" /><input type="text" id="def_tcol_Payback" /></span><br/>
@@ -317,11 +322,11 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
                     <input type="radio" id="nautical" name="opt_schedule_between" value="nautical" checked="checked"><label for="nautical">Nautical twilights</label><br/>
                     <input type="radio" id="astronomical" name="opt_schedule_between" value="astronomical"><label for="astronomical">Astronomical twilights</label><br/>
                 <br/>
-                <span class="middle"><span class="llbl"><b>Scheduling weights $W_k$:</b></span><br/>
-                <span class="middle"><span class="rlbl">Priority</span><span class="llbl">$W_p \times p_i/p_{\rm max}$</span><input type="text" id="w_priority" class="inpshort" /></span></br>
-                <span class="middle"><span class="rlbl">Urgency</span><span class="llbl">$W_u \times 1/(t_i^{\rm max}-\tau+1)$</span><input type="text" id="w_urgency" class="inpshort" /></span><br/>
-                <span class="middle"><span class="rlbl">Altitude</span><span class="llbl">$W_a \times \sin a_i(\tau)$</span><input type="text" id="w_altitude" class="inpshort" /></span><br/>
-                <span class="middle"><span class="rlbl">Slewing</span><span class="llbl">$W_s \times (1-\Delta\theta_{i,j}/\pi)$</span><input type="text" id="w_slewing" class="inpshort" /></span><br/>
+                <span class="middle"><b>Scheduling weights $W_k$:</b><br/>
+                <span class="middle"><span class="rlbl">Priority</span><span class="eqs">$W_p \times p_i/p_{\rm max}$</span><input type="text" id="w_priority" class="inpshort" /></span></br>
+                <span class="middle"><span class="rlbl">Urgency</span><span class="eqs">$W_u \times 1/(t_i^{\rm max}-\tau+1)$</span><input type="text" id="w_urgency" class="inpshort" /></span><br/>
+                <span class="middle"><span class="rlbl">Altitude</span><span class="eqs">$W_a \times \sin a_i(\tau)$</span><input type="text" id="w_altitude" class="inpshort" /></span><br/>
+                <span class="middle"><span class="rlbl">Slewing</span><span class="eqs">$W_s \times (1-\Delta\theta_{i,j}/\pi)$</span><input type="text" id="w_slewing" class="inpshort" /></span><br/>
                 <br/>
                 <h2 class="h2-instr">Display settings</h2><br/>
                 <span class="middle"><label for="opt_show_lastobstime"><input type="checkbox" name="opt_show_lastobstime" id="opt_show_lastobstime" /> Mark last possible starting time</label></span><br/>

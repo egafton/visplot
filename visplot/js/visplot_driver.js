@@ -148,7 +148,7 @@ Driver.prototype.SetupMap = function() {
         var markers = L.markerClusterGroup({maxClusterRadius: 30});
         for (const key in config) {
             markers.addLayer(L.marker({lng: config[key].longitude, lat: config[key].latitude}, {alt: key})
-                            .bindTooltip(config[key].name + (config[key].site ? `, ${config[key].site}` : "") + ` (${config[key].country})`)
+                            .bindTooltip(config[key].name + (config[key].site ? `, ${config[key].site}` : "") + ` (${config[key].location})`)
                             .on("click", function(e) {
                                 $("#def_telescope").val(key).trigger("change");
                             })
@@ -308,10 +308,17 @@ Driver.prototype.BtnEvt_SetDate = function () {
         const tstamp = new Date(year, month - 1, day, 20);
         config[Driver.telescopeName].timezone = (-zone.utcOffset(tstamp) / 60);
         let abbr = zone.abbr(tstamp);
+        let desc;
         if (abbr[0] == "+" || abbr[0] == "-") {
-            abbr = `UTC${abbr}`;
+            const offset = config[Driver.telescopeName].timezone;
+            abbr = `UTC${offset < 0 ? '-' : '+'}${Math.abs(offset)}`;
+            desc = abbr;
+        } else {
+            const offset = config[Driver.telescopeName].timezone;
+            desc = `${abbr}, UTC${offset < 0 ? '-' : '+'}${Math.abs(offset)}`;
         }
         config[Driver.telescopeName].timezone_abbr = abbr;
+        config[Driver.telescopeName].timezone_description = desc;
         helper.LogEntry(`Initializing date to ${year}-${helper.padTwoDigits(month)}-${helper.padTwoDigits(day)}; time zone set to ${config[Driver.telescopeName].timezoneName} (${Driver.obs_timezone_abbr}), which is UTC${helper.timezone(Driver.obs_timezone)}`);
         this.night = new Night(year, month, day);
         driver.Callback_SetDate();
@@ -1472,6 +1479,11 @@ Object.defineProperties(Driver, {
     "obs_timezone_abbr": {
         get: function () {
             return config[this.telescopeName].timezone_abbr;
+        }
+    },
+    "obs_timezone_description": {
+        get: function () {
+            return config[this.telescopeName].timezone_description;
         }
     },
     "obs_alt": {
