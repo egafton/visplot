@@ -365,7 +365,7 @@ helper.MJDToHM = function (d, padHours=false) {
  */
 helper.MJDToHMLocal = function (d, utcOffset, padHours=false) {
     let t = new Date(driver.night.DateSunset);
-    t.setUTCSeconds(t.getUTCSeconds() + (d - driver.night.Sunset) * 86400);
+    t.setUTCSeconds(t.getUTCSeconds() + (d - driver.night.Sunset) * 86400 + utcOffset * 3600);
     const ss = t.getUTCSeconds();
     let mm = t.getUTCMinutes();
     let hh = t.getUTCHours();
@@ -377,7 +377,7 @@ helper.MJDToHMLocal = function (d, utcOffset, padHours=false) {
         hh += 1;
         mm = 0;
     }
-    hh = ((hh + utcOffset) % 24 + 24) % 24;
+    hh = (hh % 24 + 24) % 24;
     return `${padHours ? helper.padTwoDigits(hh) : hh}:${helper.padTwoDigits(mm)}`;
 };
 
@@ -966,4 +966,9 @@ helper.zeros = function(dimensions) {
 helper.angDist = function(a, b) {
     let d = Math.abs(a - b) % 360;
     return d > 180 ? 360 - d : d;
-}
+};
+
+helper.mjdToUTCHours = function(mjd) {
+    const dayFrac = mjd % 1;
+    return dayFrac * 24;
+};

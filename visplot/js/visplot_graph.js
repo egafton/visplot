@@ -529,27 +529,46 @@ Graph.prototype.drawEphemerides = function () {
     // Plot the full hour UTC and ST labels (8 UTC, 9 UTC, etc) below and above the plot, respectively
     this.ctx.textAlign = "center";
     this.ctx.textBaseline = "middle";
+    const integerOffset = parseFloat(Driver.obs_timezone) == parseInt(Driver.obs_timezone);
     for (let i = 0; i < driver.night.UTCtimes.length; i += 1) {
         const xnight = driver.night.UTCtimes[i];
         const xplot = this.transformXLocation(xnight);
-        if ((Driver.obs_timezone === 0 && driver.night.UTClabels[i] === "24") ||
-            (Driver.obs_timezone !== 0 && driver.night.LocalTimelabels[i] === "24")) {
-            this.plotVerticalLine(this.ystart, this.yend, xplot, [], 1.6);
+        if (integerOffset) {
+            if ((Driver.obs_timezone === 0 && driver.night.UTClabels[i] === "24") ||
+                (Driver.obs_timezone !== 0 && driver.night.LocalTimelabels[i] === "24")) {
+                this.plotVerticalLine(this.ystart, this.yend, xplot, [], 1.6);
+            } else {
+                this.plotVerticalLine(this.ystart, this.yend, xplot, [1, 2], 1);
+            }
         } else {
-            this.plotVerticalLine(this.ystart, this.yend, xplot, [1, 2], 1);
+            this.ctx.strokeStyle = "#aaaaaa";
+            this.plotVerticalLine(this.ystart, this.yend, xplot, [1, 3], 1);
+            this.ctx.strokeStyle = "black";
         }
         if (Driver.obs_timezone === 0) {
             this.ctx.font = `${this.pt(11)} ${this.fontFamily}`;
             this.ctx.fillText(driver.night.UTClabels[i], xplot, this.yend + 15);
-            this.ctx.font = `${this.pt(8)} ${this.fontFamily}`;
-            this.ctx.fillText(driver.night.LSTlabels[i], xplot, this.ystart - 35);
         } else {
-            this.ctx.font = `${this.pt(11)} ${this.fontFamily}`;
-            this.ctx.fillText(driver.night.LocalTimelabels[i], xplot, this.yend + 26);
             this.ctx.font = `${this.pt(8)} ${this.fontFamily}`;
             this.ctx.fillText(driver.night.UTClabels[i], xplot, this.yend + 12);
-            this.ctx.fillText(driver.night.LSTlabels[i], xplot, this.ystart - 35);
         }
+    }
+    for (let i = 0; i < driver.night.LocalTimetimes.length; i += 1) {
+        const xnight = driver.night.LocalTimetimes[i];
+        const xplot = this.transformXLocation(xnight);
+        if (!integerOffset) {
+            if (driver.night.LocalTimelabels[i] === "24") {
+                this.plotVerticalLine(this.ystart, this.yend, xplot, [], 1.6);
+            } else {
+                this.plotVerticalLine(this.ystart, this.yend, xplot, [1, 2], 1);
+            }
+        }
+        if (Driver.obs_timezone !== 0) {
+            this.ctx.font = `${this.pt(11)} ${this.fontFamily}`;
+            this.ctx.fillText(driver.night.LocalTimelabels[i], xplot, this.yend + 26);
+        }
+        this.ctx.font = `${this.pt(8)} ${this.fontFamily}`;
+        this.ctx.fillText(driver.night.LSTlabels[i], xplot, this.ystart - 35);
     }
     // Print the LST, S.set and S.rise labels
     this.ctx.font = `${this.pt(8)} ${this.fontFamily}`;
@@ -754,8 +773,8 @@ Graph.prototype.drawBackground = function () {
     // Warning, if applicable
     if (Driver.obs_lowestLimit === null && Driver.obs_highestLimit === null && Driver.obs_lowerHatch === null && Driver.obs_declinationLimit === null) {
         this.ctx.fillStyle = "red";
-        this.plotRotatedText("No telescope-specific altitude or collision limits are defined.", this.pt(10), this.xleftlabels + 10, this.transformYLocation(15), "left", "middle")
-        this.plotRotatedText("Schedule may include unsafe pointings. Use with caution!", this.pt(10), this.xleftlabels + 35, this.transformYLocation(15), "left", "middle")
+        this.plotRotatedText("No telescope-specific altitude or collision limits are defined.", this.pt(10), this.xleftlabels + 10, this.transformYLocation(0), "left", "middle")
+        this.plotRotatedText("Schedule may include unsafe pointings. Use with caution!", this.pt(10), this.xleftlabels + 32, this.transformYLocation(0), "left", "middle")
         this.ctx.fillStyle = "black";
     }
 

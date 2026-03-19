@@ -29,6 +29,7 @@ function Night(y, m, d) {
     /* Other arrays, not of length Nx */
     this.UTCtimes = [];                     // Position of full hours (8UT, 9UT, etc) in terms of MJD-UTC
     this.UTClabels = [];                    // UTC labels corresponding to UTCtimes ("8", "9", etc)
+    this.LocalTimetimes = [];               // Position of full hours (8LT, 9LT, etc) in terms of MJD-UTC
     this.LocalTimelabels = [];              // Local Time labels corresponding to UTCtimes ("8", "9", etc)
     this.LSTangles = [];                    // LST angles corresponding to UTCtimes
     this.LSTlabels = [];                    // LST labels corresponding to UTCtimes
@@ -182,38 +183,44 @@ Night.prototype.setEphemerides = function (obj) {
     this.DateSunrise = new Date(Date.UTC(this.tSunrise[0], this.tSunrise[1]-1, this.tSunrise[2], this.tSunrise[3], this.tSunrise[4], this.tSunrise[5], 0));
     this.DarkTime = (this.MAstTwilight - this.EAstTwilight);
     this.NightLength = (this.global_UTend - this.global_UTstart);
-    let firstUTC = this.tSunset[3]+1;
-    let stopUTC = this.tSunrise[3];
-    if (this.tSunrise[4] !== 0) {
-        stopUTC += 1;
-    }
-    if (this.tSunrise[4] > 55) {
-        stopUTC += 1;
-    }
-    if (stopUTC > 24) {
-        stopUTC -= 24;
-    }
-    utczero = sla.djcl(this.Sunset);
-    let djutc = sla.cldj(utczero.iy, utczero.im, utczero.id) + sla.dtf2d(firstUTC%24, 0, 0) + Math.floor(firstUTC/24);
+    // Calculate UTC and LST labels
     this.UTCtimes = [];
     this.UTClabels = [];
-    this.LocalTimelabels = [];
-    this.LSTlabels = [];
-    while (firstUTC != stopUTC) {
+    const startUTC = helper.mjdToUTCHours(this.Sunset);
+    const firstUTC = Math.ceil(startUTC);
+    for (let h=0; h<48; h++) {
+        const hour = (firstUTC + h)%24;
+        const dayOffset = Math.floor((firstUTC + h) / 24);
+        const djutc = Math.floor(this.Sunset) + dayOffset + hour / 24;
+        if (djutc >= this.Sunrise) break;
         this.UTCtimes.push(djutc);
-        this.UTClabels.push(firstUTC.toString());
-        if (Driver.obs_timezone != 0) {
-            let lt = (firstUTC + Driver.obs_timezone + 24) % 24;
-            this.LocalTimelabels.push(lt == 0 ? "24" : lt.toString());
-        }
+        this.UTClabels.push(hour === 0 ? "24" : hour.toString());
+    }
+    this.LocalTimetimes = [];
+    this.LocalTimelabels = [];
+    const tz = parseFloat(Driver.obs_timezone);
+    // Convert start into LOCAL fractional hour
+    let startLocal = startUTC + tz;
+    startLocal = (startLocal % 24 + 24) % 24;
+    // First integer LOCAL hour after sunset
+    const firstLocal = Math.ceil(startLocal);
+    for (let h = 0; h < 48; h++) {
+        const localHourRaw = firstLocal + h;
+        const localHour = ((localHourRaw % 24) + 24) % 24;
+        const dayOffset = Math.floor(localHourRaw / 24);
+        // Convert LOCAL → UTC
+        let utcHour = localHour - tz;
+        const utcDayOffset = Math.floor(utcHour / 24);
+        utcHour = (utcHour % 24 + 24) % 24;
+        const djutc = Math.floor(this.Sunset) + dayOffset + utcDayOffset + utcHour / 24;
+        if (djutc < this.Sunset) continue;
+        if (djutc >= this.Sunrise) break;
         stl = sla.dr2tf(1, sla.dranrm(sla.gmst(djutc) + Driver.obs_lon_rad) + this.eqeqx);
         this.LSTlabels.push(`${stl.ihmsf[0]}:${stl.ihmsf[1] < 10 ? "0" : ""}${stl.ihmsf[1].toFixed(0)}`);
-        firstUTC += 1;
-        if (firstUTC > 24) {
-            firstUTC -= 24;
-        }
-        djutc += 1/24;
+        this.LocalTimetimes.push(djutc);
+        this.LocalTimelabels.push(localHour === 0 ? "24" : localHour.toString());
     }
+    // Moon stuff
     this.MoonIllMin = Math.max(Math.floor(Math.min(this.MoonIllStart, this.MoonIllEnd)), 0);
     this.MoonIllMax = Math.min(Math.ceil(Math.max(this.MoonIllStart, this.MoonIllEnd)), 100);
     this.MoonIllumination = Math.max(this.MoonIllStart, this.MoonIllEnd);   // Maximum moon illumination throughout the night

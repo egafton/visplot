@@ -128,6 +128,7 @@ $version = "5.0c";
 *      - Added UTC offset to plot x-axis label.
 *      - Highlighting the current telescope on the map.
 *      - Telescope list now supports incremental search.
+*      - Improved handling of fractional UTC offsets.
 */
 session_start();
 if (isset($_SESSION["obinfo"])) {

@@ -1280,3 +1280,21 @@ config["Kuiper Telescope"] = {
     altitude: 2520,
     timezoneName: "America/Phoenix"
 };
+config["TNT"] = {
+    site: "Thai National Observatory",
+    name: "Thai National Telescope 2.4m",
+    location: "Thailand",
+    latitude: 18.57370,
+    longitude: 98.48225,
+    altitude: 2457,
+    timezoneName: "Asia/Bangkok"
+};
+config["HCT"] = {
+    site: "Indian Astronomical Observatory",
+    name: "Himalayan Chandra Telescope 2m",
+    location: "India",
+    latitude: 32.77962,
+    longitude: 78.96384,
+    altitude: 4500,
+    timezoneName: "Asia/Kolkata"
+};
