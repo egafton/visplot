@@ -534,3 +534,6 @@ p.pp2 {
     bottom: auto !important;
     transform: none !important; /* prevent the “flip” */
 }
+.leaflet-control-zoom-fullscreen {
+    margin-top: 4px;
+}
