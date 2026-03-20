@@ -123,23 +123,65 @@ function Driver() {
 
 Driver.prototype.SetupMap = function() {
     try {
-        /* Load map */
+        // Weather overlays
         const tileSource = "https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+        const tileLayer = L.tileLayer(tileSource, {
+            minZoom: 2,
+            maxZoom: 19,
+            attribution: ""
+        });
+        /* Load map */
         this.map = L.map('map', {
             attributionControl: false,
             zoomControl: true,
             fullscreenControl: true,
-            worldCopyJump: true
+            worldCopyJump: true,
+            layers: [tileLayer]
         });
-        var myAttrControl = L.control.attribution().addTo(this.map);
-        myAttrControl.setPrefix('');
-        L.tileLayer(tileSource, {
-            minZoom: 2,
-            maxZoom: 19
+        const baseMaps = { "Physical Map": tileLayer};
+        const clouds = L.OWM.cloudsClassic({showLegend: false, opacity: 0.6, appId: 'def7cfdebee03cd500fbdbcfc8c48e90'});
+        const rain = L.OWM.rainClassic({showLegend: false, opacity: 0.6, appId: 'def7cfdebee03cd500fbdbcfc8c48e90'});
+        const overlayMaps = { "Clouds": clouds, "Rain": rain };
+        // Add layers
+        const layerControl = L.control.layers(baseMaps, overlayMaps).addTo(this.map);
+        //layerControl.setPrefix('');
+        /* Equator and tropics */
+        L.polyline([[0, -180], [0, 180]], {
+            color: '#ffff88',
+            opacity: 0.5,
+            weight: 2,
+            dashArray: [3, 3]
         }).addTo(this.map);
+        L.polyline([[23.4394, -180], [23.4394, 180]], {
+            color: '#ffffee',
+            opacity: 0.5,
+            weight: 2,
+            dashArray: [3, 3]
+        }).addTo(this.map);
+        L.polyline([[-23.4394, -180], [-23.4394, 180]], {
+            color: '#ffffee',
+            opacity: 0.5,
+            weight: 2,
+            dashArray: [3, 3]
+        }).addTo(this.map);
+        function addLineLabel(lat, text, map) {
+            return L.marker([lat, -165], {
+                icon: L.divIcon({
+                    className: 'map-label',
+                    html: text,
+                    iconSize: [0, 0],
+                    iconAnchor: [0, 16]
+                }),
+                interactive: false   // prevents mouse interference
+            }).addTo(map);
+        }
+        // Add labels
+        addLineLabel(0, "Equator", this.map);
+        addLineLabel(23.4394, "Tropic of Cancer", this.map);
+        addLineLabel(-23.4394, "Tropic of Capricorn", this.map);
 
         function refreshMap() {
-            driver.map.setView([30, 5], 0);
+            driver.map.setView([30, 5], 2);
         }
 
         refreshMap();

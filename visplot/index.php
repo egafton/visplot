@@ -195,6 +195,7 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
     </script>
     <script src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="stylesheet" href="<?php echo($baseurl);?>css/aladin.min.css" type="text/css" />
+    <link rel="stylesheet" href="<?php echo($baseurl);?>css/leaflet-openweathermap.css" type="text/css" />
     <link rel="stylesheet" href="<?php echo($baseurl);?>css/visplot.css?v=<?php echo($version);?>" type="text/css" />
     <script type="text/javascript">window.version = "<?php echo($version);?>";</script>
 </head>
@@ -448,6 +449,7 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
     <script src="<?php echo($baseurl);?>js/aladin.min.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
     <script src="<?php echo($baseurl);?>js/jsplitter.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
     <script src="<?php echo($baseurl);?>js/moment-timezone-with-data.min.js?v=<?php echo($version);?>"></script>
+    <script src="<?php echo($baseurl);?>js/leaflet-openweathermap.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
     <!-- Configuration files -->
     <script src="<?php echo($baseurl);?>js/config.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
     <!-- Main JS code -->
