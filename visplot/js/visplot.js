@@ -11,215 +11,223 @@
  * @function
  */
 $(document).ready(function () {
-    /*
-     * Available error IDs: 61+
-     */
+    try {
+        /*
+        * Available error IDs: 61+
+        */
 
-    /* Perform the unit tests for slalib */
-    sla.performUnitTests();
+        /* Perform the unit tests for slalib */
+        sla.performUnitTests();
 
-    /* The one and only global variable */
-    window.driver = new Driver();
+        /* The one and only global variable */
+        window.driver = new Driver();
 
-    $("body").toggle();
+        $("body").toggle();
 
-    /* Catch resize events */
-    window.addEventListener("resize", driver.Refresh);
-    //window.jsplitterSettings.maxleftwidth = window.outerWidth - driver.graph.minwidth - 5;
+        /* Catch resize events */
+        window.addEventListener("resize", driver.Refresh);
+        //window.jsplitterSettings.maxleftwidth = window.outerWidth - driver.graph.minwidth - 5;
 
-    /* Sidebar toggle button */
-    $("#toggle-sidebar").click(function() {
-        $("#sidebar").toggle();
-        $("#divider").toggle();
-        const visible = $("#sidebar").is(":visible");
-        if (visible) {
-            /* Create the panel divider */
-            $("#divider").jSplitter({
-                "leftdiv": "sidebar",
-                "rightdiv": "canvasFrame",
-                "flex": true,
-                "persist": true,
-                "cookie": "jSplitter",
-                "minleftwidth": 250
-            });
-        }
-        localStorage.visplotSidebarVisible = visible;
-        if (driver.night !== null) {
-            driver.Refresh();
-        }
-    });
-
-    /* Show the sidebar if the user had it open */
-    if ("visplotSidebarVisible" in localStorage) {
-        if (localStorage.visplotSidebarVisible === "true") {
-            $("#toggle-sidebar").trigger("click");
-        }
-    }
-
-    // Populate the telescope select input
-    Object.entries(config)
-        .sort(([, a], [, b]) => a.name.localeCompare(b.name))
-        .forEach(([key, value]) => {
-            $("#def_telescope").append(new Option(`${value.name}${value.site ? ', ' + value.site : ''} (${value.location})`, key));
-        });
-    $("#num_telescopes").html(Object.keys(config).length);
-
-    /*
-     * If there is a configuration saved in localStorage (this is a nice
-     * feature of modern browsers), copy its entries over on to the default
-     * config.
-     */
-    /* Override telescope name if specified via GET */
-    let forcetel = null;
-    if ($("#default_telescope").length) {
-        forcetel = $("#default_telescope").val();
-        helper.LogEntry(`Telescope <i>${forcetel}</i> specified via GET`)
-    }
-    if ("visplot" in localStorage) {
-        helper.LogEntry("Found existing visplot configuration in the browser, restoring...");
-        if ("telescopeName" in localStorage) {
-            if (forcetel === null || localStorage.telescopeName === forcetel) {
-                helper.LogEntry(`Restoring telescope name to <i>${localStorage.telescopeName}</i>`);
-                driver.setTelescopeName(localStorage.telescopeName).then(function() {
-                    driver.UpdateInstrumentList();
-
-                    if ("defaultEpoch" in localStorage) {
-                        helper.LogEntry(`Restoring default epoch to <i>${localStorage.defaultEpoch}</i>`);
-                        Driver.defaultEpoch = localStorage.defaultEpoch;
-                    }
-                    if ("defaultProject" in localStorage) {
-                        helper.LogEntry(`Restoring default proposal ID to <i>${localStorage.defaultProject}</i>`);
-                        Driver.defaultProject = localStorage.defaultProject;
-                    }
-                    if ("defaultType" in localStorage) {
-                        helper.LogEntry(`Restoring default observation type to <i>${localStorage.defaultType}</i>`);
-                        Driver.defaultType = localStorage.defaultType;
-                    }
-                    if ("defaultAM" in localStorage) {
-                        helper.LogEntry(`Restoring default maximum airmass to <i>${localStorage.defaultAM}</i>`);
-                        Driver.defaultAM = localStorage.defaultAM;
-                    }
-                    if ("defaultObstime" in localStorage) {
-                        helper.LogEntry(`Restoring default observing time to <i>${localStorage.defaultObstime}</i>`);
-                        Driver.defaultObstime = localStorage.defaultObstime;
-                    }
-                    if ("defaultOBInfo" in localStorage) {
-                        helper.LogEntry(`Restoring default instrument name to <i>${localStorage.defaultOBInfo}</i>`);
-                        Driver.defaultOBInfo = localStorage.defaultOBInfo;
-                    }
-                    if ("w_priority" in localStorage) {
-                        helper.LogEntry(`Restoring <i>Priority</i> weight to <i>${localStorage.w_priority}</i>`);
-                        Driver.w_priority = localStorage.w_priority;
-                    }
-                    if ("w_urgency" in localStorage) {
-                        helper.LogEntry(`Restoring <i>Urgency</i> weight to <i>${localStorage.w_urgency}</i>`);
-                        Driver.w_urgency = localStorage.w_urgency;
-                    }
-                    if ("w_altitude" in localStorage) {
-                        helper.LogEntry(`Restoring <i>Altitude</i> weight to <i>${localStorage.w_altitude}</i>`);
-                        Driver.w_altitude = localStorage.w_altitude;
-                    }
-                    if ("w_slewing" in localStorage) {
-                        helper.LogEntry(`Restoring <i>Slewing</i> weight to <i>${localStorage.w_slewing}</i>`);
-                        Driver.w_slewing = localStorage.w_slewing;
-                    }
-                    if ("opt_reschedule_later" in localStorage) {
-                        helper.LogEntry(`Restoring <i>opt_reschedule_later</i> to <i>${localStorage.opt_reschedule_later}</i>`);
-                        $("#opt_reschedule_later").prop("checked", localStorage.opt_reschedule_later === "true");
-                    }
-                    if ("opt_reorder_targets" in localStorage) {
-                        helper.LogEntry(`Restoring <i>opt_reorder_targets</i> to <i>${localStorage.opt_reorder_targets}</i>`);
-                        $("#opt_reorder_targets").prop("checked", localStorage.opt_reorder_targets === "true");
-                    }
-                    if ("opt_allow_over_axis" in localStorage) {
-                        helper.LogEntry(`Restoring <i>opt_allow_over_axis</i> to <i>${localStorage.opt_allow_over_axis}</i>`);
-                        $("#opt_allow_over_axis").prop("checked", localStorage.opt_allow_over_axis === "true");
-                    }
-                    if ("opt_schedule_between" in localStorage) {
-                        helper.LogEntry(`Restoring <i>opt_schedule_between</i> to <i>${localStorage.opt_schedule_between}</i>`);
-                        $(`#${localStorage.opt_schedule_between}`).prop("checked", true);
-                    }
-                    if ("opt_show_lastobstime" in localStorage) {
-                        helper.LogEntry(`Restoring <i>opt_show_lastobstime</i> to <i>${localStorage.opt_show_lastobstime}</i>`);
-                        $("#opt_show_lastobstime").prop("checked", localStorage.opt_show_lastobstime === "true");
-                    }
-                    postInitialization();
-                });
-            } else {
-                helper.LogEntry(`Saved telescope (${localStorage.telescopeName}) differs from telescope specified with GET (${forcetel}). Overriding browser settings`)
-                driver.setTelescopeName(forcetel).then(function() {
-                    driver.UpdateInstrumentList();
-                    postInitialization();
+        /* Sidebar toggle button */
+        $("#toggle-sidebar").click(function() {
+            $("#sidebar").toggle();
+            $("#divider").toggle();
+            const visible = $("#sidebar").is(":visible");
+            if (visible) {
+                /* Create the panel divider */
+                $("#divider").jSplitter({
+                    "leftdiv": "sidebar",
+                    "rightdiv": "canvasFrame",
+                    "flex": true,
+                    "persist": true,
+                    "cookie": "jSplitter",
+                    "minleftwidth": 250
                 });
             }
-        }
-    } else {
-        if (forcetel === null) {
-            forcetel = Driver.telescopeName;
-        }
-        /* Set default telescope telescope */
-        helper.LogEntry(`Default telescope is <i>${forcetel}</i>`);
-        driver.setTelescopeName(forcetel).then(function() {
-            driver.UpdateInstrumentList();
-            postInitialization();
+            localStorage.visplotSidebarVisible = visible;
+            if (driver.night !== null) {
+                driver.Refresh();
+            }
         });
+
+        /* Show the sidebar if the user had it open */
+        if ("visplotSidebarVisible" in localStorage) {
+            if (localStorage.visplotSidebarVisible === "true") {
+                $("#toggle-sidebar").trigger("click");
+            }
+        }
+
+        // Populate the telescope select input
+        Object.entries(config)
+            .sort(([, a], [, b]) => a.name.localeCompare(b.name))
+            .forEach(([key, value]) => {
+                $("#def_telescope").append(new Option(`${value.name}${value.site ? ', ' + value.site : ''} (${value.location})`, key));
+            });
+        $("#num_telescopes").html(Object.keys(config).length);
+
+        /*
+        * If there is a configuration saved in localStorage (this is a nice
+        * feature of modern browsers), copy its entries over on to the default
+        * config.
+        */
+        /* Override telescope name if specified via GET */
+        let forcetel = null;
+        if ($("#default_telescope").length) {
+            forcetel = $("#default_telescope").val();
+            helper.LogEntry(`Telescope <i>${forcetel}</i> specified via GET`)
+        }
+        if ("visplot" in localStorage) {
+            helper.LogEntry("Found existing visplot configuration in the browser, restoring...");
+            if ("telescopeName" in localStorage) {
+                if (forcetel === null || localStorage.telescopeName === forcetel) {
+                    helper.LogEntry(`Restoring telescope name to <i>${localStorage.telescopeName}</i>`);
+                    driver.setTelescopeName(localStorage.telescopeName).then(function() {
+                        driver.UpdateInstrumentList();
+
+                        if ("defaultEpoch" in localStorage) {
+                            helper.LogEntry(`Restoring default epoch to <i>${localStorage.defaultEpoch}</i>`);
+                            Driver.defaultEpoch = localStorage.defaultEpoch;
+                        }
+                        if ("defaultProject" in localStorage) {
+                            helper.LogEntry(`Restoring default proposal ID to <i>${localStorage.defaultProject}</i>`);
+                            Driver.defaultProject = localStorage.defaultProject;
+                        }
+                        if ("defaultType" in localStorage) {
+                            helper.LogEntry(`Restoring default observation type to <i>${localStorage.defaultType}</i>`);
+                            Driver.defaultType = localStorage.defaultType;
+                        }
+                        if ("defaultAM" in localStorage) {
+                            helper.LogEntry(`Restoring default maximum airmass to <i>${localStorage.defaultAM}</i>`);
+                            Driver.defaultAM = localStorage.defaultAM;
+                        }
+                        if ("defaultObstime" in localStorage) {
+                            helper.LogEntry(`Restoring default observing time to <i>${localStorage.defaultObstime}</i>`);
+                            Driver.defaultObstime = localStorage.defaultObstime;
+                        }
+                        if ("defaultOBInfo" in localStorage) {
+                            helper.LogEntry(`Restoring default instrument name to <i>${localStorage.defaultOBInfo}</i>`);
+                            Driver.defaultOBInfo = localStorage.defaultOBInfo;
+                        }
+                        if ("w_priority" in localStorage) {
+                            helper.LogEntry(`Restoring <i>Priority</i> weight to <i>${localStorage.w_priority}</i>`);
+                            Driver.w_priority = localStorage.w_priority;
+                        }
+                        if ("w_urgency" in localStorage) {
+                            helper.LogEntry(`Restoring <i>Urgency</i> weight to <i>${localStorage.w_urgency}</i>`);
+                            Driver.w_urgency = localStorage.w_urgency;
+                        }
+                        if ("w_altitude" in localStorage) {
+                            helper.LogEntry(`Restoring <i>Altitude</i> weight to <i>${localStorage.w_altitude}</i>`);
+                            Driver.w_altitude = localStorage.w_altitude;
+                        }
+                        if ("w_slewing" in localStorage) {
+                            helper.LogEntry(`Restoring <i>Slewing</i> weight to <i>${localStorage.w_slewing}</i>`);
+                            Driver.w_slewing = localStorage.w_slewing;
+                        }
+                        if ("opt_reschedule_later" in localStorage) {
+                            helper.LogEntry(`Restoring <i>opt_reschedule_later</i> to <i>${localStorage.opt_reschedule_later}</i>`);
+                            $("#opt_reschedule_later").prop("checked", localStorage.opt_reschedule_later === "true");
+                        }
+                        if ("opt_reorder_targets" in localStorage) {
+                            helper.LogEntry(`Restoring <i>opt_reorder_targets</i> to <i>${localStorage.opt_reorder_targets}</i>`);
+                            $("#opt_reorder_targets").prop("checked", localStorage.opt_reorder_targets === "true");
+                        }
+                        if ("opt_allow_over_axis" in localStorage) {
+                            helper.LogEntry(`Restoring <i>opt_allow_over_axis</i> to <i>${localStorage.opt_allow_over_axis}</i>`);
+                            $("#opt_allow_over_axis").prop("checked", localStorage.opt_allow_over_axis === "true");
+                        }
+                        if ("opt_schedule_between" in localStorage) {
+                            helper.LogEntry(`Restoring <i>opt_schedule_between</i> to <i>${localStorage.opt_schedule_between}</i>`);
+                            $(`#${localStorage.opt_schedule_between}`).prop("checked", true);
+                        }
+                        if ("opt_show_lastobstime" in localStorage) {
+                            helper.LogEntry(`Restoring <i>opt_show_lastobstime</i> to <i>${localStorage.opt_show_lastobstime}</i>`);
+                            $("#opt_show_lastobstime").prop("checked", localStorage.opt_show_lastobstime === "true");
+                        }
+                        postInitialization();
+                    });
+                } else {
+                    helper.LogEntry(`Saved telescope (${localStorage.telescopeName}) differs from telescope specified with GET (${forcetel}). Overriding browser settings`)
+                    driver.setTelescopeName(forcetel).then(function() {
+                        driver.UpdateInstrumentList();
+                        postInitialization();
+                    });
+                }
+            }
+        } else {
+            if (forcetel === null) {
+                forcetel = Driver.telescopeName;
+            }
+            /* Set default telescope telescope */
+            helper.LogEntry(`Default telescope is <i>${forcetel}</i>`);
+            driver.setTelescopeName(forcetel).then(function() {
+                driver.UpdateInstrumentList();
+                postInitialization();
+            });
+        }
+    } catch (e) {
+        helper.LogException(e);
     }
 });
 
 function postInitialization() {
-    /* Now that the driver is created, do some stuff that require it*/
-    driver.skyGraph.skyImg.onload = function () {
-        driver.skyGraph.setup(true);
-    };
-    setInterval(function () {
-        driver.skyGraph.display_time();
-    }, 500);   // 0.5 second update times
+    try {
+        /* Now that the driver is created, do some stuff that require it*/
+        driver.skyGraph.skyImg.onload = function () {
+            driver.skyGraph.setup(true);
+        };
+        setInterval(function () {
+            driver.skyGraph.display_time();
+        }, 500);   // 0.5 second update times
 
-    helper.LogDebug("Drawing plot background...");
-    driver.graph.drawBackground();
+        helper.LogDebug("Drawing plot background...");
+        driver.graph.drawBackground();
 
-    //$("#canvasFrame").toggle();
-    helper.LogDebug("Disabling buttons until the necessary quantities have been calculated...");
-    $("#planNight").prop("disabled", true);
-    $("#saveDoc").prop("disabled", true);
-    $("#tcsExport").prop("disabled", true);
+        //$("#canvasFrame").toggle();
+        helper.LogDebug("Disabling buttons until the necessary quantities have been calculated...");
+        $("#planNight").prop("disabled", true);
+        $("#saveDoc").prop("disabled", true);
+        $("#tcsExport").prop("disabled", true);
 
-    /*
-     Trigger for the "Set" current date button; this calculates the ephemerides
-     and plots them.
-     */
-    $("#dateSet").click(function () {
-        driver.BtnEvt_SetDate();
-    });
+        /*
+        Trigger for the "Set" current date button; this calculates the ephemerides
+        and plots them.
+        */
+        $("#dateSet").click(function () {
+            driver.BtnEvt_SetDate();
+        });
 
-    /*
-     Trigger for the "Plot" targets button; this calculates the altitudes of
-     the various targets at different times and plots them.
-     */
-    $("#plotTargets").click(function () {
-        driver.RequestedScheduleType = 3;
-        driver.BtnEvt_PlotTargets();
-    });
-    $("#planNight").click(function () {
-        driver.RequestedScheduleType = ($("#planNight").val() === Driver.updSchedText) ? 1 : 2;
-        driver.BtnEvt_PlotTargets();
-    });
+        /*
+        Trigger for the "Plot" targets button; this calculates the altitudes of
+        the various targets at different times and plots them.
+        */
+        $("#plotTargets").click(function () {
+            driver.RequestedScheduleType = 3;
+            driver.BtnEvt_PlotTargets();
+        });
+        $("#planNight").click(function () {
+            driver.RequestedScheduleType = ($("#planNight").val() === Driver.updSchedText) ? 1 : 2;
+            driver.BtnEvt_PlotTargets();
+        });
 
-    driver.BindEvents();
-    helper.LogEntry("Done.");
+        driver.BindEvents();
+        helper.LogEntry("Done.");
 
-    helper.LogDebug("Calling ParseOBInfoIfAny()...");
-    driver.ParseOBInfoIfAny();
+        helper.LogDebug("Calling ParseOBInfoIfAny()...");
+        driver.ParseOBInfoIfAny();
 
-    helper.LogDebug("Calling InitializeDate()...");
-    driver.InitializeDate();
+        helper.LogDebug("Calling InitializeDate()...");
+        driver.InitializeDate();
 
-    setInterval(function() {
-        driver.Callback_ShowCurrentTime();
-    }, 5000);
+        setInterval(function() {
+            driver.Callback_ShowCurrentTime();
+        }, 5000);
 
-    /*
-     Set up the map.
-     */
-    driver.SetupMap();
+        /*
+        Set up the map.
+        */
+        driver.SetupMap();
+    } catch (e) {
+        helper.LogException(e);
+    }
 }

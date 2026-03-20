@@ -37,387 +37,427 @@ function TargetList() {
  * @constructor
  */
 function Target(k, obj) {
-    this.Index = k;
-    this.Name = obj.name;
-    this.RA = obj.ra;
-    this.Dec = obj.dec;
-    this.RA_rad = obj.RA_rad;
-    this.Dec_rad = obj.Dec_rad;
-    this.Epoch = obj.epoch;
-    this.shortRA = (obj.ra.indexOf(".") > -1) ? obj.ra.substr(0, obj.ra.indexOf(".")) : obj.ra;
-    this.shortDec = (obj.dec.indexOf(".") > -1) ? obj.dec.substr(0, obj.dec.indexOf(".")) : obj.dec;
-    this.J2000 = obj.J2000;
-    this.SetExptime(obj.exptime);
-    this.ZenithTime = obj.zenithtime;
-    this.Graph = obj.line;
-    this.Azimuth = obj.azim;
-    this.FullType = obj.type;
-    this.SkyPA = obj.skypa;
-    this.Priority = obj.priority;
-    this.Type = (obj.type.indexOf("/") === -1 ? obj.type : obj.type.substring(0, obj.type.indexOf("/")));
-    this.MoonDistance = obj.moondist;
-    this.PAngles = obj.pangles;
-    this.MinMoonDistance = Math.round(obj.mdist);
-    this.MinMoonDistanceTime = obj.mdisttime;
-    this.ProjectNumber = obj.project;
-    this.RestrictionMinAlt = helper.AirmassToAltitude(obj.maxam);
-    this.RestrictionMaxAlt = Math.min(Driver.obs_highestLimit || 90, helper.AirmassToAltitude(obj.minam));
-    this.RestrictionMinUTC = obj.minut;
-    this.RestrictionMaxUTC = obj.maxut;
-    this.RestrictionMinMoonDistance = obj.minmdist;
-    this.RestrictionMaxMoonDistance = obj.maxmdist;
-    this.RestrictionTwilights = obj.twil;
-    this.observable = [];
-    this.Scheduled = false;
-    this.FillSlot = obj.fillslot;
-    this.Constraints = obj.constraints;
-    this.inputRA = obj.inputRA;
-    this.inputDec = obj.inputDec;
-    if (this.FillSlot) {
-        helper.LogEntry(`Attention: object <i>${this.Name}</i> will fill its entire time slot.`);
-    }
-    this.LabelFillColor = Driver.FillColors[this.Type];
-    this.LabelTextColor = Driver.TextColors[this.Type];
-    this.LabelStrokeColor = this.LabelFillColor;
-    this.Observed = false;
-    this.ObservedStartTime = null;
-    this.ObservedEndTime = null;
-    this.ObservedTotalTime = null;
-    this.OBData = obj.obdata;
-    if (this.OBData.indexOf(":") !== -1) {
-        let ob_arr = this.OBData.split(":");
-        this.BacklinkToOBQueue = `http://www.not.iac.es/intranot/ob/ob_update.php?period=${parseInt(this.ProjectNumber.substring(0, 2))}&propID=${parseInt(this.ProjectNumber.substring(3))}&groupID=${ob_arr[2]}&blockID=${ob_arr[3]}`;
-        this.BacklinkToOBQueuePublic = `http://www.not.iac.es/observing/forms/obqueue/ob_update.php?period=${parseInt(this.ProjectNumber.substring(0, 2))}&propID=${parseInt(this.ProjectNumber.substring(3))}&groupID=${ob_arr[2]}&blockID=${ob_arr[3]}`;
-        this.Instrument = ob_arr[0];
-        this.ExtraInfo = `${ob_arr[0]}/${ob_arr[1]}`;
-    } else {
-        this.BacklinkToOBQueue = null;
-        this.BacklinkToOBQueuePublic = null;
-        this.Instrument = this.OBData;
-        this.ExtraInfo = null;
-    }
-    this.ReconstructedInput = `${this.Name} ${this.inputRA} ${this.inputDec} ${this.Epoch} ${this.ExptimeSeconds} ${this.ProjectNumber} ${this.Constraints} ${this.FullType} ${this.OBData}`;
-    this.ReconstructedMinimumInput = `${this.Name} ${this.inputRA} ${this.inputDec} ${this.Epoch}`;
-    this.Comments = null;
-
-    let dfun = Driver.obs_declinationLimit;
-    this.DecLimit_MinimumAlt = null;
-    this.DecLimit_MinimumAltAzEast = null;
-    this.DecLimit_MinimumAltAzWest = null;
-    this.DecLimit_MinimumHA = null;
-    this.DecLimit_MaximumHA = null;
-    if (dfun !== null) {
-        if (dfun[0] == "alt(dec)") {
-            this.DecLimit_MinimumAlt = dfun[1](this.Dec_rad * sla.r2d);
-        } else if (dfun[0] == "alt(az)") {
-            this.DecLimit_MinimumAltAzEast = dfun[1](this.Azimuth, false, this.Instrument);
-            this.DecLimit_MinimumAltAzWest = dfun[1](this.Azimuth, true, this.Instrument);
-        } else if (dfun[0] == "ha(dec)") {
-            this.DecLimit_MinimumHA = dfun[1](this.Dec_rad * sla.r2d);
-            this.DecLimit_MaximumHA = dfun[2](this.Dec_rad * sla.r2d);
+    try {
+        this.Index = k;
+        this.Name = obj.name;
+        this.RA = obj.ra;
+        this.Dec = obj.dec;
+        this.RA_rad = obj.RA_rad;
+        this.Dec_rad = obj.Dec_rad;
+        this.Epoch = obj.epoch;
+        this.shortRA = (obj.ra.indexOf(".") > -1) ? obj.ra.substr(0, obj.ra.indexOf(".")) : obj.ra;
+        this.shortDec = (obj.dec.indexOf(".") > -1) ? obj.dec.substr(0, obj.dec.indexOf(".")) : obj.dec;
+        this.J2000 = obj.J2000;
+        this.SetExptime(obj.exptime);
+        this.ZenithTime = obj.zenithtime;
+        this.Graph = obj.line;
+        this.Azimuth = obj.azim;
+        this.FullType = obj.type;
+        this.SkyPA = obj.skypa;
+        this.Priority = obj.priority;
+        this.Type = (obj.type.indexOf("/") === -1 ? obj.type : obj.type.substring(0, obj.type.indexOf("/")));
+        this.MoonDistance = obj.moondist;
+        this.PAngles = obj.pangles;
+        this.MinMoonDistance = Math.round(obj.mdist);
+        this.MinMoonDistanceTime = obj.mdisttime;
+        this.ProjectNumber = obj.project;
+        this.RestrictionMinAlt = helper.AirmassToAltitude(obj.maxam);
+        this.RestrictionMaxAlt = Math.min(Driver.obs_highestLimit || 90, helper.AirmassToAltitude(obj.minam));
+        this.RestrictionMinUTC = obj.minut;
+        this.RestrictionMaxUTC = obj.maxut;
+        this.RestrictionMinMoonDistance = obj.minmdist;
+        this.RestrictionMaxMoonDistance = obj.maxmdist;
+        this.RestrictionTwilights = obj.twil;
+        this.observable = [];
+        this.Scheduled = false;
+        this.FillSlot = obj.fillslot;
+        this.Constraints = obj.constraints;
+        this.inputRA = obj.inputRA;
+        this.inputDec = obj.inputDec;
+        if (this.FillSlot) {
+            helper.LogEntry(`Attention: object <i>${this.Name}</i> will fill its entire time slot.`);
         }
+        this.LabelFillColor = Driver.FillColors[this.Type];
+        this.LabelTextColor = Driver.TextColors[this.Type];
+        this.LabelStrokeColor = this.LabelFillColor;
+        this.Observed = false;
+        this.ObservedStartTime = null;
+        this.ObservedEndTime = null;
+        this.ObservedTotalTime = null;
+        this.OBData = obj.obdata;
+        if (this.OBData.indexOf(":") !== -1) {
+            let ob_arr = this.OBData.split(":");
+            this.BacklinkToOBQueue = `http://www.not.iac.es/intranot/ob/ob_update.php?period=${parseInt(this.ProjectNumber.substring(0, 2))}&propID=${parseInt(this.ProjectNumber.substring(3))}&groupID=${ob_arr[2]}&blockID=${ob_arr[3]}`;
+            this.BacklinkToOBQueuePublic = `http://www.not.iac.es/observing/forms/obqueue/ob_update.php?period=${parseInt(this.ProjectNumber.substring(0, 2))}&propID=${parseInt(this.ProjectNumber.substring(3))}&groupID=${ob_arr[2]}&blockID=${ob_arr[3]}`;
+            this.Instrument = ob_arr[0];
+            this.ExtraInfo = `${ob_arr[0]}/${ob_arr[1]}`;
+        } else {
+            this.BacklinkToOBQueue = null;
+            this.BacklinkToOBQueuePublic = null;
+            this.Instrument = this.OBData;
+            this.ExtraInfo = null;
+        }
+        this.ReconstructedInput = `${this.Name} ${this.inputRA} ${this.inputDec} ${this.Epoch} ${this.ExptimeSeconds} ${this.ProjectNumber} ${this.Constraints} ${this.FullType} ${this.OBData}`;
+        this.ReconstructedMinimumInput = `${this.Name} ${this.inputRA} ${this.inputDec} ${this.Epoch}`;
+        this.Comments = null;
+
+        let dfun = Driver.obs_declinationLimit;
+        this.DecLimit_MinimumAlt = null;
+        this.DecLimit_MinimumAltAzEast = null;
+        this.DecLimit_MinimumAltAzWest = null;
+        this.DecLimit_MinimumHA = null;
+        this.DecLimit_MaximumHA = null;
+        if (dfun !== null) {
+            if (dfun[0] == "alt(dec)") {
+                this.DecLimit_MinimumAlt = dfun[1](this.Dec_rad * sla.r2d);
+            } else if (dfun[0] == "alt(az)") {
+                this.DecLimit_MinimumAltAzEast = dfun[1](this.Azimuth, false, this.Instrument);
+                this.DecLimit_MinimumAltAzWest = dfun[1](this.Azimuth, true, this.Instrument);
+            } else if (dfun[0] == "ha(dec)") {
+                this.DecLimit_MinimumHA = dfun[1](this.Dec_rad * sla.r2d);
+                this.DecLimit_MaximumHA = dfun[2](this.Dec_rad * sla.r2d);
+            }
+        }
+    } catch (e) {
+        helper.LogException(e);
     }
 }
 
 Target.prototype.SetExptime = function (exptime) {
-    if (exptime === null) return;
-    this.Exptime = exptime;
-    this.ExptimeSeconds = Math.round(this.Exptime * 86400);
-    this.Exptime = Math.floor(this.Exptime / driver.night.xstep) * driver.night.xstep;
-    let hrs = Math.floor(this.ExptimeSeconds / 3600);
-    let min = Math.round((this.ExptimeSeconds - hrs * 3600) / 60);
-    this.ExptimeHM = `${hrs > 0 ? hrs.toFixed(0) + "h " : ""}${min.toFixed(0)}m`;
+    try {
+        if (exptime === null) return;
+        this.Exptime = exptime;
+        this.ExptimeSeconds = Math.round(this.Exptime * 86400);
+        this.Exptime = Math.floor(this.Exptime / driver.night.xstep) * driver.night.xstep;
+        let hrs = Math.floor(this.ExptimeSeconds / 3600);
+        let min = Math.round((this.ExptimeSeconds - hrs * 3600) / 60);
+        this.ExptimeHM = `${hrs > 0 ? hrs.toFixed(0) + "h " : ""}${min.toFixed(0)}m`;
+    } catch (e) {
+        helper.LogException(e);
+    }
 };
 
 /**
  * @memberof TargetList
  */
 TargetList.prototype.targetStringToJSON = function (line) {
-    // Parse an input string into a Target object
-    let night = driver.night;
-    let dat = line.split(/\s+/);
-    let obj = {};
-    obj.name = dat[0];
-    obj.project = dat[9];
-    obj.epoch = parseFloat(dat[7]);
-    obj.line = Array();
-    obj.azim = Array();
-    obj.moondist = Array();
-    obj.pangles = Array();
-    obj.type = dat[11];
-    obj.obdata = dat[12];
-    obj.skypa = parseFloat(dat[13]);
-    obj.priority = parseFloat(dat[14]);
-    obj.constraints = dat[10];
-    let rax = dat[3].split("/");
-    let decx = dat[6]. split("/");
-    obj.ra = `${dat[1]}:${dat[2]}:${rax[0]}`;
-    obj.dec = `${dat[4]}:${dat[5]}:${decx[0]}`;
-    obj.inputRA = obj.ra.replaceAll(":", " ");
-    obj.inputDec = obj.dec.replaceAll(":", " ");
-    let ra = sla.dtf2r(parseInt(dat[1]), parseInt(dat[2]), parseFloat(rax[0]));
-    let decdeg = Math.abs(parseInt(dat[4]));
-    let decneg = dat[4].substring(0, 1) === "-";
-    let dec = sla.daf2r(decdeg, parseInt(dat[5]), parseFloat(decx[0]));
-    if (decneg) {
-        dec *= -1;
-    }
+    try {
+        // Parse an input string into a Target object
+        let night = driver.night;
+        let dat = line.split(/\s+/);
+        let obj = {};
+        obj.name = dat[0];
+        obj.project = dat[9];
+        obj.epoch = parseFloat(dat[7]);
+        obj.line = Array();
+        obj.azim = Array();
+        obj.moondist = Array();
+        obj.pangles = Array();
+        obj.type = dat[11];
+        obj.obdata = dat[12];
+        obj.skypa = parseFloat(dat[13]);
+        obj.priority = parseFloat(dat[14]);
+        obj.constraints = dat[10];
+        let rax = dat[3].split("/");
+        let decx = dat[6]. split("/");
+        obj.ra = `${dat[1]}:${dat[2]}:${rax[0]}`;
+        obj.dec = `${dat[4]}:${dat[5]}:${decx[0]}`;
+        obj.inputRA = obj.ra.replaceAll(":", " ");
+        obj.inputDec = obj.dec.replaceAll(":", " ");
+        let ra = sla.dtf2r(parseInt(dat[1]), parseInt(dat[2]), parseFloat(rax[0]));
+        let decdeg = Math.abs(parseInt(dat[4]));
+        let decneg = dat[4].substring(0, 1) === "-";
+        let dec = sla.daf2r(decdeg, parseInt(dat[5]), parseFloat(decx[0]));
+        if (decneg) {
+            dec *= -1;
+        }
 
-    obj.minam = 1;
-    obj.maxam = 9.9;
-    obj.minmdist = 0;
-    obj.maxmdist = 180;
-    obj.minut = night.global_UTstart;
-    obj.maxut = night.global_UTend;
-    obj.twil = [];
-    const arr = dat[10].toUpperCase().split(",");
-    for (const constr of arr) {
-        if (!helper.notFloat(constr)) {
-            obj.maxam = parseFloat(constr);
-            continue;
-        }
-        if (constr.indexOf("NT") > -1 || constr.indexOf("AT") > -1 || constr.indexOf("DARK") > -1) {
-            obj.twil = constr.split("+");
-            if (constr.includes("NT")) {
-                obj.minut = night.Sunset;
-                obj.maxut = night.Sunrise;
-            } else if (constr.includes("AT")) {
-                obj.minut = night.ENauTwilight;
-                obj.maxut = night.MNauTwilight;
-            } else {
-                obj.minut = night.EAstTwilight;
-                obj.maxut = night.MAstTwilight;
+        obj.minam = 1;
+        obj.maxam = 9.9;
+        obj.minmdist = 0;
+        obj.maxmdist = 180;
+        obj.minut = night.global_UTstart;
+        obj.maxut = night.global_UTend;
+        obj.twil = [];
+        const arr = dat[10].toUpperCase().split(",");
+        for (const constr of arr) {
+            if (!helper.notFloat(constr)) {
+                obj.maxam = parseFloat(constr);
+                continue;
             }
-            continue;
-        }
-        let uts = helper.ExtractUTRange(constr, ra);
-        if (uts !== null) {
-            obj.minut = Math.max(obj.minut, uts[0]);
-            obj.maxut = Math.min(obj.maxut, uts[1]);
-        } else {
-            uts = helper.ExtractAMRange(constr);
-            if (uts !== null) {
-                obj.minam = Math.max(obj.minam, uts[0]);
-                obj.maxam = Math.min(obj.maxam, uts[1]);
-            } else {
-                uts = helper.ExtractMoonRange(constr);
-                if (uts !== null) {
-                    obj.minmdist = Math.max(obj.minmdist, uts[0]);
-                    obj.maxmdist = Math.min(obj.maxmdist, uts[1]);
+            if (constr.indexOf("NT") > -1 || constr.indexOf("AT") > -1 || constr.indexOf("DARK") > -1) {
+                obj.twil = constr.split("+");
+                if (constr.includes("NT")) {
+                    obj.minut = night.Sunset;
+                    obj.maxut = night.Sunrise;
+                } else if (constr.includes("AT")) {
+                    obj.minut = night.ENauTwilight;
+                    obj.maxut = night.MNauTwilight;
                 } else {
-                    helper.LogError(`Could not parse airmass/UTC/moon distance constraint from string <i>${dat[10]}</i> for target <i>${dat[0]}</i>. Please check the format of the input and the documentation.`);
+                    obj.minut = night.EAstTwilight;
+                    obj.maxut = night.MAstTwilight;
+                }
+                continue;
+            }
+            let uts = helper.ExtractUTRange(constr, ra);
+            if (uts !== null) {
+                obj.minut = Math.max(obj.minut, uts[0]);
+                obj.maxut = Math.min(obj.maxut, uts[1]);
+            } else {
+                uts = helper.ExtractAMRange(constr);
+                if (uts !== null) {
+                    obj.minam = Math.max(obj.minam, uts[0]);
+                    obj.maxam = Math.min(obj.maxam, uts[1]);
+                } else {
+                    uts = helper.ExtractMoonRange(constr);
+                    if (uts !== null) {
+                        obj.minmdist = Math.max(obj.minmdist, uts[0]);
+                        obj.maxmdist = Math.min(obj.maxmdist, uts[1]);
+                    } else {
+                        helper.LogError(`Could not parse airmass/UTC/moon distance constraint from string <i>${dat[10]}</i> for target <i>${dat[0]}</i>. Please check the format of the input and the documentation.`);
+                    }
                 }
             }
         }
-    }
-    if (dat[8] === "*") {
-        obj.fillslot = true;
-        obj.exptime = null;
-    } else {
-        obj.fillslot = false;
-        obj.exptime = parseFloat(dat[8])/86400.0;
-    }
-    let minmdist = 9999;
-    let iminmdist = 0;
-    for (let i=0; i<night.Nx; i+=1) {
-        let mdist = sla.r2d * sla.dsep(night.ramoon[i], night.decmoon[i], ra, dec);
-        obj.moondist.push(mdist);
-        if (mdist < minmdist) {
-            minmdist = mdist;
-            iminmdist = i;
-        }
-        const pa = sla.dranrm(sla.pa(night.LSTangles[i] - ra, dec, Driver.obs_lat_rad));
-        obj.pangles.push(sla.r2d * pa);
-    }
-    obj.mdist = minmdist;
-    obj.mdisttime = night.xaxis[iminmdist];
-    let pmra, pmdec;
-    if (rax.length === 1) {
-        pmra = 0;
-    } else {
-        // Given in arcsec/year;
-        // convert to radians/year
-        pmra = parseFloat(rax[1]) * sla.das2r;
-        // Remove the cos(dec) for SLALIB
-        pmra = pmra/Math.cos(dec);
-    }
-    if (decx.length === 1) {
-        pmdec = 0;
-    } else {
-        // convert to radians/year
-        pmdec = parseFloat(decx[1]) * sla.das2r;
-    }
-    /* Conversion from Besselian to Julian, if necessary */
-    if (obj.epoch > 1984) {
-        obj.J2000 = [ra, dec];
-    } else {
-        let j2000;
-        /* No proper motion */
-        if (pmra == 0 && pmdec == 0) {
-            j2000 = sla.fk45z(ra, dec, obj.epoch);
-            obj.J2000 = [j2000.r2000, j2000.d2000];
+        if (dat[8] === "*") {
+            obj.fillslot = true;
+            obj.exptime = null;
         } else {
-            j2000 = sla.fk425(ra, dec, pmra, pmdec, 0, 0);
-            obj.J2000 = [j2000.r2000, j2000.d2000];
+            obj.fillslot = false;
+            obj.exptime = parseFloat(dat[8])/86400.0;
         }
-    }
+        let minmdist = 9999;
+        let iminmdist = 0;
+        for (let i=0; i<night.Nx; i+=1) {
+            let mdist = sla.r2d * sla.dsep(night.ramoon[i], night.decmoon[i], ra, dec);
+            obj.moondist.push(mdist);
+            if (mdist < minmdist) {
+                minmdist = mdist;
+                iminmdist = i;
+            }
+            const pa = sla.dranrm(sla.pa(night.LSTangles[i] - ra, dec, Driver.obs_lat_rad));
+            obj.pangles.push(sla.r2d * pa);
+        }
+        obj.mdist = minmdist;
+        obj.mdisttime = night.xaxis[iminmdist];
+        let pmra, pmdec;
+        if (rax.length === 1) {
+            pmra = 0;
+        } else {
+            // Given in arcsec/year;
+            // convert to radians/year
+            pmra = parseFloat(rax[1]) * sla.das2r;
+            // Remove the cos(dec) for SLALIB
+            pmra = pmra/Math.cos(dec);
+        }
+        if (decx.length === 1) {
+            pmdec = 0;
+        } else {
+            // convert to radians/year
+            pmdec = parseFloat(decx[1]) * sla.das2r;
+        }
+        /* Conversion from Besselian to Julian, if necessary */
+        if (obj.epoch > 1984) {
+            obj.J2000 = [ra, dec];
+        } else {
+            let j2000;
+            /* No proper motion */
+            if (pmra == 0 && pmdec == 0) {
+                j2000 = sla.fk45z(ra, dec, obj.epoch);
+                obj.J2000 = [j2000.r2000, j2000.d2000];
+            } else {
+                j2000 = sla.fk425(ra, dec, pmra, pmdec, 0, 0);
+                obj.J2000 = [j2000.r2000, j2000.d2000];
+            }
+        }
 
-    let retap, retob;
-    let imax = 0;
-    let altmax = 0;
-    for (let i=0; i<night.Nx; i+=1) {
-        retap = sla.mapqk(ra, dec, pmra, pmdec, 0, 0, night.amprms[i]);
-        retob = sla.aopqk(retap.ra, retap.da, night.aoprms[i]);
-        // Approximate refracted alt
-        let ell = 0.5*Math.PI - sla.refz(retob.zob, night.ref.refa, night.ref.refb);
-        if (ell > altmax) {
-            imax = i;
-            altmax = ell;
+        let retap, retob;
+        let imax = 0;
+        let altmax = 0;
+        for (let i=0; i<night.Nx; i+=1) {
+            retap = sla.mapqk(ra, dec, pmra, pmdec, 0, 0, night.amprms[i]);
+            retob = sla.aopqk(retap.ra, retap.da, night.aoprms[i]);
+            // Approximate refracted alt
+            let ell = 0.5*Math.PI - sla.refz(retob.zob, night.ref.refa, night.ref.refb);
+            if (ell > altmax) {
+                imax = i;
+                altmax = ell;
+            }
+            obj.line.push(helper.rad2deg(ell));
+            let az = helper.rad2deg(retob.aob);
+            if (az < 0) {
+                az += 360;
+            }
+            obj.azim.push(az);
         }
-        obj.line.push(helper.rad2deg(ell));
-        let az = helper.rad2deg(retob.aob);
-        if (az < 0) {
-            az += 360;
-        }
-        obj.azim.push(az);
+        obj.zenithtime = night.xaxis[imax];
+        obj.RA_rad = ra;
+        obj.Dec_rad = dec;
+        return obj;
+    } catch (e) {
+        helper.LogException(e);
     }
-    obj.zenithtime = night.xaxis[imax];
-    obj.RA_rad = ra;
-    obj.Dec_rad = dec;
-    return obj;
 };
 
 /**
  * @memberof TargetList
  */
 TargetList.prototype.setTargetsSize = function () {
-    for (let i = 0; i < this.nTargets; i += 1) {
-        let tgt = this.Targets[i];
-        tgt.xlab = driver.graph.transformXLocation(tgt.LabelX);
-        tgt.ylab = driver.graph.transformYLocation(tgt.LabelY);
-        tgt.rxmid = driver.graph.targetsx;
-        tgt.rymid = driver.graph.targetsy + i * (driver.graph.targetsyskip * (driver.graph.doubleTargets ? 2 : 1) + 2) - 6.5;
-        if (tgt.Scheduled) {
-            tgt.ComputePositionSchedLabel();
+    try {
+        for (let i = 0; i < this.nTargets; i += 1) {
+            let tgt = this.Targets[i];
+            tgt.xlab = driver.graph.transformXLocation(tgt.LabelX);
+            tgt.ylab = driver.graph.transformYLocation(tgt.LabelY);
+            tgt.rxmid = driver.graph.targetsx;
+            tgt.rymid = driver.graph.targetsy + i * (driver.graph.targetsyskip * (driver.graph.doubleTargets ? 2 : 1) + 2) - 6.5;
+            if (tgt.Scheduled) {
+                tgt.ComputePositionSchedLabel();
+            }
         }
+        driver.graph.setTargetsSize(this.nTargets);
+        this.removeClusters();
+    } catch (e) {
+        helper.LogException(e);
     }
-    driver.graph.setTargetsSize(this.nTargets);
-    this.removeClusters();
 };
 
 /**
  * @memberof TargetList
  */
 TargetList.prototype.setTargets = function (obj) {
-    const res = obj.map(function (x) {
-        return this.targetStringToJSON (x);
-    }, this);
-    this.nTargets = res.length;
-    this.Targets = [];
-    this.resetWarnings();
-    this.processOfflineTime();
-    for (let i = 0; i < this.nTargets; i += 1) {
-        this.Targets[i] = this.processTarget(i, res[i]);
+    try {
+        const res = obj.map(function (x) {
+            return this.targetStringToJSON (x);
+        }, this);
+        this.nTargets = res.length;
+        this.Targets = [];
+        this.resetWarnings();
+        this.processOfflineTime();
+        for (let i = 0; i < this.nTargets; i += 1) {
+            this.Targets[i] = this.processTarget(i, res[i]);
+        }
+        this.warnUnobservable();
+        this.setTargetsSize();
+    } catch (e) {
+        helper.LogException(e);
     }
-    this.warnUnobservable();
-    this.setTargetsSize();
 };
 
 /**
  * @memberof TargetList
  */
 TargetList.prototype.addTargets = function (obj) {
-    const res = obj.map(function (x) {
-        return this.targetStringToJSON (x);
-    }, this);
-    let oldNobjects = this.nTargets;
-    this.nTargets += res.length;
-    this.resetWarnings();
-    this.processOfflineTime();
-    for (let i = oldNobjects; i < this.nTargets; i += 1) {
-        this.Targets[i] = this.processTarget(i, res[i - oldNobjects]);
+    try {
+        const res = obj.map(function (x) {
+            return this.targetStringToJSON (x);
+        }, this);
+        let oldNobjects = this.nTargets;
+        this.nTargets += res.length;
+        this.resetWarnings();
+        this.processOfflineTime();
+        for (let i = oldNobjects; i < this.nTargets; i += 1) {
+            this.Targets[i] = this.processTarget(i, res[i - oldNobjects]);
+        }
+        this.warnUnobservable();
+        this.setTargetsSize();
+    } catch (e) {
+        helper.LogException(e);
     }
-    this.warnUnobservable();
-    this.setTargetsSize();
 };
 
 /**
  * @memberof TargetList
  */
 TargetList.prototype.processTarget = function (i, obj) {
-    const target = new Target(i, obj);
-    target.preCompute();
-    target.LabelX = target.ZenithTime;
-    if (target.LabelX < driver.night.ENauTwilight) {
-        target.LabelX = driver.night.ENauTwilight;
-    } else if (target.LabelX > driver.night.MNauTwilight) {
-        target.LabelX = driver.night.MNauTwilight;
+    try {
+        const target = new Target(i, obj);
+        target.preCompute();
+        target.LabelX = target.ZenithTime;
+        if (target.LabelX < driver.night.ENauTwilight) {
+            target.LabelX = driver.night.ENauTwilight;
+        } else if (target.LabelX > driver.night.MNauTwilight) {
+            target.LabelX = driver.night.MNauTwilight;
+        }
+        target.LabelY = target.getAltitude(target.LabelX);
+        return target;
+    } catch (e) {
+        helper.LogException(e);
     }
-    target.LabelY = target.getAltitude(target.LabelX);
-    return target;
 };
 
 /**
  * @memberof Target
  */
 Target.prototype.intersectingChain = function (Targets, checked) {
-    let len, iIntersect = [], i, j, chain = [this.Index], rc;
-    if (checked.indexOf(this.Index) > -1) {
-        return [];
-    }
-    if (this.xlab < driver.graph.xstart || this.xlab > driver.graph.xstart + driver.graph.width ||
-            this.ylab > driver.graph.yend) {
-        return [];
-    }
-    checked.push(this.Index);
-    for (j = 0, len = Targets.length; j < len; j += 1) {
-        if (j === this.Index || checked.indexOf(j) > -1) {
-            continue;
+    try {
+        let len, iIntersect = [], i, j, chain = [this.Index], rc;
+        if (checked.indexOf(this.Index) > -1) {
+            return [];
         }
-        if (helper.TwoCirclesIntersect(this.xlab, this.ylab, driver.graph.CircleSize + 0.5, Targets[j].xlab, Targets[j].ylab, driver.graph.CircleSize + 0.5)) {
-            iIntersect.push(j);
+        if (this.xlab < driver.graph.xstart || this.xlab > driver.graph.xstart + driver.graph.width ||
+                this.ylab > driver.graph.yend) {
+            return [];
         }
+        checked.push(this.Index);
+        for (j = 0, len = Targets.length; j < len; j += 1) {
+            if (j === this.Index || checked.indexOf(j) > -1) {
+                continue;
+            }
+            if (helper.TwoCirclesIntersect(this.xlab, this.ylab, driver.graph.CircleSize + 0.5, Targets[j].xlab, Targets[j].ylab, driver.graph.CircleSize + 0.5)) {
+                iIntersect.push(j);
+            }
+        }
+        for (i in iIntersect) {
+            j = iIntersect[i];
+            chain = chain.concat(Targets[j].intersectingChain(Targets, checked));
+        }
+        return chain;
+    } catch (e) {
+        helper.LogException(e);
     }
-    for (i in iIntersect) {
-        j = iIntersect[i];
-        chain = chain.concat(Targets[j].intersectingChain(Targets, checked));
-    }
-    return chain;
 };
 
 /**
  * @memberof TargetList
  */
 TargetList.prototype.removeClusters = function () {
-    let checked = [], i, cluster, hasclusters, nIter = 0;
-    do {
-        hasclusters = false;
-        for (i = 0; i < this.nTargets; i += 1) {
-            cluster = this.Targets[i].intersectingChain(this.Targets, checked);
-            if (cluster.length > 1) {
-                hasclusters = true;
-                this.spaceOutCluster(cluster);
+    try {
+        let checked = [], i, cluster, hasclusters, nIter = 0;
+        do {
+            hasclusters = false;
+            for (i = 0; i < this.nTargets; i += 1) {
+                cluster = this.Targets[i].intersectingChain(this.Targets, checked);
+                if (cluster.length > 1) {
+                    hasclusters = true;
+                    this.spaceOutCluster(cluster);
+                }
             }
-        }
-        nIter += 1;
-    } while (hasclusters || nIter < 10);
+            nIter += 1;
+        } while (hasclusters || nIter < 10);
+    } catch (e) {
+        helper.LogException(e);
+    }
 };
 
 /**
  * @memberof TargetList
  */
 TargetList.prototype.spaceOutCluster = function (cluster) {
-    let i, obj, prev;
-    for (i = 1; i < cluster.length; i += 1) {
-        prev = this.Targets[cluster[i - 1]];
-        obj = this.Targets[cluster[i]];
-        obj.xlab = Math.max(prev.xlab, obj.xlab);
-        do {
-            obj.xlab += 1;
-            obj.LabelX = driver.graph.reverseTransformXLocation(obj.xlab);
-            obj.LabelY = obj.getAltitude(obj.LabelX);
-            obj.ylab = driver.graph.transformYLocation(obj.LabelY);
-        } while (helper.TwoCirclesIntersect(obj.xlab, obj.ylab, driver.graph.CircleSize + 0.5, prev.xlab, prev.ylab, driver.graph.CircleSize + 0.5));
+    try {
+        let i, obj, prev;
+        for (i = 1; i < cluster.length; i += 1) {
+            prev = this.Targets[cluster[i - 1]];
+            obj = this.Targets[cluster[i]];
+            obj.xlab = Math.max(prev.xlab, obj.xlab);
+            do {
+                obj.xlab += 1;
+                obj.LabelX = driver.graph.reverseTransformXLocation(obj.xlab);
+                obj.LabelY = obj.getAltitude(obj.LabelX);
+                obj.ylab = driver.graph.transformYLocation(obj.LabelY);
+            } while (helper.TwoCirclesIntersect(obj.xlab, obj.ylab, driver.graph.CircleSize + 0.5, prev.xlab, prev.ylab, driver.graph.CircleSize + 0.5));
+        }
+    } catch (e) {
+        helper.LogException(e);
     }
 };
 
@@ -425,10 +465,14 @@ TargetList.prototype.spaceOutCluster = function (cluster) {
  * @memberof TargetList
  */
 TargetList.prototype.processOfflineTime = function () {
-    let i, len = this.BadWolfStart.length;
-    this.Offline = [];
-    for (i = 0; i < len; i += 1) {
-        this.Offline.push({Start: this.BadWolfStart[i], End: this.BadWolfEnd[i]});
+    try {
+        let i, len = this.BadWolfStart.length;
+        this.Offline = [];
+        for (i = 0; i < len; i += 1) {
+            this.Offline.push({Start: this.BadWolfStart[i], End: this.BadWolfEnd[i]});
+        }
+    } catch (e) {
+        helper.LogException(e);
     }
 };
 
@@ -456,71 +500,79 @@ TargetList.prototype.warnUnobservable = function () {
  * @memberof TargetList
  */
 TargetList.prototype.canSchedule = function (obj, start) {
-    let end = start + obj.Exptime;
-    let overlaps = false, i, other;
-    for (i = 0; i < this.nTargets; i += 1) {
-        if (i === this.Index) {
-            continue;
+    try {
+        let end = start + obj.Exptime;
+        let overlaps = false, i, other;
+        for (i = 0; i < this.nTargets; i += 1) {
+            if (i === this.Index) {
+                continue;
+            }
+            other = this.Targets[i];
+            if (!other.Scheduled) {
+                continue;
+            }
+            if (end <= other.ScheduledStartTime || start >= other.ScheduledEndTime) {
+                continue;
+            }
+            overlaps = true;
+            break;
         }
-        other = this.Targets[i];
-        if (!other.Scheduled) {
-            continue;
+        if (overlaps) {
+            return false;
         }
-        if (end <= other.ScheduledStartTime || start >= other.ScheduledEndTime) {
-            continue;
-        }
-        overlaps = true;
-        break;
-    }
-    if (overlaps) {
-        return false;
-    }
 
-    for (i = 0; i < obj.nAllowed; i += 1) {
-        if (start >= obj.beginAllowed[i] && end <= obj.endAllowed[i]) {
-            return true;
+        for (i = 0; i < obj.nAllowed; i += 1) {
+            if (start >= obj.beginAllowed[i] && end <= obj.endAllowed[i]) {
+                return true;
+            }
         }
+        return false;
+    } catch (e) {
+        helper.LogException(e);
     }
-    return false;
 };
 
 /**
  * @memberof TargetList
  */
 TargetList.prototype.optimize_interchangeNeighbours = function (scheduleorder) {
-    let i, obj1, obj2, am1now, am2now, am1if, am2if, exchange, t1, c;
-    for (i = 0; i < scheduleorder.length - 1; i += 1) {
-        obj1 = this.Targets[scheduleorder[i]];
-        obj2 = this.Targets[scheduleorder[i + 1]];
-        if (obj1.Observed || obj2.Observed) {
-            continue;
+    try {
+        let i, obj1, obj2, am1now, am2now, am1if, am2if, exchange, t1, c;
+        for (i = 0; i < scheduleorder.length - 1; i += 1) {
+            obj1 = this.Targets[scheduleorder[i]];
+            obj2 = this.Targets[scheduleorder[i + 1]];
+            if (obj1.Observed || obj2.Observed) {
+                continue;
+            }
+            if (obj1.FillSlot || obj2.FillSlot) {
+                continue;
+            }
+            if (this.canSchedule(obj2, obj1.ScheduledStartTime) === false) {
+                continue;
+            }
+            if (this.canSchedule(obj1, obj1.ScheduledStartTime + obj2.Exptime) === false) {
+                continue;
+            }
+            am1now = (obj1.AltStartTime + obj1.AltMidTime + obj1.AltEndTime) / 3;
+            am2now = (obj2.AltStartTime + obj2.AltMidTime + obj2.AltEndTime) / 3;
+            am1if = obj1.getAltitude(obj1.ScheduledStartTime + obj2.Exptime + 0.5 * obj1.Exptime);
+            am2if = obj2.getAltitude(obj1.ScheduledStartTime + 0.5 * obj2.Exptime);
+            exchange = false;
+            if (((am1now < am2now) && (am2if > am1now) && (am1if > am1now)) ||
+                    ((am2now < am1now) && (am1if > am2now) && (am2if > am2now))) {
+                exchange = true;
+            }
+            t1 = obj1.ScheduledStartTime;
+            if (exchange) {
+                obj2.Schedule(t1);
+                obj1.Schedule(t1 + obj2.Exptime);
+                c = scheduleorder[i];
+                scheduleorder[i] = scheduleorder[i + 1];
+                scheduleorder[i + 1] = c;
+            }
         }
-        if (obj1.FillSlot || obj2.FillSlot) {
-            continue;
-        }
-        if (this.canSchedule(obj2, obj1.ScheduledStartTime) === false) {
-            continue;
-        }
-        if (this.canSchedule(obj1, obj1.ScheduledStartTime + obj2.Exptime) === false) {
-            continue;
-        }
-        am1now = (obj1.AltStartTime + obj1.AltMidTime + obj1.AltEndTime) / 3;
-        am2now = (obj2.AltStartTime + obj2.AltMidTime + obj2.AltEndTime) / 3;
-        am1if = obj1.getAltitude(obj1.ScheduledStartTime + obj2.Exptime + 0.5 * obj1.Exptime);
-        am2if = obj2.getAltitude(obj1.ScheduledStartTime + 0.5 * obj2.Exptime);
-        exchange = false;
-        if (((am1now < am2now) && (am2if > am1now) && (am1if > am1now)) ||
-                ((am2now < am1now) && (am1if > am2now) && (am2if > am2now))) {
-            exchange = true;
-        }
-        t1 = obj1.ScheduledStartTime;
-        if (exchange) {
-            obj2.Schedule(t1);
-            obj1.Schedule(t1 + obj2.Exptime);
-            c = scheduleorder[i];
-            scheduleorder[i] = scheduleorder[i + 1];
-            scheduleorder[i + 1] = c;
-        }
+    } catch (e) {
+        helper.LogException(e);
     }
 };
 
@@ -528,54 +580,58 @@ TargetList.prototype.optimize_interchangeNeighbours = function (scheduleorder) {
  * @memberof TargetList
  */
 TargetList.prototype.optimize_moveToLaterTimesIfRising = function (scheduleorder) {
-    let i, obj, j, kj, curtime, overlaps, amif;
-    for (i = scheduleorder.length - 1; i >= 0; i -= 1) {
-        obj = this.Targets[scheduleorder[i]];
-        if (obj.Observed) {
-            continue;
-        }
-        if (obj.FillSlot) {
-            continue;
-        }
-        if (obj.ZenithTime <= obj.ScheduledStartTime) {
-            continue;
-        }
-        let bestalt = obj.AltMidTime;
-        let besttime = obj.ScheduledStartTime;
-        // Move to the right as much as possible
-        for (curtime = Math.min(driver.night.Sunrise, obj.LastPossibleTime, driver.night.Sunset + Math.floor((2 * obj.ZenithTime - obj.ScheduledMidTime - driver.night.Sunset) / driver.night.xstep) * driver.night.xstep);
-                curtime > obj.ScheduledStartTime;
-                curtime -= driver.night.xstep) {
-            overlaps = false;
-            for (j = 0; j < scheduleorder.length; j += 1) {
-                if (j == i) {
-                    continue;
-                }
-                kj = scheduleorder[j];
-                if (this.Targets[kj].Scheduled === false) {
-                    continue;
-                }
-                if (curtime + obj.Exptime <= this.Targets[kj].ScheduledStartTime ||
-                        curtime >= this.Targets[kj].ScheduledEndTime) {
-                    continue;
-                }
-                overlaps = true;
-                break;
-            }
-            if (overlaps) {
+    try {
+        let i, obj, j, kj, curtime, overlaps, amif;
+        for (i = scheduleorder.length - 1; i >= 0; i -= 1) {
+            obj = this.Targets[scheduleorder[i]];
+            if (obj.Observed) {
                 continue;
             }
-            if (this.canSchedule(obj, curtime)) {
-                amif = obj.getAltitude(curtime + 0.5 * obj.Exptime);
-                if (amif > bestalt) {
-                    bestalt = amif;
-                    besttime = curtime;
+            if (obj.FillSlot) {
+                continue;
+            }
+            if (obj.ZenithTime <= obj.ScheduledStartTime) {
+                continue;
+            }
+            let bestalt = obj.AltMidTime;
+            let besttime = obj.ScheduledStartTime;
+            // Move to the right as much as possible
+            for (curtime = Math.min(driver.night.Sunrise, obj.LastPossibleTime, driver.night.Sunset + Math.floor((2 * obj.ZenithTime - obj.ScheduledMidTime - driver.night.Sunset) / driver.night.xstep) * driver.night.xstep);
+                    curtime > obj.ScheduledStartTime;
+                    curtime -= driver.night.xstep) {
+                overlaps = false;
+                for (j = 0; j < scheduleorder.length; j += 1) {
+                    if (j == i) {
+                        continue;
+                    }
+                    kj = scheduleorder[j];
+                    if (this.Targets[kj].Scheduled === false) {
+                        continue;
+                    }
+                    if (curtime + obj.Exptime <= this.Targets[kj].ScheduledStartTime ||
+                            curtime >= this.Targets[kj].ScheduledEndTime) {
+                        continue;
+                    }
+                    overlaps = true;
+                    break;
+                }
+                if (overlaps) {
+                    continue;
+                }
+                if (this.canSchedule(obj, curtime)) {
+                    amif = obj.getAltitude(curtime + 0.5 * obj.Exptime);
+                    if (amif > bestalt) {
+                        bestalt = amif;
+                        besttime = curtime;
+                    }
                 }
             }
+            if (besttime > obj.ScheduledStartTime) {
+                obj.Schedule(besttime);
+            }
         }
-        if (besttime > obj.ScheduledStartTime) {
-            obj.Schedule(besttime);
-        }
+    } catch (e) {
+        helper.LogException(e);
     }
 };
 
@@ -583,457 +639,481 @@ TargetList.prototype.optimize_moveToLaterTimesIfRising = function (scheduleorder
  * @memberof TargetList
  */
 TargetList.prototype.reorder_accordingToScheduling = function (scheduleorder) {
-    let newtargets = [], i, j, k, imin, tmin, tj;
-    for (i = 0; i < scheduleorder.length - 1; i += 1) {
-        imin = i;
-        tmin = this.Targets[scheduleorder[i]].ScheduledStartTime;
-        for (j = i + 1; j < scheduleorder.length; j += 1) {
-            tj = this.Targets[scheduleorder[j]].ScheduledStartTime;
-            if (tj < tmin) {
-                imin = j;
-                tmin = tj;
+    try {
+        let newtargets = [], i, j, k, imin, tmin, tj;
+        for (i = 0; i < scheduleorder.length - 1; i += 1) {
+            imin = i;
+            tmin = this.Targets[scheduleorder[i]].ScheduledStartTime;
+            for (j = i + 1; j < scheduleorder.length; j += 1) {
+                tj = this.Targets[scheduleorder[j]].ScheduledStartTime;
+                if (tj < tmin) {
+                    imin = j;
+                    tmin = tj;
+                }
+            }
+            if (imin > i) {
+                k = scheduleorder[i];
+                scheduleorder[i] = scheduleorder[imin];
+                scheduleorder[imin] = k;
             }
         }
-        if (imin > i) {
+        let running = 0;
+        for (i = 0; i < scheduleorder.length; i += 1) {
             k = scheduleorder[i];
-            scheduleorder[i] = scheduleorder[imin];
-            scheduleorder[imin] = k;
-        }
-    }
-    let running = 0;
-    for (i = 0; i < scheduleorder.length; i += 1) {
-        k = scheduleorder[i];
-        this.Targets[k].rxmid = driver.graph.targetsx;
-        this.Targets[k].rymid = driver.graph.targetsy + running * (driver.graph.targetsyskip * (driver.graph.doubleTargets ? 2 : 1) + 2) - 6.5;
-        this.Targets[k].Index = running;
-        running += 1;
-        newtargets.push(this.Targets[scheduleorder[i]]);
-    }
-    for (i = 0; i < this.nTargets; i += 1) {
-        if (this.Targets[i].Scheduled === false) {
-            this.Targets[i].rxmid = driver.graph.targetsx;
-            this.Targets[i].rymid = driver.graph.targetsy + running * (driver.graph.targetsyskip * (driver.graph.doubleTargets ? 2 : 1) + 2) - 6.5;
-            this.Targets[i].Index = running;
+            this.Targets[k].rxmid = driver.graph.targetsx;
+            this.Targets[k].rymid = driver.graph.targetsy + running * (driver.graph.targetsyskip * (driver.graph.doubleTargets ? 2 : 1) + 2) - 6.5;
+            this.Targets[k].Index = running;
             running += 1;
-            newtargets.push(this.Targets[i]);
+            newtargets.push(this.Targets[scheduleorder[i]]);
         }
+        for (i = 0; i < this.nTargets; i += 1) {
+            if (this.Targets[i].Scheduled === false) {
+                this.Targets[i].rxmid = driver.graph.targetsx;
+                this.Targets[i].rymid = driver.graph.targetsy + running * (driver.graph.targetsyskip * (driver.graph.doubleTargets ? 2 : 1) + 2) - 6.5;
+                this.Targets[i].Index = running;
+                running += 1;
+                newtargets.push(this.Targets[i]);
+            }
+        }
+        this.Targets = newtargets;
+    } catch (e) {
+        helper.LogException(e);
     }
-    this.Targets = newtargets;
 };
 
 /**
  * @memberof TargetList
  */
 TargetList.prototype.display_scheduleStatistics = function () {
-    let projtime = [];
-    let time_dark = driver.night.DarkTime * 86400;
-    let time_night = driver.night.NightLength * 86400;
-    let time_sched = 0;
-    let i, obj, j, k, inserted, minproj, minloc, exch;
-    for (i = 0; i < this.nTargets; i += 1) {
-        obj = this.Targets[i];
-        if (obj.Scheduled) {
-            time_sched += obj.ExptimeSeconds;
-            inserted = false;
-            for (j = 0; j < projtime.length; j += 1) {
-                if (projtime[j].pid == obj.ProjectNumber) {
-                    projtime[j].exp += obj.ExptimeSeconds;
-                    inserted = true;
-                    break;
+    try {
+        let projtime = [];
+        let time_dark = driver.night.DarkTime * 86400;
+        let time_night = driver.night.NightLength * 86400;
+        let time_sched = 0;
+        let i, obj, j, k, inserted, minproj, minloc, exch;
+        for (i = 0; i < this.nTargets; i += 1) {
+            obj = this.Targets[i];
+            if (obj.Scheduled) {
+                time_sched += obj.ExptimeSeconds;
+                inserted = false;
+                for (j = 0; j < projtime.length; j += 1) {
+                    if (projtime[j].pid == obj.ProjectNumber) {
+                        projtime[j].exp += obj.ExptimeSeconds;
+                        inserted = true;
+                        break;
+                    }
+                }
+                if (inserted === false) {
+                    projtime.push({"pid": obj.ProjectNumber, "exp": obj.ExptimeSeconds});
                 }
             }
-            if (inserted === false) {
-                projtime.push({"pid": obj.ProjectNumber, "exp": obj.ExptimeSeconds});
+        }
+        for (j = 0; j < projtime.length - 1; j += 1) {
+            minproj = projtime[j].pid;
+            minloc = j;
+            for (k = j + 1; k < projtime.length; k += 1) {
+                if (projtime[k].pid < minproj) {
+                    minproj = projtime[k].pid;
+                    minloc = k;
+                }
+            }
+            if (minloc > j) {
+                exch = projtime[j];
+                projtime[j] = projtime[minloc];
+                projtime[minloc] = exch;
             }
         }
-    }
-    for (j = 0; j < projtime.length - 1; j += 1) {
-        minproj = projtime[j].pid;
-        minloc = j;
-        for (k = j + 1; k < projtime.length; k += 1) {
-            if (projtime[k].pid < minproj) {
-                minproj = projtime[k].pid;
-                minloc = k;
+        let time_lost = 0, bwst, bwen;
+        for (i = 0; i < this.Offline.length; i += 1) {
+            bwst = Math.min(Math.max(this.Offline[i].Start, driver.night.ENauTwilight), driver.night.MNauTwilight);
+            bwen = Math.max(Math.min(this.Offline[i].End, driver.night.MNauTwilight), driver.night.ENauTwilight);
+            time_lost += bwen - bwst;
+        }
+        time_lost *= 86400;
+        let time_free = time_night - time_sched - time_lost;
+        let ratio_sched = Math.round(time_sched * 100 / time_night);
+        let ratio_lost = Math.round(time_lost * 100 / time_night);
+        let ratio_free = time_free > 0 ? Math.round(time_free * 100 / time_night) : 0;
+        if (ratio_sched + ratio_lost + ratio_free !== 100) {
+            if (time_free > 0) {
+                ratio_free = 100 - ratio_sched - ratio_lost;
+            }
+            else {
+                ratio_lost = 100 - ratio_sched;
             }
         }
-        if (minloc > j) {
-            exch = projtime[j];
-            projtime[j] = projtime[minloc];
-            projtime[minloc] = exch;
+        let describeNight;
+        switch ($('input[type="radio"][name="opt_schedule_between"]:checked').val()) {
+            case "sunset-sunrise":
+                describeNight = "SET-RIS";
+                break;
+            case "astronomical":
+                describeNight = "EAT-MAT";
+                break;
+            default:
+                describeNight = "ENT-MNT";
         }
-    }
-    let time_lost = 0, bwst, bwen;
-    for (i = 0; i < this.Offline.length; i += 1) {
-        bwst = Math.min(Math.max(this.Offline[i].Start, driver.night.ENauTwilight), driver.night.MNauTwilight);
-        bwen = Math.max(Math.min(this.Offline[i].End, driver.night.MNauTwilight), driver.night.ENauTwilight);
-        time_lost += bwen - bwst;
-    }
-    time_lost *= 86400;
-    let time_free = time_night - time_sched - time_lost;
-    let ratio_sched = Math.round(time_sched * 100 / time_night);
-    let ratio_lost = Math.round(time_lost * 100 / time_night);
-    let ratio_free = time_free > 0 ? Math.round(time_free * 100 / time_night) : 0;
-    if (ratio_sched + ratio_lost + ratio_free !== 100) {
-        if (time_free > 0) {
-            ratio_free = 100 - ratio_sched - ratio_lost;
+        helper.LogSuccess(`Night length (${describeNight}):    ${helper.ReportSHM(time_night)}`);
+        helper.LogEntry(`Dark time (EAT-MAT):       ${helper.ReportSHM(time_dark)}`);
+        if (time_sched > 0) {
+            helper.LogSuccess(`Scheduled observing time:  ${helper.ReportSHM(time_sched)} (${ratio_sched.toFixed(0)}%)`);
         }
-        else {
-            ratio_lost = 100 - ratio_sched;
+        if (time_lost > 0) {
+            helper.LogSuccess(`Offline (lost) time:       ${helper.ReportSHM(time_lost)} (${ratio_lost.toFixed(0)}%)`);
         }
-    }
-    let describeNight;
-    switch ($('input[type="radio"][name="opt_schedule_between"]:checked').val()) {
-        case "sunset-sunrise":
-            describeNight = "SET-RIS";
-            break;
-        case "astronomical":
-            describeNight = "EAT-MAT";
-            break;
-        default:
-            describeNight = "ENT-MNT";
-    }
-    helper.LogSuccess(`Night length (${describeNight}):    ${helper.ReportSHM(time_night)}`);
-    helper.LogEntry(`Dark time (EAT-MAT):       ${helper.ReportSHM(time_dark)}`);
-    if (time_sched > 0) {
-        helper.LogSuccess(`Scheduled observing time:  ${helper.ReportSHM(time_sched)} (${ratio_sched.toFixed(0)}%)`);
-    }
-    if (time_lost > 0) {
-        helper.LogSuccess(`Offline (lost) time:       ${helper.ReportSHM(time_lost)} (${ratio_lost.toFixed(0)}%)`);
-    }
-    if (time_night - time_sched - time_lost > 0) {
-        helper.LogSuccess(`Non-scheduled (free) time: ${helper.ReportSHM(time_night - time_sched - time_lost)} (${((ratio_sched + ratio_lost) > 100 ? 0 : (100 - ratio_sched - ratio_lost)).toFixed(0)}%)`);
-    }
-    if (time_sched > 0) {
-        helper.LogSuccess("Breakdown of observing time per proposal:");
-        for (j = 0; j < projtime.length; j += 1) {
-            helper.LogSuccess(`    ${projtime[j].pid}:  ${helper.ReportSHM(projtime[j].exp)}`);
+        if (time_night - time_sched - time_lost > 0) {
+            helper.LogSuccess(`Non-scheduled (free) time: ${helper.ReportSHM(time_night - time_sched - time_lost)} (${((ratio_sched + ratio_lost) > 100 ? 0 : (100 - ratio_sched - ratio_lost)).toFixed(0)}%)`);
         }
+        if (time_sched > 0) {
+            helper.LogSuccess("Breakdown of observing time per proposal:");
+            for (j = 0; j < projtime.length; j += 1) {
+                helper.LogSuccess(`    ${projtime[j].pid}:  ${helper.ReportSHM(projtime[j].exp)}`);
+            }
+        }
+    } catch (e) {
+        helper.LogException(e);
     }
 };
 
 TargetList.prototype.schedule_withWeights = function (startingAt) {
-    let curidx = startingAt;
-    const wp = Driver.w_priority;
-    const wu = Driver.w_urgency;
-    const wa = Driver.w_altitude;
-    const ws = Driver.w_slewing;
-    const maxpriority = Math.max.apply(Math, this.Targets.map(function (o) { return o.Priority; }));
-    let lastra = null, lastdec = null;
-    // Start scheduling
-    let scheduleorder = [];
-    // However, before anything else we schedule the programmes that MUST fill their entire time slot
-    for (let i = 0; i < this.nTargets; i += 1) {
-        const tgt = this.Targets[i];
-        if (tgt.FillSlot && tgt.nAllowed > 0) {
-            tgt.Schedule(tgt.beginAllowed[0]); // Attention, this might lead to overlaps! But the user decided so!
-            scheduleorder.push(i);
-        }
-    }
-    while (true) {
-        if (curidx >= driver.night.Nx) break;
-        const curtime = driver.night.xaxis[curidx];
-        const weights = [];
-        // Get a list of all targets that can be scheduled at this time,
-        // together with their weighted priority
+    try {
+        let curidx = startingAt;
+        const wp = Driver.w_priority;
+        const wu = Driver.w_urgency;
+        const wa = Driver.w_altitude;
+        const ws = Driver.w_slewing;
+        const maxpriority = Math.max.apply(Math, this.Targets.map(function (o) { return o.Priority; }));
+        let lastra = null, lastdec = null;
+        // Start scheduling
+        let scheduleorder = [];
+        // However, before anything else we schedule the programmes that MUST fill their entire time slot
         for (let i = 0; i < this.nTargets; i += 1) {
             const tgt = this.Targets[i];
-            if (tgt.Observed) {
-                continue;
-            }
-            if (tgt.Scheduled) {
-                continue;
-            }
-            // Monitoring programmes that fill their slot get the highest priority, as decided by the user
-            if (!this.canSchedule(tgt, curtime)) {
-                continue;
-            }
-            // Calculate weight
-            const priority = tgt.Priority / maxpriority; // 0-1;
-            const urgency = 1 / (tgt.LastPossibleTime - curtime + 1); // 0-1, becomes 1 at the last possible time
-            const altitude = Math.sin(sla.d2r * tgt.Graph[curidx]); // 0-1, the higher the altitude the better
-            const slewing = lastra === null ? 1 : 1-sla.dsep(lastra, lastdec, tgt.RA_rad, tgt.Dec_rad) / Math.PI; // 0-1, 1 if no slewing, 0 if 180 deg slewing
-            weights[i] = wp * priority + wu * urgency + wa * altitude + ws * slewing;
-        }
-        let maxKey = null;
-        let maxVal = -Infinity;
-        for (const [key, val] of Object.entries(weights)) {
-            if (val > maxVal) {
-                maxVal = val;
-                maxKey = Number(key);
+            if (tgt.FillSlot && tgt.nAllowed > 0) {
+                tgt.Schedule(tgt.beginAllowed[0]); // Attention, this might lead to overlaps! But the user decided so!
+                scheduleorder.push(i);
             }
         }
-        if (maxKey === null) {
-            curidx += 1;
-            continue;
-        }
-        scheduleorder.push(maxKey);
-        const obj = this.Targets[maxKey];
-        obj.Schedule(curtime);
-        curidx += Math.ceil(obj.Exptime / driver.night.xstep);
-        lastra = obj.RA_rad;
-        lastdec = obj.Dec_rad;
-    };
-    console.log("withWeights: ", scheduleorder);
-    return scheduleorder;
+        while (true) {
+            if (curidx >= driver.night.Nx) break;
+            const curtime = driver.night.xaxis[curidx];
+            const weights = [];
+            // Get a list of all targets that can be scheduled at this time,
+            // together with their weighted priority
+            for (let i = 0; i < this.nTargets; i += 1) {
+                const tgt = this.Targets[i];
+                if (tgt.Observed) {
+                    continue;
+                }
+                if (tgt.Scheduled) {
+                    continue;
+                }
+                // Monitoring programmes that fill their slot get the highest priority, as decided by the user
+                if (!this.canSchedule(tgt, curtime)) {
+                    continue;
+                }
+                // Calculate weight
+                const priority = tgt.Priority / maxpriority; // 0-1;
+                const urgency = 1 / (tgt.LastPossibleTime - curtime + 1); // 0-1, becomes 1 at the last possible time
+                const altitude = Math.sin(sla.d2r * tgt.Graph[curidx]); // 0-1, the higher the altitude the better
+                const slewing = lastra === null ? 1 : 1-sla.dsep(lastra, lastdec, tgt.RA_rad, tgt.Dec_rad) / Math.PI; // 0-1, 1 if no slewing, 0 if 180 deg slewing
+                weights[i] = wp * priority + wu * urgency + wa * altitude + ws * slewing;
+            }
+            let maxKey = null;
+            let maxVal = -Infinity;
+            for (const [key, val] of Object.entries(weights)) {
+                if (val > maxVal) {
+                    maxVal = val;
+                    maxKey = Number(key);
+                }
+            }
+            if (maxKey === null) {
+                curidx += 1;
+                continue;
+            }
+            scheduleorder.push(maxKey);
+            const obj = this.Targets[maxKey];
+            obj.Schedule(curtime);
+            curidx += Math.ceil(obj.Exptime / driver.night.xstep);
+            lastra = obj.RA_rad;
+            lastdec = obj.Dec_rad;
+        };
+        console.log("withWeights: ", scheduleorder);
+        return scheduleorder;
+    } catch (e) {
+        helper.LogException(e);
+    }
 };
 
 /**
  * @memberof TargetList
  */
 TargetList.prototype.schedule_inOrderOfSetting = function (startingAt) {
-    let EndTimes = [];
-    let temporder = [];
-    let prevschedule = [];
-    let i, j = 0, k, obj;
-    for (i = 0; i < this.nTargets; i += 1) {
-        if (this.Targets[i].Observed) {
-            prevschedule.push(i);
-            continue;
-        }
-        this.Targets[i].Scheduled = false;
-        if (this.Targets[i].ObservableTonight === false) {
-            continue;
-        }
-        temporder[j] = i;
-        EndTimes[j++] = this.Targets[i].LastPossibleTime;
-    }
-    let SchedulableObjects = j;
-    // Sort object by end time (argsort in python...)
-    let mapped = EndTimes.map(function (el, i) {
-        return {index: i, value: el};
-    });
-    mapped.sort(function (a, b) {
-        return +(a.value > b.value) || +(a.value === b.value) - 1;
-    });
-    let maporder = mapped.map(function (el) {
-        return el.index;
-    });
-    let order = [];
-    for (i = 0; i < SchedulableObjects; i += 1) {
-        order[i] = temporder[maporder[i]];
-    }
-
-    // Start the earliest possible
-    let firstSchedulableTime = driver.night.Sunrise;
-    let lastSchedulableTime = driver.night.Sunset;
-    for (i = 0; i < SchedulableObjects; i += 1) {
-        k = order[i];
-        if (this.Targets[k].FirstPossibleTime < firstSchedulableTime) {
-            firstSchedulableTime = this.Targets[k].FirstPossibleTime;
-        }
-        if (this.Targets[k].LastPossibleTime > lastSchedulableTime) {
-            lastSchedulableTime = this.Targets[k].LastPossibleTime;
-        }
-    }
-    if (firstSchedulableTime < startingAt) {
-        firstSchedulableTime = startingAt;
-    }
-    // Start scheduling
-    let scheduleorder = [];
-    // However, before anything else we schedule the monitoring programmes that have highest priority and MUST fill their entire time slot
-    for (i = 0; i < SchedulableObjects; i += 1) {
-        k = order[i];
-        obj = this.Targets[k];
-        if (obj.FillSlot && obj.nAllowed > 0) {
-            obj.Schedule(obj.beginAllowed[0]); // Attention, this might lead to overlaps! But the user decided so!
-            scheduleorder.push(k);
-        }
-    }
-
-    // Now go through all the other objects
-    let curtime = firstSchedulableTime;
-    while (true) {
-        i = 0;
-        while (i < SchedulableObjects) {
-            k = order[i];
-            obj = this.Targets[k];
-            if (obj.Scheduled === true) {
-                i += 1;
+    try {
+        let EndTimes = [];
+        let temporder = [];
+        let prevschedule = [];
+        let i, j = 0, k, obj;
+        for (i = 0; i < this.nTargets; i += 1) {
+            if (this.Targets[i].Observed) {
+                prevschedule.push(i);
                 continue;
             }
-            if (this.canSchedule(obj, curtime)) {
-                obj.Schedule(curtime);
-                curtime += obj.Exptime;
-                scheduleorder.push(k);
-                i = 0;
-            } else {
-                i += 1;
+            this.Targets[i].Scheduled = false;
+            if (this.Targets[i].ObservableTonight === false) {
+                continue;
+            }
+            temporder[j] = i;
+            EndTimes[j++] = this.Targets[i].LastPossibleTime;
+        }
+        let SchedulableObjects = j;
+        // Sort object by end time (argsort in python...)
+        let mapped = EndTimes.map(function (el, i) {
+            return {index: i, value: el};
+        });
+        mapped.sort(function (a, b) {
+            return +(a.value > b.value) || +(a.value === b.value) - 1;
+        });
+        let maporder = mapped.map(function (el) {
+            return el.index;
+        });
+        let order = [];
+        for (i = 0; i < SchedulableObjects; i += 1) {
+            order[i] = temporder[maporder[i]];
+        }
+
+        // Start the earliest possible
+        let firstSchedulableTime = driver.night.Sunrise;
+        let lastSchedulableTime = driver.night.Sunset;
+        for (i = 0; i < SchedulableObjects; i += 1) {
+            k = order[i];
+            if (this.Targets[k].FirstPossibleTime < firstSchedulableTime) {
+                firstSchedulableTime = this.Targets[k].FirstPossibleTime;
+            }
+            if (this.Targets[k].LastPossibleTime > lastSchedulableTime) {
+                lastSchedulableTime = this.Targets[k].LastPossibleTime;
             }
         }
-        if ((scheduleorder.length < SchedulableObjects) && (curtime < lastSchedulableTime)) {
-            curtime += driver.night.xstep;
-        } else {
-            break;
+        if (firstSchedulableTime < startingAt) {
+            firstSchedulableTime = startingAt;
         }
+        // Start scheduling
+        let scheduleorder = [];
+        // However, before anything else we schedule the monitoring programmes that have highest priority and MUST fill their entire time slot
+        for (i = 0; i < SchedulableObjects; i += 1) {
+            k = order[i];
+            obj = this.Targets[k];
+            if (obj.FillSlot && obj.nAllowed > 0) {
+                obj.Schedule(obj.beginAllowed[0]); // Attention, this might lead to overlaps! But the user decided so!
+                scheduleorder.push(k);
+            }
+        }
+
+        // Now go through all the other objects
+        let curtime = firstSchedulableTime;
+        while (true) {
+            i = 0;
+            while (i < SchedulableObjects) {
+                k = order[i];
+                obj = this.Targets[k];
+                if (obj.Scheduled === true) {
+                    i += 1;
+                    continue;
+                }
+                if (this.canSchedule(obj, curtime)) {
+                    obj.Schedule(curtime);
+                    curtime += obj.Exptime;
+                    scheduleorder.push(k);
+                    i = 0;
+                } else {
+                    i += 1;
+                }
+            }
+            if ((scheduleorder.length < SchedulableObjects) && (curtime < lastSchedulableTime)) {
+                curtime += driver.night.xstep;
+            } else {
+                break;
+            }
+        }
+        console.log("inOrderOfSetting: ", scheduleorder);
+        return prevschedule.concat(scheduleorder);
+    } catch (e) {
+        helper.LogException(e);
     }
-    console.log("inOrderOfSetting: ", scheduleorder);
-    return prevschedule.concat(scheduleorder);
 };
 
 /**
  * @memberof TargetList
  */
 TargetList.prototype.scheduleAndOptimize_givenOrder = function (newscheduleorder) {
-    let scheduleorder = [], i, k, obj;
-    for (i = 0; i < this.nTargets; i += 1) {
-        if (this.Targets[i].Observed) { // attention here. more work to be done!
-            continue;
+    try {
+        let scheduleorder = [], i, k, obj;
+        for (i = 0; i < this.nTargets; i += 1) {
+            if (this.Targets[i].Observed) { // attention here. more work to be done!
+                continue;
+            }
+            this.Targets[i].Scheduled = false;
         }
-        this.Targets[i].Scheduled = false;
-    }
-    for (i = 0; i < this.nTargets; i += 1) {
-        if (this.Targets[i].FillSlot === true) {
-            obj = this.Targets[i];
-            obj.Schedule(obj.RestrictionMinUTC);
+        for (i = 0; i < this.nTargets; i += 1) {
+            if (this.Targets[i].FillSlot === true) {
+                obj = this.Targets[i];
+                obj.Schedule(obj.RestrictionMinUTC);
+            }
         }
-    }
-    let curtime = driver.night.Sunset;
-    i = 0;
-    while (i < this.nTargets && curtime <= driver.night.Sunrise) {
-        k = newscheduleorder[i];
-        if (this.Targets[k].FillSlot === true) {
-            scheduleorder.push(k);
-            i += 1;
-            continue;
+        let curtime = driver.night.Sunset;
+        i = 0;
+        while (i < this.nTargets && curtime <= driver.night.Sunrise) {
+            k = newscheduleorder[i];
+            if (this.Targets[k].FillSlot === true) {
+                scheduleorder.push(k);
+                i += 1;
+                continue;
+            }
+            if (curtime > this.Targets[k].LastPossibleTime) {
+                i += 1;
+                continue;
+            }
+            obj = this.Targets[k];
+            if (this.canSchedule(obj, curtime)) {
+                obj.Schedule(curtime);
+                scheduleorder.push(k);
+                curtime += obj.Exptime;
+                i += 1;
+            } else {
+                curtime += driver.night.xstep;
+            }
         }
-        if (curtime > this.Targets[k].LastPossibleTime) {
-            i += 1;
-            continue;
-        }
-        obj = this.Targets[k];
-        if (this.canSchedule(obj, curtime)) {
-            obj.Schedule(curtime);
-            scheduleorder.push(k);
-            curtime += obj.Exptime;
-            i += 1;
-        } else {
-            curtime += driver.night.xstep;
-        }
-    }
 
-    this.optimize_moveToLaterTimesIfRising(scheduleorder);
-    if ($("#opt_reorder_targets").is(":checked")) {
-        this.reorder_accordingToScheduling(scheduleorder);
+        this.optimize_moveToLaterTimesIfRising(scheduleorder);
+        if ($("#opt_reorder_targets").is(":checked")) {
+            this.reorder_accordingToScheduling(scheduleorder);
+        }
+        this.display_scheduleStatistics();
+    } catch (e) {
+        helper.LogException(e);
     }
-    this.display_scheduleStatistics();
 };
 
 /**
  * @memberof TargetList
  */
 TargetList.prototype.prepareScheduleForUpdate = function () {
-    helper.LogEntry("Preparing schedule for update...");
-    helper.LogEntry("Checking existing targets against input...");
-    let i, bFound, k;
-    let unchanged = [], updated = [], updateText = [], reinserting = [], deleting = [], adding = [];
-    let lines_original = helper.extractLines($("#targets_actual").val());
-    let lines = lines_original.map(function (obj) {
-        return obj.replace(/\s\s+/g, " ").trim();
-    });
-    for (i = 0; i < this.nTargets; i += 1) {
-        k = lines.indexOf(this.Targets[i].ReconstructedInput);
-        if (k > -1) {
-            lines.splice(k, 1);
-            lines_original.splice(k, 1);
-            unchanged.push(i);
-        }
-    }
-    if (unchanged.length !== this.nTargets) {
+    try {
+        helper.LogEntry("Preparing schedule for update...");
+        helper.LogEntry("Checking existing targets against input...");
+        let i, bFound, k;
+        let unchanged = [], updated = [], updateText = [], reinserting = [], deleting = [], adding = [];
+        let lines_original = helper.extractLines($("#targets_actual").val());
+        let lines = lines_original.map(function (obj) {
+            return obj.replace(/\s\s+/g, " ").trim();
+        });
         for (i = 0; i < this.nTargets; i += 1) {
-            if (unchanged.indexOf(i) > -1) {
-                continue;
-            }
-            bFound = false;
-            for (k = 0; k < lines.length; k += 1) {
-                if (lines[k].indexOf(this.Targets[i].ReconstructedMinimumInput) > -1) {
-                    bFound = true;
-                    break;
-                }
-            }
-            if (bFound) {
-                updated.push(i);
-                updateText.push(lines[k]);
+            k = lines.indexOf(this.Targets[i].ReconstructedInput);
+            if (k > -1) {
                 lines.splice(k, 1);
                 lines_original.splice(k, 1);
-            } else {
-                if (this.Targets[i].Observed) {
-                    reinserting.push(i);
+                unchanged.push(i);
+            }
+        }
+        if (unchanged.length !== this.nTargets) {
+            for (i = 0; i < this.nTargets; i += 1) {
+                if (unchanged.indexOf(i) > -1) {
+                    continue;
+                }
+                bFound = false;
+                for (k = 0; k < lines.length; k += 1) {
+                    if (lines[k].indexOf(this.Targets[i].ReconstructedMinimumInput) > -1) {
+                        bFound = true;
+                        break;
+                    }
+                }
+                if (bFound) {
+                    updated.push(i);
+                    updateText.push(lines[k]);
+                    lines.splice(k, 1);
+                    lines_original.splice(k, 1);
                 } else {
-                    deleting.push(i);
+                    if (this.Targets[i].Observed) {
+                        reinserting.push(i);
+                    } else {
+                        deleting.push(i);
+                    }
                 }
             }
         }
-    }
-    if (lines.length > 0) {
-        for (i = 0; i < lines.length; i += 1) {
-            adding.push(lines[i].substr(0, lines[i].indexOf(" ")).trim());
-        }
-        $("#added_targets").val(lines_original.join("\n"));
-        helper.LogSuccess($("#added_targets").val());
-    }
-
-    if (unchanged.length == this.nTargets && updated.length === 0 && reinserting.length === 0 && deleting.length === 0 && adding.length === 0) {
-        helper.LogWarning("Attention: no change detected in the input form. Leaving schedule as it is.");
-        return "";
-    }
-
-    let now = new Date();
-    helper.LogEntry("Current time: " + now.toUTCString());
-    if (now > driver.night.DateSunset && now < driver.night.DateSunrise) {
-        if ($("#opt_reschedule_later").is(":checked")) {
-            helper.LogWarning("Attention: the night has already started, so we will only reschedule after the current time. The previously observed objects will NOT be affected, but objects scheduled in the past that have not yet been observed may be rescheduled in the future, if there is enough free time.");
-            this.StartingAt = driver.night.Sunset + (now - driver.night.DateSunset) / 1000 / 86400;
-        } else {
-            helper.LogWarning("We are not currently in the middle of the observing night. Scheduling as usual...");
-            this.StartingAt = driver.night.Sunset;
-        }
-    } else {
-        return false;
-    }
-
-    let fnn = function (idx) {
-        return driver.targets.Targets[idx].Name;
-    };
-    helper.LogSuccess("Status report:");
-    helper.LogEntry("  Unchanged existing targets: " + unchanged.length +
-            (unchanged.length > 0 ? ` (<i>${unchanged.map(fnn).join(", ")}</i>)` : ""));
-    helper.LogEntry("  Updated existing targets: " + updated.length +
-            (updated.length > 0 ? ` (<i>${updated.map(fnn).join(", ")}</i>)` : ""));
-    helper.LogEntry("  Deleted observed targets (must add them back): " + reinserting.length +
-            (reinserting.length > 0 ? ` (<i>${reinserting.map(fnn).join(", ")}</i>)` : ""));
-    helper.LogEntry("  Removed targets: " + deleting.length +
-            (deleting.length > 0 ? ` (<i>${deleting.map(fnn).join(", ")}</i>)` : ""));
-    helper.LogEntry("  New targets (will insert): " + adding.length +
-            (adding.length > 0 ? ` (<i>${adding.join(", ")}</i>)` : ""));
-    // Unchanged targets remain unchanged. Nothing to do
-    // Then update the existing targets (no need to perform the astrometry again for them)
-    if (updated.length > 0) {
-        this.resetWarnings();
-        let newdata, obj; // change: first do badwolf
-        for (i = 0; i < updated.length; i += 1) {
-            newdata = updateText[i].trim().split(" ");
-            obj = this.Targets[updated[i]];
-            obj.Update(newdata.slice(8));
-        }
-        this.warnUnobservable();
-    }
-    // Then, leave the targets that must be "added back" as they are
-    // Then, remove the targets that need to be removed
-    if (deleting.length > 0) {
-        let newTargets = [];
-        for (i = 0; i < this.nTargets; i += 1) {
-            if (deleting.indexOf(i) == -1) {
-                newTargets.push(this.Targets[i]);
+        if (lines.length > 0) {
+            for (i = 0; i < lines.length; i += 1) {
+                adding.push(lines[i].substr(0, lines[i].indexOf(" ")).trim());
             }
+            $("#added_targets").val(lines_original.join("\n"));
+            helper.LogSuccess($("#added_targets").val());
         }
-        this.Targets = newTargets;
-        this.nTargets = newTargets.length;
-    }
-    // Finally, perform the astrometry for the new targets
-    if (adding.length > 0) {
-        return "tgts";
-    } else {
-        return true;
+
+        if (unchanged.length == this.nTargets && updated.length === 0 && reinserting.length === 0 && deleting.length === 0 && adding.length === 0) {
+            helper.LogWarning("Attention: no change detected in the input form. Leaving schedule as it is.");
+            return "";
+        }
+
+        let now = new Date();
+        helper.LogEntry("Current time: " + now.toUTCString());
+        if (now > driver.night.DateSunset && now < driver.night.DateSunrise) {
+            if ($("#opt_reschedule_later").is(":checked")) {
+                helper.LogWarning("Attention: the night has already started, so we will only reschedule after the current time. The previously observed objects will NOT be affected, but objects scheduled in the past that have not yet been observed may be rescheduled in the future, if there is enough free time.");
+                this.StartingAt = driver.night.Sunset + (now - driver.night.DateSunset) / 1000 / 86400;
+            } else {
+                helper.LogWarning("We are not currently in the middle of the observing night. Scheduling as usual...");
+                this.StartingAt = driver.night.Sunset;
+            }
+        } else {
+            return false;
+        }
+
+        let fnn = function (idx) {
+            return driver.targets.Targets[idx].Name;
+        };
+        helper.LogSuccess("Status report:");
+        helper.LogEntry("  Unchanged existing targets: " + unchanged.length +
+                (unchanged.length > 0 ? ` (<i>${unchanged.map(fnn).join(", ")}</i>)` : ""));
+        helper.LogEntry("  Updated existing targets: " + updated.length +
+                (updated.length > 0 ? ` (<i>${updated.map(fnn).join(", ")}</i>)` : ""));
+        helper.LogEntry("  Deleted observed targets (must add them back): " + reinserting.length +
+                (reinserting.length > 0 ? ` (<i>${reinserting.map(fnn).join(", ")}</i>)` : ""));
+        helper.LogEntry("  Removed targets: " + deleting.length +
+                (deleting.length > 0 ? ` (<i>${deleting.map(fnn).join(", ")}</i>)` : ""));
+        helper.LogEntry("  New targets (will insert): " + adding.length +
+                (adding.length > 0 ? ` (<i>${adding.join(", ")}</i>)` : ""));
+        // Unchanged targets remain unchanged. Nothing to do
+        // Then update the existing targets (no need to perform the astrometry again for them)
+        if (updated.length > 0) {
+            this.resetWarnings();
+            let newdata, obj; // change: first do badwolf
+            for (i = 0; i < updated.length; i += 1) {
+                newdata = updateText[i].trim().split(" ");
+                obj = this.Targets[updated[i]];
+                obj.Update(newdata.slice(8));
+            }
+            this.warnUnobservable();
+        }
+        // Then, leave the targets that must be "added back" as they are
+        // Then, remove the targets that need to be removed
+        if (deleting.length > 0) {
+            let newTargets = [];
+            for (i = 0; i < this.nTargets; i += 1) {
+                if (deleting.indexOf(i) == -1) {
+                    newTargets.push(this.Targets[i]);
+                }
+            }
+            this.Targets = newTargets;
+            this.nTargets = newTargets.length;
+        }
+        // Finally, perform the astrometry for the new targets
+        if (adding.length > 0) {
+            return "tgts";
+        } else {
+            return true;
+        }
+    } catch (e) {
+        helper.LogException(e);
     }
 };
 
@@ -1041,16 +1121,20 @@ TargetList.prototype.prepareScheduleForUpdate = function () {
  * @memberof TargetList
  */
 TargetList.prototype.doSchedule = function (start, reorder) {
-    let scheduleorder;
-    scheduleorder = this.schedule_withWeights(0);
-    if (reorder) {
-        this.optimize_moveToLaterTimesIfRising(scheduleorder);
-        if ($("#opt_reorder_targets").is(":checked")) {
-            this.reorder_accordingToScheduling(scheduleorder);
+    try {
+        let scheduleorder;
+        scheduleorder = this.schedule_withWeights(0);
+        if (reorder) {
+            this.optimize_moveToLaterTimesIfRising(scheduleorder);
+            if ($("#opt_reorder_targets").is(":checked")) {
+                this.reorder_accordingToScheduling(scheduleorder);
+            }
+            this.display_scheduleStatistics();
+        } else {
+            this.scheduleAndOptimize_givenOrder(scheduleorder);
         }
-        this.display_scheduleStatistics();
-    } else {
-        this.scheduleAndOptimize_givenOrder(scheduleorder);
+    } catch (e) {
+        helper.LogException(e);
     }
 };
 
@@ -1058,18 +1142,22 @@ TargetList.prototype.doSchedule = function (start, reorder) {
  * @memberof TargetList
  */
 TargetList.prototype.plan = function () {
-    if ($("#opt_reschedule_later").is(":checked")) {
-        let now = new Date();
-        helper.LogEntry("Current time: " + now.toUTCString());
-        if (now > driver.night.DateSunset && now < driver.night.DateSunrise) {
-            helper.LogWarning("Attention: the night has already started, so we will only schedule after the current time.");
-            this.doSchedule(driver.night.Sunset + (now - driver.night.DateSunset) / 1000 / 86400, true);
+    try {
+        if ($("#opt_reschedule_later").is(":checked")) {
+            let now = new Date();
+            helper.LogEntry("Current time: " + now.toUTCString());
+            if (now > driver.night.DateSunset && now < driver.night.DateSunrise) {
+                helper.LogWarning("Attention: the night has already started, so we will only schedule after the current time.");
+                this.doSchedule(driver.night.Sunset + (now - driver.night.DateSunset) / 1000 / 86400, true);
+            } else {
+                helper.LogWarning("We are not currently in the middle of the observing night. Scheduling as usual...");
+                this.doSchedule(driver.night.Sunset, true);
+            }
         } else {
-            helper.LogWarning("We are not currently in the middle of the observing night. Scheduling as usual...");
             this.doSchedule(driver.night.Sunset, true);
         }
-    } else {
-        this.doSchedule(driver.night.Sunset, true);
+    } catch (e) {
+        helper.LogException(e);
     }
 };
 
@@ -1077,7 +1165,11 @@ TargetList.prototype.plan = function () {
  * @memberof TargetList
  */
 TargetList.prototype.updateSchedule = function (Targets) {
-    this.doSchedule(this.StartingAt, false);
+    try {
+        this.doSchedule(this.StartingAt, false);
+    } catch (e) {
+        helper.LogException(e);
+    }
 };
 
 /**
@@ -1088,173 +1180,177 @@ TargetList.prototype.inputHasChanged = function (_newinput, _oldinput) {
 };
 
 TargetList.prototype.processTargetListAfterSIMBAD = function(lines) {
-    this.VisibleLines = [];
-    this.TargetsLines = [];
-    this.FormattedLines = [];
-    // Determine maximum width of the various fields
-    this.MaxLen = {
-        Name: 0,
-        RA: 0,
-        Dec: 0,
-        Exp: 0,
-        AM: 0,
-        ProposalId: 0,
-        Type: 0,
-        OBData: 0,
-        TCSpmra: 0,
-        TCSpmdec: 0,
-        Skypa: 0,
-        Priority: 0
-    };
-    this.BadWolfStart = [];
-    this.BadWolfEnd = [];
-    for (let i = 0; i < lines.length; i += 1) {
-        const line = lines[i].trim();
-        if (line === "") {
-            this.FormattedLines.push(null);
-            continue;
+    try {
+        this.VisibleLines = [];
+        this.TargetsLines = [];
+        this.FormattedLines = [];
+        // Determine maximum width of the various fields
+        this.MaxLen = {
+            Name: 0,
+            RA: 0,
+            Dec: 0,
+            Exp: 0,
+            AM: 0,
+            ProposalId: 0,
+            Type: 0,
+            OBData: 0,
+            TCSpmra: 0,
+            TCSpmdec: 0,
+            Skypa: 0,
+            Priority: 0
+        };
+        this.BadWolfStart = [];
+        this.BadWolfEnd = [];
+        for (let i = 0; i < lines.length; i += 1) {
+            const line = lines[i].trim();
+            if (line === "") {
+                this.FormattedLines.push(null);
+                continue;
+            }
+            if (line[0] === "#") {
+                this.FormattedLines.push([line]);
+                continue;
+            }
+            const words = this.extractLineInfo(i + 1, lines[i].trim());
+            if (words === false) {
+                return false;
+            }
+            const mLTN = driver.graph.maxLenTgtName;
+            if (words[0].length > mLTN) {
+                words[0] = words[0].substr(0, mLTN);
+            }
+            if (words[0].length > this.MaxLen.Name) {
+                this.MaxLen.Name = words[0].length;
+            }
+            if (words[3].length > this.MaxLen.RA) {
+                this.MaxLen.RA = words[3].length;
+            }
+            if (words[6].length > this.MaxLen.Dec) {
+                this.MaxLen.Dec = words[6].length;
+            }
+            if (words[8].length > this.MaxLen.Exp) {
+                this.MaxLen.Exp = words[8].length;
+            }
+            if (words[9].length > this.MaxLen.ProposalId) {
+                this.MaxLen.ProposalId = words[9].length;
+            }
+            if (words[10].length > this.MaxLen.AM) {
+                this.MaxLen.AM = words[10].length;
+            }
+            if (words[11].length > this.MaxLen.Type) {
+                this.MaxLen.Type = words[11].length;
+            }
+            if (words[12].length > this.MaxLen.OBData) {
+                this.MaxLen.OBData = words[12].length;
+            }
+            if (words[13].length > this.MaxLen.Skypa) {
+                this.MaxLen.Skypa = words[13].length;
+            }
+            if (words[14].length > this.MaxLen.Priority) {
+                this.MaxLen.Priority = words[14].length;
+            }
+            let j;
+            j = (parseInt(words[this.ReqLineLen + 1]) + "").length + (words[this.ReqLineLen + 1] < 0 && words[this.ReqLineLen + 1] > -1 ? 1 : 0);
+            if (j > this.MaxLen.TCSpmra) {
+                this.MaxLen.TCSpmra = j;
+            }
+            j = (parseInt(words[this.ReqLineLen + 3]) + "").length + (words[this.ReqLineLen + 3] < 0 && words[this.ReqLineLen + 3] > -1 ? 1 : 0);
+            if (j > this.MaxLen.TCSpmdec) {
+                this.MaxLen.TCSpmdec = j;
+            }
+            this.FormattedLines.push(words);
         }
-        if (line[0] === "#") {
-            this.FormattedLines.push([line]);
-            continue;
+        this.InputStats = {Empty: 0, Commented: 0, Actual: 0};
+        this.TCSlines = [];
+        for (let i = 0; i < this.FormattedLines.length; i += 1) {
+            if (this.FormattedLines[i] === null) {
+                this.VisibleLines.push("");
+                this.InputStats.Empty += 1;
+                continue;
+            }
+            if (this.FormattedLines[i][0].startsWith("#")) {
+                this.VisibleLines.push(this.FormattedLines[i][0]);
+                this.InputStats.Commented += 1;
+                continue;
+            }
+            const words = this.FormattedLines[i];
+            const badwolf = $.inArray(words[0], helper.offlineStrings) !== -1;
+            const padded = [
+                helper.pad(words[0], this.MaxLen.Name, false, " "),
+                helper.pad(words[1], 2, true, badwolf ? " " : "0"),
+                helper.pad(words[2], 2, true, badwolf ? " " : "0"),
+                helper.pad(words[3], this.MaxLen.RA, false, " "),
+                helper.pad(badwolf ? words[4] : helper.padTwoDigits(words[4]), 3, true, " "),
+                helper.pad(words[5], 2, true, badwolf ? " " : "0"),
+                helper.pad(words[6], this.MaxLen.Dec, false, " "),
+                helper.pad(words[7], 4, true, " "),
+                helper.pad(words[8], this.MaxLen.Exp, true, " "),
+                helper.pad(words[9], this.MaxLen.ProposalId, false, " "),
+                helper.pad(words[10], this.MaxLen.AM, false, " "),
+                helper.pad(words[11], this.MaxLen.Type, false, " "),
+                helper.pad(words[12], this.MaxLen.OBData, false, " "),
+                helper.pad(words[13], this.MaxLen.Skypa, false, " "),
+                helper.pad(words[14], this.MaxLen.Priority, false, " ")
+            ];
+            this.VisibleLines.push(padded.join(" "));
+            if (!badwolf) {
+                this.InputStats.Actual += 1;
+                if ($.inArray(Driver.telescopeName, ["NOT", "WHT", "INT"]) >= 0) {
+                    this.TCSlines.push(helper.pad(words[0].replace(/[^A-Za-z0-9\_\+\-]+/g, ""), this.MaxLen.Name, false, " ") + " " +
+                        helper.padTwoDigits(words[1]) + ":" +
+                        helper.padTwoDigits(words[2]) + ":" +
+                        helper.pad(parseFloat(words[this.ReqLineLen]).toFixed(2).toString(), 5, true, "0") + " " +
+                        helper.pad(helper.padTwoDigits(words[4]), 3, true, " ") + ":" +
+                        helper.pad(words[5], 2, true, "0") + ":" +
+                        helper.pad(parseFloat(words[this.ReqLineLen + 2]).toFixed(1).toString(), 4, true, "0") + " " +
+                        helper.pad(words[7], 4, " ") + " " +
+                        helper.pad(parseFloat(words[this.ReqLineLen + 1]).toFixed(2).toString(), this.MaxLen.TCSpmra + 3, true, " ") + " " +
+                        helper.pad(parseFloat(words[this.ReqLineLen + 3]).toFixed(2).toString(), this.MaxLen.TCSpmdec + 3, true, " ") + " " +
+                        "0.0");
+                } else if ($.inArray(Driver.telescopeName, ["HJST", "OST"]) >= 0) {
+                    this.TCSlines.push(
+                        helper.pad(this.InputStats.Actual.toString(), 2, true, " ") + " " +
+                        '"' + helper.pad(words[0].replace(/[^A-Za-z0-9\_\+\-]+/g, ""), this.MaxLen.Name, false, " ") + '" ' +
+                        helper.padTwoDigits(words[1]) + " " +
+                        helper.padTwoDigits(words[2]) + " " +
+                        helper.pad(parseFloat(words[this.ReqLineLen]).toFixed(2).toString(), 5, true, "0") + " " +
+                        helper.pad(helper.padTwoDigits(words[4]), 3, true, " ") + " " +
+                        helper.pad(words[5], 2, true, "0") + " " +
+                        helper.pad(parseFloat(words[this.ReqLineLen + 2]).toFixed(1).toString(), 4, true, "0") + " " +
+                        helper.pad(parseFloat(words[7]).toFixed(1).toString(), 6, " ") + " " +
+                        helper.pad(parseFloat(words[this.ReqLineLen + 1]).toFixed(2).toString(), this.MaxLen.TCSpmra + 3, true, " ") + " " +
+                        helper.pad(parseFloat(words[this.ReqLineLen + 3]).toFixed(2).toString(), this.MaxLen.TCSpmdec + 3, true, " "));
+                }
+                this.TargetsLines.push(padded.join(" "));
+            }
         }
-        const words = this.extractLineInfo(i + 1, lines[i].trim());
-        if (words === false) {
+
+        if (this.InputStats.Actual === 0) {
+            if (this.InputStats.Commented > 0 || this.InputStats.Empty > 0) {
+                helper.LogError("No valid targets found (input consists of " +
+                        (this.InputStats.Commented > 0 ? helper.plural(this.InputStats.Commented, "commented-out line") + (this.InputStats.Empty > 0 ? " and " : "") : "") +
+                        (this.InputStats.Empty > 0 ? helper.plural(this.InputStats.Empty, "empty line") : "") + ").");
+            } else {
+                helper.LogError("No targets given.");
+            }
             return false;
         }
-        const mLTN = driver.graph.maxLenTgtName;
-        if (words[0].length > mLTN) {
-            words[0] = words[0].substr(0, mLTN);
-        }
-        if (words[0].length > this.MaxLen.Name) {
-            this.MaxLen.Name = words[0].length;
-        }
-        if (words[3].length > this.MaxLen.RA) {
-            this.MaxLen.RA = words[3].length;
-        }
-        if (words[6].length > this.MaxLen.Dec) {
-            this.MaxLen.Dec = words[6].length;
-        }
-        if (words[8].length > this.MaxLen.Exp) {
-            this.MaxLen.Exp = words[8].length;
-        }
-        if (words[9].length > this.MaxLen.ProposalId) {
-            this.MaxLen.ProposalId = words[9].length;
-        }
-        if (words[10].length > this.MaxLen.AM) {
-            this.MaxLen.AM = words[10].length;
-        }
-        if (words[11].length > this.MaxLen.Type) {
-            this.MaxLen.Type = words[11].length;
-        }
-        if (words[12].length > this.MaxLen.OBData) {
-            this.MaxLen.OBData = words[12].length;
-        }
-        if (words[13].length > this.MaxLen.Skypa) {
-            this.MaxLen.Skypa = words[13].length;
-        }
-        if (words[14].length > this.MaxLen.Priority) {
-            this.MaxLen.Priority = words[14].length;
-        }
-        let j;
-        j = (parseInt(words[this.ReqLineLen + 1]) + "").length + (words[this.ReqLineLen + 1] < 0 && words[this.ReqLineLen + 1] > -1 ? 1 : 0);
-        if (j > this.MaxLen.TCSpmra) {
-            this.MaxLen.TCSpmra = j;
-        }
-        j = (parseInt(words[this.ReqLineLen + 3]) + "").length + (words[this.ReqLineLen + 3] < 0 && words[this.ReqLineLen + 3] > -1 ? 1 : 0);
-        if (j > this.MaxLen.TCSpmdec) {
-            this.MaxLen.TCSpmdec = j;
-        }
-        this.FormattedLines.push(words);
-    }
-    this.InputStats = {Empty: 0, Commented: 0, Actual: 0};
-    this.TCSlines = [];
-    for (let i = 0; i < this.FormattedLines.length; i += 1) {
-        if (this.FormattedLines[i] === null) {
-            this.VisibleLines.push("");
-            this.InputStats.Empty += 1;
-            continue;
-        }
-        if (this.FormattedLines[i][0].startsWith("#")) {
-            this.VisibleLines.push(this.FormattedLines[i][0]);
-            this.InputStats.Commented += 1;
-            continue;
-        }
-        const words = this.FormattedLines[i];
-        const badwolf = $.inArray(words[0], helper.offlineStrings) !== -1;
-        const padded = [
-            helper.pad(words[0], this.MaxLen.Name, false, " "),
-            helper.pad(words[1], 2, true, badwolf ? " " : "0"),
-            helper.pad(words[2], 2, true, badwolf ? " " : "0"),
-            helper.pad(words[3], this.MaxLen.RA, false, " "),
-            helper.pad(badwolf ? words[4] : helper.padTwoDigits(words[4]), 3, true, " "),
-            helper.pad(words[5], 2, true, badwolf ? " " : "0"),
-            helper.pad(words[6], this.MaxLen.Dec, false, " "),
-            helper.pad(words[7], 4, true, " "),
-            helper.pad(words[8], this.MaxLen.Exp, true, " "),
-            helper.pad(words[9], this.MaxLen.ProposalId, false, " "),
-            helper.pad(words[10], this.MaxLen.AM, false, " "),
-            helper.pad(words[11], this.MaxLen.Type, false, " "),
-            helper.pad(words[12], this.MaxLen.OBData, false, " "),
-            helper.pad(words[13], this.MaxLen.Skypa, false, " "),
-            helper.pad(words[14], this.MaxLen.Priority, false, " ")
-        ];
-        this.VisibleLines.push(padded.join(" "));
-        if (!badwolf) {
-            this.InputStats.Actual += 1;
-            if ($.inArray(Driver.telescopeName, ["NOT", "WHT", "INT"]) >= 0) {
-                this.TCSlines.push(helper.pad(words[0].replace(/[^A-Za-z0-9\_\+\-]+/g, ""), this.MaxLen.Name, false, " ") + " " +
-                    helper.padTwoDigits(words[1]) + ":" +
-                    helper.padTwoDigits(words[2]) + ":" +
-                    helper.pad(parseFloat(words[this.ReqLineLen]).toFixed(2).toString(), 5, true, "0") + " " +
-                    helper.pad(helper.padTwoDigits(words[4]), 3, true, " ") + ":" +
-                    helper.pad(words[5], 2, true, "0") + ":" +
-                    helper.pad(parseFloat(words[this.ReqLineLen + 2]).toFixed(1).toString(), 4, true, "0") + " " +
-                    helper.pad(words[7], 4, " ") + " " +
-                    helper.pad(parseFloat(words[this.ReqLineLen + 1]).toFixed(2).toString(), this.MaxLen.TCSpmra + 3, true, " ") + " " +
-                    helper.pad(parseFloat(words[this.ReqLineLen + 3]).toFixed(2).toString(), this.MaxLen.TCSpmdec + 3, true, " ") + " " +
-                    "0.0");
-            } else if ($.inArray(Driver.telescopeName, ["HJST", "OST"]) >= 0) {
-                this.TCSlines.push(
-                    helper.pad(this.InputStats.Actual.toString(), 2, true, " ") + " " +
-                    '"' + helper.pad(words[0].replace(/[^A-Za-z0-9\_\+\-]+/g, ""), this.MaxLen.Name, false, " ") + '" ' +
-                    helper.padTwoDigits(words[1]) + " " +
-                    helper.padTwoDigits(words[2]) + " " +
-                    helper.pad(parseFloat(words[this.ReqLineLen]).toFixed(2).toString(), 5, true, "0") + " " +
-                    helper.pad(helper.padTwoDigits(words[4]), 3, true, " ") + " " +
-                    helper.pad(words[5], 2, true, "0") + " " +
-                    helper.pad(parseFloat(words[this.ReqLineLen + 2]).toFixed(1).toString(), 4, true, "0") + " " +
-                    helper.pad(parseFloat(words[7]).toFixed(1).toString(), 6, " ") + " " +
-                    helper.pad(parseFloat(words[this.ReqLineLen + 1]).toFixed(2).toString(), this.MaxLen.TCSpmra + 3, true, " ") + " " +
-                    helper.pad(parseFloat(words[this.ReqLineLen + 3]).toFixed(2).toString(), this.MaxLen.TCSpmdec + 3, true, " "));
-            }
-            this.TargetsLines.push(padded.join(" "));
-        }
-    }
 
-    if (this.InputStats.Actual === 0) {
-        if (this.InputStats.Commented > 0 || this.InputStats.Empty > 0) {
-            helper.LogError("No valid targets found (input consists of " +
-                    (this.InputStats.Commented > 0 ? helper.plural(this.InputStats.Commented, "commented-out line") + (this.InputStats.Empty > 0 ? " and " : "") : "") +
-                    (this.InputStats.Empty > 0 ? helper.plural(this.InputStats.Empty, "empty line") : "") + ").");
-        } else {
-            helper.LogError("No targets given.");
-        }
-        return false;
+        this.checkForDuplicates();
+
+        /* Save scroll position, update, and scroll back */
+        let scrollInfo = driver.CMeditor.getScrollInfo();
+        driver.CMeditor.setValue(this.VisibleLines.join("\n"));
+        driver.CMeditor.scrollTo(scrollInfo.left, scrollInfo.top);
+        $("#targets_actual").val(this.TargetsLines.join("\n"));
+        helper.LogEntry(`Done. Target list looks properly formatted (${helper.plural(this.InputStats.Actual, "target")}).`);
+        this.InputText = driver.CMeditor.getValue();
+        this.InputValid = true;
+        $("#tcsExport").prop("disabled", false);
+        return true;
+    } catch (e) {
+        helper.LogException(e);
     }
-
-    this.checkForDuplicates();
-
-    /* Save scroll position, update, and scroll back */
-    let scrollInfo = driver.CMeditor.getScrollInfo();
-    driver.CMeditor.setValue(this.VisibleLines.join("\n"));
-    driver.CMeditor.scrollTo(scrollInfo.left, scrollInfo.top);
-    $("#targets_actual").val(this.TargetsLines.join("\n"));
-    helper.LogEntry(`Done. Target list looks properly formatted (${helper.plural(this.InputStats.Actual, "target")}).`);
-    this.InputText = driver.CMeditor.getValue();
-    this.InputValid = true;
-    $("#tcsExport").prop("disabled", false);
-    return true;
 }
 
 /**
@@ -1264,85 +1360,93 @@ TargetList.prototype.processTargetListAfterSIMBAD = function(lines) {
  *     other.
  */
 TargetList.prototype.validateAndFormatTargets = function (force = false) {
-    const thisList = this;
-    return new Promise(function(resolve, reject) {
-        // Retrieve content of #targets textarea
-        const tgts = driver.CMeditor.getValue();
-        if (!thisList.inputHasChanged(tgts, thisList.InputText) && thisList.InputValid && !force) {
-            helper.LogEntry("Target input list has not changed, no need to revalidate.");
-            return resolve();
-        } else {
-            helper.LogEntry("Validating and formatting target input list...");
-        }
-        $("#tcsExport").prop("disabled", true);
-        thisList.InputValid = false;
-        if (tgts.length === 0) {
-            if (force) {
+    try {
+        const thisList = this;
+        return new Promise(function(resolve, reject) {
+            // Retrieve content of #targets textarea
+            const tgts = driver.CMeditor.getValue();
+            if (!thisList.inputHasChanged(tgts, thisList.InputText) && thisList.InputValid && !force) {
+                helper.LogEntry("Target input list has not changed, no need to revalidate.");
                 return resolve();
-            }
-            helper.LogError("Please fill in the <i>Targets</i> field.");
-            return reject();
-        }
-        // Split it into lines
-        const lines = helper.extractLines(tgts);
-        let idsToRetrieve = Array();
-        // Check if we need to retrieve any targets from SIMBAD
-        for (const line of lines) {
-            if (line.trim() === "" || line.startsWith("#")) continue;
-            if (line.startsWith('"') && line.endsWith('"')) {
-                idsToRetrieve.push(line.substring(1, line.length - 1));
             } else {
-                const words = line.split(/\s+/g);
-                if (words.length === 1) {
-                    idsToRetrieve.push(words[0]);
+                helper.LogEntry("Validating and formatting target input list...");
+            }
+            $("#tcsExport").prop("disabled", true);
+            thisList.InputValid = false;
+            if (tgts.length === 0) {
+                if (force) {
+                    return resolve();
                 }
+                helper.LogError("Please fill in the <i>Targets</i> field.");
+                return reject();
             }
-        }
-        if (idsToRetrieve.length > 0) {
-            helper.LogEntry(`Will attempt to retrive the following targets from SIMBAD: ${idsToRetrieve.join(', ')}. This may take a while...`);
-            let deferreds = Array();
-            for (const id of idsToRetrieve) {
-                deferreds[id] = $.get(`https://simbad.cds.unistra.fr/simbad/sim-id?output.format=ASCII&Ident=${encodeURIComponent(id)}`);
-            }
-            $.when(...Object.values(deferreds)).then(function() {
-                helper.LogEntry("Results received from SIMBAD, will proceed to parse the targets.")
-                for (const [id, deferred] of Object.entries(deferreds)) {
-                    const resolution = helper.parseSIMBADResponse(deferred.responseText);
-                    driver.resolvedIdentifiers[id] = resolution;
-                    if (resolution === null) {
-                        helper.LogError(`Target identifier unknown to SIMBAD: ${id}`)
+            // Split it into lines
+            const lines = helper.extractLines(tgts);
+            let idsToRetrieve = Array();
+            // Check if we need to retrieve any targets from SIMBAD
+            for (const line of lines) {
+                if (line.trim() === "" || line.startsWith("#")) continue;
+                if (line.startsWith('"') && line.endsWith('"')) {
+                    idsToRetrieve.push(line.substring(1, line.length - 1));
+                } else {
+                    const words = line.split(/\s+/g);
+                    if (words.length === 1) {
+                        idsToRetrieve.push(words[0]);
                     }
                 }
+            }
+            if (idsToRetrieve.length > 0) {
+                helper.LogEntry(`Will attempt to retrive the following targets from SIMBAD: ${idsToRetrieve.join(', ')}. This may take a while...`);
+                let deferreds = Array();
+                for (const id of idsToRetrieve) {
+                    deferreds[id] = $.get(`https://simbad.cds.unistra.fr/simbad/sim-id?output.format=ASCII&Ident=${encodeURIComponent(id)}`);
+                }
+                $.when(...Object.values(deferreds)).then(function() {
+                    helper.LogEntry("Results received from SIMBAD, will proceed to parse the targets.")
+                    for (const [id, deferred] of Object.entries(deferreds)) {
+                        const resolution = helper.parseSIMBADResponse(deferred.responseText);
+                        driver.resolvedIdentifiers[id] = resolution;
+                        if (resolution === null) {
+                            helper.LogError(`Target identifier unknown to SIMBAD: ${id}`)
+                        }
+                    }
+                    return thisList.processTargetListAfterSIMBAD(lines) ? resolve() : reject();
+                });
+            } else {
                 return thisList.processTargetListAfterSIMBAD(lines) ? resolve() : reject();
-            });
-        } else {
-            return thisList.processTargetListAfterSIMBAD(lines) ? resolve() : reject();
-        }
-    });
+            }
+        });
+    } catch (e) {
+        helper.LogException(e);
+    }
 };
 
 /**
  * @memberof TargetList
  */
 TargetList.prototype.ExportTCSCatalogue = function () {
-    helper.LogEntry("Exporting catalogue in TCS format...");
-    if (!this.InputValid) {
-        helper.LogError("The list of targets appears to be invalid... Aborting.");
-        return;
-    }
-    if (this.TCSlines.length === 0) {
-        helper.LogError("Catalogue contains no targets. Aborting.");
-        return;
-    }
+    try {
+        helper.LogEntry("Exporting catalogue in TCS format...");
+        if (!this.InputValid) {
+            helper.LogError("The list of targets appears to be invalid... Aborting.");
+            return;
+        }
+        if (this.TCSlines.length === 0) {
+            helper.LogError("Catalogue contains no targets. Aborting.");
+            return;
+        }
 
-    $("#tcspre").html(this.TCSlines.join("\n"));
-    $.fancybox.open({
-        src: "#tcscat",
-        type: "inline",
-        touch: false
-    });
+        $("#tcspre").html(this.TCSlines.join("\n"));
+        $.fancybox.open({
+            src: "#tcscat",
+            type: "inline",
+            touch: false
+        });
 
-    helper.LogEntry("Done.");
+        helper.LogEntry("Done.");
+    } catch (e) {
+        helper.LogException(e);
+    }
 };
 
 /**
@@ -1351,326 +1455,334 @@ TargetList.prototype.ExportTCSCatalogue = function () {
  *     array containing the items.
  */
 TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
-    // Split by white spaces and colons
-    let words = linetext.split(/\s+/g);
-    // Check if this is a known identifier
-    if (linetext.startsWith('"') && linetext.endsWith('"')) {
-        const identifier = linetext.substring(1, linetext.length - 1);
-        if (identifier in driver.resolvedIdentifiers) {
-            words = `${identifier.replaceAll(" ", "_")} ${driver.resolvedIdentifiers[identifier]}`.split(/\s+/g);
-        }
-    } else if (words.length === 1) {
-        if (words[0] in driver.resolvedIdentifiers) {
-            words = `${words[0]} ${driver.resolvedIdentifiers[words[0]]}`.split(/\s+/g);
-        }
-    }
-    // Sanity check: minimum number of fields
-    if (words.length <= 1) {
-        helper.LogError(`Incorrect syntax on Line #${linenumber}; for each object you must provide at least the Name, RA and Dec!`);
-        return false;
-    }
-    if ($.inArray(words[0], helper.offlineStrings) !== -1) {
-        if (words.length < 2 || words.length > 3) {
-            helper.LogError(`Incorrect syntax on Line #${linenumber}; for offline time you must provide a valid UTC or LST range!`);
-            return false;
-        }
-        if (words.length == 3) {
-            if (words[1] != "*") {
-                helper.LogError(`Incorrect syntax on Line #${linenumber}; offline time must take "*" as [OBSTIME] argument!`);
-                return false;
+    try {
+        // Split by white spaces and colons
+        let words = linetext.split(/\s+/g);
+        // Check if this is a known identifier
+        if (linetext.startsWith('"') && linetext.endsWith('"')) {
+            const identifier = linetext.substring(1, linetext.length - 1);
+            if (identifier in driver.resolvedIdentifiers) {
+                words = `${identifier.replaceAll(" ", "_")} ${driver.resolvedIdentifiers[identifier]}`.split(/\s+/g);
+            }
+        } else if (words.length === 1) {
+            if (words[0] in driver.resolvedIdentifiers) {
+                words = `${words[0]} ${driver.resolvedIdentifiers[words[0]]}`.split(/\s+/g);
             }
         }
-        let q = (words.length == 2) ? 1 : 2;
-        let UTr = helper.ExtractUTRange(words[q]);
-        if (UTr === null || UTr === false) {
-            helper.LogError(`Incorrect syntax in [CONSTRAINTS] on line #${linenumber}: the UTC/LST range must be a valid interval (e.g., [20:00-23:00] or [1-2])!`);
+        // Sanity check: minimum number of fields
+        if (words.length <= 1) {
+            helper.LogError(`Incorrect syntax on Line #${linenumber}; for each object you must provide at least the Name, RA and Dec!`);
             return false;
-        } else {
-            this.BadWolfStart.push(UTr[0]);
-            this.BadWolfEnd.push(UTr[1]);
         }
-        return [words[0], "", "", "", "", "", "", "", "*", "", words[q], "", "", "", ""];
-    }
-    if ((words.length === 6 && words[2].indexOf(":") === -1) ||
-        (words.length === 2 && words[0].indexOf(":") !== -1 && words[1].indexOf(":") !== -1 ) ||
-        (words.length === 2 && !helper.notFloat(words[0]) && !helper.notFloat(words[1]))) {
-        words = [`Object${linenumber}`].concat(words);
-    }
-    /* Everything given in degrees? Convert to hex */
-    if (words.length === 3 && !helper.notFloat(words[1]) && !helper.notFloat(words[2])) {
-        let RAhex = sla.dr2tf(2, parseFloat(words[1]) * sla.d2r);
-        let Dechex = sla.dr2af(2, parseFloat(words[2]) * sla.d2r);
-        let ra_arr = [`${RAhex.sign == '+' ? '' : RAhex.sign}${RAhex.ihmsf[0]}`, `${RAhex.ihmsf[1]}`, `${RAhex.ihmsf[2]}.${RAhex.ihmsf[3]}`];
-        let dec_arr = [`${Dechex.sign == '+' ? '' : Dechex.sign}${Dechex.idmsf[0]}`, `${Dechex.idmsf[1]}`, `${Dechex.idmsf[2]}.${Dechex.idmsf[3]}`];
-        words = words.slice(0, 1).concat(ra_arr).concat(dec_arr);
-    }
-    if (words.length < 2) {
-        helper.LogError(`Incorrect syntax on Line #${linenumber}; for each object you must provide at least the Name, RA and Dec!`);
-        return false;
-    }
-    if (words[1].indexOf(":") > -1) {
-        /* Split RA into components */
-        let ra_arr = words[1].split(":");
-        if (ra_arr.length == 2) {
-            ra_arr.push("00");
-        }
-        words = words.slice(0, 1).concat(ra_arr).concat(words.slice(2));
-    }
-    if (words.length < 5) {
-        helper.LogError(`Incorrect syntax on Line #${linenumber}; for each object you must provide at least the Name, RA and Dec!`);
-        return false;
-    }
-    if (words[4].indexOf(":") > -1) {
-        /* Split Dec into components */
-        let dec_arr = words[4].split(":");
-        if (dec_arr.length == 2) {
-            dec_arr.push("00");
-        }
-        words = words.slice(0, 4).concat(dec_arr).concat(words.slice(5));
-    }
-    if (words.length < 7) {
-        helper.LogError(`Incorrect syntax on Line #${linenumber}; for each object you must provide at least the Name, RA and Dec!`);
-        return false;
-    }
-    if (words.length === 11 && (parseFloat(words[7]) == 2000 || parseFloat(words[7]) == 1950) && !helper.notFloat(words[8]) && !helper.notFloat(words[9]) && !helper.notFloat(words[10])) {
-        words = [words[0], words[1], words[2], words[3] + (parseFloat(words[8]) !== 0 ? "/" + words[8] : ""), words[4], words[5], words[6] + (parseFloat(words[9]) !== 0 ? "/" + words[9] : ""), words[7]].concat([Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo]);
-    }
-    if (words.length == 7) {
-        words = words.concat([Driver.defaultEpoch, Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo, Driver.defaultSkyPA, "1"]);
-    } else if (words.length == 8) {
-        words = words.concat([Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo, Driver.defaultSkyPA, "1"]);
-    } else if (words.length == 9) {
-        words = words.concat([Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo, Driver.defaultSkyPA, "1"]);
-    } else if (words.length == 10) {
-        words = words.concat([Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo, Driver.defaultSkyPA, "1"]);
-    } else if (words.length == 11) {
-        words = words.concat([Driver.defaultType, Driver.defaultOBInfo, Driver.defaultSkyPA, "1"]);
-    } else if (words.length == 12) {
-        words = words.concat([Driver.defaultOBInfo, Driver.defaultSkyPA, "1"]);
-    } else if (words.length == 13) {
-        words = words.concat([Driver.defaultSkyPA, "1"]);
-    } else if (words.length == 14) {
-        words = words.concat(["1"])
-    }
-    // Sanity check: there must now be exactly this.ReqLineLen entries in the array
-    if (words.length !== this.ReqLineLen) {
-        helper.LogError(`Incorrect syntax: the number of entries on line #${linenumber} is incorrect: ${words}!`);
-        return false;
-    }
-    let rax;
-    // Sanity check: input syntax for all parameters
-    /* RA hours, minutes must be integer */
-    if (helper.notInt(words[1]) || helper.notInt(words[2])) {
-        helper.LogError(`Incorrect syntax: non-integer value detected in [RA] on line #${linenumber}!`);
-        return false;
-    }
-    /* RA hours between 0 and 23 */
-    rax = parseInt(words[1]);
-    if (rax < 0 || rax > 23) {
-        helper.LogError(`Incorrect syntax: the "hours" part of [RA] must be an integer between 0 and 23 on line #${linenumber}!`);
-        return false;
-    }
-    /* RA minutes between 0 and 59 */
-    rax = parseInt(words[2]);
-    if (rax < 0 || rax > 59) {
-        helper.LogError(`Incorrect syntax: the "minutes" part of [RA] must be an integer between 0 and 59 on line #${linenumber}!`);
-        return false;
-    }
-    /* RA seconds and proper motion */
-    if (words[3].indexOf("/") > -1) {
-        rax = words[3].split("/");
-        if (rax.length !== 2) {
-            helper.LogError(`Incorrect syntax for [pmRA] on line #${linenumber}!`);
-            return false;
-        } else {
-            if (helper.notFloat(rax[0]) || helper.notFloat(rax[1])) {
-                helper.LogError(`Incorrect syntax: non-float value detected in [RA]/[pmRA] on line #${linenumber}!`);
+        if ($.inArray(words[0], helper.offlineStrings) !== -1) {
+            if (words.length < 2 || words.length > 3) {
+                helper.LogError(`Incorrect syntax on Line #${linenumber}; for offline time you must provide a valid UTC or LST range!`);
                 return false;
             }
-        }
-        words[this.ReqLineLen] = parseFloat(rax[0]);
-        words[this.ReqLineLen + 1] = parseFloat(rax[1]);
-        words[this.ReqLineLen + 1] = Math.max(-1000, Math.min(1000, words[this.ReqLineLen + 1]));
-    } else if (helper.notFloat(words[3])) {
-        helper.LogError(`Incorrect syntax: non-integer value detected in [RA] on line #${linenumber}!`);
-        return false;
-    } else {
-        words[this.ReqLineLen] = parseFloat(words[3]);
-        words[this.ReqLineLen + 1] = 0;
-    }
-    /* RA seconds, integer part between 0 and 59 */
-    if (parseInt(words[this.ReqLineLen]) < 0 || parseInt(words[this.ReqLineLen]) > 59) {
-        helper.LogError(`Incorrect syntax: the integer part of "seconds" in [RA] must be a number between 0 and 59 on line #${linenumber}!`);
-        return false;
-    }
-    /* Dec degrees, arcminutes must be integer */
-    if (helper.notInt(words[4]) || helper.notInt(words[5])) {
-        helper.LogError(`Incorrect syntax: non-integer value detected in [DEC] on line #${linenumber}!`);
-        return false;
-    }
-    /* Dec degrees between -89 and +89 */
-    rax = parseInt(words[4]);
-    if (rax < -89 || rax > 89) {
-        helper.LogError(`Incorrect syntax: the "degrees" part of [Dec] must be an integer between -89 and +89 on line #${linenumber}!`);
-        return false;
-    }
-    /* Dec arcminutes between 0 and 59 */
-    rax = parseInt(words[5]);
-    if (rax < 0 || rax > 59) {
-        helper.LogError(`Incorrect syntax: the "minutes" part of [Dec] must be an integer between 0 and 59 on line #${linenumber}!`);
-        return false;
-    }
-    /* Dec arcseconds and proper motion */
-    if (words[6].indexOf("/") > -1) {
-        rax = words[6].split("/");
-        if (rax.length !== 2) {
-            helper.LogError(`Incorrect syntax for [pmDEC] on line #${linenumber}!`);
-            return false;
-        } else {
-            if (helper.notFloat(rax[0]) || helper.notFloat(rax[1])) {
-                helper.LogError(`Incorrect syntax: non-float value detected in [DEC]/[pmDEC] on line #${linenumber}!`);
-                return false;
+            if (words.length == 3) {
+                if (words[1] != "*") {
+                    helper.LogError(`Incorrect syntax on Line #${linenumber}; offline time must take "*" as [OBSTIME] argument!`);
+                    return false;
+                }
             }
-        }
-        words[this.ReqLineLen + 2] = parseFloat(rax[0]);
-        words[this.ReqLineLen + 3] = parseFloat(rax[1]);
-        words[this.ReqLineLen + 3] = Math.max(-1000, Math.min(1000, words[this.ReqLineLen + 3]));
-    } else if (helper.notFloat(words[6])) {
-        helper.LogError(`Incorrect syntax: non-integer value detected in [DEC] on line #${linenumber}!`);
-        return false;
-    } else {
-        words[this.ReqLineLen + 2] = parseFloat(words[6]);
-        words[this.ReqLineLen + 3] = 0;
-    }
-    /* Dec arcseconds, integer part between 0 and 59 */
-    if (parseInt(words[this.ReqLineLen + 2]) < 0 || parseInt(words[this.ReqLineLen + 2]) > 59) {
-        helper.LogError(`Incorrect syntax: the integer part of "arcseconds" in [Dec] must be a number between 0 and 59 on line #${linenumber}!`);
-        return false;
-    }
-    if (helper.filterFloat(words[7]) !== 2000 && helper.filterFloat(words[7]) !== 1950) {
-        helper.LogError(`Incorrect syntax: [EPOCH] must be either 2000 or 1950 on line #${linenumber}!`);
-        return false;
-    }
-    /* Validate exptime */
-    if (helper.notInt(words[8]) && words[8] != "*") {
-        helper.LogError(`Incorrect syntax: non-integer value detected in [OBSTIME] on line #${linenumber}!`);
-        return false;
-    }
-    /* Validate the proposal id; different telescopes use different formats */
-    const valid = driver.validateProjectNumber(words[9]);
-    const form = valid[0];
-    const reqlen = valid[1];
-    const reok = valid[2];
-    if (words[9].length !== reqlen) {
-        helper.LogError(`Incorrect syntax: [PROJECT] (${words[9]}, ${words[9].length}, ${reqlen}) does not have the same length as ${form} on line #${linenumber}!`);
-        return false;
-    }
-    if (!reok) {
-        helper.LogError(`Incorrect syntax: [PROJECT] (${words[9]}) does not respect the ${form} syntax on line #${linenumber}!`);
-        return false;
-    }
-    /* Validate constraints */
-    if (helper.notFloat(words[10])) {
-        const arr = words[10].toUpperCase().split(",");
-        let good = true;
-        let periodset = false;
-        for (const constr of arr) {
-            if (!helper.notFloat(constr)) continue;
-            if (constr.startsWith("UTC[") || constr.startsWith("LST[") || constr.startsWith("HA[") || constr.startsWith("AM[") || constr.startsWith("MOON[")) {
-                if (constr.slice(-1) != "]" || constr.indexOf("-") == -1) {
-                    good = false;
-                    break;
-                }
-            } else if (constr.startsWith("AM")) {
-                if (!helper.filterFloat(constr.slice(2))) {
-                    good = false;
-                    break;
-                }
-            } else if (constr.startsWith("MOON")) {
-                if (!helper.filterFloat(constr.slice(4))) {
-                    good = false;
-                    break;
-                }
-            } else if (constr == "NT", "AT", "DARK") {
-                if (!periodset) {
-                    periodset = true;
-                    continue;
-                }
-                helper.LogError(`Conflicting constraints (NT, AT, DARK) specified on line #${linenumber}!`);
+            let q = (words.length == 2) ? 1 : 2;
+            let UTr = helper.ExtractUTRange(words[q]);
+            if (UTr === null || UTr === false) {
+                helper.LogError(`Incorrect syntax in [CONSTRAINTS] on line #${linenumber}: the UTC/LST range must be a valid interval (e.g., [20:00-23:00] or [1-2])!`);
                 return false;
             } else {
-                good = false;
-                break;
+                this.BadWolfStart.push(UTr[0]);
+                this.BadWolfEnd.push(UTr[1]);
             }
+            return [words[0], "", "", "", "", "", "", "", "*", "", words[q], "", "", "", ""];
         }
-        if (!good) {
-            helper.LogError(`Incorrect syntax: [CONSTRAINTS] should either be a float (e.g., 2.0), a UTC range (e.g., UTC[20:00-23:00]) or an LST range (e.g. LST[2-4:30]) on line #${linenumber}!`);
+        if ((words.length === 6 && words[2].indexOf(":") === -1) ||
+            (words.length === 2 && words[0].indexOf(":") !== -1 && words[1].indexOf(":") !== -1 ) ||
+            (words.length === 2 && !helper.notFloat(words[0]) && !helper.notFloat(words[1]))) {
+            words = [`Object${linenumber}`].concat(words);
+        }
+        /* Everything given in degrees? Convert to hex */
+        if (words.length === 3 && !helper.notFloat(words[1]) && !helper.notFloat(words[2])) {
+            let RAhex = sla.dr2tf(2, parseFloat(words[1]) * sla.d2r);
+            let Dechex = sla.dr2af(2, parseFloat(words[2]) * sla.d2r);
+            let ra_arr = [`${RAhex.sign == '+' ? '' : RAhex.sign}${RAhex.ihmsf[0]}`, `${RAhex.ihmsf[1]}`, `${RAhex.ihmsf[2]}.${RAhex.ihmsf[3]}`];
+            let dec_arr = [`${Dechex.sign == '+' ? '' : Dechex.sign}${Dechex.idmsf[0]}`, `${Dechex.idmsf[1]}`, `${Dechex.idmsf[2]}.${Dechex.idmsf[3]}`];
+            words = words.slice(0, 1).concat(ra_arr).concat(dec_arr);
+        }
+        if (words.length < 2) {
+            helper.LogError(`Incorrect syntax on Line #${linenumber}; for each object you must provide at least the Name, RA and Dec!`);
             return false;
         }
+        if (words[1].indexOf(":") > -1) {
+            /* Split RA into components */
+            let ra_arr = words[1].split(":");
+            if (ra_arr.length == 2) {
+                ra_arr.push("00");
+            }
+            words = words.slice(0, 1).concat(ra_arr).concat(words.slice(2));
+        }
+        if (words.length < 5) {
+            helper.LogError(`Incorrect syntax on Line #${linenumber}; for each object you must provide at least the Name, RA and Dec!`);
+            return false;
+        }
+        if (words[4].indexOf(":") > -1) {
+            /* Split Dec into components */
+            let dec_arr = words[4].split(":");
+            if (dec_arr.length == 2) {
+                dec_arr.push("00");
+            }
+            words = words.slice(0, 4).concat(dec_arr).concat(words.slice(5));
+        }
+        if (words.length < 7) {
+            helper.LogError(`Incorrect syntax on Line #${linenumber}; for each object you must provide at least the Name, RA and Dec!`);
+            return false;
+        }
+        if (words.length === 11 && (parseFloat(words[7]) == 2000 || parseFloat(words[7]) == 1950) && !helper.notFloat(words[8]) && !helper.notFloat(words[9]) && !helper.notFloat(words[10])) {
+            words = [words[0], words[1], words[2], words[3] + (parseFloat(words[8]) !== 0 ? "/" + words[8] : ""), words[4], words[5], words[6] + (parseFloat(words[9]) !== 0 ? "/" + words[9] : ""), words[7]].concat([Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo]);
+        }
+        if (words.length == 7) {
+            words = words.concat([Driver.defaultEpoch, Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo, Driver.defaultSkyPA, "1"]);
+        } else if (words.length == 8) {
+            words = words.concat([Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo, Driver.defaultSkyPA, "1"]);
+        } else if (words.length == 9) {
+            words = words.concat([Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo, Driver.defaultSkyPA, "1"]);
+        } else if (words.length == 10) {
+            words = words.concat([Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo, Driver.defaultSkyPA, "1"]);
+        } else if (words.length == 11) {
+            words = words.concat([Driver.defaultType, Driver.defaultOBInfo, Driver.defaultSkyPA, "1"]);
+        } else if (words.length == 12) {
+            words = words.concat([Driver.defaultOBInfo, Driver.defaultSkyPA, "1"]);
+        } else if (words.length == 13) {
+            words = words.concat([Driver.defaultSkyPA, "1"]);
+        } else if (words.length == 14) {
+            words = words.concat(["1"])
+        }
+        // Sanity check: there must now be exactly this.ReqLineLen entries in the array
+        if (words.length !== this.ReqLineLen) {
+            helper.LogError(`Incorrect syntax: the number of entries on line #${linenumber} is incorrect: ${words}!`);
+            return false;
+        }
+        let rax;
+        // Sanity check: input syntax for all parameters
+        /* RA hours, minutes must be integer */
+        if (helper.notInt(words[1]) || helper.notInt(words[2])) {
+            helper.LogError(`Incorrect syntax: non-integer value detected in [RA] on line #${linenumber}!`);
+            return false;
+        }
+        /* RA hours between 0 and 23 */
+        rax = parseInt(words[1]);
+        if (rax < 0 || rax > 23) {
+            helper.LogError(`Incorrect syntax: the "hours" part of [RA] must be an integer between 0 and 23 on line #${linenumber}!`);
+            return false;
+        }
+        /* RA minutes between 0 and 59 */
+        rax = parseInt(words[2]);
+        if (rax < 0 || rax > 59) {
+            helper.LogError(`Incorrect syntax: the "minutes" part of [RA] must be an integer between 0 and 59 on line #${linenumber}!`);
+            return false;
+        }
+        /* RA seconds and proper motion */
+        if (words[3].indexOf("/") > -1) {
+            rax = words[3].split("/");
+            if (rax.length !== 2) {
+                helper.LogError(`Incorrect syntax for [pmRA] on line #${linenumber}!`);
+                return false;
+            } else {
+                if (helper.notFloat(rax[0]) || helper.notFloat(rax[1])) {
+                    helper.LogError(`Incorrect syntax: non-float value detected in [RA]/[pmRA] on line #${linenumber}!`);
+                    return false;
+                }
+            }
+            words[this.ReqLineLen] = parseFloat(rax[0]);
+            words[this.ReqLineLen + 1] = parseFloat(rax[1]);
+            words[this.ReqLineLen + 1] = Math.max(-1000, Math.min(1000, words[this.ReqLineLen + 1]));
+        } else if (helper.notFloat(words[3])) {
+            helper.LogError(`Incorrect syntax: non-integer value detected in [RA] on line #${linenumber}!`);
+            return false;
+        } else {
+            words[this.ReqLineLen] = parseFloat(words[3]);
+            words[this.ReqLineLen + 1] = 0;
+        }
+        /* RA seconds, integer part between 0 and 59 */
+        if (parseInt(words[this.ReqLineLen]) < 0 || parseInt(words[this.ReqLineLen]) > 59) {
+            helper.LogError(`Incorrect syntax: the integer part of "seconds" in [RA] must be a number between 0 and 59 on line #${linenumber}!`);
+            return false;
+        }
+        /* Dec degrees, arcminutes must be integer */
+        if (helper.notInt(words[4]) || helper.notInt(words[5])) {
+            helper.LogError(`Incorrect syntax: non-integer value detected in [DEC] on line #${linenumber}!`);
+            return false;
+        }
+        /* Dec degrees between -89 and +89 */
+        rax = parseInt(words[4]);
+        if (rax < -89 || rax > 89) {
+            helper.LogError(`Incorrect syntax: the "degrees" part of [Dec] must be an integer between -89 and +89 on line #${linenumber}!`);
+            return false;
+        }
+        /* Dec arcminutes between 0 and 59 */
+        rax = parseInt(words[5]);
+        if (rax < 0 || rax > 59) {
+            helper.LogError(`Incorrect syntax: the "minutes" part of [Dec] must be an integer between 0 and 59 on line #${linenumber}!`);
+            return false;
+        }
+        /* Dec arcseconds and proper motion */
+        if (words[6].indexOf("/") > -1) {
+            rax = words[6].split("/");
+            if (rax.length !== 2) {
+                helper.LogError(`Incorrect syntax for [pmDEC] on line #${linenumber}!`);
+                return false;
+            } else {
+                if (helper.notFloat(rax[0]) || helper.notFloat(rax[1])) {
+                    helper.LogError(`Incorrect syntax: non-float value detected in [DEC]/[pmDEC] on line #${linenumber}!`);
+                    return false;
+                }
+            }
+            words[this.ReqLineLen + 2] = parseFloat(rax[0]);
+            words[this.ReqLineLen + 3] = parseFloat(rax[1]);
+            words[this.ReqLineLen + 3] = Math.max(-1000, Math.min(1000, words[this.ReqLineLen + 3]));
+        } else if (helper.notFloat(words[6])) {
+            helper.LogError(`Incorrect syntax: non-integer value detected in [DEC] on line #${linenumber}!`);
+            return false;
+        } else {
+            words[this.ReqLineLen + 2] = parseFloat(words[6]);
+            words[this.ReqLineLen + 3] = 0;
+        }
+        /* Dec arcseconds, integer part between 0 and 59 */
+        if (parseInt(words[this.ReqLineLen + 2]) < 0 || parseInt(words[this.ReqLineLen + 2]) > 59) {
+            helper.LogError(`Incorrect syntax: the integer part of "arcseconds" in [Dec] must be a number between 0 and 59 on line #${linenumber}!`);
+            return false;
+        }
+        if (helper.filterFloat(words[7]) !== 2000 && helper.filterFloat(words[7]) !== 1950) {
+            helper.LogError(`Incorrect syntax: [EPOCH] must be either 2000 or 1950 on line #${linenumber}!`);
+            return false;
+        }
+        /* Validate exptime */
         if (helper.notInt(words[8]) && words[8] != "*") {
             helper.LogError(`Incorrect syntax: non-integer value detected in [OBSTIME] on line #${linenumber}!`);
             return false;
         }
-    }
-    /* Validate observation type */
-    if ($.inArray(words[11], ["Monitor", "ToO", "SoftToO", "Payback", "Fast-Track", "Service", "CATService", "Visitor", "Staff"]) === -1) {
-        let wl = words[11].length;
-        if (words[11].indexOf("Staff/") !== 0 || (words[11].indexOf("Staff/") === 0 && (wl < 8 || wl > 9))) {
-            helper.LogError(`Incorrect syntax: [TYPE] must be one of the following: <i>Monitor</i>, <i>ToO</i>, <i>SoftToO</i>, <i>Payback</i>, <i>Fast-Track</i>, <i>Service</i>, <i>CATService</i>, <i>Visitor</i>, <i>Staff</i>, on line #${linenumber}!`);
+        /* Validate the proposal id; different telescopes use different formats */
+        const valid = driver.validateProjectNumber(words[9]);
+        const form = valid[0];
+        const reqlen = valid[1];
+        const reok = valid[2];
+        if (words[9].length !== reqlen) {
+            helper.LogError(`Incorrect syntax: [PROJECT] (${words[9]}, ${words[9].length}, ${reqlen}) does not have the same length as ${form} on line #${linenumber}!`);
             return false;
         }
-    }
-    /* OB info must be valid, or an instrument name, or "default" */
-    if (words[12] !== Driver.defaultOBInfo) {
-        let arr = words[12].split(":");
-        if (arr.length !== 4 && arr.length !== 1) {
-            helper.LogError(`OB info is not valid on line #${linenumber}, it should be Instrument:Mode:GroupID:BlockID!`);
+        if (!reok) {
+            helper.LogError(`Incorrect syntax: [PROJECT] (${words[9]}) does not respect the ${form} syntax on line #${linenumber}!`);
             return false;
         }
+        /* Validate constraints */
+        if (helper.notFloat(words[10])) {
+            const arr = words[10].toUpperCase().split(",");
+            let good = true;
+            let periodset = false;
+            for (const constr of arr) {
+                if (!helper.notFloat(constr)) continue;
+                if (constr.startsWith("UTC[") || constr.startsWith("LST[") || constr.startsWith("HA[") || constr.startsWith("AM[") || constr.startsWith("MOON[")) {
+                    if (constr.slice(-1) != "]" || constr.indexOf("-") == -1) {
+                        good = false;
+                        break;
+                    }
+                } else if (constr.startsWith("AM")) {
+                    if (!helper.filterFloat(constr.slice(2))) {
+                        good = false;
+                        break;
+                    }
+                } else if (constr.startsWith("MOON")) {
+                    if (!helper.filterFloat(constr.slice(4))) {
+                        good = false;
+                        break;
+                    }
+                } else if (constr == "NT", "AT", "DARK") {
+                    if (!periodset) {
+                        periodset = true;
+                        continue;
+                    }
+                    helper.LogError(`Conflicting constraints (NT, AT, DARK) specified on line #${linenumber}!`);
+                    return false;
+                } else {
+                    good = false;
+                    break;
+                }
+            }
+            if (!good) {
+                helper.LogError(`Incorrect syntax: [CONSTRAINTS] should either be a float (e.g., 2.0), a UTC range (e.g., UTC[20:00-23:00]) or an LST range (e.g. LST[2-4:30]) on line #${linenumber}!`);
+                return false;
+            }
+            if (helper.notInt(words[8]) && words[8] != "*") {
+                helper.LogError(`Incorrect syntax: non-integer value detected in [OBSTIME] on line #${linenumber}!`);
+                return false;
+            }
+        }
+        /* Validate observation type */
+        if ($.inArray(words[11], ["Monitor", "ToO", "SoftToO", "Payback", "Fast-Track", "Service", "CATService", "Visitor", "Staff"]) === -1) {
+            let wl = words[11].length;
+            if (words[11].indexOf("Staff/") !== 0 || (words[11].indexOf("Staff/") === 0 && (wl < 8 || wl > 9))) {
+                helper.LogError(`Incorrect syntax: [TYPE] must be one of the following: <i>Monitor</i>, <i>ToO</i>, <i>SoftToO</i>, <i>Payback</i>, <i>Fast-Track</i>, <i>Service</i>, <i>CATService</i>, <i>Visitor</i>, <i>Staff</i>, on line #${linenumber}!`);
+                return false;
+            }
+        }
+        /* OB info must be valid, or an instrument name, or "default" */
+        if (words[12] !== Driver.defaultOBInfo) {
+            let arr = words[12].split(":");
+            if (arr.length !== 4 && arr.length !== 1) {
+                helper.LogError(`OB info is not valid on line #${linenumber}, it should be Instrument:Mode:GroupID:BlockID!`);
+                return false;
+            }
+        }
+        /* Sky PA must be a float */
+        if (helper.notFloat(words[13])) {
+            helper.LogError(`Incorrect syntax: non-float value detected in [SKYPA] on line #${linenumber}!`);
+            return false;
+        }
+        /* Priority must be a float */
+        if (helper.notFloat(words[14])) {
+            helper.LogError(`Incorrect syntax: non-float value detected in [PRIORITY] on line #${linenumber}!`);
+            return false;
+        }
+        return words;
+    } catch (e) {
+        helper.LogException(e);
     }
-    /* Sky PA must be a float */
-    if (helper.notFloat(words[13])) {
-        helper.LogError(`Incorrect syntax: non-float value detected in [SKYPA] on line #${linenumber}!`);
-        return false;
-    }
-    /* Priority must be a float */
-    if (helper.notFloat(words[14])) {
-        helper.LogError(`Incorrect syntax: non-float value detected in [PRIORITY] on line #${linenumber}!`);
-        return false;
-    }
-    return words;
 };
 
 /**
  * @memberof TargetList
  */
 TargetList.prototype.checkForDuplicates = function () {
-    const alreadyChecked = [];
-    const duplicateList = [];
-    let found;
+    try {
+        const alreadyChecked = [];
+        const duplicateList = [];
+        let found;
 
-    for (let i = 0; i < this.FormattedLines.length; i += 1) {
-        if (alreadyChecked.indexOf(i) > -1) {
-            continue;
-        }
-        if (this.VisibleLines[i] === "" || this.VisibleLines[i][0] === "#") {
-            continue;
-        }
-        found = false;
-        let duplString = "";
-        for (let j = i + 1; j < this.FormattedLines.length; j += 1) {
-            if (this.VisibleLines[i] === this.VisibleLines[j]) {
-                found = true;
-                duplString += `, #${j + 1}`;
-                alreadyChecked.push(j);
+        for (let i = 0; i < this.FormattedLines.length; i += 1) {
+            if (alreadyChecked.indexOf(i) > -1) {
+                continue;
+            }
+            if (this.VisibleLines[i] === "" || this.VisibleLines[i][0] === "#") {
+                continue;
+            }
+            found = false;
+            let duplString = "";
+            for (let j = i + 1; j < this.FormattedLines.length; j += 1) {
+                if (this.VisibleLines[i] === this.VisibleLines[j]) {
+                    found = true;
+                    duplString += `, #${j + 1}`;
+                    alreadyChecked.push(j);
+                }
+            }
+            if (found) {
+                duplicateList.push(`(#${i + 1}${duplString})`);
             }
         }
-        if (found) {
-            duplicateList.push(`(#${i + 1}${duplString})`);
+        if (duplicateList.length > 0) {
+            helper.LogWarning(`Duplicate lines detected: ${duplicateList.join(", ")}. Please check if that is what you actually intended, otherwise delete or comment out the duplicates.`);
         }
-    }
-    if (duplicateList.length > 0) {
-        helper.LogWarning(`Duplicate lines detected: ${duplicateList.join(", ")}. Please check if that is what you actually intended, otherwise delete or comment out the duplicates.`);
+    } catch (e) {
+        helper.LogException(e);
     }
 };
 
@@ -1683,164 +1795,180 @@ TargetList.prototype.checkForDuplicates = function () {
  *          3 = can observe the object both over- and under-the-axis
  */
 Target.prototype.canObserve = function (idx) {
-    const time = driver.night.xaxis[idx];
-    const altitude = this.Graph[idx];
-    const moondist = this.MoonDistance[idx];
+    try {
+        const time = driver.night.xaxis[idx];
+        const altitude = this.Graph[idx];
+        const moondist = this.MoonDistance[idx];
 
-    if (Driver.obs_lowestLimit !== null && altitude < Driver.obs_lowestLimit) {
-        return 0;
-    }
-    if (Driver.obs_highestLimit !== null && altitude > Driver.obs_highestLimit) {
-        return 0;
-    }
-    if (this.RestrictionTwilights.length > 0) {
-        if (!this.RestrictionTwilights.includes("NT") && (time < driver.night.ENauTwilight || time > driver.night.MNauTwilight)) return 0;
-        if (!this.RestrictionTwilights.includes("AT") && (
-            (time > driver.night.ENauTwilight && time < driver.night.EAstTwilight) ||
-            (time > driver.night.MAstTwilight && time < driver.night.MNauTwilight))) return 0;
-        if (!this.RestrictionTwilights.includes("DARK") && (time > driver.night.EAstTwilight && time < driver.night.MAstTwilight)) return 0;
-    }
-    if (!(this.RestrictionMinUTC <= time && this.RestrictionMaxUTC >= time &&
-            this.RestrictionMinAlt <= altitude && this.RestrictionMaxAlt >= altitude &&
-            this.RestrictionMinMoonDistance <= moondist && this.RestrictionMaxMoonDistance >= moondist)) {
-        return 0;
-    }
-    for (let i = 0; i < driver.targets.Offline.length; i += 1) {
-        if (time >= driver.targets.Offline[i].Start && time <= driver.targets.Offline[i].End) {
+        if (Driver.obs_lowestLimit !== null && altitude < Driver.obs_lowestLimit) {
             return 0;
         }
-    }
-    /* Special provisions for equatorial mounts */
-    // alt(dec)
-    if (this.DecLimit_MinimumAlt !== null && altitude < this.DecLimit_MinimumAlt) {
-        return 0;
-    }
-    // ha(dec)
-    let ha = (time - this.ZenithTime) * 24;
-    if (this.DecLimit_MinimumHA !== null && ha < this.DecLimit_MinimumHA) {
-        return 0;
-    }
-    if (this.DecLimit_MaximumHA !== null && ha > this.DecLimit_MaximumHA) {
-        return 0;
-    }
-    if (this.DecLimit_MinimumAltAzEast === null && this.DecLimit_MinimumAltAzWest === null) {
-        return 1;
-    }
-    // alt(az)
-    let notwest = false, noteast = false;
-    if ($("#opt_allow_over_axis").is(":checked")) {
-        if (this.DecLimit_MinimumAltAzWest !== null && altitude < this.DecLimit_MinimumAltAzWest[idx]) {
+        if (Driver.obs_highestLimit !== null && altitude > Driver.obs_highestLimit) {
+            return 0;
+        }
+        if (this.RestrictionTwilights.length > 0) {
+            if (!this.RestrictionTwilights.includes("NT") && (time < driver.night.ENauTwilight || time > driver.night.MNauTwilight)) return 0;
+            if (!this.RestrictionTwilights.includes("AT") && (
+                (time > driver.night.ENauTwilight && time < driver.night.EAstTwilight) ||
+                (time > driver.night.MAstTwilight && time < driver.night.MNauTwilight))) return 0;
+            if (!this.RestrictionTwilights.includes("DARK") && (time > driver.night.EAstTwilight && time < driver.night.MAstTwilight)) return 0;
+        }
+        if (!(this.RestrictionMinUTC <= time && this.RestrictionMaxUTC >= time &&
+                this.RestrictionMinAlt <= altitude && this.RestrictionMaxAlt >= altitude &&
+                this.RestrictionMinMoonDistance <= moondist && this.RestrictionMaxMoonDistance >= moondist)) {
+            return 0;
+        }
+        for (let i = 0; i < driver.targets.Offline.length; i += 1) {
+            if (time >= driver.targets.Offline[i].Start && time <= driver.targets.Offline[i].End) {
+                return 0;
+            }
+        }
+        /* Special provisions for equatorial mounts */
+        // alt(dec)
+        if (this.DecLimit_MinimumAlt !== null && altitude < this.DecLimit_MinimumAlt) {
+            return 0;
+        }
+        // ha(dec)
+        let ha = (time - this.ZenithTime) * 24;
+        if (this.DecLimit_MinimumHA !== null && ha < this.DecLimit_MinimumHA) {
+            return 0;
+        }
+        if (this.DecLimit_MaximumHA !== null && ha > this.DecLimit_MaximumHA) {
+            return 0;
+        }
+        if (this.DecLimit_MinimumAltAzEast === null && this.DecLimit_MinimumAltAzWest === null) {
+            return 1;
+        }
+        // alt(az)
+        let notwest = false, noteast = false;
+        if ($("#opt_allow_over_axis").is(":checked")) {
+            if (this.DecLimit_MinimumAltAzWest !== null && altitude < this.DecLimit_MinimumAltAzWest[idx]) {
+                notwest = true;
+            }
+        } else {
+            // Do not allow observations over-the-axis
             notwest = true;
         }
-    } else {
-        // Do not allow observations over-the-axis
-        notwest = true;
+        if (this.DecLimit_MinimumAltAzEast !== null && altitude < this.DecLimit_MinimumAltAzEast[idx]) {
+            noteast = true;
+        }
+        if (noteast && notwest) {
+            return 0;
+        }
+        if (!noteast && notwest) {
+            return 1;
+        }
+        if (!notwest && noteast) {
+            return 2;
+        }
+        return 3;
+    } catch (e) {
+        helper.LogException(e);
     }
-    if (this.DecLimit_MinimumAltAzEast !== null && altitude < this.DecLimit_MinimumAltAzEast[idx]) {
-        noteast = true;
-    }
-    if (noteast && notwest) {
-        return 0;
-    }
-    if (!noteast && notwest) {
-        return 1;
-    }
-    if (!notwest && noteast) {
-        return 2;
-    }
-    return 3;
 };
 
 /**
  * @memberof Target
  */
 Target.prototype.preCompute = function () {
-    // First, determine when it is allowed to observe and when not
-    this.beginAllowed = [];
-    this.endAllowed = [];
-    this.beginForbidden = [];
-    this.endForbidden = [];
-    this.observable[0] = this.canObserve(0);
-    let obs = (this.observable[0] > 0);
-    if (!obs) {
-        this.beginForbidden.push(driver.night.xaxis[0]);
-    } else {
-        this.beginAllowed.push(driver.night.xaxis[0]);
-    }
-    for (let i = 1; i < this.Graph.length - 1; i += 1) {
-        this.observable[i] = this.canObserve(i);
-        if (this.observable[i] > 0) {
-            if (!obs) {
-                obs = true;
-                this.endForbidden.push(driver.night.xaxis[i]);
-                this.beginAllowed.push(driver.night.xaxis[i]);
-            }
+    try {
+        // First, determine when it is allowed to observe and when not
+        this.beginAllowed = [];
+        this.endAllowed = [];
+        this.beginForbidden = [];
+        this.endForbidden = [];
+        this.observable[0] = this.canObserve(0);
+        let obs = (this.observable[0] > 0);
+        if (!obs) {
+            this.beginForbidden.push(driver.night.xaxis[0]);
         } else {
-            if (obs) {
-                obs = false;
-                this.endAllowed.push(driver.night.xaxis[i]);
-                this.beginForbidden.push(driver.night.xaxis[i]);
+            this.beginAllowed.push(driver.night.xaxis[0]);
+        }
+        for (let i = 1; i < this.Graph.length - 1; i += 1) {
+            this.observable[i] = this.canObserve(i);
+            if (this.observable[i] > 0) {
+                if (!obs) {
+                    obs = true;
+                    this.endForbidden.push(driver.night.xaxis[i]);
+                    this.beginAllowed.push(driver.night.xaxis[i]);
+                }
+            } else {
+                if (obs) {
+                    obs = false;
+                    this.endAllowed.push(driver.night.xaxis[i]);
+                    this.beginForbidden.push(driver.night.xaxis[i]);
+                }
             }
         }
-    }
-    let last = this.Graph.length - 1;
-    this.observable[last] = this.canObserve(last);
-    if (this.beginForbidden.length !== this.endForbidden.length) {
-        this.endForbidden.push(driver.night.xaxis[last]);
-    } else {
-        this.endAllowed.push(driver.night.xaxis[last]);
-    }
-    if (this.beginAllowed.length !== this.endAllowed.length || this.beginForbidden.length !== this.endForbidden.length) {
-        helper.LogError("Bug report: safety check failed in @Target.prototype.preCompute. Please report this bug.");
-    }
-    this.nAllowed = this.beginAllowed.length;
-    if (this.nAllowed === 0) {
-        this.ObservableTonight = false;
-        this.iLastPossibleTime = 0;
-        this.LastPossibleTime = driver.night.Sunset;
-        driver.targets.Warning1.push(this.Name);
-        return;
-    }
-    if (this.FillSlot) {
-        this.SetExptime(this.endAllowed[0] - this.beginAllowed[0]);
-        this.iLastPossibleTime = helper.MJDToIndex(this.beginAllowed[0]);
-        this.LastPossibleTime = driver.night.xaxis[this.iLastPossibleTime];
-        this.ObservableTonight = true;
-        return;
-    }
-    this.FirstPossibleTime = this.beginAllowed[0];
-    for (let i = this.nAllowed; i >= 0; i--) {
-        if (this.beginAllowed[i] + this.Exptime <= this.endAllowed[i]) {
-            const lpt = this.endAllowed[i] - this.Exptime;
-            this.iLastPossibleTime = helper.MJDToIndex(lpt);
-            this.LastPossibleTime = driver.night.Sunset + this.iLastPossibleTime * driver.night.xstep + this.ZenithTime / 1e9;
+        let last = this.Graph.length - 1;
+        this.observable[last] = this.canObserve(last);
+        if (this.beginForbidden.length !== this.endForbidden.length) {
+            this.endForbidden.push(driver.night.xaxis[last]);
+        } else {
+            this.endAllowed.push(driver.night.xaxis[last]);
+        }
+        if (this.beginAllowed.length !== this.endAllowed.length || this.beginForbidden.length !== this.endForbidden.length) {
+            helper.LogError("Bug report: safety check failed in @Target.prototype.preCompute. Please report this bug.");
+        }
+        this.nAllowed = this.beginAllowed.length;
+        if (this.nAllowed === 0) {
+            this.ObservableTonight = false;
+            this.iLastPossibleTime = 0;
+            this.LastPossibleTime = driver.night.Sunset;
+            driver.targets.Warning1.push(this.Name);
+            return;
+        }
+        if (this.FillSlot) {
+            this.SetExptime(this.endAllowed[0] - this.beginAllowed[0]);
+            this.iLastPossibleTime = helper.MJDToIndex(this.beginAllowed[0]);
+            this.LastPossibleTime = driver.night.xaxis[this.iLastPossibleTime];
             this.ObservableTonight = true;
             return;
         }
+        this.FirstPossibleTime = this.beginAllowed[0];
+        for (let i = this.nAllowed; i >= 0; i--) {
+            if (this.beginAllowed[i] + this.Exptime <= this.endAllowed[i]) {
+                const lpt = this.endAllowed[i] - this.Exptime;
+                this.iLastPossibleTime = helper.MJDToIndex(lpt);
+                this.LastPossibleTime = driver.night.Sunset + this.iLastPossibleTime * driver.night.xstep + this.ZenithTime / 1e9;
+                this.ObservableTonight = true;
+                return;
+            }
+        }
+        driver.targets.Warning2.push(this.Name);
+    } catch (e) {
+        helper.LogException(e);
     }
-    driver.targets.Warning2.push(this.Name);
 };
 
 /**
  * @memberof Target
  */
 Target.prototype.getAltitude = function (time) {
-    let ii = helper.MJDToIndex(time);
-    return this.Graph[ii];
+    try {
+        let ii = helper.MJDToIndex(time);
+        return this.Graph[ii];
+    } catch (e) {
+        helper.LogException(e);
+    }
 };
 
 /**
  * @memberof Target
  */
 Target.prototype.resetColours = function () {
-    if (this.Observed) {
-        this.LabelFillColor = "green";
-        this.LabelStrokeColor = "green";
-        this.LabelTextColor = "white";
-    } else {
-        this.LabelFillColor = Driver.FillColors[this.Type];
-        this.LabelTextColor = Driver.TextColors[this.Type];
-        this.LabelStrokeColor = this.LabelFillColor;
+    try {
+        if (this.Observed) {
+            this.LabelFillColor = "green";
+            this.LabelStrokeColor = "green";
+            this.LabelTextColor = "white";
+        } else {
+            this.LabelFillColor = Driver.FillColors[this.Type];
+            this.LabelTextColor = Driver.TextColors[this.Type];
+            this.LabelStrokeColor = this.LabelFillColor;
+        }
+    } catch (e) {
+        helper.LogException(e);
     }
 };
 
@@ -1848,90 +1976,102 @@ Target.prototype.resetColours = function () {
  * @memberof Target
  */
 Target.prototype.ComputePositionSchedLabel = function () {
-    let xshift, yshift;
-    const slope = driver.graph.degree * (this.AltEndTime - this.AltStartTime) / driver.graph.transformXWidth(this.Exptime);
-    const angle = Math.atan(slope);
-    const dist = driver.graph.CircleSize * 1.2;
-    xshift = dist * Math.sin(angle);
-    yshift = dist * Math.cos(angle);
-    this.xmid = driver.graph.xaxis[helper.MJDToIndex(this.ScheduledMidTime)] - xshift;
-    this.ymid = driver.graph.yend - driver.graph.degree * this.Graph[helper.MJDToIndex(this.ScheduledMidTime)] - yshift;
+    try {
+        let xshift, yshift;
+        const slope = driver.graph.degree * (this.AltEndTime - this.AltStartTime) / driver.graph.transformXWidth(this.Exptime);
+        const angle = Math.atan(slope);
+        const dist = driver.graph.CircleSize * 1.2;
+        xshift = dist * Math.sin(angle);
+        yshift = dist * Math.cos(angle);
+        this.xmid = driver.graph.xaxis[helper.MJDToIndex(this.ScheduledMidTime)] - xshift;
+        this.ymid = driver.graph.yend - driver.graph.degree * this.Graph[helper.MJDToIndex(this.ScheduledMidTime)] - yshift;
+    } catch (e) {
+        helper.LogException(e);
+    }
 };
 
 /**
  * @memberof Target
  */
 Target.prototype.Schedule = function (start) {
-    this.Scheduled = true;
-    this.ScheduledStartTime = start;
-    this.ScheduledEndTime = start + this.Exptime;
-    this.ScheduledMidTime = start + 0.5 * this.Exptime;
-    this.AltStartTime = this.Graph[helper.MJDToIndex(this.ScheduledStartTime)];
-    this.AltEndTime = this.Graph[helper.MJDToIndex(this.ScheduledEndTime)];
-    this.AltMidTime = this.Graph[helper.MJDToIndex(this.ScheduledMidTime)];
-    this.ComputePositionSchedLabel();
+    try {
+        this.Scheduled = true;
+        this.ScheduledStartTime = start;
+        this.ScheduledEndTime = start + this.Exptime;
+        this.ScheduledMidTime = start + 0.5 * this.Exptime;
+        this.AltStartTime = this.Graph[helper.MJDToIndex(this.ScheduledStartTime)];
+        this.AltEndTime = this.Graph[helper.MJDToIndex(this.ScheduledEndTime)];
+        this.AltMidTime = this.Graph[helper.MJDToIndex(this.ScheduledMidTime)];
+        this.ComputePositionSchedLabel();
+    } catch (e) {
+        helper.LogException(e);
+    }
 };
 
 /**
  * @memberof Target
  */
 Target.prototype.Update = function (obj) {
-    // obj: (0=exptime, 1=project, 2=constraints, 3=type)
-    this.FullType = obj[3];
-    this.Type = (obj[3].indexOf("/") === -1 ? obj[3] : obj[3].substring(0, obj[3].indexOf("/")));
-    this.ProjectNumber = obj[1];
-    this.Constraints = obj[2];
-    let isUTC;
-    const UTr = helper.ExtractUTRange(obj[2]);
-    let ut1, ut2;
-    if (UTr === false) {
-        isUTC = false;
-        this.MaxAirmass = driver.defaultAM;
-        this.MaxAirmass = parseFloat(obj[2]);
-        this.RestrictionMinUTC = driver.night.ENauTwilight;
-        this.RestrictionMaxUTC = driver.night.MNauTwilight;
-    } else {
-        isUTC = true;
-        ut1 = Math.max(driver.night.ENauTwilight, UTr[0]);
-        ut2 = Math.min(driver.night.MNauTwilight, UTr[1]);
-        this.MaxAirmass = 9.9;
-        this.RestrictionMinUTC = ut1;
-        this.RestrictionMaxUTC = ut2;
-    }
-    this.RestrictionMinAlt = helper.AirmassToAltitude(this.MaxAirmass);
-    this.FillSlot = isUTC && (obj[0] === "*");
-    if (helper.filterInt(obj[0])) {
-        this.ExptimeSeconds = parseInt(obj[0]);
-        this.Exptime = Math.floor(this.ExptimeSeconds / 86400 / driver.night.xstep) * driver.night.xstep;
-    } else {
-        this.Exptime = this.FillSlot ? ut2 - ut1 : driver.defaultObstime / 86400;
-        this.ExptimeSeconds = Math.round(this.Exptime * 86400);
-        this.Exptime = Math.floor(this.Exptime / driver.night.xstep) * driver.night.xstep;
-    }
-    const hrs = Math.floor(this.ExptimeSeconds / 3600);
-    const min = Math.round((this.ExptimeSeconds - hrs * 3600) / 60);
-    this.ExptimeHM = `${hrs > 0 ? hrs.toFixed(0) + "h " : ""}${min.toFixed(0)}m`;
-    if (this.FillSlot) {
-        helper.LogEntry(`Attention: object <i>${this.Name}</i> will fill its entire time slot.`);
-    }
+    try {
+        // obj: (0=exptime, 1=project, 2=constraints, 3=type)
+        this.FullType = obj[3];
+        this.Type = (obj[3].indexOf("/") === -1 ? obj[3] : obj[3].substring(0, obj[3].indexOf("/")));
+        this.ProjectNumber = obj[1];
+        this.Constraints = obj[2];
+        let isUTC;
+        const UTr = helper.ExtractUTRange(obj[2]);
+        let ut1, ut2;
+        if (UTr === false) {
+            isUTC = false;
+            this.MaxAirmass = driver.defaultAM;
+            this.MaxAirmass = parseFloat(obj[2]);
+            this.RestrictionMinUTC = driver.night.ENauTwilight;
+            this.RestrictionMaxUTC = driver.night.MNauTwilight;
+        } else {
+            isUTC = true;
+            ut1 = Math.max(driver.night.ENauTwilight, UTr[0]);
+            ut2 = Math.min(driver.night.MNauTwilight, UTr[1]);
+            this.MaxAirmass = 9.9;
+            this.RestrictionMinUTC = ut1;
+            this.RestrictionMaxUTC = ut2;
+        }
+        this.RestrictionMinAlt = helper.AirmassToAltitude(this.MaxAirmass);
+        this.FillSlot = isUTC && (obj[0] === "*");
+        if (helper.filterInt(obj[0])) {
+            this.ExptimeSeconds = parseInt(obj[0]);
+            this.Exptime = Math.floor(this.ExptimeSeconds / 86400 / driver.night.xstep) * driver.night.xstep;
+        } else {
+            this.Exptime = this.FillSlot ? ut2 - ut1 : driver.defaultObstime / 86400;
+            this.ExptimeSeconds = Math.round(this.Exptime * 86400);
+            this.Exptime = Math.floor(this.Exptime / driver.night.xstep) * driver.night.xstep;
+        }
+        const hrs = Math.floor(this.ExptimeSeconds / 3600);
+        const min = Math.round((this.ExptimeSeconds - hrs * 3600) / 60);
+        this.ExptimeHM = `${hrs > 0 ? hrs.toFixed(0) + "h " : ""}${min.toFixed(0)}m`;
+        if (this.FillSlot) {
+            helper.LogEntry(`Attention: object <i>${this.Name}</i> will fill its entire time slot.`);
+        }
 
-    this.OBData = obj[4];
-    if (this.OBData.indexOf(":") !== -1) {
-        let ob_arr = this.OBData.split(":");
-        this.BacklinkToOBQueue = `http://www.not.iac.es/intranot/ob/ob_update.php?period=${parseInt(this.ProjectNumber.substring(0, 2))}&propID=${parseInt(this.ProjectNumber.substring(3))}&groupID=${ob_arr[2]}&blockID=${ob_arr[3]}`;
-        this.BacklinkToOBQueuePublic = `http://www.not.iac.es/observing/forms/obqueue/ob_update.php?period=${parseInt(this.ProjectNumber.substring(0, 2))}&propID=${parseInt(this.ProjectNumber.substring(3))}&groupID=${ob_arr[2]}&blockID=${ob_arr[3]}`;
-        this.Instrument = ob_arr[0];
-        this.ExtraInfo = `${ob_arr[0]}/${ob_arr[1]}`;
-    } else {
-        this.BacklinkToOBQueue = null;
-        this.BacklinkToOBQueuePublic = null;
-        this.Instrument = this.OBData;
-        this.ExtraInfo = null;
+        this.OBData = obj[4];
+        if (this.OBData.indexOf(":") !== -1) {
+            let ob_arr = this.OBData.split(":");
+            this.BacklinkToOBQueue = `http://www.not.iac.es/intranot/ob/ob_update.php?period=${parseInt(this.ProjectNumber.substring(0, 2))}&propID=${parseInt(this.ProjectNumber.substring(3))}&groupID=${ob_arr[2]}&blockID=${ob_arr[3]}`;
+            this.BacklinkToOBQueuePublic = `http://www.not.iac.es/observing/forms/obqueue/ob_update.php?period=${parseInt(this.ProjectNumber.substring(0, 2))}&propID=${parseInt(this.ProjectNumber.substring(3))}&groupID=${ob_arr[2]}&blockID=${ob_arr[3]}`;
+            this.Instrument = ob_arr[0];
+            this.ExtraInfo = `${ob_arr[0]}/${ob_arr[1]}`;
+        } else {
+            this.BacklinkToOBQueue = null;
+            this.BacklinkToOBQueuePublic = null;
+            this.Instrument = this.OBData;
+            this.ExtraInfo = null;
+        }
+
+        this.ReconstructedInput = `${this.Name} ${this.inputRA} ${this.inputDec} ${this.Epoch} ${this.ExptimeSeconds} ${this.ProjectNumber} ${this.Constraints} ${this.FullType} ${this.OBData}`;
+        this.ReconstructedMinimumInput = `${this.Name} ${this.inputRA} ${this.inputDec} ${this.Epoch}`;
+
+        this.preCompute();
+        this.resetColours();
+    } catch (e) {
+        helper.LogException(e);
     }
-
-    this.ReconstructedInput = `${this.Name} ${this.inputRA} ${this.inputDec} ${this.Epoch} ${this.ExptimeSeconds} ${this.ProjectNumber} ${this.Constraints} ${this.FullType} ${this.OBData}`;
-    this.ReconstructedMinimumInput = `${this.Name} ${this.inputRA} ${this.inputDec} ${this.Epoch}`;
-
-    this.preCompute();
-    this.resetColours();
 };
