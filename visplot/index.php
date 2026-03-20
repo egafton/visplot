@@ -129,6 +129,7 @@ $version = "5.0c";
 *      - Highlighting the current telescope on the map.
 *      - Telescope list now supports incremental search.
 *      - Improved handling of fractional UTC offsets.
+*      - Added night/twilight, clouds and precipitation overlays on map.
 */
 session_start();
 if (isset($_SESSION["obinfo"])) {

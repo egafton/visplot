@@ -964,7 +964,7 @@ helper.zeros = function(dimensions) {
 };
 
 helper.angDist = function(a, b) {
-    let d = Math.abs(a - b) % 360;
+    const d = Math.abs(a - b) % 360;
     return d > 180 ? 360 - d : d;
 };
 
@@ -972,3 +972,14 @@ helper.mjdToUTCHours = function(mjd) {
     const dayFrac = mjd % 1;
     return dayFrac * 24;
 };
+
+helper.SubsolarPoint = function() {
+    const l = moment().utc();
+    const tgmt = l.hour() + l.minute()/60 + l.second()/3600 + l.millisecond()/3600000;
+    const mjd = sla.cldj(l.year(), l.month()+1, l.date()) + tgmt/24;
+    const sun = sla.rdplan(mjd, "Sun", 0, 0);
+    const lat = sla.r2d * sun.dec;
+    const gha = sla.gmst(mjd) - sun.ra;
+    const lng = sla.drange(-gha) * sla.r2d;
+    return [lat, lng, sun.dec, gha];
+}

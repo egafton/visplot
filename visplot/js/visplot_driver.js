@@ -135,16 +135,20 @@ Driver.prototype.SetupMap = function() {
             attributionControl: false,
             zoomControl: true,
             fullscreenControl: true,
-            worldCopyJump: true,
+            worldCopyJump: false,
             layers: [tileLayer]
         });
         const baseMaps = { "Physical Map": tileLayer};
         const clouds = L.OWM.cloudsClassic({showLegend: false, opacity: 0.6, appId: 'def7cfdebee03cd500fbdbcfc8c48e90'});
         const rain = L.OWM.rainClassic({showLegend: false, opacity: 0.6, appId: 'def7cfdebee03cd500fbdbcfc8c48e90'});
-        const overlayMaps = { "Clouds": clouds, "Rain": rain };
+        driver.nightLayerGroup = L.layerGroup();
+        const overlayMaps = {
+            "Clouds": clouds,
+            "Rain": rain,
+            "Night & Twilight": driver.nightLayerGroup
+        };
         // Add layers
         const layerControl = L.control.layers(baseMaps, overlayMaps).addTo(this.map);
-        //layerControl.setPrefix('');
         /* Equator and tropics */
         L.polyline([[0, -180], [0, 180]], {
             color: '#ffff88',
@@ -181,7 +185,7 @@ Driver.prototype.SetupMap = function() {
         addLineLabel(-23.4394, "Tropic of Capricorn", this.map);
 
         function refreshMap() {
-            driver.map.setView([30, 5], 2);
+            driver.map.setView([21, 5], 2);
         }
 
         refreshMap();
@@ -254,6 +258,174 @@ Driver.prototype.SetupMap = function() {
     } catch (e) {
         helper.LogException(e);
     }
+}
+
+Driver.prototype.startSunTimer = function() {
+    this.updateSunAndNight();
+
+    this.sunInterval = setInterval(() => {
+        // Only run the heavy math if the layer is actually turned on in the UI
+        if (driver.map.hasLayer(this.nightLayerGroup)) {
+            driver.updateSunAndNight();
+        }
+    }, 5000); 
+};
+
+Driver.prototype.stopSunTimer = function() {
+    if (this.sunInterval) {
+        clearInterval(this.sunInterval);
+        this.sunInterval = null;
+    }
+};
+
+Driver.prototype.updateNightPolygons = function (ssp) {
+    const TWILIGHTS = [
+        {name: "night", alt: 0, color: '#000', opacity: 0.4},
+        {name: "civil", alt: -6, color: '#000', opacity: 0.3},
+        {name: "nautical", alt: -12, color: '#000', opacity: 0.2},
+        {name: "astronomical", alt: -18, color: '#000', opacity: 0.1}
+    ];
+
+    function buildNightPolygon(ssp, alt = 0, step = 1) {
+        const delta = ssp[2];
+        const gha = ssp[3];
+        const h = alt * sla.d2r;
+        const k = Math.sin(h);
+
+        // Helper to test if a specific coordinate is darker than our target altitude
+        const isNight = (latRad, haRad) => {
+            const altSin = Math.sin(latRad) * Math.sin(delta) + Math.cos(latRad) * Math.cos(delta) * Math.cos(haRad);
+            return altSin <= k;
+        };
+
+        const intervals = [];
+
+        // 1. Sweep Longitudes to build Latitude Intervals
+        for (let lon = -180; lon <= 180; lon += step) {
+            const lonRad = lon * sla.d2r;
+            
+            // Normalize Hour Angle to [-PI, PI]
+            let haRad = gha + lonRad;
+            haRad = (haRad + Math.PI * 10) % (2 * Math.PI);
+            if (haRad > Math.PI) haRad -= 2 * Math.PI;
+
+            // Simplify our spherical equation
+            const A = Math.sin(delta);
+            const B = Math.cos(delta) * Math.cos(haRad);
+            const R = Math.sqrt(A * A + B * B);
+
+            // Edge Case: 0 Roots (Entire longitude is either 24hr Day or 24hr Night)
+            if (R === 0 || Math.abs(k / R) > 1) {
+                if (isNight(0, haRad) || isNight(Math.PI/2, haRad)) {
+                    intervals.push({ lon: lon, bounds: [-90, 90] });
+                } else {
+                    intervals.push({ lon: lon, bounds: null });
+                }
+                continue;
+            }
+
+            const gamma = Math.atan2(A, B);
+            const acosTerm = Math.acos(k / R);
+
+            // Calculate roots, unwrap from radians, and map to -90 to +90 bounds
+            let roots = [gamma + acosTerm, gamma - acosTerm]
+                .map(r => {
+                    let n = r;
+                    while (n > Math.PI) n -= 2 * Math.PI;
+                    while (n <= -Math.PI) n += 2 * Math.PI;
+                    return n;
+                })
+                .filter(r => r >= -Math.PI / 2 - 1e-5 && r <= Math.PI / 2 + 1e-5)
+                .map(r => r * sla.r2d)
+                .sort((a, b) => a - b);
+
+            // Enforce hard clamps to map edges
+            roots = roots.map(r => Math.max(-90, Math.min(90, r)));
+
+            // Extract the exact interval of night for this specific longitude
+            if (roots.length === 0) {
+                if (isNight(0, haRad)) intervals.push({ lon: lon, bounds: [-90, 90] });
+                else intervals.push({ lon: lon, bounds: null });
+            } else if (roots.length === 1) {
+                const rLat = roots[0];
+                const testBelow = (rLat - 90) / 2 * sla.d2r;
+                if (isNight(testBelow, haRad)) intervals.push({ lon: lon, bounds: [-90, rLat] });
+                else intervals.push({ lon: lon, bounds: [rLat, 90] });
+            } else if (roots.length === 2) {
+                const mid = (roots[0] + roots[1]) / 2 * sla.d2r;
+                if (isNight(mid, haRad)) intervals.push({ lon: lon, bounds: [roots[0], roots[1]] });
+                else intervals.push({ lon: lon, bounds: null });
+            }
+        }
+
+        // 2. Group into contiguous MultiPolygons to avoid crossing the daytime center
+        const multiPolys = [];
+        let currentBlock = [];
+
+        for (let i = 0; i < intervals.length; i++) {
+            if (intervals[i].bounds) {
+                currentBlock.push(intervals[i]);
+            } else {
+                if (currentBlock.length > 0) {
+                    multiPolys.push(currentBlock);
+                    currentBlock = [];
+                }
+            }
+        }
+        if (currentBlock.length > 0) {
+            multiPolys.push(currentBlock);
+        }
+
+        // 3. Trace Top/Bottom Edges for Leaflet
+        const finalPolygons = [];
+        multiPolys.forEach(block => {
+            const poly = [];
+            // Trace the top boundary left-to-right
+            for (let i = 0; i < block.length; i++) {
+                poly.push([block[i].bounds[1], block[i].lon]);
+            }
+            // Trace the bottom boundary right-to-left
+            for (let i = block.length - 1; i >= 0; i--) {
+                poly.push([block[i].bounds[0], block[i].lon]);
+            }
+            // Wrap in an extra array so Leaflet treats it as a MultiPolygon structure
+            finalPolygons.push([poly]); 
+        });
+
+        return finalPolygons;
+    }
+
+    if (!driver.nightPolygons) driver.nightPolygons = {};
+    
+    TWILIGHTS.forEach(tw => {
+        const polys = buildNightPolygon(ssp, tw.alt, 1);
+        if (!driver.nightPolygons[tw.name]) {
+            driver.nightPolygons[tw.name] = L.polygon(polys, {
+                color: null,           // No visible border wireframe
+                fillColor: tw.color,
+                fillOpacity: tw.opacity,
+                interactive: false
+            }).addTo(driver.nightLayerGroup);
+        } else {
+            driver.nightPolygons[tw.name].setLatLngs(polys);
+        }
+    });
+};
+Driver.prototype.updateSunAndNight = function() {
+    if (!driver.map.hasLayer(driver.nightLayerGroup)) return;
+    const ssp = helper.SubsolarPoint();
+    if (!driver.sunMarker) {
+        // Add sun marker
+        const sunIcon = L.icon({
+            iconUrl: "https://upload.wikimedia.org/wikipedia/commons/f/fc/Sun_icon.svg",
+            iconSize: [24, 24],
+            iconAnchor: [12, 12],
+        });
+        driver.sunMarker = L.marker([ssp[0], ssp[1]], {icon: sunIcon}).addTo(driver.nightLayerGroup);
+    } else {
+        driver.sunMarker.setLatLng([ssp[0], ssp[1]]);
+    }
+    driver.updateNightPolygons(ssp);
 }
 
 Driver.prototype.highlightCurrentTelescope = function () {
@@ -1127,6 +1299,7 @@ Driver.prototype.EvtClick_Config = function () {
             touch: false,
             afterShow: function() {
                 driver.map.invalidateSize();
+                driver.startSunTimer();
                 if (!window.selectInitialized) {
                     setTimeout(() => {
                         $('#def_telescope').select2({
@@ -1142,6 +1315,7 @@ Driver.prototype.EvtClick_Config = function () {
                 }
             },
             beforeClose: function () {
+                driver.stopSunTimer();
                 driver.CallbackUpdateDefaults();
             }
         });
