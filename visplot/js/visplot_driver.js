@@ -268,7 +268,7 @@ Driver.prototype.startSunTimer = function() {
         if (driver.map.hasLayer(this.nightLayerGroup)) {
             driver.updateSunAndNight();
         }
-    }, 5000); 
+    }, 2000); 
 };
 
 Driver.prototype.stopSunTimer = function() {

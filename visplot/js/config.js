@@ -1185,7 +1185,7 @@ config["Observatório do Valongo"] = {
     altitude: 23,
     timezoneName: "America/Sao_Paulo"
 };
-config["Observatorio Astronómico Nacional"] = {
+config["Observatorio Astronómico Nacional, Mexico"] = {
     name: "Observatorio Astronómico Nacional 2.1m",
     location: "Baja California, Mexico",
     latitude: 31.04412,
@@ -1253,6 +1253,14 @@ config["MINERVA-Australis"] = {
     altitude: 682,
     timezoneName: "Australia/Brisbane"
 };
+config["Mt. Stromlo Observatory"] = {
+    name: "Mt. Stromlo Observatory 74in",
+    location: "Canberra, Australia",
+    latitude: -35.31911,
+    longitude: 149.00888,
+    altitude: 767,
+    timezoneName: "Australia/Sydney"
+};
 config["CSS 0.7m"] = {
     site: "Mt. Bigelow",
     name: "Catalina Sky Survey 0.7m Schmidt",
@@ -1297,4 +1305,28 @@ config["HCT"] = {
     longitude: 78.96384,
     altitude: 4500,
     timezoneName: "Asia/Kolkata"
+};
+config["Halley's Mount"] = {
+    name: "Halley's Mount",
+    location: "Saint Helena",
+    latitude: -15.96202,
+    longitude: -5.69950,
+    altitude: 659,
+    timezoneName: "Atlantic/St_Helena"
+};
+config["Dominion Astrophysical Observatory"] = {
+    name: "Dominion Astrophysical Observatory 72in",
+    location: "British Columbia, Canada",
+    latitude: 48.51978,
+    longitude: -123.41832,
+    altitude: 229,
+    timezoneName: "America/Vancouver"
+};
+config["Observatorio Astronómico Nacional, Colombia"] = {
+    name: "Observatorio Astronómico Nacional 20cm",
+    location: "Bogotá, Canada",
+    latitude: 4.59621,
+    longitude: -74.07750,
+    altitude: 2555,
+    timezoneName: "America/Bogota"
 };
