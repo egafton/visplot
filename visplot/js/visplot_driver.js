@@ -1483,6 +1483,12 @@ Driver.prototype.CallbackUpdateDefaults_postTelUpdate = function (resetTel) {
         localStorage.setItem("w_urgency", Driver.w_urgency);
         localStorage.setItem("w_altitude", Driver.w_altitude);
         localStorage.setItem("w_slewing", Driver.w_slewing);
+        for (const k in Driver.FillColors) {
+            localStorage.setItem(`fill_${k}`, Driver.FillColors[k]);
+        }
+        for (const k in Driver.TextColors) {
+            localStorage.setItem(`text_${k}`, Driver.TextColors[k]);
+        }
         localStorage.setItem("opt_reschedule_later", $("#opt_reschedule_later").is(":checked"));
         localStorage.setItem("opt_reorder_targets", $("#opt_reorder_targets").is(":checked"));
         localStorage.setItem("opt_allow_over_axis", $("#opt_allow_over_axis").is(":checked"));

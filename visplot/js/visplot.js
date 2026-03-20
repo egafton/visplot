@@ -124,6 +124,20 @@ $(document).ready(function () {
                             helper.LogEntry(`Restoring <i>Slewing</i> weight to <i>${localStorage.w_slewing}</i>`);
                             Driver.w_slewing = localStorage.w_slewing;
                         }
+                        for (const k in Driver.FillColors) {
+                            const key = `fill_${k}`;
+                            if (key in localStorage) {
+                                helper.LogEntry(`Restoring <i>${k}/fill colour</i> to <i>${localStorage[key]}</i>`);
+                                Driver.FillColors = [k, localStorage[key]];
+                            }
+                        }
+                        for (const k in Driver.TextColors) {
+                            const key = `text_${k}`;
+                            if (key in localStorage) {
+                                helper.LogEntry(`Restoring <i>${k}/text colour</i> to <i>${localStorage[key]}</i>`);
+                                Driver.TextColors = [k, localStorage[key]];
+                            }
+                        }
                         if ("opt_reschedule_later" in localStorage) {
                             helper.LogEntry(`Restoring <i>opt_reschedule_later</i> to <i>${localStorage.opt_reschedule_later}</i>`);
                             $("#opt_reschedule_later").prop("checked", localStorage.opt_reschedule_later === "true");
