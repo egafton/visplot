@@ -1218,6 +1218,23 @@ config["Lijiang Telescope"] = {
     altitude: 2014,
     timezoneName: "Asia/Shanghai"
 };
+config["Ali Observatory"] = {
+    name: "Ali Observatory",
+    location: "Tibet, China",
+    latitude: 32.32541,
+    longitude: 80.02690,
+    altitude: 5035,
+    timezoneName: "Asia/Shanghai"
+};
+config["INO340"] = {
+    site: "Iranian National Observatory",
+    name: "INO340 3.4m",
+    location: "Iran",
+    latitude: 33.67392,
+    longitude: 51.31857,
+    altitude: 3572,
+    timezoneName: "Asia/Tehran"
+};
 config["BTA-6"] = {
     site: "Special Astrophysical Observatory",
     name: "BTA-6 6m",
@@ -1243,6 +1260,15 @@ config["AZT-20"] = {
     longitude: 77.87101,
     altitude: 2750,
     timezoneName: "Asia/Almaty"
+};
+config["AZT-24"] = {
+    site: "Campo Imperatore Observatory",
+    name: "AZT-24 1.1m",
+    location: "Abruzzo, Italy",
+    latitude: 42.44422,
+    longitude: 13.55812,
+    altitude: 2154,
+    timezoneName: "Europe/Rome"
 };
 config["MINERVA-Australis"] = {
     site: "Mt. Kent Observatory",
