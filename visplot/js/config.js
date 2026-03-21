@@ -1568,3 +1568,47 @@ config["Haute-Provence Observatory"] = {
     altitude: 650,
     timezoneName: "Europe/Paris"
 };
+config["US Naval Observatory"] = {
+    name: "US Naval Observatory 26in",
+    location: "Washington, D.C., United States",
+    latitude: 38.92096,
+    longitude: -77.06704,
+    altitude: 81,
+    timezoneName: "America/New_York"
+};
+config["KST"] = {
+    site: "US Naval Observatory Flagstaff Station",
+    name: "Kaj Strand Telescope 61in",
+    location: "Arizona, United States",
+    latitude: 35.18404,
+    longitude: -111.74065,
+    altitude: 2282,
+    timezoneName: "America/Phoenix"
+};
+config["LDT"] = {
+    site: "Lowell Observatory",
+    name: "Lowell Discovery Telescope 4.3m",
+    location: "Arizona, United States",
+    latitude: 34.74437,
+    longitude: -111.42234,
+    altitude: 2360,
+    timezoneName: "America/Phoenix"
+};
+config["Perkins Telescope"] = {
+    site: "Lowell Observatory",
+    name: "Perkins Telescope 72in",
+    location: "Arizona, United States",
+    latitude: 35.09705,
+    longitude: -111.53680,
+    altitude: 2206,
+    timezoneName: "America/Phoenix"
+};
+config["Hall Telescope"] = {
+    site: "Lowell Observatory",
+    name: "Hall Telescope 42in",
+    location: "Arizona, United States",
+    latitude: 35.09675,
+    longitude: -111.53635,
+    altitude: 2206,
+    timezoneName: "America/Phoenix"
+};
