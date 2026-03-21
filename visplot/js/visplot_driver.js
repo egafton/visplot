@@ -138,7 +138,7 @@ Driver.prototype.SetupMap = function() {
             worldCopyJump: false,
             layers: [tileLayer]
         });
-        const baseMaps = { "Physical Map": tileLayer};
+        const baseMaps = { "Satellite Map": tileLayer};
         const clouds = L.OWM.cloudsClassic({showLegend: false, opacity: 0.6, appId: 'def7cfdebee03cd500fbdbcfc8c48e90'});
         const rain = L.OWM.rainClassic({showLegend: false, opacity: 0.6, appId: 'def7cfdebee03cd500fbdbcfc8c48e90'});
         driver.nightLayerGroup = L.layerGroup();

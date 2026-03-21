@@ -853,9 +853,18 @@ config["LBT"] = {
     site: "Mt. Graham",
     name: "Large Binocular Telescope 2×8.4m",
     location: "Arizona, United States",
-    latitude: 32.70130,
-    longitude: -109.88918,
+    latitude: 32.70144,
+    longitude: -109.88933,
     altitude: 3221,
+    timezoneName: "America/Phoenix"
+};
+config["VATT"] = {
+    site: "Mt. Graham",
+    name: "Vatican Advanced Technology Telescope 72in",
+    location: "Arizona, United States",
+    latitude: 32.70126,
+    longitude: -109.89207,
+    altitude: 3178,
     timezoneName: "America/Phoenix"
 };
 config["MMT"] = {
@@ -1055,6 +1064,24 @@ config["Carlos Sánchez Telescope"] = {
     altitude: 2390,
     timezoneName: "Atlantic/Canary"
 };
+config["ESA OGS"] = {
+    site: "Teide Observatory",
+    name: "ESA Optical Ground Station 1m",
+    location: "Tenerife, Spain",
+    latitude: 28.30097,
+    longitude: -16.51180,
+    altitude: 2400,
+    timezoneName: "Atlantic/Canary"
+};
+config["IAC80"] = {
+    site: "Teide Observatory",
+    name: "IAC80 Telescope 0.8m",
+    location: "Tenerife, Spain",
+    latitude: 28.29966,
+    longitude: -16.51101,
+    altitude: 2381,
+    timezoneName: "Atlantic/Canary"
+};
 config["Skinakas Observatory"] = {
     name: "Skinakas Observatory 1.3m",
     location: "Crete, Greece",
@@ -1236,11 +1263,19 @@ config["Sertão de Itaparica Observatory"] = {
     altitude: 390,
     timezoneName: "America/Sao_Paulo"
 };
+config["Pico dos Dias Observatory"] = {
+    name: "Pico dos Dias Observatory 1.6m",
+    location: "Brazil",
+    latitude: -22.53494,
+    longitude: -45.58312,
+    altitude: 1864,
+    timezoneName: "America/Sao_Paulo"
+};
 config["Observatorio Astronómico Nacional, Mexico"] = {
     name: "Observatorio Astronómico Nacional 2.1m",
     location: "Baja California, Mexico",
     latitude: 31.04412,
-    longitude: -115.46368,
+    longitude: -115.46365,
     altitude: 2830,
     timezoneName: "America/Tijuana"
 };
@@ -1319,6 +1354,14 @@ config["Pulkovo Observatory"] = {
     longitude: 30.32615,
     altitude: 81,
     timezoneName: "Europe/Moscow"
+};
+config["Sharjah Astronomical Observatory"] = {
+    name: "Sharjah Astronomical Observatory",
+    location: "Dubai, United Arab Emirates",
+    latitude: 25.28257,
+    longitude: 55.46202,
+    altitude: 17,
+    timezoneName: "Asia/Dubai"
 };
 config["Tien Shan Astronomical Observatory"] = {
     name: "Tien Shan Astronomical Observatory 1m",
@@ -1433,7 +1476,7 @@ config["Observatorio Astronómico Nacional, Colombia"] = {
     timezoneName: "America/Bogota"
 };
 config["RTT150"] = {
-    site: "Tubitak National Observatory",
+    site: "TÜBİTAK National Observatory",
     name: "RTT150 1.5m",
     location: "Antalya, Turkey",
     latitude: 36.82550,
@@ -1483,4 +1526,45 @@ config["Kottamia Astronomical Observatory"] = {
     longitude: 31.82772,
     altitude: 450,
     timezoneName: "Africa/Cairo"
+};
+config["Santa Martina Observatory"] = {
+    name: "Santa Martina Observatory",
+    location: "Chile",
+    latitude: -33.26913,
+    longitude: -70.53437,
+    altitude: 1449,
+    timezoneName: "America/Santiago"
+};
+config["Piszkéstető Station"] = {
+    name: "Piszkéstető Station",
+    location: "Hungary",
+    latitude: 47.91746,
+    longitude: 19.89365,
+    altitude: 944,
+    timezoneName: "Europe/Budapest"
+};
+config["Milanković Telescope"] = {
+    site: "Vidojevica Astronomical Station",
+    name: "Milanković Telescope 1.4m",
+    location: "Hungary",
+    latitude: 43.14120,
+    longitude: 21.55573,
+    altitude: 1150,
+    timezoneName: "Europe/Belgrade"
+};
+config["Rozhen Observatory"] = {
+    name: "Rozhen Observatory 2m",
+    location: "Bulgaria",
+    latitude: 41.69316,
+    longitude: 24.73894,
+    altitude: 1759,
+    timezoneName: "Europe/Sofia"
+};
+config["Haute-Provence Observatory"] = {
+    name: "Haute-Provence Observatory 1.93m",
+    location: "France",
+    latitude: 43.93144,
+    longitude: 5.71245,
+    altitude: 650,
+    timezoneName: "Europe/Paris"
 };
