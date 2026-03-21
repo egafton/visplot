@@ -947,6 +947,24 @@ config["Gemini North"] = {
     altitude: 4213,
     timezoneName: "US/Hawaii"
 };
+config["CFHT"] = {
+    site: "Mauna Kea",
+    name: "Canada–France–Hawaii Telescope 3.58m",
+    location: "Hawaii, United States",
+    latitude: 19.82523,
+    longitude: -155.46892,
+    altitude: 4204,
+    timezoneName: "US/Hawaii"
+};
+config["UKIRT"] = {
+    site: "Mauna Kea",
+    name: "United Kingdom Infra-Red Telescope 3.8m",
+    location: "Hawaii, United States",
+    latitude: 19.82244,
+    longitude: -155.47037,
+    altitude: 4194,
+    timezoneName: "US/Hawaii"
+};
 config["Gemini South"] = {
     site: "Cerro Pachón",
     name: "Gemini South 8.1m",
@@ -1013,9 +1031,18 @@ config["Shane Telescope"] = {
 config["SALT"] = {
     site: "South African Astronomical Observatory",
     name: "Southern African Large Telescope 9.2m",
-    location: "South Africa",
+    location: "Sutherland, South Africa",
     latitude: -32.37588,
     longitude: 20.81083,
+    altitude: 1837,
+    timezoneName: "Africa/Johannesburg"
+};
+config["Radcliffe Telescope"] = {
+    site: "South African Astronomical Observatory",
+    name: "Radcliffe Telescope 74in",
+    location: "Sutherland, South Africa",
+    latitude: -32.37895,
+    longitude: 20.81168,
     altitude: 1798,
     timezoneName: "Africa/Johannesburg"
 };
@@ -1034,6 +1061,14 @@ config["Skinakas Observatory"] = {
     latitude: 35.21180,
     longitude: 24.89901,
     altitude: 1750,
+    timezoneName: "Europe/Athens"
+};
+config["Kryoneri Observatory"] = {
+    name: "Kryoneri Observatory 1.3m",
+    location: "Greece",
+    latitude: 37.97194,
+    longitude: 22.61860,
+    altitude: 930,
     timezoneName: "Europe/Athens"
 };
 config["Tautenburg Observatory"] = {
@@ -1168,6 +1203,14 @@ config["AlbaNova"] = {
     altitude: 36,
     timezoneName: "Europe/Stockholm"
 };
+config["Brorfelde Observatory"] = {
+    name: "Brorfelde Observatory 77cm",
+    location: "Denmark",
+    latitude: 55.62466,
+    longitude: 11.66522,
+    altitude: 60,
+    timezoneName: "Europe/Copenhagen"
+};
 config["MOA Telescope 1.8m"] = {
     site: "Mt. John Observatory",
     name: "MOA Telescope 1.8m",
@@ -1177,12 +1220,20 @@ config["MOA Telescope 1.8m"] = {
     altitude: 1029,
     timezoneName: "Pacific/Auckland"
 };
-config["Observatório do Valongo"] = {
-    name: "Observatório do Valongo 0.42m",
+config["Valongo Observatory"] = {
+    name: "Valongo Observatory 0.42m",
     location: "Brazil",
     latitude: -22.89849,
     longitude: -43.18669,
     altitude: 23,
+    timezoneName: "America/Sao_Paulo"
+};
+config["Sertão de Itaparica Observatory"] = {
+    name: "Sertão de Itaparica Observatory 1m",
+    location: "Brazil",
+    latitude: -8.79220,
+    longitude: -38.68859,
+    altitude: 390,
     timezoneName: "America/Sao_Paulo"
 };
 config["Observatorio Astronómico Nacional, Mexico"] = {
@@ -1192,6 +1243,14 @@ config["Observatorio Astronómico Nacional, Mexico"] = {
     longitude: -115.46368,
     altitude: 2830,
     timezoneName: "America/Tijuana"
+};
+config["Guillermo Haro Observatory"] = {
+    name: "Guillermo Haro Observatory 2.1m",
+    location: "Sonora, Mexico",
+    latitude: 31.05311,
+    longitude: -110.38385,
+    altitude: 2480,
+    timezoneName: "America/Hermosillo"
 };
 config["Byurakan Observatory"] = {
     name: "Byurakan Observatory 2.6m",
@@ -1208,6 +1267,15 @@ config["Lulin Observatory"] = {
     longitude: 120.87264,
     altitude: 2862,
     timezoneName: "Asia/Taipei"
+};
+config["LAMOST"] = {
+    site: "Xinglong Station",
+    name: "LAMOST 4m",
+    location: "China",
+    latitude: 40.39562,
+    longitude: 117.57583,
+    altitude: 960,
+    timezoneName: "Asia/Shanghai"
 };
 config["Lijiang Telescope"] = {
     site: "Yunnan Observatory",
@@ -1251,6 +1319,14 @@ config["Pulkovo Observatory"] = {
     longitude: 30.32615,
     altitude: 81,
     timezoneName: "Europe/Moscow"
+};
+config["Tien Shan Astronomical Observatory"] = {
+    name: "Tien Shan Astronomical Observatory 1m",
+    location: "Kazakhstan",
+    latitude: 43.05725,
+    longitude: 76.97180,
+    altitude: 2735,
+    timezoneName: "Asia/Almaty"
 };
 config["AZT-20"] = {
     site: "Assy-Turgen Observatory",
@@ -1355,4 +1431,56 @@ config["Observatorio Astronómico Nacional, Colombia"] = {
     longitude: -74.07750,
     altitude: 2555,
     timezoneName: "America/Bogota"
+};
+config["RTT150"] = {
+    site: "Tubitak National Observatory",
+    name: "RTT150 1.5m",
+    location: "Antalya, Turkey",
+    latitude: 36.82550,
+    longitude: 30.33534,
+    altitude: 2457,
+    timezoneName: "Europe/Istanbul"
+};
+config["Aristarchos Telescope"] = {
+    site: "Helmos Observatory",
+    name: "Aristarchos Telescope 2.3m",
+    location: "Greece",
+    latitude: 37.98559,
+    longitude: 22.19829,
+    altitude: 2340,
+    timezoneName: "Europe/Athens"
+};
+config["TJO"] = {
+    site: "Montsec Observatory",
+    name: "Joan Oró Telescope 0.8m",
+    location: "Lleida, Spain",
+    latitude: 42.05164,
+    longitude: 0.72966,
+    altitude: 1570,
+    timezoneName: "Europe/Madrid"
+};
+config["Rosemary Hill Observatory"] = {
+    name: "Rosemary Hill Observatory 30in",
+    location: "Florida, United States",
+    latitude: 29.4001,
+    longitude: -82.5862,
+    altitude: 23,
+    timezoneName: "US/Eastern"
+};
+config["Perek Telescope"] = {
+    site: "Ondřejov Observatory",
+    name: "Perek Telescope 2m",
+    location: "Czech Republic",
+    latitude: 49.91515,
+    longitude: 14.78098,
+    altitude: 528,
+    timezoneName: "Europe/Prague"
+};
+config["Kottamia Astronomical Observatory"] = {
+    name: "Kottamia Astronomical Observatory 74in",
+    location: "Egypt",
+    latitude: 29.93406,
+    longitude: 31.82772,
+    altitude: 450,
+    timezoneName: "Africa/Cairo"
 };

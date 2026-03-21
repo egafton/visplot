@@ -210,7 +210,8 @@ Driver.prototype.SetupMap = function() {
             shadowSize: [41, 41]
         });
         this.markers = L.markerClusterGroup({
-            maxClusterRadius: 30,
+            maxClusterRadius: 40,
+            showCoverageOnHover: false,
             iconCreateFunction: function(cluster) {
                 // Get all markers in the cluster
                 const childMarkers = cluster.getAllChildMarkers();
@@ -1275,8 +1276,8 @@ Driver.prototype.perWordMatcher = function(params, data) {
     }
 
     // Split the search term into words
-    const terms = params.term.toLowerCase().split(/\s+/);
-    const text = data.text.toLowerCase();
+    const terms = helper.normalizeText(params.term).split(/\s+/);
+    const text = helper.normalizeText(data.text);
 
     // Only include items that match ALL terms
     for (let i = 0; i < terms.length; i++) {

@@ -1123,3 +1123,10 @@ helper.SubsolarPoint = function() {
         helper.LogException(e);
     }
 };
+
+helper.normalizeText = function(str) {
+    return str
+        .normalize('NFD')                 // split letters and diacritics
+        .replace(/[\u0300-\u036f]/g, '')  // remove diacritics
+        .toLowerCase();
+};
