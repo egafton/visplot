@@ -5,59 +5,103 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. See LICENSE.md.
- * @todo: Many of these functions can be rewritten in terms of slalib functions
- * or replaced altogether.
  */
 "use strict";
 
+/**
+ * Split a string from the right, limiting the number of splits.
+ * Behaves similarly to Python's rsplit: performs at most `maxsplit`
+ * splits starting from the right-hand side of the string.
+ *
+ * @param {String|RegExp} [sep=/\s+/] - Separator used to split the string.
+ * If omitted, splits on whitespace.
+ * @param {Number} [maxsplit] - Maximum number of splits to perform from the
+ * right. If not provided or falsy, all possible splits are performed.
+ * @returns {String[]} An array of substrings resulting from the split.
+ */
 String.prototype.rsplit = function(sep, maxsplit) {
     var split = this.split(sep || /s+/);
     return maxsplit ? [ split.slice(0, -maxsplit).join(sep) ].concat(split.slice(-maxsplit)) : split;
 };
 
 /**
- * @namespace
+ * Utility namespace containing helper functions for logging, formatting,
+ * and general-purpose operations used throughout Visplot.
+ *
+ * @namespace helper
  */
 function helper() {
 }
 
 /**
+ * Log a debug message using the standard logger with error styling.
+ * This is a convenience wrapper around helper.Log that applies the
+ * "loggerDebug" CSS class to the message.
  *
+ * @param {String} msg - The message to be logged.
+ * @returns {void} No return value. Delegates logging to helper.Log.
  */
 helper.LogDebug = function (msg) {
     helper.Log(msg, "loggerDebug");
 };
 
 /**
+ * Log a general informational message using the standard logger.
+ * This is a convenience wrapper around helper.Log that applies the
+ * "loggerEntry" CSS class for neutral (non-error, non-warning, non-debug)
+ * output.
  *
+ * @param {String} msg - The message to be logged.
+ * @returns {void} No return value. Delegates logging to helper.Log.
  */
 helper.LogEntry = function (msg) {
     helper.Log(msg, "loggerEntry");
 };
 
 /**
+ * Log a warning message using the standard logger with error styling.
+ * This is a convenience wrapper around helper.Log that applies the
+ * "loggerWarning" CSS class to the message.
  *
+ * @param {String} msg - The message to be logged.
+ * @returns {void} No return value. Delegates logging to helper.Log.
  */
 helper.LogWarning = function (msg) {
     helper.Log(`Warning: ${msg}`, "loggerWarning");
 };
 
 /**
+ * Log an error message using the standard logger with error styling.
+ * This is a convenience wrapper around helper.Log that applies the
+ * "loggerError" CSS class to the message.
  *
+ * @param {String} msg - The message to be logged.
+ * @returns {void} No return value. Delegates logging to helper.Log.
  */
 helper.LogError = function (msg) {
     helper.Log(`Error: ${msg}`, "loggerError");
 };
 
 /**
+ * Log a success message using the standard logger with success styling.
+ * This is a convenience wrapper around helper.Log that applies the
+ * "loggerSuccess" CSS class to the message.
  *
+ * @param {String} msg - The message to be logged.
+ * @returns {void} No return value. Delegates logging to helper.Log.
  */
 helper.LogSuccess = function (msg) {
     helper.Log(msg, "loggerSuccess");
 };
 
 /**
- * 
+ * Log an exception in a normalized, human-readable format.
+ * If the input has a `message` property, logs the message along with
+ * the first line of the stack trace. Otherwise, logs the value directly.
+ *
+ * @param {*} e - The exception or error object to be logged.
+ * May be an Error instance or any value.
+ * @returns {void} No return value. Delegates logging to helper.LogError.
  */
 helper.LogException = function (e) {
     if (!e) return;
@@ -69,7 +113,13 @@ helper.LogException = function (e) {
 };
 
 /**
+ * Append a UTC-timestamped log message to the logger element.
+ * The message is wrapped in a <span> with the provided CSS class
+ * and the logger view is automatically scrolled to the latest entry.
  *
+ * @param {String} msg - The message to be logged (HTML is not escaped).
+ * @param {String} cls - CSS class name applied to the log entry for styling.
+ * @returns {void} No return value. Produces a side effect on the DOM.
  */
 helper.Log = function (msg, cls) {
     const cd = new Date();
@@ -87,8 +137,9 @@ helper.Log = function (msg, cls) {
 /**
  * Pad a single-digit number with zeroes to get at least two digits
  * (6->"06", 13->"13", -3->"-03", -12=>"-12").
- * @param {Number} _num - Number to be padded with zeroes
- * @returns {String} The given number padded with zeroes as necessary
+ *
+ * @param {Number} _num - Number to be padded with zeroes.
+ * @returns {String} The given number padded with zeroes as necessary.
  */
 helper.padTwoDigits = function (_num) {
     try {
@@ -107,8 +158,9 @@ helper.padTwoDigits = function (_num) {
 
 /**
  * Convert degrees to radians.
- * @param {Number} angle - Angle in degrees
- * @returns {double} Angle in radians
+ *
+ * @param {Number} angle - Angle in degrees.
+ * @returns {Number} Angle in radians.
  */
 helper.deg2rad = function (angle) {
     return angle * sla.d2r;
@@ -116,22 +168,55 @@ helper.deg2rad = function (angle) {
 
 /**
  * Convert radians to degrees.
- * @param {Number} angle - Angle in radians
- * @returns {double} Angle in degrees
+ *
+ * @param {Number} angle - Angle in radians.
+ * @returns {Number} Angle in degrees.
  */
 helper.rad2deg = function (angle) {
     return angle * sla.r2d;
 };
 
 /**
+ * Convert airmass to ZD by inverting Hardie's formula.
+ *
+ * @param {Number} airmass - Airmass, a number greater than or equal to 1.
+ * @returns {Number} ZD corresponding to the given airmass, in radians.
+ */
+helper.AirmasstoZD = function (X) {
+    if (X <= 1) return 0; // zenith
+
+    // Initial guess: sec z ≈ X  =>  s ≈ X - 1
+    let s = X - 1;
+
+    for (let i = 0; i < 5; i++) {
+        // f(s) = model - X
+        const f = 1 + s * (0.9981833 - s * (0.002875 + 0.0008083 * s)) - X;
+
+        // f'(s)
+        const df =
+            0.9981833 -
+            2 * 0.002875 * s -
+            3 * 0.0008083 * s * s;
+
+        s -= f / df;
+    }
+
+    const secz = 1 + s;
+    const z = Math.acos(1 / secz);
+
+    // Clamp to model limit (~87° ≈ 1.52 rad)
+    return Math.min(z, 1.52);
+};
+
+/**
  * Convert airmass to altitude.
- * @param {Number} airmass - Airmass, a number greater than or equal to 1
- * @returns {double} Altitude corresponding to the given airmass, in degrees
- * @todo Offer the choice of using more complex formulae than just AM=sec(z).
+ *
+ * @param {Number} airmass - Airmass, a number greater than or equal to 1.
+ * @returns {Number} Altitude corresponding to the given airmass, in degrees.
  */
 helper.AirmassToAltitude = function (airmass) {
     try {
-        return 90 - helper.rad2deg(Math.acos(1 / airmass));
+        return 90 - helper.rad2deg(helper.AirmasstoZD(airmass));
     } catch (e) {
         helper.LogException(e);
     }
@@ -139,8 +224,9 @@ helper.AirmassToAltitude = function (airmass) {
 
 /**
  * Convert altitude to airmass using slalib.
- * @param {Number} altitude - Altitude in degrees
- * @returns {double} Airmass corresponding to the given altitude
+ *
+ * @param {Number} altitude - Altitude in degrees.
+ * @returns {Number} Airmass corresponding to the given altitude.
  */
 helper.AltitudeToAirmass = function (altitude) {
     try {
@@ -151,7 +237,12 @@ helper.AltitudeToAirmass = function (altitude) {
 };
 
 /**
- * Convert MJD to an index in the night array ("xaxis")
+ * Convert a Modified Julian Date (MJD) value to its corresponding index
+ * in the night array ("xaxis"), based on the configured sunset reference
+ * and step size.
+ *
+ * @param {Number} time - Time expressed in Modified Julian Date (MJD).
+ * @returns {Number} The computed index (rounded to nearest integer).
  */
 helper.MJDToIndex = function (time) {
     try {
@@ -182,7 +273,11 @@ helper.dmstodeg = function (a) {
 };
 
 /**
- * Split a string by newlines
+ * Split a string into an array of lines using newline delimiters.
+ * Handles both Unix (\n) and Windows (\r\n) line endings.
+ *
+ * @param {String} str - The input string to be split.
+ * @returns {String[]} An array of lines.
  */
 helper.extractLines = function (str) {
     try {
@@ -192,6 +287,18 @@ helper.extractLines = function (str) {
     }
 };
 
+/**
+ * Parse a SIMBAD service response to extract ICRS coordinates and optional
+ * proper motion values.
+ * Returns a formatted coordinate string, optionally including proper motion
+ * (converted from mas/yr to arcsec/yr), or null if parsing fails or the
+ * response indicates an error.
+ *
+ * @param {String} responseText - Raw response text returned by the SIMBAD service.
+ * @returns {String|null} A formatted coordinate string:
+ * "HH MM SS.SSS ±DD MM SS.SSS" optionally with "/pm" components,
+ * null if no valid data is found.
+ */
 helper.parseSIMBADResponse = function (responseText) {
     try {
         if (responseText.startsWith("!!")) return null;
@@ -210,6 +317,25 @@ helper.parseSIMBADResponse = function (responseText) {
     }
 };
 
+/**
+ * Convert pixel coordinates in a SkyCam image to Az/Alt and RA/Dec, using
+ * the appropriate telescope-specific transformation routine.
+ *
+ * This function dispatches to one of the specialized coordinate conversion
+ * functions depending on the current telescope (`Driver.telescopeName`):
+ * - "NOT", "WHT", "INT" → helper.getCoordinates_NOT
+ * - "HJST", "OST", "CAHA" → helper.getCoordinates_HJST
+ * - "DSO" → helper.getCoordinates_DSO
+ *
+ * @param {Number} xcent - X coordinate of the image reference center.
+ * @param {Number} ycent - Y coordinate of the image reference center.
+ * @param {Number} x - X coordinate of the target pixel.
+ * @param {Number} y - Y coordinate of the target pixel.
+ * @param {Number} r - Reference radius in pixels for scaling the transformation.
+ * @param {Number} lst - Local Sidereal Time in degrees for RA calculation.
+ * @returns {Array|null|undefined} An array [alt, az, RA_HMS, Dec_HMS] as returned
+ * by the telescope-specific function, or null if no suitable telescope routine exists.
+ */
 helper.getCoordinates = function(xcent, ycent, x, y, r, lst) {
     try {
         if ($.inArray(Driver.telescopeName, ["NOT", "WHT", "INT"]) >= 0) {
@@ -229,7 +355,24 @@ helper.getCoordinates = function(xcent, ycent, x, y, r, lst) {
 };
 
 /**
- * Convert pixel coordinates in GTC SkyCam image to Az/Alt and RA/Dec
+ * Convert pixel coordinates in a GTC SkyCam image to Azimuth/Altitude and RA/Dec.
+ * 
+ * This routine performs a geometric transformation from image pixel coordinates
+ * relative to a reference center (`xcent`, `ycent`) to:
+ * 1. Azimuth and altitude (degrees)
+ * 2. Right ascension and declination (formatted as HMS strings)
+ *
+ * @param {Number} xcent - X coordinate of the image reference center.
+ * @param {Number} ycent - Y coordinate of the image reference center.
+ * @param {Number} x - X coordinate of the target pixel.
+ * @param {Number} y - Y coordinate of the target pixel.
+ * @param {Number} r - Reference radius in pixels for scaling the transformation.
+ * @param {Number} lst - Local Sidereal Time in degrees for RA calculation.
+ * @returns {Array} An array of four elements:
+ * 1. Altitude in degrees (or string "low" if below threshold),
+ * 2. Azimuth in degrees (0–360),
+ * 3. Right Ascension as HMS string (e.g., 12h34m56s),
+ * 4. Declination as DMS string (e.g., 12°34'56").
  */
 helper.getCoordinates_NOT = function (xcent, ycent, x, y, r, lst) {
     try {
@@ -265,7 +408,24 @@ helper.getCoordinates_NOT = function (xcent, ycent, x, y, r, lst) {
 };
 
 /**
- * Convert pixel coordinates in Monet SkyCam image to Az/Alt and RA/Dec
+ * Convert pixel coordinates in a Monet SkyCam image to Azimuth/Altitude and RA/Dec.
+ * 
+ * This routine performs a geometric transformation from image pixel coordinates
+ * relative to a reference center (`xcent`, `ycent`) to:
+ * 1. Azimuth and altitude (degrees)
+ * 2. Right ascension and declination (formatted as HMS strings)
+ *
+ * @param {Number} xcent - X coordinate of the image reference center.
+ * @param {Number} ycent - Y coordinate of the image reference center.
+ * @param {Number} x - X coordinate of the target pixel.
+ * @param {Number} y - Y coordinate of the target pixel.
+ * @param {Number} r - Reference radius in pixels for scaling the transformation.
+ * @param {Number} lst - Local Sidereal Time in degrees for RA calculation.
+ * @returns {Array} An array of four elements:
+ * 1. Altitude in degrees (or string "low" if below threshold),
+ * 2. Azimuth in degrees (0–360),
+ * 3. Right Ascension as HMS string (e.g., 12h34m56s),
+ * 4. Declination as DMS string (e.g., 12°34'56").
  */
 helper.getCoordinates_HJST = function (xcent, ycent, x, y, r, lst) {
     try {
@@ -299,8 +459,26 @@ helper.getCoordinates_HJST = function (xcent, ycent, x, y, r, lst) {
         helper.LogException(e);
     }
 };
+
 /**
- * Convert pixel coordinates in DSO SkyCam image to Az/Alt and RA/Dec
+ * Convert pixel coordinates in a DSO SkyCam image to Azimuth/Altitude and RA/Dec.
+ * 
+ * This routine performs a geometric transformation from image pixel coordinates
+ * relative to a reference center (`xcent`, `ycent`) to:
+ * 1. Azimuth and altitude (degrees)
+ * 2. Right ascension and declination (formatted as HMS strings)
+ *
+ * @param {Number} xcent - X coordinate of the image reference center.
+ * @param {Number} ycent - Y coordinate of the image reference center.
+ * @param {Number} x - X coordinate of the target pixel.
+ * @param {Number} y - Y coordinate of the target pixel.
+ * @param {Number} r - Reference radius in pixels for scaling the transformation.
+ * @param {Number} lst - Local Sidereal Time in degrees for RA calculation.
+ * @returns {Array} An array of four elements:
+ * 1. Altitude in degrees (or string "low" if below threshold),
+ * 2. Azimuth in degrees (0–360),
+ * 3. Right Ascension as HMS string (e.g., 12h34m56s),
+ * 4. Declination as DMS string (e.g., 12°34'56").
  */
 helper.getCoordinates_DSO = function (xcent, ycent, x, y, r, lst) {
     try {
@@ -347,31 +525,12 @@ helper.utc = function (time) {
 };
 
 /**
- * Convert a timestamp to a Julian date.
+ * Convert a timestamp to a MJD.
  */
-helper.julianDate = function (now)
+helper.getMJD = function (now)
 {
     try {
-        return (now.valueOf() / 86400000) + 2440587.5;
-    } catch (e) {
-        helper.LogException(e);
-    }
-};
-
-/**
- * Calculate the Greenwich mean sidereal time from a Julian date.
- */
-helper.GM_Sidereal_Time = function (jd) {
-    try {
-        const MJD = jd - 2400000.5;
-        const MJD0 = Math.floor(MJD);
-        const ut = (MJD - MJD0) * 24.0;
-        const t_eph = (MJD0 - 51544.5) / 36525.0;
-        let gmst = 6.697374558 + 1.0027379093 * ut + (8640184.812866 + (0.093104 - 0.0000062 * t_eph) * t_eph) * t_eph / 3600.0;
-        while (gmst > 24) {
-            gmst -= 24;
-        }
-        return gmst;
+        return (now.valueOf() / 86400000) + 40587;
     } catch (e) {
         helper.LogException(e);
     }
@@ -393,87 +552,43 @@ helper.frac = function (X) {
 };
 
 /**
- * Convert from Greenwich mean sidereal time to Local Apparent Sidereal Time)
- */
-helper.LM_Sidereal_Time = function (jd) {
-    try {
-        return 24.0 * helper.frac((helper.GM_Sidereal_Time(jd) + Driver.obs_lon_deg / 15.0) / 24.0);
-    } catch (e) {
-        helper.LogException(e);
-    }
-};
-
-/**
- * Convert Altitude, Azimuth and Local Apparent Sidereal Time
- * to RA (in hours) and Dec (in degrees).
+ * Convert Altitude (deg), Azimuth (deg) and Local Apparent Sidereal Time (deg)
+ * to RA (hr) and Dec (deg).
  */
 helper.radec = function (alt, az, lst) {
     try {
-        const radeg = Math.PI / 180;
-        const a = alt * radeg, p = Driver.obs_lat_deg * radeg, A = az * radeg;
-        const sin_dec = Math.sin(a) * Math.sin(p) + Math.cos(a) * Math.cos(p) * Math.cos(A);
-        let dec = Math.asin(sin_dec);
-        const cos_ha = (Math.sin(a) - Math.sin(p) * sin_dec) / (Math.cos(p) * Math.cos(dec));
-        const ha = 12 * Math.acos(cos_ha) / Math.PI;
-        let ra = (az < 180 ? lst + ha : lst - ha);
-        if (ra < 0) {
-            ra += 24;
-        }
-        if (ra >= 24) {
-            ra -= 24;
-        }
-        dec *= 180 / Math.PI;
-        return [ra, dec];
+        const elRad = helper.deg2rad(alt);
+        const azRad = helper.deg2rad(az);
+        const phiRad = Driver.obs_lat_rad;
+        const valObj = sla.dh2e(azRad, elRad, phiRad);
+        const haHours = valObj.ha * 12 / Math.PI;
+        const decDeg = valObj.dec * 180 / Math.PI;
+        let ra = lst/15 - haHours;
+        if (ra < 0) ra += 24;
+        if (ra >= 24) ra -= 24;
+        return [ra, decDeg];
     } catch (e) {
         helper.LogException(e);
     }
 };
 
 /**
- * Convert RA, Dec and Local Apparent Sidereal Time to Altitude and Azimuth
- */
-helper.altaz = function (ra, dec, lst) {
-    try {
-        let ha = lst - ra;
-        if (ha < 0) {
-            ha += 24;
-        }
-        const p = Driver.obs_lat_rad, d = helper.deg2rad(dec), h = ha * Math.PI / 12;
-        const sin_alt = Math.sin(d) * Math.sin(p) + Math.cos(d) * Math.cos(p) * Math.cos(h);
-        let alt = Math.asin(sin_alt);
-        const cos_alt = (Math.sin(d) - sin_alt * Math.sin(p)) / (Math.cos(alt) * Math.cos(p));
-        let az = helper.rad2deg(Math.acos(cos_alt));
-        alt = helper.rad2deg(alt);
-        if (Math.sin(h) > 0) {
-            az = 360 - az;
-        }
-        return [alt, az];
-    } catch (e) {
-        helper.LogException(e);
-    }
-};
-
-/**
- * Convert a timestamp to a HMS string.
+ * Convert a fractional timestamp (in hours) to a formatted HH:MM:SS string.
+ * Allows custom separators between hours, minutes, and seconds.
+ *
+ * @param {Number} time - Time in fractional hours (e.g., 13.5123 for 13:30:44).
+ * @param {String} sep1 - Separator after hours (e.g., 'h' or ':').
+ * @param {String} sep2 - Separator after minutes (e.g., 'm' or ':').
+ * @param {String} sep3 - Separator after seconds (e.g., 's' or '').
+ * @returns {String|undefined} Formatted HMS string, or undefined if an exception occurs.
  */
 helper.HMS = function (time, sep1, sep2, sep3) {
     try {
-        return helper.degtosex(time, 0, sep1, sep2, sep3);
-    } catch (e) {
-        helper.LogException(e);
-    }
-};
-
-/**
- * Convert a number in degrees to HMS string of the desired precision.
- */
-helper.degtosex = function (time, prec, sep1, sep2, sep3) {
-    try {
         const h = Math.floor(time);
         const m = Math.floor(60.0 * helper.frac(time));
-        const s = (60.0 * (60.0 * helper.frac(time) - m)).toFixed(prec);
-        return `${helper.padTwoDigits(h)}${sep1}:` +
-               `${helper.padTwoDigits(m)}${sep2}:` +
+        const s = (60.0 * (60.0 * helper.frac(time) - m)).toFixed(0);
+        return `${helper.padTwoDigits(h)}${sep1}` +
+               `${helper.padTwoDigits(m)}${sep2}` +
                `${helper.padTwoDigits(s)}${sep3}`;
     } catch (e) {
         helper.LogException(e);
@@ -974,10 +1089,11 @@ helper.stl = function(utc, eqeqx) {
 
 /**
  * Time at which a celestial body reaches a desired altitude.
- * @param {Number} altitude - Desired altitude, in radians
- * @param {Number} tsouth - Transit time
- * @param {Number} dec - Declination of the celestial body, in radians
- * @param {String} pm - Whether to catch the body rising ("-") or setting ("+")
+ *
+ * @param {Number} altitude - Desired altitude, in radians.
+ * @param {Number} tsouth - Transit time.
+ * @param {Number} dec - Declination of the celestial body, in radians.
+ * @param {String} pm - Whether to catch the body rising ("-") or setting ("+").
  */
 helper.utarc = function(altitude, tsouth, dec, pm) {
     try {
@@ -1001,7 +1117,12 @@ helper.utarc = function(altitude, tsouth, dec, pm) {
 };
 
 /**
+ * Check whether a string represents a valid CSS color value.
+ * Excludes certain non-color CSS keywords like "inherit" or "transparent".
+ * Uses a temporary DOM element to validate if the browser recognizes the color.
  *
+ * @param {String} stringToTest - The string to validate as a CSS color.
+ * @returns {Boolean} True if the string is a valid CSS color, false otherwise.
  */
 helper.validColour = function(stringToTest) {
     try {
@@ -1023,7 +1144,10 @@ helper.validColour = function(stringToTest) {
 };
 
 /**
- * How to mark the offline time?
+ * Predefined strings used to indicate offline or unavailable telescope for
+ * scheduling (e.g., bad weather, time assigned to a different user, etc.).
+ *
+ * @type {String[]}
  */
 helper.offlineStrings = [
     "Offline",
@@ -1031,7 +1155,11 @@ helper.offlineStrings = [
 ];
 
 /**
- * Format a timezone number. Display as integer and always show the sign.
+ * Format a timezone offset as a signed integer string.
+ * Positive values are prefixed with '+', negative values keep the '-' sign.
+ *
+ * @param {Number} value - Timezone offset (e.g., hours from UTC).
+ * @returns {String} Formatted timezone string, e.g., "+3" or "-5".
  */
 helper.timezone = function(value) {
     if (value >= 0) {
@@ -1042,7 +1170,12 @@ helper.timezone = function(value) {
 };
 
 /**
- * Created multi-dimensional array filled with 0.
+ * Create a multi-dimensional array filled with zeros.
+ * Supports arbitrary dimensions by recursively nesting arrays.
+ *
+ * @param {Number[]} dimensions - An array specifying the size of each dimension,
+ * e.g., [3, 2] creates a 3x2 array.
+ * @returns {Array} A nested array of zeros with the specified shape.
  */
 helper.zeros = function(dimensions) {
     let array = [];
@@ -1053,9 +1186,16 @@ helper.zeros = function(dimensions) {
 };
 
 /**
- * Evaluate a B-spline at a set of points.
+ * Evaluate a B-spline at one or more points using the Cox–de Boor recursion formula.
+ * Returns either a single value (if a scalar input is given) or an array of evaluated values.
  *
  * @see https://stackoverflow.com/a/25330648
+ *
+ * @param {Number|Number[]} xx - The point(s) at which to evaluate the B-spline.
+ * @param {Number} order - The order of the B-spline (degree = order).
+ * @param {Number[]} knots - Knot vector defining the B-spline intervals.
+ * @param {Number[]} coeffs - Coefficients for the B-spline basis functions.
+ * @returns {Number|Number[]} The evaluated spline value(s).
  */
  helper.bspleval = function(xx, order, knots, coeffs) {
     try {
@@ -1099,16 +1239,49 @@ helper.zeros = function(dimensions) {
     }
 };
 
+/**
+ * Compute the smallest angular distance between two angles on a circle.
+ * The result is always in the range [0, 180] degrees.
+ *
+ * @param {Number} a - First angle in degrees.
+ * @param {Number} b - Second angle in degrees.
+ * @returns {Number} The minimal absolute angular distance between `a` and `b`.
+ */
 helper.angDist = function(a, b) {
-    const d = Math.abs(a - b) % 360;
-    return d > 180 ? 360 - d : d;
+    try {
+        const d = Math.abs(a - b) % 360;
+        return d > 180 ? 360 - d : d;
+    } catch (e) {
+        helper.LogException(e);
+    }
 };
 
+/**
+ * Convert a Modified Julian Date (MJD) value to the fractional hour of the day in UTC.
+ *
+ * @param {Number} mjd - Time expressed in Modified Julian Date (MJD).
+ * @returns {Number} The fractional number of hours (0–24) corresponding to the UTC time.
+ */
 helper.mjdToUTCHours = function(mjd) {
-    const dayFrac = mjd % 1;
-    return dayFrac * 24;
+    try {
+        const dayFrac = mjd % 1;
+        return dayFrac * 24;
+    } catch (e) {
+        helper.LogException(e);
+    }
 };
 
+/**
+ * Compute the current subsolar point (the point on Earth where the Sun is
+ * directly overhead), along with the Sun's declination and Greenwich Hour
+ * Angle (GHA).
+ *
+ * @returns {Number[]} An array containing:
+ * [0] Latitude of the subsolar point in degrees,
+ * [1] Longitude of the subsolar point in degrees,
+ * [2] Sun's declination in radians,
+ * [3] Sun's Greenwich Hour Angle in radians.
+ */
 helper.SubsolarPoint = function() {
     try {
         const l = moment().utc();
@@ -1124,9 +1297,21 @@ helper.SubsolarPoint = function() {
     }
 };
 
+/**
+ * Normalize a string by removing diacritics and converting to lowercase.
+ * Uses Unicode NFD normalization to separate base characters and accents,
+ * then removes all combining diacritical marks.
+ *
+ * @param {String} str - The input string to normalize.
+ * @returns {String} The normalized, lowercase string without diacritics.
+ */
 helper.normalizeText = function(str) {
-    return str
-        .normalize('NFD')                 // split letters and diacritics
-        .replace(/[\u0300-\u036f]/g, '')  // remove diacritics
-        .toLowerCase();
+    try {
+        return str
+            .normalize('NFD')                 // split letters and diacritics
+            .replace(/[\u0300-\u036f]/g, '')  // remove diacritics
+            .toLowerCase();
+    } catch (e) {
+        helper.LogException(e);
+    }
 };

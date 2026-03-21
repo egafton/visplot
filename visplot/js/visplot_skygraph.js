@@ -27,7 +27,8 @@ function SkyGraph(_canvas, _context) {
         this.distortPower = 1.05;
         this.labelYShift = [0, 0, 0, 0];
         this.lastazalt = null;
-        this.lst = helper.LM_Sidereal_Time(helper.julianDate(new Date()));
+        const mjd = helper.getMJD(new Date());
+        this.lst = helper.rad2deg(sla.dranrm(sla.gmst(mjd) + Driver.obs_lon_rad + sla.eqeqx(mjd)));
         this.timer = null;
         this.imx = 640;
         this.imy = 480;
@@ -37,7 +38,6 @@ function SkyGraph(_canvas, _context) {
         this.arcRadius = [0.85 * this.cr, 0.85 * this.cr, 0.85 * this.cr, 0.85 * this.cr];
         this.tcsx = null;
         this.tcsy = null;
-        this.percentClearSky = -1;
         this.skyImg = new Image();
         this.reload();
     } catch (e) {
@@ -129,45 +129,10 @@ SkyGraph.prototype.stopTimer = function () {
 /**
  * @memberof SkyGraph
  */
-SkyGraph.prototype.processImage = function () {
-    try {
-        const imgdata = this.ctx.getImageData(0, 0, this.imx, this.imy).data;
-        const cx = 0.53 * this.imx;
-        const cy = 0.52 * this.imy;
-        const rad = 270;
-        const radsq = rad * rad;
-        let black = 0;
-        let count = 0;
-        for (let i = 0; i < this.imy; i++) {
-            const row = this.imx * i;
-            for (let j = 0; j < this.imx; j++) {
-                if ((i - cy) * (i - cy) + (j - cx) * (j - cx) < radsq) {
-                    const r = imgdata[(row + j) * 4];
-                    const g = imgdata[(row + j) * 4 + 1];
-                    const b = imgdata[(row + j) * 4 + 2];
-                    const gray = (r + g + b) / 3;
-                    black += gray > 90 ? 0 : 1;
-                    count += 1;
-                }
-            }
-        }
-        this.percentClearSky = Math.round(black * 100 / count).toFixed(0);
-    } catch (e) {
-        helper.LogException(e);
-    }
-};
-
-/**
- * @memberof SkyGraph
- */
-SkyGraph.prototype.setup = function (triggered) {
+SkyGraph.prototype.setup = function () {
     try {
         this.ctx.clearRect(0, 0, this.imx, this.imy);
         this.ctx.drawImage(this.skyImg, 0, 0);
-        // Optional processing
-        if (triggered) {
-            this.processImage();
-        }
         this.drawaxes();
         this.drawtics();
         this.drawpointing();
@@ -254,6 +219,7 @@ SkyGraph.prototype.aatrans = function (altaz) { // convert from alt, az to ix, i
  */
 SkyGraph.prototype.tcsxhair = function (x, y) {
     try {
+        this.ctx.save();
         this.ctx.strokeStyle = "#9f3";
         this.ctx.lineWidth = 1;
         this.ctx.beginPath();
@@ -269,6 +235,7 @@ SkyGraph.prototype.tcsxhair = function (x, y) {
         this.ctx.beginPath();
         this.ctx.arc(x, y, 3.5, 0, 2 * Math.PI, false);
         this.ctx.stroke();
+        this.ctx.restore();
     } catch (e) {
         helper.LogException(e);
     }
@@ -279,6 +246,7 @@ SkyGraph.prototype.tcsxhair = function (x, y) {
  */
 SkyGraph.prototype.xhair = function (x, y, name, color) {
     try {
+        this.ctx.save();
         this.ctx.strokeStyle = color;
         this.ctx.lineWidth = 1;
         this.ctx.beginPath();
@@ -294,6 +262,7 @@ SkyGraph.prototype.xhair = function (x, y, name, color) {
         this.ctx.font = "8pt " + this.fontFamily;
         this.ctx.fillStyle = color;
         this.ctx.fillText(name, x + 5, y - 5);
+        this.ctx.restore();
     } catch (e) {
         helper.LogException(e);
     }
@@ -304,6 +273,7 @@ SkyGraph.prototype.xhair = function (x, y, name, color) {
  */
 SkyGraph.prototype.drawaxes = function () {
     try {
+        this.ctx.save();
         this.ctx.strokeStyle = "gray";
         for (let i = 90; i > 0; i -= 30) {
             const r = this.cr * this.distort(i / 90);
@@ -318,6 +288,7 @@ SkyGraph.prototype.drawaxes = function () {
             this.ctx.lineTo(this.cx + this.cr * Math.sin(az), this.cy + this.cr * Math.cos(az));
         }
         this.ctx.stroke();
+        this.ctx.restore();
     } catch (e) {
         helper.LogException(e);
     }
@@ -328,6 +299,7 @@ SkyGraph.prototype.drawaxes = function () {
  */
 SkyGraph.prototype.drawtics = function () {
     try {
+        this.ctx.save();
         this.ctx.textBaseline = "alphabetic";
         this.ctx.textAlign = "start";
         this.ctx.font = `10pt ${this.fontFamily}`;
@@ -346,6 +318,7 @@ SkyGraph.prototype.drawtics = function () {
             yy1 = this.cy + 0.9 * this.cr * Math.cos(ang) + this.labelYShift[i];
             this.ctx.fillText(this.plab[i], xx1 + this.xl[i], yy1 + this.yl[i]);
         }
+        this.ctx.restore();
     } catch (e) {
         helper.LogException(e);
     }
@@ -376,11 +349,9 @@ SkyGraph.prototype.drawstars = function () {
         let last = null;
         for (let i = 0; i < driver.targets.nTargets; i += 1) {
             const obj = driver.targets.Targets[i];
-            let radeg = helper.dmstodeg(obj.RA);
-            let decdeg = helper.dmstodeg(obj.Dec);
-            let altaz = helper.altaz(radeg, decdeg, this.lst);
-            if (altaz[0] > 0) {
-                let xy = this.aatrans(altaz);
+            const azel = sla.de2h(helper.deg2rad(this.lst) - obj.RA_rad, obj.Dec_rad, Driver.obs_lat_rad);
+            if (azel.el > 0) {
+                let xy = this.aatrans([helper.rad2deg(azel.el), helper.rad2deg(azel.az)]);
                 if (this.tcsx !== null && this.tcsy !== null && Math.abs(this.tcsx - xy[0]) <= 2 && Math.abs(this.tcsy - xy[1]) <= 2) {
                     last = [xy[0], xy[1], obj.Name, "#9f3"];
                 } else {
@@ -401,10 +372,9 @@ SkyGraph.prototype.drawstars = function () {
  */
 SkyGraph.prototype.display_coords = function (azalt) {
     try {
+        this.ctx.save();
         this.ctx.clearRect(0, this.imy, this.canvasWidth / 2, this.canvasHeight - this.imy);
-        if (azalt === null) {
-            return;
-        } else {
+        if (azalt !== null) {
             this.ctx.fillStyle = "black";
             this.ctx.textBaseline = "top";
             this.ctx.textAlign = "left";
@@ -419,6 +389,7 @@ SkyGraph.prototype.display_coords = function (azalt) {
             this.ctx.fillText(azalt[2], 121, this.imy + 6);
             this.ctx.fillText(azalt[3], 235, this.imy + 6);
         }
+        this.ctx.restore();
     } catch (e) {
         helper.LogException(e);
     }
@@ -430,26 +401,23 @@ SkyGraph.prototype.display_coords = function (azalt) {
 SkyGraph.prototype.display_time = function () {
     try {
         const tim = new Date();
-        this.lst = helper.LM_Sidereal_Time(helper.julianDate(tim));
+        const mjd = helper.getMJD(tim);
+        this.lst = helper.rad2deg(sla.dranrm(sla.gmst(mjd) + Driver.obs_lon_rad + sla.eqeqx(mjd)));
         const ut = helper.utc(tim) * 24;
         const mm = helper.padTwoDigits(tim.getUTCMonth() + 1);
         const dd = helper.padTwoDigits(tim.getUTCDate());
-        const UTtext = `UTC ${tim.getUTCFullYear()}-${mm}-${dd} ${helper.HMS(ut, "", "", "")}`;
-        const STtext = `LST ${helper.HMS(this.lst, "", "", "")}`;
+        const UTtext = `UTC ${tim.getUTCFullYear()}-${mm}-${dd} ${helper.HMS(ut, ":", ":", "")}`;
+        const STtext = `LST ${helper.HMS(this.lst/15, ":", ":", "")}`;
+        this.ctx.save();
         this.ctx.clearRect(this.canvasWidth / 2, this.imy, this.canvasWidth / 2, this.canvasHeight - this.imy);
-        this.ctx.font = `10pt ${this.fontFamily} Mono`;
+        this.ctx.font = `10pt ${this.fontFamily}`;
         this.ctx.fillStyle = "gray";
         this.ctx.textBaseline = "top";
         this.ctx.textAlign = "left";
         this.ctx.fillText(UTtext, this.imx / 2 + 75, this.imy + 6);
         this.ctx.textAlign = "right";
         this.ctx.fillText(STtext, this.imx, this.imy + 6);
-        if (this.percClearSky !== -1) {
-            this.ctx.fillStyle = "black";
-            this.ctx.font = `10pt ${this.fontFamily}`;
-            this.ctx.textAlign = "right";
-            //this.ctx.fillText(`Percentage of clear, dark sky (experimental): ${this.percentClearSky}%`, this.imx, this.imy + 23);
-        }
+        this.ctx.restore();
     } catch (e) {
         helper.LogException(e);
     }

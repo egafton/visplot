@@ -28,13 +28,11 @@ sla.spc = sla.cj;
 /* @constant {Number} Two pi */
 sla.d2pi = 2 * Math.PI;
 /* @constant {Number} Degrees of time to radians */
-sla.d2r = 0.0174532925199432957692369;
+sla.d2r = Math.PI / 180;
 /* @constant {Number} Seconds in a day */
 sla.d2s = 86400;
 /* @constant {Number} Arc seconds of time to radians */
 sla.das2r = 4.848136811095359935899141e-6;
-/* @constant {Number} Degrees to radians */
-sla.dd2r = 1.745329251994329576923691e-2;
 /* @constant {Number} Days per Julian century */
 sla.djc = 36525;
 /* @constant {Number} Reference epoch (J2000), MJD */
@@ -59,7 +57,7 @@ sla.cd2s = sla.gcon / sla.d2s;
 sla.se = 0.3977771559319137;
 sla.ce = 0.9174820620691818;
 /* @constant {Number} Radians to degrees */
-sla.r2d = 57.29577951308232;
+sla.r2d = 180 / Math.PI;
 /* @constant {Number} Gravitational radius of the Sun x 2 (2*mu/c**2, AU) */
 sla.gr2 = 2 * 9.87063e-9;
 /* @constant {Number} Ratio between solar and sidereal time */
@@ -2444,39 +2442,39 @@ sla.nutc = function (date) {
     const t = (date - sla.djm0) / sla.djc;
 
     /* Mean anomaly of the Moon. */
-    const el = 134.96340251 * sla.dd2r + (t * (1717915923.2178 + t * (31.8792 +
+    const el = 134.96340251 * sla.d2r + (t * (1717915923.2178 + t * (31.8792 +
             t * (0.051635 + t * (-0.00024470)))) % sla.t2as) * sla.das2r;
 
     /* Mean anomaly of the Sun. */
-    const elp = 357.52910918 * sla.dd2r + (t * (129596581.0481 + t * (-0.5532 +
+    const elp = 357.52910918 * sla.d2r + (t * (129596581.0481 + t * (-0.5532 +
             t * (0.000136 + t * (-0.00001149)))) % sla.t2as) * sla.das2r;
 
     /* Mean argument of the latitude of the Moon. */
-    const f = 93.27209062 * sla.dd2r + (t * (1739527262.8478 + t * (-12.7512 +
+    const f = 93.27209062 * sla.d2r + (t * (1739527262.8478 + t * (-12.7512 +
             t * (-0.001037 + t * (0.00000417)))) % sla.t2as) * sla.das2r;
 
     /* Mean elongation of the Moon from the Sun. */
-    const d = 297.85019547 * sla.dd2r + (t * (1602961601.2090 + t * (-6.3706 +
+    const d = 297.85019547 * sla.d2r + (t * (1602961601.2090 + t * (-6.3706 +
             t * (0.006539 + t * (-0.00003169)))) % sla.t2as) * sla.das2r;
 
     /* Mean longitude of the ascending node of the Moon. */
-    const om = 125.04455501 * sla.dd2r + (t * (-6962890.5431 + t * (7.4722 +
+    const om = 125.04455501 * sla.d2r + (t * (-6962890.5431 + t * (7.4722 +
             t * (0.007702 + t * (-0.00005939)))) % sla.t2as) * sla.das2r;
 
     /* Mean longitude of Venus. */
-    const ve = 181.97980085 * sla.dd2r + ((210664136.433548 * t) %
+    const ve = 181.97980085 * sla.d2r + ((210664136.433548 * t) %
             sla.t2as) * sla.das2r;
 
     /* Mean longitude of Mars. */
-    const ma = 355.43299958 * sla.dd2r + ((68905077.493988 * t) %
+    const ma = 355.43299958 * sla.d2r + ((68905077.493988 * t) %
             sla.t2as) * sla.das2r;
 
     /* Mean longitude of Jupiter. */
-    const ju = 34.351518740 * sla.dd2r + ((10925660.377991 * t) %
+    const ju = 34.351518740 * sla.d2r + ((10925660.377991 * t) %
             sla.t2as) * sla.das2r;
 
     /* Mean longitude of Saturn. */
-    const sa = 50.077444300 * sla.dd2r + ((4399609.855732 * t) %
+    const sa = 50.077444300 * sla.d2r + ((4399609.855732 * t) %
             sla.t2as) * sla.das2r;
 
     /* Geodesic nutation (Fukushima 1991) in microarcsec. */

@@ -265,7 +265,7 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
             <div id="details_map"><span id="details_map_hang"></span></div>
         </div> <!-- #details -->
         <div id="skycamblock">
-            <canvas id="canvasSkycam" width="640" height="518"></canvas>
+            <canvas id="canvasSkycam" width="640" height="500"></canvas>
         </div> <!-- #skycamblock -->
         <div id="tcscat">
             <h2 class="fancyhead">Targets in TCS catalogue format</h2>

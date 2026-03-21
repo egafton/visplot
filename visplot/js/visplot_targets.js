@@ -815,7 +815,7 @@ TargetList.prototype.schedule_withWeights = function (startingAt) {
                 // Calculate weight
                 const priority = tgt.Priority / maxpriority; // 0-1;
                 const urgency = 1 / (tgt.LastPossibleTime - curtime + 1); // 0-1, becomes 1 at the last possible time
-                const altitude = Math.sin(sla.d2r * tgt.Graph[curidx]); // 0-1, the higher the altitude the better
+                const altitude = Math.sin(helper.deg2rad(tgt.Graph[curidx])); // 0-1, the higher the altitude the better
                 const slewing = lastra === null ? 1 : 1-sla.dsep(lastra, lastdec, tgt.RA_rad, tgt.Dec_rad) / Math.PI; // 0-1, 1 if no slewing, 0 if 180 deg slewing
                 weights[i] = wp * priority + wu * urgency + wa * altitude + ws * slewing;
             }
@@ -1503,8 +1503,8 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
         }
         /* Everything given in degrees? Convert to hex */
         if (words.length === 3 && !helper.notFloat(words[1]) && !helper.notFloat(words[2])) {
-            let RAhex = sla.dr2tf(2, parseFloat(words[1]) * sla.d2r);
-            let Dechex = sla.dr2af(2, parseFloat(words[2]) * sla.d2r);
+            let RAhex = sla.dr2tf(2, helper.deg2rad(parseFloat(words[1])));
+            let Dechex = sla.dr2af(2, helper.deg2rad(parseFloat(words[2])));
             let ra_arr = [`${RAhex.sign == '+' ? '' : RAhex.sign}${RAhex.ihmsf[0]}`, `${RAhex.ihmsf[1]}`, `${RAhex.ihmsf[2]}.${RAhex.ihmsf[3]}`];
             let dec_arr = [`${Dechex.sign == '+' ? '' : Dechex.sign}${Dechex.idmsf[0]}`, `${Dechex.idmsf[1]}`, `${Dechex.idmsf[2]}.${Dechex.idmsf[3]}`];
             words = words.slice(0, 1).concat(ra_arr).concat(dec_arr);

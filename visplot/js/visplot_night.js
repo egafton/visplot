@@ -88,8 +88,8 @@ Night.prototype.setEphemerides = function (obj) {
         let ret = sla.rdplan(this.ttMidnight-0.5, "Sun", Driver.obs_lon_rad, Driver.obs_lat_rad);
         let tsouth = ((12 - Driver.obs_timezone) - sla.drange(stl - ret.ra) * sla.r2d / 15) % 24;
         let ut1 = helper.utarc(-0.5*ret.diam - this.RefractionAtHorizon - this.HorizonDip, tsouth, ret.dec, "+");
-        let ut2 = helper.utarc(-12*sla.dd2r, tsouth, ret.dec, "+");
-        let ut3 = helper.utarc(-18*sla.dd2r, tsouth, ret.dec, "+");
+        let ut2 = helper.utarc(helper.deg2rad(-12), tsouth, ret.dec, "+");
+        let ut3 = helper.utarc(helper.deg2rad(-18), tsouth, ret.dec, "+");
         let utczero = Math.floor(this.utcMidnight);
         while (this.utcMidnight - (utczero + sla.dtf2d(ut1[0], ut1[1], ut1[2])) < 0) {
             utczero -= 1;
@@ -114,8 +114,8 @@ Night.prototype.setEphemerides = function (obj) {
         ret = sla.rdplan(this.ttMidnight+0.5, "Sun", Driver.obs_lon_rad, Driver.obs_lat_rad);
         tsouth = ((12 - Driver.obs_timezone) - sla.drange(stl - ret.ra) * sla.r2d / 15) % 24;
         ut1 = helper.utarc(-0.5*ret.diam - this.RefractionAtHorizon - this.HorizonDip, tsouth, ret.dec, "-");
-        ut2 = helper.utarc(-12*sla.dd2r, tsouth, ret.dec, "-");
-        ut3 = helper.utarc(-18*sla.dd2r, tsouth, ret.dec, "-");
+        ut2 = helper.utarc(helper.deg2rad(-12), tsouth, ret.dec, "-");
+        ut3 = helper.utarc(helper.deg2rad(-18), tsouth, ret.dec, "-");
         utczero = Math.floor(this.utcMidnight);
         while ((utczero + sla.dtf2d(ut1[0], ut1[1], ut1[2])) - this.utcMidnight < 0) {
             utczero += 1;

@@ -188,7 +188,7 @@ function postInitialization() {
     try {
         /* Now that the driver is created, do some stuff that require it*/
         driver.skyGraph.skyImg.onload = function () {
-            driver.skyGraph.setup(true);
+            driver.skyGraph.setup();
         };
         setInterval(function () {
             driver.skyGraph.display_time();

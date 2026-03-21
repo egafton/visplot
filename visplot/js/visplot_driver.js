@@ -298,7 +298,7 @@ Driver.prototype.updateNightPolygons = function (ssp) {
         function buildNightPolygon(ssp, alt = 0, step = 1) {
             const delta = ssp[2];
             const gha = ssp[3];
-            const h = alt * sla.d2r;
+            const h = helper.deg2rad(alt);
             const k = Math.sin(h);
 
             // Helper to test if a specific coordinate is darker than our target altitude
@@ -311,7 +311,7 @@ Driver.prototype.updateNightPolygons = function (ssp) {
 
             // 1. Sweep Longitudes to build Latitude Intervals
             for (let lon = -180; lon <= 180; lon += step) {
-                const lonRad = lon * sla.d2r;
+                const lonRad = helper.deg2rad(lon);
                 
                 // Normalize Hour Angle to [-PI, PI]
                 let haRad = gha + lonRad;
@@ -357,11 +357,11 @@ Driver.prototype.updateNightPolygons = function (ssp) {
                     else intervals.push({ lon: lon, bounds: null });
                 } else if (roots.length === 1) {
                     const rLat = roots[0];
-                    const testBelow = (rLat - 90) / 2 * sla.d2r;
+                    const testBelow = helper.deg2rad((rLat - 90) / 2);
                     if (isNight(testBelow, haRad)) intervals.push({ lon: lon, bounds: [-90, rLat] });
                     else intervals.push({ lon: lon, bounds: [rLat, 90] });
                 } else if (roots.length === 2) {
-                    const mid = (roots[0] + roots[1]) / 2 * sla.d2r;
+                    const mid = helper.deg2rad((roots[0] + roots[1]) / 2);
                     if (isNight(mid, haRad)) intervals.push({ lon: lon, bounds: [roots[0], roots[1]] });
                     else intervals.push({ lon: lon, bounds: null });
                 }
@@ -1026,7 +1026,7 @@ Driver.prototype.EvtSkycm_Click = function () {
                 driver.skyGraph.stopTimer();
             }
         });
-        this.skyGraph.setup(false);
+        this.skyGraph.setup();
     } catch (e) {
         helper.LogException(e);
     }
@@ -1049,7 +1049,6 @@ Driver.prototype.EvtSkycm_MouseMove = function (e, jQthis) {
             this.skyGraph.display_coords(null);
             this.skyGraph.lastazalt = null;
         } else {
-            //const azalt = helper.getCoordinates(320, 240, pos_x, pos_y, 280, this.skyGraph.lst);
             const azalt = helper.getCoordinates(this.skyGraph.cx, this.skyGraph.cy, pos_x, pos_y, 280, this.skyGraph.lst);
             this.skyGraph.display_coords(azalt);
             this.skyGraph.lastazalt = azalt;
