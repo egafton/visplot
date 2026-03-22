@@ -13,33 +13,26 @@
  */
 function SkyGraph(_canvas, _context) {
     try {
+        this.params = null;
         this.canvas = _canvas;
         this.ctx = _context;
         this.canvasWidth = _canvas.width;
         this.canvasHeight = _canvas.height;
-        this.xmid = this.canvasWidth / 2;
         this.fontFamily = "Ubuntu, sans-serif";
-        this.south = 2.3;
-        this.pang = [this.south, this.south + 6, this.south + 12, this.south + 18];
-        this.plab = ["S", "W", "N", "E"];
-        this.xl = [-7, -5, -2, 1];
-        this.yl = [-2, +4, +7, 0];
-        this.distortPower = 1.05;
-        this.labelYShift = [0, 0, 0, 0];
-        this.lastazalt = null;
+        this.cardinalLabels = ["N", "E", "S", "W"];
+        this.lastAltaz = null;
         const mjd = helper.getMJD(new Date());
-        this.lst = helper.rad2deg(sla.dranrm(sla.gmst(mjd) + Driver.obs_lon_rad + sla.eqeqx(mjd)));
+        this.lst = sla.dranrm(sla.gmst(mjd) + Driver.obs_lon_rad + sla.eqeqx(mjd));
         this.timer = null;
-        this.imx = 640;
-        this.imy = 480;
-        this.cx = 0.51 * this.imx;
-        this.cy = 0.52 * this.imy;
-        this.cr = this.imx * 0.5;
-        this.arcRadius = [0.85 * this.cr, 0.85 * this.cr, 0.85 * this.cr, 0.85 * this.cr];
-        this.tcsx = null;
-        this.tcsy = null;
+        this.tcsPointing = null;
         this.skyImg = new Image();
         this.reload();
+        $("#canvasSkycam").on("mousemove", function (e) {
+            driver.skyGraph.Evt_MouseMove(e, $(this));
+        });
+        $("#canvasSkycam").on("mouseout", function (e) {
+            driver.skyGraph.Evy_MouseOut();
+        });
     } catch (e) {
         helper.LogException(e);
     }
@@ -50,49 +43,14 @@ function SkyGraph(_canvas, _context) {
  */
 SkyGraph.prototype.updateTelescope = function () {
     try {
-        if ($.inArray(Driver.telescopeName, ["NOT", "WHT", "INT"]) >= 0) {
-            this.south = 2.3;
-            this.xl = [-7, -5, -2, 1];
-            this.yl = [-2, +4, +7, 0];
-            this.labelYShift = [0, 0, 0, 0];
-            this.cx = 0.51 * this.imx;
-            this.cy = 0.52 * this.imy;
-            this.cr = this.imx * 0.5;
-            this.arcRadius = [0.85 * this.cr, 0.85 * this.cr, 0.85 * this.cr, 0.85 * this.cr];
-            this.distortPower = 1.05;
-        } else if ($.inArray(Driver.telescopeName, ["HJST", "OST"]) >= 0) {
-            this.south = -0.5;
-            this.xl = [3, -10, -7, 2];
-            this.yl = [4, +4, +16, 3];
-            this.labelYShift = [-45, 0, 5, 0];
-            this.cx = 0.53 * this.imx;
-            this.cy = 0.53 * this.imy;
-            this.cr = this.imx * 0.45;
-            this.arcRadius = [0.70 * this.cr, 0.85 * this.cr, 0.80 * this.cr, 0.85 * this.cr];
-            this.distortPower = 0.5;
-        } else if ($.inArray(Driver.telescopeName, ["CAHA"]) >= 0) {
-            /* NOTE: The skycam is active only after sunset (NAU), before it gets active the image scaling appears wrongly. */
-            this.south = 0.05;
-            this.xl = [-7, -5, -2, 1];
-            this.yl = [-2, +4, +7, 0];
-            this.labelYShift = [-5, 0, 5, 0];
-            this.cx = 0.29 * this.imx;
-            this.cy = 0.44 * this.imy;
-            this.cr = this.imx * 0.29;
-            this.arcRadius = [0.80 * this.cr, 0.8 * this.cr, 0.80 * this.cr, 0.8 * this.cr];
-            this.distortPower = 0.9;
-        } else if ($.inArray(Driver.telescopeName, ["DSO"]) >= 0) {
-            this.south = 4.5;
-            this.xl = [-7, -5, -2, 1];
-            this.yl = [-2, +4, +7, 0];
-            this.labelYShift = [0, 0, 0, 0];
-            this.cx = 0.49 * this.imx;
-            this.cy = 0.49 * this.imy;
-            this.cr = this.imx * 0.46;
-            this.arcRadius = [0.85 * this.cr, 0.85 * this.cr, 0.85 * this.cr, 0.85 * this.cr];
-            this.distortPower = 1.05;
+        this.params = config[Driver.telescopeName].skycamParams || null;
+        if(this.params === null) {
+            $("#canvasSkycam").hide();
+            $("#skycam_placeholder").addClass("active");
+        } else {
+            $("#skycam_placeholder").removeClass("active");
+            $("#canvasSkycam").show();
         }
-        this.pang = [this.south, this.south + 6, this.south + 12, this.south + 18];
         this.reload();
     } catch (e) {
         helper.LogException(e);
@@ -106,7 +64,7 @@ SkyGraph.prototype.startTimer = function () {
     try {
         this.timer = setInterval(function () {
             driver.skyGraph.reload();
-        }, 10000);  // 10 second reload
+        }, 30000);  // 30 second reload
     } catch (e) {
         helper.LogException(e);
     }
@@ -130,25 +88,26 @@ SkyGraph.prototype.stopTimer = function () {
  * @memberof SkyGraph
  */
 SkyGraph.prototype.setup = function () {
+    if (this.params === null) return;
     try {
-        this.ctx.clearRect(0, 0, this.imx, this.imy);
+        this.ctx.clearRect(0, 0, this.params.imageSizeX, this.params.imageSizeY);
         this.ctx.drawImage(this.skyImg, 0, 0);
-        this.drawaxes();
-        this.drawtics();
-        this.drawpointing();
+        this.drawAxes();
+        this.drawTicks();
+        this.drawPointing();
         if (driver.nightInitialized) {
-            this.drawstars();
+            this.drawStars();
         }
-        this.display_coords(this.lastazalt);
-        this.display_time();
+        this.displayCoords();
+        this.displayTime();
         $.get({
             url: "pointing.php",
             data: {telescope: Driver.telescopeName},
             success: function (obj) {
                 if (helper.notFloat(obj.alt) || helper.notFloat(obj.az)) {
-                    driver.skyGraph.setPointing(null);
+                    driver.skyGraph.tcsPointing = null;
                 } else {
-                    driver.skyGraph.setPointing(driver.skyGraph.aatrans([obj.alt, obj.az]));
+                    driver.skyGraph.tcsPointing = driver.skyGraph.altaz2px(sla.d2r * obj.alt, sla.d2r * obj.az);
                 }
             },
             error: function (msg) {
@@ -163,79 +122,10 @@ SkyGraph.prototype.setup = function () {
 /**
  * @memberof SkyGraph
  */
-SkyGraph.prototype.setPointing = function (xy) {
-    try {
-        if (xy === null) {
-            this.tcsx = null;
-            this.tcsy = null;
-        } else {
-            this.tcsx = xy[0];
-            this.tcsy = xy[1];
-        }
-    } catch (e) {
-        helper.LogException(e);
-    }
-};
-
-/**
- * @memberof SkyGraph
- */
 SkyGraph.prototype.reload = function () {
+    if (this.params === null) return;
     try {
-        this.skyImg.src = `skycam.php?telescope=${Driver.telescopeName}&time=${new Date().getTime()}`;
-    } catch (e) {
-        helper.LogException(e);
-    }
-};
-
-/**
- * @memberof SkyGraph
- */
-SkyGraph.prototype.distort = function (zd) {
-    try {
-        return Math.pow(zd, this.distortPower);
-    } catch (e) {
-        helper.LogException(e);
-    }
-};
-
-/**
- * @memberof SkyGraph
- */
-SkyGraph.prototype.aatrans = function (altaz) { // convert from alt, az to ix, iy
-    try {
-        const ang = (this.south + 12 + altaz[1] / 15) * Math.PI / 12;   // rotate to display
-        const dd = this.cr * this.distort((90 - altaz[0]) / 90);    // zenith distance in pixels
-        const ix = this.cx + dd * Math.sin(ang);
-        const iy = this.cy + dd * Math.cos(ang);
-        return [ix, iy];
-    } catch (e) {
-        helper.LogException(e);
-    }
-};
-
-/**
- * @memberof SkyGraph
- */
-SkyGraph.prototype.tcsxhair = function (x, y) {
-    try {
-        this.ctx.save();
-        this.ctx.strokeStyle = "#9f3";
-        this.ctx.lineWidth = 1;
-        this.ctx.beginPath();
-        this.ctx.moveTo(x - 6, y - 6);
-        this.ctx.lineTo(x - 2, y - 2);
-        this.ctx.moveTo(x + 6, y + 6);
-        this.ctx.lineTo(x + 2, y + 2);
-        this.ctx.moveTo(x - 6, y + 6);
-        this.ctx.lineTo(x - 2, y + 2);
-        this.ctx.moveTo(x + 6, y - 6);
-        this.ctx.lineTo(x + 2, y - 2);
-        this.ctx.stroke();
-        this.ctx.beginPath();
-        this.ctx.arc(x, y, 3.5, 0, 2 * Math.PI, false);
-        this.ctx.stroke();
-        this.ctx.restore();
+        this.skyImg.src = `${this.params.url}?t=${new Date().getTime()}`;
     } catch (e) {
         helper.LogException(e);
     }
@@ -262,86 +152,121 @@ SkyGraph.prototype.xhair = function (x, y, name, color) {
         this.ctx.font = "8pt " + this.fontFamily;
         this.ctx.fillStyle = color;
         this.ctx.fillText(name, x + 5, y - 5);
-        this.ctx.restore();
     } catch (e) {
         helper.LogException(e);
+    } finally {
+        this.ctx.restore();
     }
 };
 
 /**
  * @memberof SkyGraph
  */
-SkyGraph.prototype.drawaxes = function () {
+SkyGraph.prototype.drawAxes = function () {
+    if (this.params === null) return;
     try {
         this.ctx.save();
         this.ctx.strokeStyle = "gray";
-        for (let i = 90; i > 0; i -= 30) {
-            const r = this.cr * this.distort(i / 90);
+        for (let i = 90; i >= 0; i -= 30) {
+            const r = this.params.radius * Math.pow(1 - i / 90, this.params.distortPower);
             this.ctx.beginPath();
-            this.ctx.arc(this.cx, this.cy, r, 0, 2 * Math.PI, false);
+            this.ctx.arc(this.params.zenithX, this.params.zenithY, r, 0, 2 * Math.PI, false);
             this.ctx.stroke();
         }
-        this.ctx.beginPath();                    // 24 spokes
-        for (let i = 0; i < 24; i += 1) {
-            const az = (this.south + 12 + i) * Math.PI / 12;
-            this.ctx.moveTo(this.cx, this.cy);
-            this.ctx.lineTo(this.cx + this.cr * Math.sin(az), this.cy + this.cr * Math.cos(az));
+        this.ctx.beginPath();
+        const nspokes = 24;
+        const dr = 360 / nspokes;
+        for (let i = 0; i < nspokes; i += 1) {
+            const az = sla.d2r * (-90 - this.params.rotation - i * dr);
+            this.ctx.moveTo(this.params.zenithX, this.params.zenithY);
+            this.ctx.lineTo(this.params.zenithX + this.params.radius * Math.cos(az),
+                            this.params.zenithY + this.params.radius * Math.sin(az));
         }
         this.ctx.stroke();
-        this.ctx.restore();
     } catch (e) {
         helper.LogException(e);
+    } finally {
+        this.ctx.restore();
     }
 };
 
 /**
  * @memberof SkyGraph
  */
-SkyGraph.prototype.drawtics = function () {
+SkyGraph.prototype.drawTicks = function () {
+    if (this.params === null) return;
     try {
         this.ctx.save();
-        this.ctx.textBaseline = "alphabetic";
-        this.ctx.textAlign = "start";
-        this.ctx.font = `10pt ${this.fontFamily}`;
+        this.ctx.textBaseline = "middle";
+        this.ctx.textAlign = "center";
+        this.ctx.font = `13pt ${this.fontFamily}`;
+        const rcard = 15;
         for (let i = 0; i < 4; i += 1) {
-            const ang = this.pang[i] * Math.PI / 12;
-            let xx1 = this.cx + this.cr * Math.sin(ang);
-            let yy1 = this.cy + this.cr * Math.cos(ang);
+            const az = sla.d2r * (-90 - this.params.rotation - i * 90);
+            // Find first radius inside the image
+            let r = this.params.radius;
+            let x, y;
+            while (true) {
+                x = this.params.zenithX + r * Math.cos(az);
+                y = this.params.zenithY + r * Math.sin(az);
+                if (x > rcard && y > rcard && x+rcard <= this.params.imageSizeX && y+rcard <= this.params.imageSizeY) {
+                    break;
+                }
+                r -= 1;
+            }
             this.ctx.beginPath();
-            this.ctx.arc(this.cx, this.cy, this.arcRadius[i], Math.PI / 2 - ang - 0.05, Math.PI / 2 - ang + 0.05, false);
-            this.ctx.lineTo(xx1, yy1);
+            this.ctx.arc(x, y, rcard, 0, sla.d2pi, false);
+            this.ctx.lineTo(x, y);
             this.ctx.closePath();
             this.ctx.fillStyle = "blue";
             this.ctx.fill();
             this.ctx.fillStyle = "white";
-            xx1 = this.cx + 0.9 * this.cr * Math.sin(ang);
-            yy1 = this.cy + 0.9 * this.cr * Math.cos(ang) + this.labelYShift[i];
-            this.ctx.fillText(this.plab[i], xx1 + this.xl[i], yy1 + this.yl[i]);
+            this.ctx.fillText(this.cardinalLabels[i], x, y);
         }
+    } catch (e) {
+        helper.LogException(e);
+    } finally {
         this.ctx.restore();
-    } catch (e) {
-        helper.LogException(e);
     }
 };
 
 /**
  * @memberof SkyGraph
  */
-SkyGraph.prototype.drawpointing = function () {
+SkyGraph.prototype.drawPointing = function () {
+    if (this.params === null) return;
+    if (this.tcsPointing === null) return;
     try {
-        if (this.tcsx === null || this.tcsy === null) {
-            return;
-        }
-        this.tcsxhair(this.tcsx, this.tcsy);
+        this.ctx.save();
+        const x = this.tcsPointing.x;
+        const y = this.tcsPointing.y;
+        this.ctx.strokeStyle = "rgb(255, 51, 112)";
+        this.ctx.lineWidth = 1;
+        this.ctx.beginPath();
+        this.ctx.moveTo(x - 6, y - 6);
+        this.ctx.lineTo(x - 2, y - 2);
+        this.ctx.moveTo(x + 6, y + 6);
+        this.ctx.lineTo(x + 2, y + 2);
+        this.ctx.moveTo(x - 6, y + 6);
+        this.ctx.lineTo(x - 2, y + 2);
+        this.ctx.moveTo(x + 6, y - 6);
+        this.ctx.lineTo(x + 2, y - 2);
+        this.ctx.stroke();
+        this.ctx.beginPath();
+        this.ctx.arc(x, y, 3.5, 0, 2 * Math.PI, false);
+        this.ctx.stroke();
     } catch (e) {
         helper.LogException(e);
+    } finally {
+        this.ctx.restore();
     }
 };
 
 /**
  * @memberof SkyGraph
  */
-SkyGraph.prototype.drawstars = function () {
+SkyGraph.prototype.drawStars = function () {
+    if (this.params === null) return;
     try {
         if (driver.targets.nTargets === 0) {
             return;
@@ -349,13 +274,13 @@ SkyGraph.prototype.drawstars = function () {
         let last = null;
         for (let i = 0; i < driver.targets.nTargets; i += 1) {
             const obj = driver.targets.Targets[i];
-            const azel = sla.de2h(helper.deg2rad(this.lst) - obj.RA_rad, obj.Dec_rad, Driver.obs_lat_rad);
-            if (azel.el > 0) {
-                let xy = this.aatrans([helper.rad2deg(azel.el), helper.rad2deg(azel.az)]);
-                if (this.tcsx !== null && this.tcsy !== null && Math.abs(this.tcsx - xy[0]) <= 2 && Math.abs(this.tcsy - xy[1]) <= 2) {
-                    last = [xy[0], xy[1], obj.Name, "#9f3"];
+            const altaz = sla.de2h(this.lst - obj.RA_rad, obj.Dec_rad, Driver.obs_lat_rad);
+            if (altaz.el > 0) {
+                const px = this.altaz2px(altaz.el, altaz.az) 
+                if (this.tcsPointing !== null && Math.abs(this.tcsPointing.x - px.x) <= 2 && Math.abs(this.tcsPointing.y - px.y) <= 2) {
+                    last = [px.x, px.y, obj.Name, "rgb(255, 51, 112)"];
                 } else {
-                    this.xhair(xy[0], xy[1], obj.Name, obj.LabelFillColor);
+                    this.xhair(px.x, px.y, obj.Name, obj.LabelFillColor);
                 }
             }
         }
@@ -370,54 +295,144 @@ SkyGraph.prototype.drawstars = function () {
 /**
  * @memberof SkyGraph
  */
-SkyGraph.prototype.display_coords = function (azalt) {
+SkyGraph.prototype.displayCoords = function () {
+    if (this.params === null) return;
     try {
         this.ctx.save();
-        this.ctx.clearRect(0, this.imy, this.canvasWidth / 2, this.canvasHeight - this.imy);
-        if (azalt !== null) {
+        this.ctx.clearRect(0, this.params.imageSizeY, this.canvasWidth / 2, this.canvasHeight - this.params.imageSizeY);
+        if (this.lastAltaz !== null) {
             this.ctx.fillStyle = "black";
             this.ctx.textBaseline = "top";
             this.ctx.textAlign = "left";
             this.ctx.font = `10pt ${this.fontFamily}`;
-            this.ctx.fillText("Az:", 0, this.imy + 6);
-            this.ctx.fillText("Alt:", 51, this.imy + 6);
-            this.ctx.fillText("RA", 100, this.imy + 6);
-            this.ctx.fillText("Dec", 208, this.imy + 6);
+            this.ctx.fillText("Az:", 0, this.params.imageSizeY + 6);
+            this.ctx.fillText("Alt:", 51, this.params.imageSizeY + 6);
+            this.ctx.fillText("RA", 100, this.params.imageSizeY + 6);
+            this.ctx.fillText("Dec", 208, this.params.imageSizeY + 6);
             this.ctx.fillStyle = "blue";
-            this.ctx.fillText(azalt[1], 20, this.imy + 6);
-            this.ctx.fillText(azalt[0], 74, this.imy + 6);
-            this.ctx.fillText(azalt[2], 121, this.imy + 6);
-            this.ctx.fillText(azalt[3], 235, this.imy + 6);
+            this.ctx.fillText(Math.round(sla.r2d*this.lastAltaz.az), 20, this.params.imageSizeY + 6);
+            const altDeg = Math.round(sla.r2d*this.lastAltaz.alt);
+            this.ctx.fillText(altDeg > 10 ? altDeg : "low", 74, this.params.imageSizeY + 6);
+            const hadec = sla.dh2e(this.lastAltaz.az, this.lastAltaz.alt, Driver.obs_lat_rad);
+            this.ctx.fillText(helper.HMS(sla.rtoh * sla.dranrm(this.lst-hadec.ha), "h", "m", "s"), 121, this.params.imageSizeY + 6);
+            this.ctx.fillText(helper.HMS(sla.r2d * hadec.dec, "°", "'", '"'), 235, this.params.imageSizeY + 6);
         }
-        this.ctx.restore();
     } catch (e) {
         helper.LogException(e);
+    } finally {
+        this.ctx.restore();
     }
 };
 
 /**
  * @memberof SkyGraph
  */
-SkyGraph.prototype.display_time = function () {
+SkyGraph.prototype.displayTime = function () {
+    if (this.params === null) return;
     try {
+        this.ctx.save();
         const tim = new Date();
         const mjd = helper.getMJD(tim);
-        this.lst = helper.rad2deg(sla.dranrm(sla.gmst(mjd) + Driver.obs_lon_rad + sla.eqeqx(mjd)));
+        this.lst = sla.dranrm(sla.gmst(mjd) + Driver.obs_lon_rad + sla.eqeqx(mjd));
         const ut = helper.utc(tim) * 24;
         const mm = helper.padTwoDigits(tim.getUTCMonth() + 1);
         const dd = helper.padTwoDigits(tim.getUTCDate());
         const UTtext = `UTC ${tim.getUTCFullYear()}-${mm}-${dd} ${helper.HMS(ut, ":", ":", "")}`;
-        const STtext = `LST ${helper.HMS(this.lst/15, ":", ":", "")}`;
-        this.ctx.save();
-        this.ctx.clearRect(this.canvasWidth / 2, this.imy, this.canvasWidth / 2, this.canvasHeight - this.imy);
+        const MJDtext = `MJD ${helper.getMJD(tim).toFixed(5)}`;
+        const STtext = `LST ${helper.HMS(sla.rtoh * this.lst, ":", ":", "")}`;
+        this.ctx.clearRect(this.canvasWidth / 2, this.params.imageSizeY, this.canvasWidth / 2, this.canvasHeight - this.params.imageSizeY);
         this.ctx.font = `10pt ${this.fontFamily}`;
         this.ctx.fillStyle = "gray";
         this.ctx.textBaseline = "top";
         this.ctx.textAlign = "left";
-        this.ctx.fillText(UTtext, this.imx / 2 + 75, this.imy + 6);
+        this.ctx.fillText(UTtext, this.params.imageSizeX / 2 + 40, this.params.imageSizeY + 6);
+        this.ctx.fillText(MJDtext, this.params.imageSizeX / 2 + 40, this.params.imageSizeY + 24);
         this.ctx.textAlign = "right";
-        this.ctx.fillText(STtext, this.imx, this.imy + 6);
+        this.ctx.fillText(STtext, this.params.imageSizeX, this.params.imageSizeY + 6);
+    } catch (e) {
+        helper.LogException(e);
+    } finally {
         this.ctx.restore();
+    }
+};
+
+/**
+ * Convert pixel coordinates in a SkyCam image to Az/Alt, using
+ * the configured telescope-specific transformation parameters.
+ *
+ * @param {Number} x - X coordinate of the target pixel.
+ * @param {Number} y - Y coordinate of the target pixel.
+ * @returns {Object|null} An object containing alt, az, ra_hms, dec_dms as returned
+ * by the telescope-specific function, or null if no suitable telescope routine exists.
+ */
+SkyGraph.prototype.px2altaz = function(x, y) {
+    if (this.params === null) return null;
+    try {
+        const dx = x - this.params.zenithX;
+        const dy = y - this.params.zenithY;
+        const rho = Math.sqrt(dx*dx + dy*dy);
+        return {
+            'alt': Math.PI/2 * (1-Math.pow(rho/this.params.radius, 1/this.params.distortPower)),
+            'az': sla.dranrm(Math.atan2(dy, -dx) + sla.d2r * (90 - this.params.rotation))
+        };
+    } catch (e) {
+        helper.LogException(e);
+    }
+};
+
+/**
+ * Convert pixel coordinates in a SkyCam image to Az/Alt, using
+ * the configured telescope-specific transformation parameters.
+ *
+ * @param {Number} alt - Altitude in radians.
+ * @param {Number} az - Azimuth in radians.
+ * @returns {Object|null} An object containing x, y in pixels as returned
+ * by the telescope-specific function, or null if no suitable telescope routine exists.
+ */
+SkyGraph.prototype.altaz2px = function(alt, az) {
+    if (this.params === null) return null;
+    try {
+        const rho = this.params.radius * Math.pow(1 - alt / (Math.PI / 2), this.params.distortPower);
+        const theta = az - sla.d2r * (90 - this.params.rotation);
+        return {
+            'x': this.params.zenithX - rho * Math.cos(theta),
+            'y': this.params.zenithY + rho * Math.sin(theta)
+        };
+    } catch (e) {
+        helper.LogException(e);
+    }
+};
+
+
+/**
+ * @memberof Driver
+ */
+SkyGraph.prototype.Evt_MouseMove = function (e, jQthis) {
+    if (this.params === null) return;
+    try {
+        if (e.pageX === undefined && e.pageY === undefined) return;
+        const pos_x = e.pageX - jQthis.offset().left;
+        const pos_y = e.pageY - jQthis.offset().top;
+        if ((pos_x < 0) || (pos_x >= this.params.imageSizeX) || (pos_y < 0) || (pos_y >= this.params.imageSizeY)) {
+            this.lastAltaz = null;
+        } else {
+            this.lastAltaz = this.px2altaz(pos_x, pos_y);
+            
+        }
+        this.displayCoords();
+    } catch (e) {
+        helper.LogException(e);
+    }
+};
+
+/**
+ * @memberof Driver
+ */
+SkyGraph.prototype.Evy_MouseOut = function () {
+    if (this.params === null) return;
+    try {
+        this.lastAltaz = null;
+        this.displayCoords();
     } catch (e) {
         helper.LogException(e);
     }

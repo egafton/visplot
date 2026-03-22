@@ -86,10 +86,10 @@ Night.prototype.setEphemerides = function (obj) {
         // Previous noon; sunset; evening twilights
         let stl = helper.stl(this.utcMidnight-0.5, this.eqeqx);
         let ret = sla.rdplan(this.ttMidnight-0.5, "Sun", Driver.obs_lon_rad, Driver.obs_lat_rad);
-        let tsouth = ((12 - Driver.obs_timezone) - sla.drange(stl - ret.ra) * sla.r2d / 15) % 24;
+        let tsouth = ((12 - Driver.obs_timezone) - sla.rtoh * sla.drange(stl - ret.ra)) % 24;
         let ut1 = helper.utarc(-0.5*ret.diam - this.RefractionAtHorizon - this.HorizonDip, tsouth, ret.dec, "+");
-        let ut2 = helper.utarc(helper.deg2rad(-12), tsouth, ret.dec, "+");
-        let ut3 = helper.utarc(helper.deg2rad(-18), tsouth, ret.dec, "+");
+        let ut2 = helper.utarc(-12*sla.d2r, tsouth, ret.dec, "+");
+        let ut3 = helper.utarc(-18*sla.d2r, tsouth, ret.dec, "+");
         let utczero = Math.floor(this.utcMidnight);
         while (this.utcMidnight - (utczero + sla.dtf2d(ut1[0], ut1[1], ut1[2])) < 0) {
             utczero -= 1;
@@ -112,10 +112,10 @@ Night.prototype.setEphemerides = function (obj) {
         // Next noon; sunrise; morning twilight
         stl = helper.stl(this.utcMidnight+0.5, this.eqeqx);
         ret = sla.rdplan(this.ttMidnight+0.5, "Sun", Driver.obs_lon_rad, Driver.obs_lat_rad);
-        tsouth = ((12 - Driver.obs_timezone) - sla.drange(stl - ret.ra) * sla.r2d / 15) % 24;
+        tsouth = ((12 - Driver.obs_timezone) - sla.rtoh * sla.drange(stl - ret.ra)) % 24;
         ut1 = helper.utarc(-0.5*ret.diam - this.RefractionAtHorizon - this.HorizonDip, tsouth, ret.dec, "-");
-        ut2 = helper.utarc(helper.deg2rad(-12), tsouth, ret.dec, "-");
-        ut3 = helper.utarc(helper.deg2rad(-18), tsouth, ret.dec, "-");
+        ut2 = helper.utarc(-12*sla.d2r, tsouth, ret.dec, "-");
+        ut3 = helper.utarc(-18*sla.d2r, tsouth, ret.dec, "-");
         utczero = Math.floor(this.utcMidnight);
         while ((utczero + sla.dtf2d(ut1[0], ut1[1], ut1[2])) - this.utcMidnight < 0) {
             utczero += 1;
@@ -178,7 +178,7 @@ Night.prototype.setEphemerides = function (obj) {
             ret = sla.aopqk(ret.ra, ret.dec, aop);
             // Approximate refracted alt
             const ell = 0.5*Math.PI - sla.refz(ret.zob, this.ref.refa, this.ref.refb);
-            this.ymoon.push(helper.rad2deg(ell));
+            this.ymoon.push(sla.r2d * ell);
             this.rmoon.push(0.5*diam);
             // LST angles
             const lstangle = sla.dranrm(sla.gmst(ut) + Driver.obs_lon_rad) + this.eqeqx;
@@ -235,7 +235,7 @@ Night.prototype.setEphemerides = function (obj) {
             this.MoonIlluminationString = `${this.MoonIllMin} – ${this.MoonIllMax}%`;
         }
         this.Moonrise = 0;
-        const lim = helper.rad2deg(- this.HorizonDip);
+        const lim = -sla.r2d * this.HorizonDip;
         if (this.ymoon[0] < lim-sla.r2d*this.rmoon[0]) {
             // will rise
             for (let i = 1; i < this.Nx; i += 1) {

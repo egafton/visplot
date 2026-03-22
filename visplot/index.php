@@ -6,7 +6,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. See LICENSE.md.
  */
-$version = "5.0c";
+$version = "5.0d";
 /*
 * Version history (with brief changelog):
 *
@@ -130,6 +130,9 @@ $version = "5.0c";
 *      - Telescope list now supports incremental search.
 *      - Improved handling of fractional UTC offsets.
 *      - Added night/twilight, clouds and precipitation overlays on map.
+*
+* 5.0d - Major refactoring of the all-sky camera code (and equations).
+*      - Refactored pointing.php.
 */
 session_start();
 if (isset($_SESSION["obinfo"])) {
@@ -265,7 +268,8 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
             <div id="details_map"><span id="details_map_hang"></span></div>
         </div> <!-- #details -->
         <div id="skycamblock">
-            <canvas id="canvasSkycam" width="640" height="500"></canvas>
+            <div id="skycam_placeholder">No sky camera has been configured for the selected telescope.</div>
+            <canvas id="canvasSkycam" width="640" height="515"></canvas>
         </div> <!-- #skycamblock -->
         <div id="tcscat">
             <h2 class="fancyhead">Targets in TCS catalogue format</h2>

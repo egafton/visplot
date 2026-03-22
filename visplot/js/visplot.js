@@ -191,7 +191,7 @@ function postInitialization() {
             driver.skyGraph.setup();
         };
         setInterval(function () {
-            driver.skyGraph.display_time();
+            driver.skyGraph.displayTime();
         }, 500);   // 0.5 second update times
 
         helper.LogDebug("Drawing plot background...");

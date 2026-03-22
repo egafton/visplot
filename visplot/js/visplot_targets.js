@@ -109,13 +109,13 @@ function Target(k, obj) {
         this.DecLimit_MaximumHA = null;
         if (dfun !== null) {
             if (dfun[0] == "alt(dec)") {
-                this.DecLimit_MinimumAlt = dfun[1](this.Dec_rad * sla.r2d);
+                this.DecLimit_MinimumAlt = dfun[1](sla.r2d * this.Dec_rad);
             } else if (dfun[0] == "alt(az)") {
                 this.DecLimit_MinimumAltAzEast = dfun[1](this.Azimuth, false, this.Instrument);
                 this.DecLimit_MinimumAltAzWest = dfun[1](this.Azimuth, true, this.Instrument);
             } else if (dfun[0] == "ha(dec)") {
-                this.DecLimit_MinimumHA = dfun[1](this.Dec_rad * sla.r2d);
-                this.DecLimit_MaximumHA = dfun[2](this.Dec_rad * sla.r2d);
+                this.DecLimit_MinimumHA = dfun[1](sla.r2d * this.Dec_rad);
+                this.DecLimit_MaximumHA = dfun[2](sla.r2d * this.Dec_rad);
             }
         }
     } catch (e) {
@@ -127,7 +127,7 @@ Target.prototype.SetExptime = function (exptime) {
     try {
         if (exptime === null) return;
         this.Exptime = exptime;
-        this.ExptimeSeconds = Math.round(this.Exptime * 86400);
+        this.ExptimeSeconds = Math.round(this.Exptime * sla.d2s);
         this.Exptime = Math.floor(this.Exptime / driver.night.xstep) * driver.night.xstep;
         let hrs = Math.floor(this.ExptimeSeconds / 3600);
         let min = Math.round((this.ExptimeSeconds - hrs * 3600) / 60);
@@ -224,7 +224,7 @@ TargetList.prototype.targetStringToJSON = function (line) {
             obj.exptime = null;
         } else {
             obj.fillslot = false;
-            obj.exptime = parseFloat(dat[8])/86400.0;
+            obj.exptime = parseFloat(dat[8]) / sla.d2s;
         }
         let minmdist = 9999;
         let iminmdist = 0;
@@ -283,12 +283,9 @@ TargetList.prototype.targetStringToJSON = function (line) {
                 imax = i;
                 altmax = ell;
             }
-            obj.line.push(helper.rad2deg(ell));
-            let az = helper.rad2deg(retob.aob);
-            if (az < 0) {
-                az += 360;
-            }
-            obj.azim.push(az);
+            obj.line.push(sla.r2d * ell);
+            const az = sla.dranrm(retob.aob);
+            obj.azim.push(sla.r2d * az);
         }
         obj.zenithtime = night.xaxis[imax];
         obj.RA_rad = ra;
@@ -687,8 +684,8 @@ TargetList.prototype.reorder_accordingToScheduling = function (scheduleorder) {
 TargetList.prototype.display_scheduleStatistics = function () {
     try {
         let projtime = [];
-        let time_dark = driver.night.DarkTime * 86400;
-        let time_night = driver.night.NightLength * 86400;
+        let time_dark = driver.night.DarkTime * sla.d2s;
+        let time_night = driver.night.NightLength * sla.d2s;
         let time_sched = 0;
         let i, obj, j, k, inserted, minproj, minloc, exch;
         for (i = 0; i < this.nTargets; i += 1) {
@@ -729,7 +726,7 @@ TargetList.prototype.display_scheduleStatistics = function () {
             bwen = Math.max(Math.min(this.Offline[i].End, driver.night.MNauTwilight), driver.night.ENauTwilight);
             time_lost += bwen - bwst;
         }
-        time_lost *= 86400;
+        time_lost *= sla.d2s;
         let time_free = time_night - time_sched - time_lost;
         let ratio_sched = Math.round(time_sched * 100 / time_night);
         let ratio_lost = Math.round(time_lost * 100 / time_night);
@@ -815,7 +812,7 @@ TargetList.prototype.schedule_withWeights = function (startingAt) {
                 // Calculate weight
                 const priority = tgt.Priority / maxpriority; // 0-1;
                 const urgency = 1 / (tgt.LastPossibleTime - curtime + 1); // 0-1, becomes 1 at the last possible time
-                const altitude = Math.sin(helper.deg2rad(tgt.Graph[curidx])); // 0-1, the higher the altitude the better
+                const altitude = Math.sin(sla.d2r * tgt.Graph[curidx]); // 0-1, the higher the altitude the better
                 const slewing = lastra === null ? 1 : 1-sla.dsep(lastra, lastdec, tgt.RA_rad, tgt.Dec_rad) / Math.PI; // 0-1, 1 if no slewing, 0 if 180 deg slewing
                 weights[i] = wp * priority + wu * urgency + wa * altitude + ws * slewing;
             }
@@ -1059,7 +1056,7 @@ TargetList.prototype.prepareScheduleForUpdate = function () {
         if (now > driver.night.DateSunset && now < driver.night.DateSunrise) {
             if ($("#opt_reschedule_later").is(":checked")) {
                 helper.LogWarning("Attention: the night has already started, so we will only reschedule after the current time. The previously observed objects will NOT be affected, but objects scheduled in the past that have not yet been observed may be rescheduled in the future, if there is enough free time.");
-                this.StartingAt = driver.night.Sunset + (now - driver.night.DateSunset) / 1000 / 86400;
+                this.StartingAt = driver.night.Sunset + (now - driver.night.DateSunset) / 1000 / sla.d2s;
             } else {
                 helper.LogWarning("We are not currently in the middle of the observing night. Scheduling as usual...");
                 this.StartingAt = driver.night.Sunset;
@@ -1148,7 +1145,7 @@ TargetList.prototype.plan = function () {
             helper.LogEntry("Current time: " + now.toUTCString());
             if (now > driver.night.DateSunset && now < driver.night.DateSunrise) {
                 helper.LogWarning("Attention: the night has already started, so we will only schedule after the current time.");
-                this.doSchedule(driver.night.Sunset + (now - driver.night.DateSunset) / 1000 / 86400, true);
+                this.doSchedule(driver.night.Sunset + (now - driver.night.DateSunset) / 1000 / sla.d2s, true);
             } else {
                 helper.LogWarning("We are not currently in the middle of the observing night. Scheduling as usual...");
                 this.doSchedule(driver.night.Sunset, true);
@@ -1503,8 +1500,8 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
         }
         /* Everything given in degrees? Convert to hex */
         if (words.length === 3 && !helper.notFloat(words[1]) && !helper.notFloat(words[2])) {
-            let RAhex = sla.dr2tf(2, helper.deg2rad(parseFloat(words[1])));
-            let Dechex = sla.dr2af(2, helper.deg2rad(parseFloat(words[2])));
+            let RAhex = sla.d2r * sla.dr2tf(2, parseFloat(words[1]));
+            let Dechex = sla.d2r * sla.dr2af(2, parseFloat(words[2]));
             let ra_arr = [`${RAhex.sign == '+' ? '' : RAhex.sign}${RAhex.ihmsf[0]}`, `${RAhex.ihmsf[1]}`, `${RAhex.ihmsf[2]}.${RAhex.ihmsf[3]}`];
             let dec_arr = [`${Dechex.sign == '+' ? '' : Dechex.sign}${Dechex.idmsf[0]}`, `${Dechex.idmsf[1]}`, `${Dechex.idmsf[2]}.${Dechex.idmsf[3]}`];
             words = words.slice(0, 1).concat(ra_arr).concat(dec_arr);
@@ -2039,10 +2036,10 @@ Target.prototype.Update = function (obj) {
         this.FillSlot = isUTC && (obj[0] === "*");
         if (helper.filterInt(obj[0])) {
             this.ExptimeSeconds = parseInt(obj[0]);
-            this.Exptime = Math.floor(this.ExptimeSeconds / 86400 / driver.night.xstep) * driver.night.xstep;
+            this.Exptime = Math.floor(this.ExptimeSeconds / sla.d2s / driver.night.xstep) * driver.night.xstep;
         } else {
-            this.Exptime = this.FillSlot ? ut2 - ut1 : driver.defaultObstime / 86400;
-            this.ExptimeSeconds = Math.round(this.Exptime * 86400);
+            this.Exptime = this.FillSlot ? ut2 - ut1 : driver.defaultObstime / sla.d2s;
+            this.ExptimeSeconds = Math.round(this.Exptime * sla.d2s);
             this.Exptime = Math.floor(this.Exptime / driver.night.xstep) * driver.night.xstep;
         }
         const hrs = Math.floor(this.ExptimeSeconds / 3600);

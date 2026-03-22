@@ -47,6 +47,18 @@ config["NOT"] = {
     // Background image for plot
     background: "img/telescopes/NOT.jpg",
 
+    // Parameters for performing astrometry on the skycam image
+    skycamParams: {
+        url: "http://www.gtc.iac.es/multimedia/netcam/camaraAllSky.jpg",
+        imageSizeX: 640,
+        imageSizeY: 480,
+        zenithX: 326,
+        zenithY: 250,
+        radius: 320,
+        rotation: 35, // 0=North up, 90=North left
+        distortPower: 1.05
+    },
+
     // Instrument definitions; fov in arcminutes
     instruments: {
         "ALFOSC": {
@@ -116,6 +128,9 @@ config["WHT"] = {
 
     // Background image for plot
     background: "img/telescopes/WHT.jpg",
+
+    // Parameters for performing astrometry on the skycam image
+    skycamParams: config["NOT"].skycamParams,
 
     // Instrument definitions; fov in arcminutes
     instruments: {
@@ -193,6 +208,9 @@ config["INT"] = {
 
     // Background image for plot
     background: "img/telescopes/INT.jpg",
+
+    // Parameters for performing astrometry on the skycam image
+    skycamParams: config["NOT"].skycamParams,
 
     // Instrument definitions; fov in arcminutes
     instruments: {
@@ -336,6 +354,18 @@ config["CAHA"] = {
 
     // Background image for plot
     background: "img/telescopes/CAHA.jpg",
+
+    // Parameters for performing astrometry on the skycam image
+    skycamParams: {
+        url: "http://www.caha.es/WDXI/ASTMON/images/Johnson_V.png",
+        imageSizeX: 640,
+        imageSizeY: 480,
+        zenithX: 186,
+        zenithY: 211,
+        radius: 186,
+        rotation: 1,
+        distortPower: 0.9
+    },
 
     // Instrument definitions; fov in arcminutes
     instruments: {
@@ -496,7 +526,7 @@ config["HJST"] = {
             west ? config["HJST"]._west_coeffs : (instr === "GCMS" ? config["HJST"]._eastGCMS_coeffs : config["HJST"]._east_coeffs));
         if (west) {
             // Extra constraint from mount
-            let tan_lat = Math.tan(helper.deg2rad(config["HJST"].latitude));
+            let tan_lat = Math.tan(sla.d2r * config["HJST"].latitude);
             let extra = az.map(function (x) {
                 return 10 + (90 - Math.sign(x) * x) * tan_lat;
             });
@@ -520,6 +550,18 @@ config["HJST"] = {
 
     // Background image for plot
     background: "img/telescopes/HJST.jpg",
+
+    // Parameters for performing astrometry on the skycam image
+    skycamParams: {
+        url: "http://monet-n-sky.as.utexas.edu/jpg/1/image.jpg",
+        imageSizeX: 640,
+        imageSizeY: 480,
+        zenithX: 339,
+        zenithY: 254,
+        radius: 288,
+        rotation: -7,
+        distortPower: 0.5
+    },
 
     // Instrument definitions; fov in arcminutes
     instruments: {
@@ -586,6 +628,9 @@ config["OST"] = {
     // Background image for plot
     background: "img/telescopes/OST.jpg",
 
+    // Parameters for performing astrometry on the skycam image
+    skycamParams: config["HJST"].skycamParams,
+
     // Instrument definitions; fov in arcminutes
     instruments: {
         "CQUEAN": {
@@ -632,6 +677,9 @@ config["HET"] = {
 
     // Background image for plot
     background: "img/telescopes/HET.jpg",
+
+    // Parameters for performing astrometry on the skycam image
+    skycamParams: config["HJST"].skycamParams,
 
     // Instrument definitions; fov in arcminutes
     instruments: {
@@ -714,6 +762,18 @@ config["DSO"] = {
 
     // Background image for plot
     background: "img/telescopes/DSO.jpg",
+
+    // Parameters for performing astrometry on the skycam image
+    skycamParams: {
+        url: "https://dsoftp.appstate.edu/dsoftp/NewSite/dsoftp/Webcams/DSO-AllSky-CurrentImage.JPG",
+        imageSizeX: 640,
+        imageSizeY: 480,
+        zenithX: 314,
+        zenithY: 235,
+        radius: 294,
+        rotation: 67,
+        distortPower: 1.05
+    },
 
     // Instrument definitions; fov in arcminutes
     instruments: {
@@ -1611,4 +1671,22 @@ config["Hall Telescope"] = {
     longitude: -111.53635,
     altitude: 2206,
     timezoneName: "America/Phoenix"
+};
+config["GOTO North"] = {
+    site: "Roque de Los Muchachos",
+    name: "Gravitational-wave Optical Transient Observer 4×0.4m",
+    location: "La Palma, Spain",
+    latitude: 28.76007,
+    longitude: -17.87929,
+    altitude: 2300,
+    timezoneName: "Atlantic/Canary"
+};
+config["GOTO South"] = {
+    site: "Siding Spring Observatory",
+    name: "Gravitational-wave Optical Transient Observer 4×0.4m",
+    location: "New South Wales, Australia",
+    latitude: -31.27345,
+    longitude: 149.06417,
+    altitude: 1164,
+    timezoneName: "Australia/Sydney"
 };

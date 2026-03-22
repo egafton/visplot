@@ -157,26 +157,6 @@ helper.padTwoDigits = function (_num) {
 };
 
 /**
- * Convert degrees to radians.
- *
- * @param {Number} angle - Angle in degrees.
- * @returns {Number} Angle in radians.
- */
-helper.deg2rad = function (angle) {
-    return angle * sla.d2r;
-};
-
-/**
- * Convert radians to degrees.
- *
- * @param {Number} angle - Angle in radians.
- * @returns {Number} Angle in degrees.
- */
-helper.rad2deg = function (angle) {
-    return angle * sla.r2d;
-};
-
-/**
  * Convert airmass to ZD by inverting Hardie's formula.
  *
  * @param {Number} airmass - Airmass, a number greater than or equal to 1.
@@ -216,7 +196,7 @@ helper.AirmasstoZD = function (X) {
  */
 helper.AirmassToAltitude = function (airmass) {
     try {
-        return 90 - helper.rad2deg(helper.AirmasstoZD(airmass));
+        return 90 - sla.r2d * helper.AirmasstoZD(airmass);
     } catch (e) {
         helper.LogException(e);
     }
@@ -230,7 +210,7 @@ helper.AirmassToAltitude = function (airmass) {
  */
 helper.AltitudeToAirmass = function (altitude) {
     try {
-        return sla.airmas(helper.deg2rad(90 - altitude));
+        return sla.airmas(sla.d2r * (90 - altitude));
     } catch (e) {
         helper.LogException(e);
     }
@@ -318,202 +298,6 @@ helper.parseSIMBADResponse = function (responseText) {
 };
 
 /**
- * Convert pixel coordinates in a SkyCam image to Az/Alt and RA/Dec, using
- * the appropriate telescope-specific transformation routine.
- *
- * This function dispatches to one of the specialized coordinate conversion
- * functions depending on the current telescope (`Driver.telescopeName`):
- * - "NOT", "WHT", "INT" → helper.getCoordinates_NOT
- * - "HJST", "OST", "CAHA" → helper.getCoordinates_HJST
- * - "DSO" → helper.getCoordinates_DSO
- *
- * @param {Number} xcent - X coordinate of the image reference center.
- * @param {Number} ycent - Y coordinate of the image reference center.
- * @param {Number} x - X coordinate of the target pixel.
- * @param {Number} y - Y coordinate of the target pixel.
- * @param {Number} r - Reference radius in pixels for scaling the transformation.
- * @param {Number} lst - Local Sidereal Time in degrees for RA calculation.
- * @returns {Array|null|undefined} An array [alt, az, RA_HMS, Dec_HMS] as returned
- * by the telescope-specific function, or null if no suitable telescope routine exists.
- */
-helper.getCoordinates = function(xcent, ycent, x, y, r, lst) {
-    try {
-        if ($.inArray(Driver.telescopeName, ["NOT", "WHT", "INT"]) >= 0) {
-            return helper.getCoordinates_NOT(xcent, ycent, x, y, r, lst);
-        } else if ($.inArray(Driver.telescopeName, ["HJST", "OST"]) >= 0) {
-            return helper.getCoordinates_HJST(xcent, ycent, x, y, r, lst);
-        } else if ($.inArray(Driver.telescopeName, ["CAHA"]) >= 0) {
-            return helper.getCoordinates_HJST(xcent, ycent, x, y, r, lst);
-        }  else if ($.inArray(Driver.telescopeName, ["DSO"]) >= 0) {
-            return helper.getCoordinates_DSO(xcent, ycent, x, y, r, lst);
-        } else {
-            return null;
-        }
-    } catch (e) {
-        helper.LogException(e);
-    }
-};
-
-/**
- * Convert pixel coordinates in a GTC SkyCam image to Azimuth/Altitude and RA/Dec.
- * 
- * This routine performs a geometric transformation from image pixel coordinates
- * relative to a reference center (`xcent`, `ycent`) to:
- * 1. Azimuth and altitude (degrees)
- * 2. Right ascension and declination (formatted as HMS strings)
- *
- * @param {Number} xcent - X coordinate of the image reference center.
- * @param {Number} ycent - Y coordinate of the image reference center.
- * @param {Number} x - X coordinate of the target pixel.
- * @param {Number} y - Y coordinate of the target pixel.
- * @param {Number} r - Reference radius in pixels for scaling the transformation.
- * @param {Number} lst - Local Sidereal Time in degrees for RA calculation.
- * @returns {Array} An array of four elements:
- * 1. Altitude in degrees (or string "low" if below threshold),
- * 2. Azimuth in degrees (0–360),
- * 3. Right Ascension as HMS string (e.g., 12h34m56s),
- * 4. Declination as DMS string (e.g., 12°34'56").
- */
-helper.getCoordinates_NOT = function (xcent, ycent, x, y, r, lst) {
-    try {
-        const myArray = new Array(4); /* Exception to Google style rule 5.2.2 */
-        x = x - xcent;
-        y = y - ycent;
-        let newR = Math.sqrt(x * x + y * y);
-        let newTheta = helper.rad2deg(Math.atan2(y, x) - helper.deg2rad(90) + helper.deg2rad(35));
-        r = Math.max(r, newR);
-        newR = newR - 3;
-        const n = (r - newR) / r;
-        newR = 6.686 + 47.324 * n + 135.465 * n * n - 187.185 * n * n * n + 87.754 * n * n * n * n;
-        if (newR > r) {
-            myArray[0] = "low";
-        } else {
-            myArray[0] = Math.round(newR);
-            if (myArray[0] > 90) {
-                myArray[0] = 90;
-            }
-        }
-        newTheta = 180 - newTheta;
-        if (newTheta >= 360) {
-            newTheta = newTheta - 360;
-        }
-        myArray[1] = Math.round(newTheta);
-        const val = helper.radec(newR, newTheta, lst);
-        myArray[2] = helper.HMS(val[0], "h", "m", "s");
-        myArray[3] = helper.HMS(val[1], "°", "'", '"');
-        return myArray;
-    } catch (e) {
-        helper.LogException(e);
-    }
-};
-
-/**
- * Convert pixel coordinates in a Monet SkyCam image to Azimuth/Altitude and RA/Dec.
- * 
- * This routine performs a geometric transformation from image pixel coordinates
- * relative to a reference center (`xcent`, `ycent`) to:
- * 1. Azimuth and altitude (degrees)
- * 2. Right ascension and declination (formatted as HMS strings)
- *
- * @param {Number} xcent - X coordinate of the image reference center.
- * @param {Number} ycent - Y coordinate of the image reference center.
- * @param {Number} x - X coordinate of the target pixel.
- * @param {Number} y - Y coordinate of the target pixel.
- * @param {Number} r - Reference radius in pixels for scaling the transformation.
- * @param {Number} lst - Local Sidereal Time in degrees for RA calculation.
- * @returns {Array} An array of four elements:
- * 1. Altitude in degrees (or string "low" if below threshold),
- * 2. Azimuth in degrees (0–360),
- * 3. Right Ascension as HMS string (e.g., 12h34m56s),
- * 4. Declination as DMS string (e.g., 12°34'56").
- */
-helper.getCoordinates_HJST = function (xcent, ycent, x, y, r, lst) {
-    try {
-        const myArray = new Array(4); /* Exception to Google style rule 5.2.2 */
-        x = x - xcent;
-        y = y - ycent;
-        let newR = Math.sqrt(x * x + y * y);
-        let newTheta = helper.rad2deg(Math.atan2(y, x) - helper.deg2rad(90) - helper.deg2rad(5));
-        r = Math.max(r, newR);
-        newR = newR - 3;
-        const n = (r - newR) / r;
-        newR = 6.686 + 47.324 * n + 135.465 * n * n - 187.185 * n * n * n + 87.754 * n * n * n * n;
-        if (newR > r) {
-            myArray[0] = "low";
-        } else {
-            myArray[0] = Math.round(newR);
-            if (myArray[0] > 90) {
-                myArray[0] = 90;
-            }
-        }
-        newTheta = 180 - newTheta;
-        if (newTheta >= 360) {
-            newTheta = newTheta - 360;
-        }
-        myArray[1] = Math.round(newTheta);
-        const val = helper.radec(newR, newTheta, lst);
-        myArray[2] = helper.HMS(val[0], "h", "m", "s");
-        myArray[3] = helper.HMS(val[1], "°", "'", '"');
-        return myArray;
-    } catch (e) {
-        helper.LogException(e);
-    }
-};
-
-/**
- * Convert pixel coordinates in a DSO SkyCam image to Azimuth/Altitude and RA/Dec.
- * 
- * This routine performs a geometric transformation from image pixel coordinates
- * relative to a reference center (`xcent`, `ycent`) to:
- * 1. Azimuth and altitude (degrees)
- * 2. Right ascension and declination (formatted as HMS strings)
- *
- * @param {Number} xcent - X coordinate of the image reference center.
- * @param {Number} ycent - Y coordinate of the image reference center.
- * @param {Number} x - X coordinate of the target pixel.
- * @param {Number} y - Y coordinate of the target pixel.
- * @param {Number} r - Reference radius in pixels for scaling the transformation.
- * @param {Number} lst - Local Sidereal Time in degrees for RA calculation.
- * @returns {Array} An array of four elements:
- * 1. Altitude in degrees (or string "low" if below threshold),
- * 2. Azimuth in degrees (0–360),
- * 3. Right Ascension as HMS string (e.g., 12h34m56s),
- * 4. Declination as DMS string (e.g., 12°34'56").
- */
-helper.getCoordinates_DSO = function (xcent, ycent, x, y, r, lst) {
-    try {
-        const myArray = new Array(4); /* Exception to Google style rule 5.2.2 */
-        x = x - xcent;
-        y = y - ycent;
-        let newR = Math.sqrt(x * x + y * y);
-        let newTheta = helper.rad2deg(Math.atan2(y, x) - helper.deg2rad(90) + helper.deg2rad(66));
-        r = Math.max(r, newR);
-        newR = newR - 3;
-        const n = (r - newR) / r;
-        newR = 6.686 + 47.324 * n + 135.465 * n * n - 187.185 * n * n * n + 87.754 * n * n * n * n;
-        if (newR > r) {
-            myArray[0] = "low";
-        } else {
-            myArray[0] = Math.round(newR);
-            if (myArray[0] > 90) {
-                myArray[0] = 90;
-            }
-        }
-        newTheta = 180 - newTheta;
-        if (newTheta >= 360) {
-            newTheta = newTheta - 360;
-        }
-        myArray[1] = Math.round(newTheta);
-        const val = helper.radec(newR, newTheta, lst);
-        myArray[2] = helper.HMS(val[0], "h", "m", "s");
-        myArray[3] = helper.HMS(val[1], "°", "'", '"');
-        return myArray;
-    } catch (e) {
-        helper.LogException(e);
-    }
-};
-
-/**
  * Get the current UTC time.
  */
 helper.utc = function (time) {
@@ -530,7 +314,7 @@ helper.utc = function (time) {
 helper.getMJD = function (now)
 {
     try {
-        return (now.valueOf() / 86400000) + 40587;
+        return (now.valueOf() / sla.d2s / 1000) + 40587;
     } catch (e) {
         helper.LogException(e);
     }
@@ -546,27 +330,6 @@ helper.frac = function (X) {
             X += 1.0;
         }
         return X;
-    } catch (e) {
-        helper.LogException(e);
-    }
-};
-
-/**
- * Convert Altitude (deg), Azimuth (deg) and Local Apparent Sidereal Time (deg)
- * to RA (hr) and Dec (deg).
- */
-helper.radec = function (alt, az, lst) {
-    try {
-        const elRad = helper.deg2rad(alt);
-        const azRad = helper.deg2rad(az);
-        const phiRad = Driver.obs_lat_rad;
-        const valObj = sla.dh2e(azRad, elRad, phiRad);
-        const haHours = valObj.ha * 12 / Math.PI;
-        const decDeg = valObj.dec * 180 / Math.PI;
-        let ra = lst/15 - haHours;
-        if (ra < 0) ra += 24;
-        if (ra >= 24) ra -= 24;
-        return [ra, decDeg];
     } catch (e) {
         helper.LogException(e);
     }
@@ -601,7 +364,7 @@ helper.HMS = function (time, sep1, sep2, sep3) {
 helper.MJDToHM = function (d, padHours=false) {
     try {
         let t = new Date(driver.night.DateSunset);
-        t.setUTCSeconds(t.getUTCSeconds() + (d - driver.night.Sunset) * 86400);
+        t.setUTCSeconds(t.getUTCSeconds() + (d - driver.night.Sunset) * sla.d2s);
         const ss = t.getUTCSeconds();
         let mm = t.getUTCMinutes();
         let hh = t.getUTCHours();
@@ -628,7 +391,7 @@ helper.MJDToHM = function (d, padHours=false) {
 helper.MJDToHMLocal = function (d, utcOffset, padHours=false) {
     try {
         let t = new Date(driver.night.DateSunset);
-        t.setUTCSeconds(t.getUTCSeconds() + (d - driver.night.Sunset) * 86400 + utcOffset * 3600);
+        t.setUTCSeconds(t.getUTCSeconds() + (d - driver.night.Sunset) * sla.d2s + utcOffset * 3600);
         const ss = t.getUTCSeconds();
         let mm = t.getUTCMinutes();
         let hh = t.getUTCHours();
@@ -688,10 +451,10 @@ helper.LSTToMJD = function (str) {
             rad1 -= sla.d2pi;
         }
         /* Sidereal day is not 86400 seconds, but 86164.1! */
-        let jdiff1 = (rad1-sunset)*86164.1/sla.d2pi;
-        let jdiff2 = (rad2-sunset)*86164.1/sla.d2pi;
-        let ut1 = driver.night.Sunset + jdiff1 / 86400;
-        let ut2 = driver.night.Sunset + jdiff2 / 86400;
+        let jdiff1 = (rad1-sunset)*86164.1 / sla.d2pi;
+        let jdiff2 = (rad2-sunset)*86164.1 / sla.d2pi;
+        let ut1 = driver.night.Sunset + jdiff1 / sla.d2s;
+        let ut2 = driver.night.Sunset + jdiff2 / sla.d2s;
         if (ut2 < driver.night.Sunset) {
             ut1 += 1;
             ut2 += 1;
@@ -1022,7 +785,7 @@ helper.ExtractHARange = function (str, ra) {
         if (str.length !== 2) {
             return false;
         }
-        const ra_h = helper.rad2deg(ra) / 15;
+        const ra_h = sla.rtoh * ra;
         const lst = [parseFloat(str[0]) + ra_h, parseFloat(str[1]) + ra_h];
         return helper.LSTToMJD(lst);
     } catch (e) {
@@ -1107,9 +870,8 @@ helper.utarc = function(altitude, tsouth, dec, pm) {
         if (cost > 1 || cost < -1) {
             return null;
         }
-        const H = Math.acos(cost);  // radians
-        const t = sla.r2d * H / 15; // hours
-        const time = (tsouth + (pm === "+" ? t : -t) + 24) % 24;
+        const H = sla.rtoh * Math.acos(cost);
+        const time = (tsouth + (pm === "+" ? H : -H) + 24) % 24;
         return sla.dr2tf(6, time / 24 * sla.d2pi).ihmsf;
     } catch (e) {
         helper.LogException(e);
@@ -1290,7 +1052,7 @@ helper.SubsolarPoint = function() {
         const sun = sla.rdplan(mjd, "Sun", 0, 0);
         const lat = sla.r2d * sun.dec;
         const gha = sla.gmst(mjd) - sun.ra;
-        const lng = sla.drange(-gha) * sla.r2d;
+        const lng = sla.r2d * sla.drange(-gha);
         return [lat, lng, sun.dec, gha];
     } catch (e) {
         helper.LogException(e);

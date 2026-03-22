@@ -115,9 +115,10 @@ Graph.prototype.plotRotatedText = function (text, font, x, y, xalign, yalign) {
         this.ctx.textAlign = xalign;
         this.ctx.textBaseline = yalign;
         this.ctx.fillText(text, 0, 0);
-        this.ctx.restore();
     } catch (e) {
         helper.LogException(e);
+    } finally {
+        this.ctx.restore();
     }
 };
 

@@ -9,6 +9,7 @@
 $telescope = $_GET["telescope"];
 
 function get_NOT_pointing() {
+    // Only works when deployed on the NOT servers
     ini_set("include_path", "/home/www/html/include");
     include("access_control.inc.php");
     if (!access_allowed("SKYCAM")) {
@@ -23,8 +24,22 @@ function get_NOT_pointing() {
 }
 
 function get_WHT_pointing() {
-    $s = file_get_contents("http://egapc.ing.iac.es/ega/pointing.php");
-    return $s;
+    $url = "http://api.ing.iac.es/v1/redis/get";
+    $data = ["TCS.alt", "TCS.az"];
+    $options = array(
+        'http' => array(
+            'header'  => "Content-type: application/json\r\n",
+            'method'  => 'POST',
+            'content' => json_encode($data),
+        )
+    );
+    $context  = stream_context_create($options);
+    $s = file_get_contents($url, false, $context);
+    $tcs = json_decode($s, true);
+    return json_encode(array(
+        "alt" => floatval($tcs["TCS.alt"]["value"]) * 57.2957795131,
+        "az" => floatval($tcs["TCS.az"]["value"]) * 57.2957795131
+    ));
 }
 
 function get_INT_pointing() {

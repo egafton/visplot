@@ -298,7 +298,7 @@ Driver.prototype.updateNightPolygons = function (ssp) {
         function buildNightPolygon(ssp, alt = 0, step = 1) {
             const delta = ssp[2];
             const gha = ssp[3];
-            const h = helper.deg2rad(alt);
+            const h = sla.d2r * alt;
             const k = Math.sin(h);
 
             // Helper to test if a specific coordinate is darker than our target altitude
@@ -311,7 +311,7 @@ Driver.prototype.updateNightPolygons = function (ssp) {
 
             // 1. Sweep Longitudes to build Latitude Intervals
             for (let lon = -180; lon <= 180; lon += step) {
-                const lonRad = helper.deg2rad(lon);
+                const lonRad = sla.d2r * lon;
                 
                 // Normalize Hour Angle to [-PI, PI]
                 let haRad = gha + lonRad;
@@ -345,7 +345,7 @@ Driver.prototype.updateNightPolygons = function (ssp) {
                         return n;
                     })
                     .filter(r => r >= -Math.PI / 2 - 1e-5 && r <= Math.PI / 2 + 1e-5)
-                    .map(r => r * sla.r2d)
+                    .map(r => sla.r2d * r)
                     .sort((a, b) => a - b);
 
                 // Enforce hard clamps to map edges
@@ -357,11 +357,11 @@ Driver.prototype.updateNightPolygons = function (ssp) {
                     else intervals.push({ lon: lon, bounds: null });
                 } else if (roots.length === 1) {
                     const rLat = roots[0];
-                    const testBelow = helper.deg2rad((rLat - 90) / 2);
+                    const testBelow = sla.d2r * ((rLat - 90) / 2);
                     if (isNight(testBelow, haRad)) intervals.push({ lon: lon, bounds: [-90, rLat] });
                     else intervals.push({ lon: lon, bounds: [rLat, 90] });
                 } else if (roots.length === 2) {
-                    const mid = helper.deg2rad((roots[0] + roots[1]) / 2);
+                    const mid = sla.d2r * ((roots[0] + roots[1]) / 2);
                     if (isNight(mid, haRad)) intervals.push({ lon: lon, bounds: [roots[0], roots[1]] });
                     else intervals.push({ lon: lon, bounds: null });
                 }
@@ -912,8 +912,8 @@ Driver.prototype.EvtFrame_Click = function (e) {
                     $("#popcomm").val(obj.Comments);
                 }
 
-                let ra = obj.J2000[0] * sla.r2d;
-                let dec = obj.J2000[1] * sla.r2d;
+                let ra = sla.r2d * obj.J2000[0];
+                let dec = sla.r2d * obj.J2000[1];
                 let instrument = obj.Instrument;
                 if (!(instrument in Driver.instruments)) {
                     /* Got a weird instrument? Just show the default FoV*/
@@ -1027,44 +1027,6 @@ Driver.prototype.EvtSkycm_Click = function () {
             }
         });
         this.skyGraph.setup();
-    } catch (e) {
-        helper.LogException(e);
-    }
-};
-
-/**
- * @memberof Driver
- */
-Driver.prototype.EvtSkycm_MouseMove = function (e, jQthis) {
-    try {
-        let pos_x, pos_y;
-        if (e.pageX === undefined && e.pageY === undefined) {
-            pos_x = 320;
-            pos_y = 240;
-        } else {
-            pos_x = e.pageX - jQthis.offset().left;
-            pos_y = e.pageY - jQthis.offset().top;
-        }
-        if ((pos_x < 0) || (pos_x >= this.skyGraph.imx) || (pos_y < 0) || (pos_y >= this.skyGraph.imy)) {
-            this.skyGraph.display_coords(null);
-            this.skyGraph.lastazalt = null;
-        } else {
-            const azalt = helper.getCoordinates(this.skyGraph.cx, this.skyGraph.cy, pos_x, pos_y, 280, this.skyGraph.lst);
-            this.skyGraph.display_coords(azalt);
-            this.skyGraph.lastazalt = azalt;
-        }
-    } catch (e) {
-        helper.LogException(e);
-    }
-};
-
-/**
- * @memberof Driver
- */
-Driver.prototype.EvySkycm_MouseOut = function () {
-    try {
-        this.skyGraph.display_coords(null);
-        this.skyGraph.lastazalt = null;
     } catch (e) {
         helper.LogException(e);
     }
@@ -1239,12 +1201,6 @@ Driver.prototype.BindEvents = function () {
     // SkyCam div
     $("#showSkyCam").on("click", function (e) {
         driver.EvtSkycm_Click();
-    });
-    $("#canvasSkycam").on("mousemove", function (e) {
-        driver.EvtSkycm_MouseMove(e, $(this));
-    });
-    $("#canvasSkycam").on("mouseout", function (e) {
-        driver.EvySkycm_MouseOut();
     });
 
     for (let k in Driver.FillColors) {
@@ -1721,7 +1677,7 @@ Driver.prototype.setTelescopeName = function (val) {
                 driver.highlightCurrentTelescope();
                 // Background with telescope image
                 $("#canvasFrame").css("background-image", 'url(' + window.baseurl + (config[val].background || 'img/telescopes/default.jpg') + ')');
-                // Recalculate Skycam constants
+                // Recalculate Skycam properties
                 driver.skyGraph.updateTelescope();
                 // Revalidate targets to recompute TCS lines
                 driver.targets.validateAndFormatTargets(true).then(function () {
@@ -1795,12 +1751,12 @@ Object.defineProperties(Driver, {
     },
     "obs_lat_rad": {
         get: function () {
-            return helper.deg2rad(Driver.obs_lat_deg);
+            return sla.d2r * Driver.obs_lat_deg;
         }
     },
     "obs_lon_rad": {
         get: function () {
-            return helper.deg2rad(Driver.obs_lon_deg);
+            return sla.d2r * Driver.obs_lon_deg;
         }
     },
     "obs_timezone": {
