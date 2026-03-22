@@ -4,7 +4,7 @@
 Custom installation of Visplot
 *********************************
 
-You can also run a local copy of the project in your machine. 
+You can also run a local copy of the project in your machine.
 
 Prerequisites
 ==============

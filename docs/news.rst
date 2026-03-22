@@ -23,8 +23,8 @@ February 2026
 
     .. warning::
 
-        "No telescope-specific altitude or collision limits are defined. 
-        
+        "No telescope-specific altitude or collision limits are defined.
+
         Schedule may include unsafe pointings. Use with caution!"
 
   As always, we warmly welcome feedback from the community — it is what keeps

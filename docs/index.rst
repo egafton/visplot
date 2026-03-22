@@ -31,6 +31,6 @@ through the common usage of Visplot, from first steps to more advanced options.
 Attribution
 ============
 
-If you use Visplot in your work, please cite our webinterface: 
+If you use Visplot in your work, please cite our webinterface:
 
 https://www.visplot.com/

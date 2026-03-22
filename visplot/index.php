@@ -377,7 +377,7 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
                 • <code>[CONSTRAINTS]</code>  are the observing constraints, either airmass (e.g., <code>2.0</code>, <code>AM1.5</code>, <code>AM[1.2-1.4]</code>),
                   moon distance in degrees (e.g., <code>MOON40</code>, <code>MOON[40-180]</code>), an hour angle range (<code>HA[0-3]</code>, <code>HA[-2-2]</code>),
                   a UTC range (<code>UTC[20:00-23:30]</code>), an LST range (<code>LST[2-4:30]</code>), <b>or</b> a combination of any of the above separated by commas
-                  (<code>HA[0-5],AM[1.2-1.5],MOON165</code>). 
+                  (<code>HA[0-5],AM[1.2-1.5],MOON165</code>).
                   Integers, floats, <code>HH:MM</code> syntax, or a mix of them are all allowed for the UTC/LST range components (e.g., <code>LST[2:00-4.5]</code>).
                   You can also specify <code>NT</code>, <code>AT</code>, <code>DARK</code>, or a combination thereof (e.g., <code>AT+DARK</code>) to limit scheduling a particular object
                   during nautical twilights, astronomical twilights, dark time, or a combination thereof (regardless of the global settings for the night).<br/>

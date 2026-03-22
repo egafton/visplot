@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 $object = array(
     "Telescope" => "NOT",

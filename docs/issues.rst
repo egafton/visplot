@@ -4,7 +4,7 @@
 Reporting Issues or Requesting Features
 ******************************************
 
-Visplot is an open-source project, and we greatly value feedback from the community. The best way to report bugs, request new features, or suggest improvements is through the :guilabel:`Issues` page on our GitHub repository: 
+Visplot is an open-source project, and we greatly value feedback from the community. The best way to report bugs, request new features, or suggest improvements is through the :guilabel:`Issues` page on our GitHub repository:
 
     https://github.com/egafton/visplot/issues.
 

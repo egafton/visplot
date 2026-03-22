@@ -1,8 +1,8 @@
 .. _tutorial:
 
-**********************
-The Visplot tutorial 
-**********************
+********************
+The Visplot tutorial
+********************
 
 .. Add some icon substitutions
 
@@ -70,7 +70,7 @@ Basic Workflow
       :alt: Setting the observing date
       :width: 200px
 
-2. **Enter Targets**: Input your list of targets in the Targets textarea using the syntax described in `Input Syntax`_. Each target must be placed on its own line. 
+2. **Enter Targets**: Input your list of targets in the Targets textarea using the syntax described in `Input Syntax`_. Each target must be placed on its own line.
     Alternatively, you can load predefined targets directly from the interface,
    such as blank fields or spectrophotometric standard stars. This is described
    in more detail in the `Predefined Targets`_ section.
@@ -91,7 +91,7 @@ Basic Workflow
 
 6. **Export Results**: Use the export buttons to save plots or target lists in various formats.
 
-7. **Save**: Click :guilabel:`Save` to download a Visplot-formatted file containing the full session state. This file can later be reloaded using the   :guilabel:`Browse...` button. This is particularly useful when preparing observing nights in advance.. 
+7. **Save**: Click :guilabel:`Save` to download a Visplot-formatted file containing the full session state. This file can later be reloaded using the   :guilabel:`Browse...` button. This is particularly useful when preparing observing nights in advance..
 
 Predefined Targets
 ----------------------
@@ -100,7 +100,7 @@ Visplot includes a set of predefined targets that can be loaded directly with a 
 spectrophotometric standards. The selected targets will be loaded directly to
 the target list, where they can be plotted, scheduled, and modified as usual.
 
-.. warning:: 
+.. warning::
 
     When you load the predefined targets, they will overwrite whatever targets  you currently have in the targets list.
 
@@ -309,7 +309,7 @@ Where you can identify:
 
 - the error itself: ``identifier unknown to SIMBAD``,
 
-- the line that contains the error: ``Incorrect syntax on Line #2``, 
+- the line that contains the error: ``Incorrect syntax on Line #2``,
 
 - and the proposed solution:  ``for each object you must provide at least the Name, RA and Dec!``.
 

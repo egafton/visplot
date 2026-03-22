@@ -240,7 +240,7 @@ SkyGraph.prototype.drawPointing = function () {
         this.ctx.save();
         const x = this.tcsPointing.x;
         const y = this.tcsPointing.y;
-        this.ctx.strokeStyle = "rgb(255, 51, 112)";
+        this.ctx.strokeStyle = "#9f3";
         this.ctx.lineWidth = 1;
         this.ctx.beginPath();
         this.ctx.moveTo(x - 6, y - 6);
@@ -276,9 +276,9 @@ SkyGraph.prototype.drawStars = function () {
             const obj = driver.targets.Targets[i];
             const altaz = sla.de2h(this.lst - obj.RA_rad, obj.Dec_rad, Driver.obs_lat_rad);
             if (altaz.el > 0) {
-                const px = this.altaz2px(altaz.el, altaz.az) 
+                const px = this.altaz2px(altaz.el, altaz.az);
                 if (this.tcsPointing !== null && Math.abs(this.tcsPointing.x - px.x) <= 2 && Math.abs(this.tcsPointing.y - px.y) <= 2) {
-                    last = [px.x, px.y, obj.Name, "rgb(255, 51, 112)"];
+                    last = [px.x, px.y, obj.Name, "#9f3"];
                 } else {
                     this.xhair(px.x, px.y, obj.Name, obj.LabelFillColor);
                 }
@@ -417,7 +417,6 @@ SkyGraph.prototype.Evt_MouseMove = function (e, jQthis) {
             this.lastAltaz = null;
         } else {
             this.lastAltaz = this.px2altaz(pos_x, pos_y);
-            
         }
         this.displayCoords();
     } catch (e) {
