@@ -21,6 +21,7 @@ function SkyGraph(_canvas, _context) {
         this.fontFamily = "Ubuntu, sans-serif";
         this.cardinalLabels = ["N", "E", "S", "W"];
         this.lastAltaz = null;
+        this.cursorPx = null;
         const mjd = helper.getMJD(new Date());
         this.lst = sla.dranrm(sla.gmst(mjd) + Driver.obs_lon_rad + sla.eqeqx(mjd));
         this.timer = null;
@@ -32,6 +33,9 @@ function SkyGraph(_canvas, _context) {
         });
         $("#canvasSkycam").on("mouseout", function (e) {
             driver.skyGraph.Evy_MouseOut();
+        });
+        $(document).keydown(function (e) {
+            driver.skyGraph.Evt_KeyDown(e);
         });
     } catch (e) {
         helper.LogException(e);
@@ -95,6 +99,7 @@ SkyGraph.prototype.setup = function () {
         this.drawAxes();
         this.drawTicks();
         this.drawPointing();
+        this.drawCursor();
         if (driver.nightInitialized) {
             this.drawStars();
         }
@@ -117,6 +122,16 @@ SkyGraph.prototype.setup = function () {
     } catch (e) {
         helper.LogException(e);
     }
+};
+
+/**
+ * Draw user cursor marker (red crosshair)
+ */
+SkyGraph.prototype.drawCursor = function () {
+    if (this.params === null) return;
+    if (this.cursorPx === null) return;
+
+    this.xhair(this.cursorPx.x, this.cursorPx.y, "", "red");
 };
 
 /**
@@ -349,6 +364,9 @@ SkyGraph.prototype.displayTime = function () {
         this.ctx.fillText(MJDtext, this.params.imageSizeX / 2 + 40, this.params.imageSizeY + 24);
         this.ctx.textAlign = "right";
         this.ctx.fillText(STtext, this.params.imageSizeX, this.params.imageSizeY + 6);
+        if (this.lastAltaz !== null) {
+            this.displayCoords();
+        }
     } catch (e) {
         helper.LogException(e);
     } finally {
@@ -403,6 +421,37 @@ SkyGraph.prototype.altaz2px = function(alt, az) {
     }
 };
 
+SkyGraph.prototype.Evt_KeyDown = function (e) {
+    if (this.params === null) return;
+    if (this.cursorPx === null) return;
+
+    const step = 2; // pixels per keypress
+
+    switch (e.which) {
+        case 37: // left
+            this.cursorPx.x -= step;
+            break;
+        case 38: // up
+            this.cursorPx.y -= step;
+            break;
+        case 39: // right
+            this.cursorPx.x += step;
+            break;
+        case 40: // down
+            this.cursorPx.y += step;
+            break;
+        default:
+            return;
+    }
+
+    // Clamp to image bounds
+    this.cursorPx.x = Math.max(0, Math.min(this.params.imageSizeX, this.cursorPx.x));
+    this.cursorPx.y = Math.max(0, Math.min(this.params.imageSizeY, this.cursorPx.y));
+
+    // Update derived alt/az
+    this.lastAltaz = this.px2altaz(this.cursorPx.x, this.cursorPx.y);
+    this.setup();
+};
 
 /**
  * @memberof Driver
@@ -415,10 +464,12 @@ SkyGraph.prototype.Evt_MouseMove = function (e, jQthis) {
         const pos_y = e.pageY - jQthis.offset().top;
         if ((pos_x < 0) || (pos_x >= this.params.imageSizeX) || (pos_y < 0) || (pos_y >= this.params.imageSizeY)) {
             this.lastAltaz = null;
+            this.cursorPx = null;
         } else {
             this.lastAltaz = this.px2altaz(pos_x, pos_y);
+            this.cursorPx = { x: pos_x, y: pos_y };
         }
-        this.displayCoords();
+        this.setup();
     } catch (e) {
         helper.LogException(e);
     }
@@ -431,7 +482,8 @@ SkyGraph.prototype.Evy_MouseOut = function () {
     if (this.params === null) return;
     try {
         this.lastAltaz = null;
-        this.displayCoords();
+        this.cursorPx = null;
+        this.setup();
     } catch (e) {
         helper.LogException(e);
     }
