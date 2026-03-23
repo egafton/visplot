@@ -1074,8 +1074,11 @@ TargetList.prototype.processTargetListAfterSIMBAD = function(lines) {
                 this.FormattedLines.push([line]);
                 continue;
             }
-            const words = this.extractLineInfo(i + 1, lines[i].trim());
-            if (words === false) {
+            let words;
+            try {
+                words = this.extractLineInfo(i + 1, lines[i].trim());
+            } catch (ex) {
+                helper.LogError(`(Line #${i + 1}) ${ex.message}`);
                 return false;
             }
             const mLTN = driver.graph.maxLenTgtName;
@@ -1319,306 +1322,269 @@ TargetList.prototype.ExportTCSCatalogue = function () {
  *     array containing the items.
  */
 TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
-    try {
-        // Split by white spaces and colons
-        let words = linetext.split(/\s+/g);
-        // Check if this is a known identifier
-        if (linetext.startsWith('"') && linetext.endsWith('"')) {
-            const identifier = linetext.substring(1, linetext.length - 1);
-            if (identifier in driver.resolvedIdentifiers) {
-                words = `${identifier.replaceAll(" ", "_")} ${driver.resolvedIdentifiers[identifier]}`.split(/\s+/g);
+    // Split by white spaces and colons
+    let words = linetext.split(/\s+/g);
+    // Check if this is a known identifier
+    if (linetext.startsWith('"') && linetext.endsWith('"')) {
+        const identifier = linetext.substring(1, linetext.length - 1);
+        if (identifier in driver.resolvedIdentifiers) {
+            words = `${identifier.replaceAll(" ", "_")} ${driver.resolvedIdentifiers[identifier]}`.split(/\s+/g);
+        }
+    } else if (words.length === 1) {
+        if (words[0] in driver.resolvedIdentifiers) {
+            words = `${words[0]} ${driver.resolvedIdentifiers[words[0]]}`.split(/\s+/g);
+        }
+    }
+    // Sanity check: minimum number of fields
+    if (words.length <= 1) {
+        throw new Error("For each object you must provide at least the Name, RA and Dec");
+    }
+    if ($.inArray(words[0], helper.offlineStrings) !== -1) {
+        if (words.length < 2 || words.length > 3) {
+            throw new Error("For offline time you must provide a valid UTC or LST range");
+        }
+        if (words.length === 3) {
+            if (words[1] !== "*") {
+                throw new Error("Offline time must have '*' as the [OBSTIME] argument");
             }
-        } else if (words.length === 1) {
-            if (words[0] in driver.resolvedIdentifiers) {
-                words = `${words[0]} ${driver.resolvedIdentifiers[words[0]]}`.split(/\s+/g);
+        }
+        const q = (words.length === 2) ? 1 : 2;
+        const UTr = helper.ExtractUTRange(words[q]);
+        if (UTr === null || UTr === false) {
+            throw new Error("The UTC/LST range must be a valid interval (e.g., [20:00-23:00] or [1-2])");
+        }
+        this.BadWolfStart.push(UTr[0]);
+        this.BadWolfEnd.push(UTr[1]);
+        return [words[0], "", "", "", "", "", "", "", "*", "", words[q], "", "", "", ""];
+    }
+    if ((words.length === 6 && words[2].indexOf(":") === -1) ||
+        (words.length === 2 && words[0].indexOf(":") !== -1 && words[1].indexOf(":") !== -1 ) ||
+        (words.length === 2 && !helper.notFloat(words[0]) && !helper.notFloat(words[1]))) {
+        words = [`Object${linenumber}`].concat(words);
+    }
+    /* Everything given in degrees? Convert to hex */
+    let raArr, decArr;
+    if (words.length === 3 && !helper.notFloat(words[1]) && !helper.notFloat(words[2])) {
+        const RAhex = sla.dr2tf(2, sla.d2r * parseFloat(words[1]));
+        const Dechex = sla.dr2af(2, sla.d2r * parseFloat(words[2]));
+        raArr = [`${RAhex.sign === '+' ? '' : RAhex.sign}${RAhex.ihmsf[0]}`, `${RAhex.ihmsf[1]}`, `${RAhex.ihmsf[2]}.${RAhex.ihmsf[3]}`];
+        decArr = [`${Dechex.sign === '+' ? '' : Dechex.sign}${Dechex.idmsf[0]}`, `${Dechex.idmsf[1]}`, `${Dechex.idmsf[2]}.${Dechex.idmsf[3]}`];
+        words = words.slice(0, 1).concat(raArr).concat(decArr);
+    }
+    if (words.length < 2) {
+        throw new Error("For each object you must provide at least the Name, RA and Dec");
+    }
+    if (words[1].indexOf(":") > -1) {
+        /* Split RA into components */
+        raArr = words[1].split(":");
+        if (raArr.length === 2) {
+            raArr.push("00");
+        }
+        words = words.slice(0, 1).concat(raArr).concat(words.slice(2));
+    }
+    if (words.length < 5) {
+        throw new Error("For each object you must provide at least the Name, RA and Dec");
+    }
+    if (words[4].indexOf(":") > -1) {
+        /* Split Dec into components */
+        decArr = words[4].split(":");
+        if (decArr.length === 2) {
+            decArr.push("00");
+        }
+        words = words.slice(0, 4).concat(decArr).concat(words.slice(5));
+    }
+    if (words.length < 7) {
+        throw new Error("For each object you must provide at least the Name, RA and Dec");
+    }
+    if (words.length === 11 && (parseFloat(words[7]) === 2000 || parseFloat(words[7]) === 1950) && !helper.notFloat(words[8]) && !helper.notFloat(words[9]) && !helper.notFloat(words[10])) {
+        words = [words[0], words[1], words[2], words[3] + (parseFloat(words[8]) !== 0 ? "/" + words[8] : ""), words[4], words[5], words[6] + (parseFloat(words[9]) !== 0 ? "/" + words[9] : ""), words[7]].concat([Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultInstrument]);
+    }
+    if (words.length === 7) {
+        words = words.concat([Driver.defaultEpoch, Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultInstrument, Driver.defaultSkyPA, "1"]);
+    } else if (words.length === 8) {
+        words = words.concat([Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultInstrument, Driver.defaultSkyPA, "1"]);
+    } else if (words.length === 9) {
+        words = words.concat([Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultInstrument, Driver.defaultSkyPA, "1"]);
+    } else if (words.length === 10) {
+        words = words.concat([Driver.defaultAM, Driver.defaultType, Driver.defaultInstrument, Driver.defaultSkyPA, "1"]);
+    } else if (words.length === 11) {
+        words = words.concat([Driver.defaultType, Driver.defaultInstrument, Driver.defaultSkyPA, "1"]);
+    } else if (words.length === 12) {
+        words = words.concat([Driver.defaultInstrument, Driver.defaultSkyPA, "1"]);
+    } else if (words.length === 13) {
+        words = words.concat([Driver.defaultSkyPA, "1"]);
+    } else if (words.length === 14) {
+        words = words.concat(["1"]);
+    }
+    // Sanity check: there must now be exactly this.ReqLineLen entries in the array
+    if (words.length !== this.ReqLineLen) {
+        throw new Error(`Incorrect number of entries, expected ${this.ReqLineLen}`);
+    }
+    let rax;
+    // Sanity check: input syntax for all parameters
+    /* RA hours, minutes must be integer */
+    if (helper.notInt(words[1]) || helper.notInt(words[2])) {
+        throw new Error("Non-integer value detected in [RA]");
+    }
+    /* RA hours between 0 and 23 */
+    rax = parseInt(words[1]);
+    if (rax < 0 || rax > 23) {
+        throw new Error("The 'hours' part of [RA] must be an integer between 0 and 23");
+    }
+    /* RA minutes between 0 and 59 */
+    rax = parseInt(words[2]);
+    if (rax < 0 || rax > 59) {
+        throw new Error("The 'minutes' part of [RA] must be an integer between 0 and 59");
+    }
+    /* RA seconds and proper motion */
+    if (words[3].indexOf("/") > -1) {
+        rax = words[3].split("/");
+        if (rax.length !== 2) {
+            throw new Error("Incorrect syntax for [pmRA]");
+        }
+        if (helper.notFloat(rax[0]) || helper.notFloat(rax[1])) {
+            throw new Error("Non-float value detected in [RA]/[pmRA]");
+        }
+        words[this.ReqLineLen] = parseFloat(rax[0]);
+        words[this.ReqLineLen + 1] = parseFloat(rax[1]);
+        words[this.ReqLineLen + 1] = Math.max(-1000, Math.min(1000, words[this.ReqLineLen + 1]));
+    } else if (helper.notFloat(words[3])) {
+        throw new Error("Non-integer value detected in [RA]");
+    } else {
+        words[this.ReqLineLen] = parseFloat(words[3]);
+        words[this.ReqLineLen + 1] = 0;
+    }
+    /* RA seconds, integer part between 0 and 59 */
+    if (parseInt(words[this.ReqLineLen]) < 0 || parseInt(words[this.ReqLineLen]) > 59) {
+        throw new Error("The integer part of 'seconds' in [RA] must be a number between 0 and 59");
+    }
+    /* Dec degrees, arcminutes must be integer */
+    if (helper.notInt(words[4]) || helper.notInt(words[5])) {
+        throw new Error("Non-integer value detected in [DEC]");
+    }
+    /* Dec degrees between -89 and +89 */
+    rax = parseInt(words[4]);
+    if (rax < -89 || rax > 89) {
+        throw new Error("The 'degrees' part of [DEC] must be an integer between -89 and +89");
+    }
+    /* Dec arcminutes between 0 and 59 */
+    rax = parseInt(words[5]);
+    if (rax < 0 || rax > 59) {
+        throw new Error("The 'minutes' part of [DEC] must be an integer between 0 and 59");
+    }
+    /* Dec arcseconds and proper motion */
+    if (words[6].indexOf("/") > -1) {
+        rax = words[6].split("/");
+        if (rax.length !== 2) {
+            throw new Error("Incorrect syntax for [pmDEC]");
+        }
+        if (helper.notFloat(rax[0]) || helper.notFloat(rax[1])) {
+            throw new Error("Non-float value detected in [DEC]/[pmDEC]");
+        }
+        words[this.ReqLineLen + 2] = parseFloat(rax[0]);
+        words[this.ReqLineLen + 3] = parseFloat(rax[1]);
+        words[this.ReqLineLen + 3] = Math.max(-1000, Math.min(1000, words[this.ReqLineLen + 3]));
+    } else if (helper.notFloat(words[6])) {
+        throw new Error("Non-integer value detected in [DEC]");
+    } else {
+        words[this.ReqLineLen + 2] = parseFloat(words[6]);
+        words[this.ReqLineLen + 3] = 0;
+    }
+    /* Dec arcseconds, integer part between 0 and 59 */
+    if (parseInt(words[this.ReqLineLen + 2]) < 0 || parseInt(words[this.ReqLineLen + 2]) > 59) {
+        throw new Error("The integer part of 'arcseconds' in [DEC] must be a number between 0 and 59");
+    }
+    if (helper.filterFloat(words[7]) !== 2000 && helper.filterFloat(words[7]) !== 1950) {
+        throw new Error("[EPOCH] must be either 2000 or 1950");
+    }
+    /* Validate exptime */
+    if (helper.notInt(words[8]) && words[8] !== "*") {
+        throw new Error("Non-integer value detected in [OBSTIME]");
+    }
+    /* Validate the proposal id; different telescopes use different formats */
+    const valid = driver.validateProjectNumber(words[9]);
+    const form = valid[0];
+    const reqlen = valid[1];
+    const reok = valid[2];
+    if (words[9].length !== reqlen) {
+        throw new Error(`[PROJECT] (${words[9]}, ${words[9].length}, ${reqlen}) does not have the same length as ${form}`);
+    }
+    if (!reok) {
+        throw new Error(`[PROJECT] (${words[9]}) does not respect the ${form} syntax`);
+    }
+    /* Validate constraints */
+    if (helper.notFloat(words[10])) {
+        const arr = words[10].toUpperCase().split(",");
+        let good = true;
+        let periodset = false;
+        for (const constr of arr) {
+            if (!helper.notFloat(constr)) {
+                continue;
             }
-        }
-        // Sanity check: minimum number of fields
-        if (words.length <= 1) {
-            helper.LogError(`Incorrect syntax on Line #${linenumber}; for each object you must provide at least the Name, RA and Dec!`);
-            return false;
-        }
-        if ($.inArray(words[0], helper.offlineStrings) !== -1) {
-            if (words.length < 2 || words.length > 3) {
-                helper.LogError(`Incorrect syntax on Line #${linenumber}; for offline time you must provide a valid UTC or LST range!`);
-                return false;
-            }
-            if (words.length === 3) {
-                if (words[1] !== "*") {
-                    helper.LogError(`Incorrect syntax on Line #${linenumber}; offline time must take "*" as [OBSTIME] argument!`);
-                    return false;
-                }
-            }
-            const q = (words.length === 2) ? 1 : 2;
-            const UTr = helper.ExtractUTRange(words[q]);
-            if (UTr === null || UTr === false) {
-                helper.LogError(`Incorrect syntax in [CONSTRAINTS] on line #${linenumber}: the UTC/LST range must be a valid interval (e.g., [20:00-23:00] or [1-2])!`);
-                return false;
-            }
-            this.BadWolfStart.push(UTr[0]);
-            this.BadWolfEnd.push(UTr[1]);
-            return [words[0], "", "", "", "", "", "", "", "*", "", words[q], "", "", "", ""];
-        }
-        if ((words.length === 6 && words[2].indexOf(":") === -1) ||
-            (words.length === 2 && words[0].indexOf(":") !== -1 && words[1].indexOf(":") !== -1 ) ||
-            (words.length === 2 && !helper.notFloat(words[0]) && !helper.notFloat(words[1]))) {
-            words = [`Object${linenumber}`].concat(words);
-        }
-        /* Everything given in degrees? Convert to hex */
-        let raArr, decArr;
-        if (words.length === 3 && !helper.notFloat(words[1]) && !helper.notFloat(words[2])) {
-            const RAhex = sla.dr2tf(2, sla.d2r * parseFloat(words[1]));
-            const Dechex = sla.dr2af(2, sla.d2r * parseFloat(words[2]));
-            raArr = [`${RAhex.sign === '+' ? '' : RAhex.sign}${RAhex.ihmsf[0]}`, `${RAhex.ihmsf[1]}`, `${RAhex.ihmsf[2]}.${RAhex.ihmsf[3]}`];
-            decArr = [`${Dechex.sign === '+' ? '' : Dechex.sign}${Dechex.idmsf[0]}`, `${Dechex.idmsf[1]}`, `${Dechex.idmsf[2]}.${Dechex.idmsf[3]}`];
-            words = words.slice(0, 1).concat(raArr).concat(decArr);
-        }
-        if (words.length < 2) {
-            helper.LogError(`Incorrect syntax on Line #${linenumber}; for each object you must provide at least the Name, RA and Dec!`);
-            return false;
-        }
-        if (words[1].indexOf(":") > -1) {
-            /* Split RA into components */
-            raArr = words[1].split(":");
-            if (raArr.length === 2) {
-                raArr.push("00");
-            }
-            words = words.slice(0, 1).concat(raArr).concat(words.slice(2));
-        }
-        if (words.length < 5) {
-            helper.LogError(`Incorrect syntax on Line #${linenumber}; for each object you must provide at least the Name, RA and Dec!`);
-            return false;
-        }
-        if (words[4].indexOf(":") > -1) {
-            /* Split Dec into components */
-            decArr = words[4].split(":");
-            if (decArr.length === 2) {
-                decArr.push("00");
-            }
-            words = words.slice(0, 4).concat(decArr).concat(words.slice(5));
-        }
-        if (words.length < 7) {
-            helper.LogError(`Incorrect syntax on Line #${linenumber}; for each object you must provide at least the Name, RA and Dec!`);
-            return false;
-        }
-        if (words.length === 11 && (parseFloat(words[7]) === 2000 || parseFloat(words[7]) === 1950) && !helper.notFloat(words[8]) && !helper.notFloat(words[9]) && !helper.notFloat(words[10])) {
-            words = [words[0], words[1], words[2], words[3] + (parseFloat(words[8]) !== 0 ? "/" + words[8] : ""), words[4], words[5], words[6] + (parseFloat(words[9]) !== 0 ? "/" + words[9] : ""), words[7]].concat([Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultInstrument]);
-        }
-        if (words.length === 7) {
-            words = words.concat([Driver.defaultEpoch, Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultInstrument, Driver.defaultSkyPA, "1"]);
-        } else if (words.length === 8) {
-            words = words.concat([Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultInstrument, Driver.defaultSkyPA, "1"]);
-        } else if (words.length === 9) {
-            words = words.concat([Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultInstrument, Driver.defaultSkyPA, "1"]);
-        } else if (words.length === 10) {
-            words = words.concat([Driver.defaultAM, Driver.defaultType, Driver.defaultInstrument, Driver.defaultSkyPA, "1"]);
-        } else if (words.length === 11) {
-            words = words.concat([Driver.defaultType, Driver.defaultInstrument, Driver.defaultSkyPA, "1"]);
-        } else if (words.length === 12) {
-            words = words.concat([Driver.defaultInstrument, Driver.defaultSkyPA, "1"]);
-        } else if (words.length === 13) {
-            words = words.concat([Driver.defaultSkyPA, "1"]);
-        } else if (words.length === 14) {
-            words = words.concat(["1"]);
-        }
-        // Sanity check: there must now be exactly this.ReqLineLen entries in the array
-        if (words.length !== this.ReqLineLen) {
-            helper.LogError(`Incorrect syntax: the number of entries on line #${linenumber} is incorrect: ${words}!`);
-            return false;
-        }
-        let rax;
-        // Sanity check: input syntax for all parameters
-        /* RA hours, minutes must be integer */
-        if (helper.notInt(words[1]) || helper.notInt(words[2])) {
-            helper.LogError(`Incorrect syntax: non-integer value detected in [RA] on line #${linenumber}!`);
-            return false;
-        }
-        /* RA hours between 0 and 23 */
-        rax = parseInt(words[1]);
-        if (rax < 0 || rax > 23) {
-            helper.LogError(`Incorrect syntax: the "hours" part of [RA] must be an integer between 0 and 23 on line #${linenumber}!`);
-            return false;
-        }
-        /* RA minutes between 0 and 59 */
-        rax = parseInt(words[2]);
-        if (rax < 0 || rax > 59) {
-            helper.LogError(`Incorrect syntax: the "minutes" part of [RA] must be an integer between 0 and 59 on line #${linenumber}!`);
-            return false;
-        }
-        /* RA seconds and proper motion */
-        if (words[3].indexOf("/") > -1) {
-            rax = words[3].split("/");
-            if (rax.length !== 2) {
-                helper.LogError(`Incorrect syntax for [pmRA] on line #${linenumber}!`);
-                return false;
-            }
-            if (helper.notFloat(rax[0]) || helper.notFloat(rax[1])) {
-                helper.LogError(`Incorrect syntax: non-float value detected in [RA]/[pmRA] on line #${linenumber}!`);
-                return false;
-            }
-            words[this.ReqLineLen] = parseFloat(rax[0]);
-            words[this.ReqLineLen + 1] = parseFloat(rax[1]);
-            words[this.ReqLineLen + 1] = Math.max(-1000, Math.min(1000, words[this.ReqLineLen + 1]));
-        } else if (helper.notFloat(words[3])) {
-            helper.LogError(`Incorrect syntax: non-integer value detected in [RA] on line #${linenumber}!`);
-            return false;
-        } else {
-            words[this.ReqLineLen] = parseFloat(words[3]);
-            words[this.ReqLineLen + 1] = 0;
-        }
-        /* RA seconds, integer part between 0 and 59 */
-        if (parseInt(words[this.ReqLineLen]) < 0 || parseInt(words[this.ReqLineLen]) > 59) {
-            helper.LogError(`Incorrect syntax: the integer part of "seconds" in [RA] must be a number between 0 and 59 on line #${linenumber}!`);
-            return false;
-        }
-        /* Dec degrees, arcminutes must be integer */
-        if (helper.notInt(words[4]) || helper.notInt(words[5])) {
-            helper.LogError(`Incorrect syntax: non-integer value detected in [DEC] on line #${linenumber}!`);
-            return false;
-        }
-        /* Dec degrees between -89 and +89 */
-        rax = parseInt(words[4]);
-        if (rax < -89 || rax > 89) {
-            helper.LogError(`Incorrect syntax: the "degrees" part of [Dec] must be an integer between -89 and +89 on line #${linenumber}!`);
-            return false;
-        }
-        /* Dec arcminutes between 0 and 59 */
-        rax = parseInt(words[5]);
-        if (rax < 0 || rax > 59) {
-            helper.LogError(`Incorrect syntax: the "minutes" part of [Dec] must be an integer between 0 and 59 on line #${linenumber}!`);
-            return false;
-        }
-        /* Dec arcseconds and proper motion */
-        if (words[6].indexOf("/") > -1) {
-            rax = words[6].split("/");
-            if (rax.length !== 2) {
-                helper.LogError(`Incorrect syntax for [pmDEC] on line #${linenumber}!`);
-                return false;
-            }
-            if (helper.notFloat(rax[0]) || helper.notFloat(rax[1])) {
-                helper.LogError(`Incorrect syntax: non-float value detected in [DEC]/[pmDEC] on line #${linenumber}!`);
-                return false;
-            }
-            words[this.ReqLineLen + 2] = parseFloat(rax[0]);
-            words[this.ReqLineLen + 3] = parseFloat(rax[1]);
-            words[this.ReqLineLen + 3] = Math.max(-1000, Math.min(1000, words[this.ReqLineLen + 3]));
-        } else if (helper.notFloat(words[6])) {
-            helper.LogError(`Incorrect syntax: non-integer value detected in [DEC] on line #${linenumber}!`);
-            return false;
-        } else {
-            words[this.ReqLineLen + 2] = parseFloat(words[6]);
-            words[this.ReqLineLen + 3] = 0;
-        }
-        /* Dec arcseconds, integer part between 0 and 59 */
-        if (parseInt(words[this.ReqLineLen + 2]) < 0 || parseInt(words[this.ReqLineLen + 2]) > 59) {
-            helper.LogError(`Incorrect syntax: the integer part of "arcseconds" in [Dec] must be a number between 0 and 59 on line #${linenumber}!`);
-            return false;
-        }
-        if (helper.filterFloat(words[7]) !== 2000 && helper.filterFloat(words[7]) !== 1950) {
-            helper.LogError(`Incorrect syntax: [EPOCH] must be either 2000 or 1950 on line #${linenumber}!`);
-            return false;
-        }
-        /* Validate exptime */
-        if (helper.notInt(words[8]) && words[8] !== "*") {
-            helper.LogError(`Incorrect syntax: non-integer value detected in [OBSTIME] on line #${linenumber}!`);
-            return false;
-        }
-        /* Validate the proposal id; different telescopes use different formats */
-        const valid = driver.validateProjectNumber(words[9]);
-        const form = valid[0];
-        const reqlen = valid[1];
-        const reok = valid[2];
-        if (words[9].length !== reqlen) {
-            helper.LogError(`Incorrect syntax: [PROJECT] (${words[9]}, ${words[9].length}, ${reqlen}) does not have the same length as ${form} on line #${linenumber}!`);
-            return false;
-        }
-        if (!reok) {
-            helper.LogError(`Incorrect syntax: [PROJECT] (${words[9]}) does not respect the ${form} syntax on line #${linenumber}!`);
-            return false;
-        }
-        /* Validate constraints */
-        if (helper.notFloat(words[10])) {
-            const arr = words[10].toUpperCase().split(",");
-            let good = true;
-            let periodset = false;
-            for (const constr of arr) {
-                if (!helper.notFloat(constr)) {
-                    continue;
-                }
-                if (constr.startsWith("UTC[") || constr.startsWith("LST[") || constr.startsWith("HA[") || constr.startsWith("AM[") || constr.startsWith("MOON[")) {
-                    if (constr.slice(-1) !== "]" || constr.indexOf("-") === -1) {
-                        good = false;
-                        break;
-                    }
-                } else if (constr.startsWith("AM")) {
-                    if (!helper.filterFloat(constr.slice(2))) {
-                        good = false;
-                        break;
-                    }
-                } else if (constr.startsWith("MOON")) {
-                    if (!helper.filterFloat(constr.slice(4))) {
-                        good = false;
-                        break;
-                    }
-                } else {
-                    const wrds = constr.split("+");
-                    for (const wrd of wrds) {
-                        if (!["NT", "AT", "DARK"].includes(wrd)) {
-                            good = false;
-                            break;
-                        }
-                    }
-                    if (good) {
-                        if (!periodset) {
-                            periodset = true;
-                            continue;
-                        }
-                        helper.LogError(`Conflicting constraints (NT, AT, DARK) specified on line #${linenumber}!`);
-                        return false;
-                    }
+            if (constr.startsWith("UTC[") || constr.startsWith("LST[") || constr.startsWith("HA[") || constr.startsWith("AM[") || constr.startsWith("MOON[")) {
+                if (constr.slice(-1) !== "]" || constr.indexOf("-") === -1) {
                     good = false;
                     break;
                 }
-            }
-            if (!good) {
-                helper.LogError(`Incorrect syntax: [CONSTRAINTS] field invalid on line #${linenumber}, please see the help.`);
-                return false;
-            }
-            if (helper.notInt(words[8]) && words[8] !== "*") {
-                helper.LogError(`Incorrect syntax: non-integer value detected in [OBSTIME] on line #${linenumber}!`);
-                return false;
+            } else if (constr.startsWith("AM")) {
+                if (!helper.filterFloat(constr.slice(2))) {
+                    good = false;
+                    break;
+                }
+            } else if (constr.startsWith("MOON")) {
+                if (!helper.filterFloat(constr.slice(4))) {
+                    good = false;
+                    break;
+                }
+            } else {
+                const wrds = constr.split("+");
+                for (const wrd of wrds) {
+                    if (!["NT", "AT", "DARK"].includes(wrd)) {
+                        good = false;
+                        break;
+                    }
+                }
+                if (good) {
+                    if (!periodset) {
+                        periodset = true;
+                        continue;
+                    }
+                    throw new Error("Conflicting constraints (NT/AT/DARK specified multiple times)");
+                }
+                good = false;
+                break;
             }
         }
-        /* Validate observation type */
-        if ($.inArray(words[11], ["Monitor", "ToO", "SoftToO", "Payback", "Fast-Track", "Service", "CATService", "Visitor", "Staff"]) === -1) {
-            const wl = words[11].length;
-            if (words[11].indexOf("Staff/") !== 0 || (words[11].indexOf("Staff/") === 0 && (wl < 8 || wl > 9))) {
-                helper.LogError(`Incorrect syntax: [TYPE] must be one of the following: <i>Monitor</i>, <i>ToO</i>, <i>SoftToO</i>, <i>Payback</i>, <i>Fast-Track</i>, <i>Service</i>, <i>CATService</i>, <i>Visitor</i>, <i>Staff</i>, on line #${linenumber}!`);
-                return false;
-            }
+        if (!good) {
+            throw new Error("[CONSTRAINTS] field invalid");
         }
-        /* OB info must be valid, or an instrument name, or "default" */
-        if (words[12] !== Driver.defaultInstrument) {
-            const arr = words[12].split(":");
-            if (arr.length !== 4 && arr.length !== 1) {
-                helper.LogError(`OB info is not valid on line #${linenumber}, it should be Instrument:Mode:GroupID:BlockID!`);
-                return false;
-            }
+        if (helper.notInt(words[8]) && words[8] !== "*") {
+            throw new Error("Non-integer value detected in [OBSTIME]");
         }
-        /* Sky PA must be a float */
-        if (helper.notFloat(words[13])) {
-            helper.LogError(`Incorrect syntax: non-float value detected in [SKYPA] on line #${linenumber}!`);
-            return false;
-        }
-        /* Priority must be a float */
-        if (helper.notFloat(words[14])) {
-            helper.LogError(`Incorrect syntax: non-float value detected in [PRIORITY] on line #${linenumber}!`);
-            return false;
-        }
-        return words;
-    } catch (ex) {
-        helper.LogException(ex);
     }
+    /* Validate observation type */
+    if ($.inArray(words[11], ["Monitor", "ToO", "SoftToO", "Payback", "Fast-Track", "Service", "CATService", "Visitor", "Staff"]) === -1) {
+        const wl = words[11].length;
+        if (words[11].indexOf("Staff/") !== 0 || (words[11].indexOf("Staff/") === 0 && (wl < 8 || wl > 9))) {
+            throw new Error("[TYPE] must be one of the following: <i>Monitor</i>, <i>ToO</i>, <i>SoftToO</i>, <i>Payback</i>, <i>Fast-Track</i>, <i>Service</i>, <i>CATService</i>, <i>Visitor</i>, <i>Staff</i>");
+        }
+    }
+    /* OB info must be valid, or an instrument name, or "default" */
+    if (words[12] !== Driver.defaultInstrument) {
+        const arr = words[12].split(":");
+        if (arr.length !== 4 && arr.length !== 1) {
+            throw new Error("OB info is not valid, it should be Instrument:Mode:GroupID:BlockID");
+        }
+    }
+    /* Sky PA must be a float */
+    if (helper.notFloat(words[13])) {
+        throw new Error("Non-float value detected in [SKYPA]");
+    }
+    /* Priority must be a float */
+    if (helper.notFloat(words[14])) {
+        throw new Error("Non-float value detected in [PRIORITY]");
+    }
+    return words;
 };
 
 /**
