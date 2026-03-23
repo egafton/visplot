@@ -36,44 +36,14 @@ function TargetList() {
  * @class
  * @constructor
  */
-function Target(k, obj) {
+function Target(k, line) {
     try {
         this.Index = k;
-        this.Name = obj.name;
-        this.RA = obj.ra;
-        this.Dec = obj.dec;
-        this.raRad = obj.raRad;
-        this.decRad = obj.decRad;
-        this.Epoch = obj.epoch;
-        this.shortRA = (obj.ra.indexOf(".") > -1) ? obj.ra.substr(0, obj.ra.indexOf(".")) : obj.ra;
-        this.shortDec = (obj.dec.indexOf(".") > -1) ? obj.dec.substr(0, obj.dec.indexOf(".")) : obj.dec;
-        this.J2000 = obj.J2000;
-        this.SetExptime(obj.exptime);
-        this.ZenithTime = obj.zenithtime;
-        this.Graph = obj.line;
-        this.Azimuth = obj.azim;
-        this.FullType = obj.type;
-        this.SkyPA = obj.skypa;
-        this.Priority = obj.priority;
-        this.Type = (obj.type.indexOf("/") === -1 ? obj.type : obj.type.substring(0, obj.type.indexOf("/")));
-        this.MoonDistance = obj.moondist;
-        this.PAngles = obj.pangles;
-        this.MinMoonDistance = Math.round(obj.mdist);
-        this.MinMoonDistanceTime = obj.mdisttime;
-        this.ProjectNumber = obj.project;
-        this.RestrictionMinAlt = helper.AirmassToAltitude(obj.maxam);
-        this.RestrictionMaxAlt = Math.min(Driver.obs_highestLimit || 90, helper.AirmassToAltitude(obj.minam));
-        this.RestrictionMinUTC = obj.minut;
-        this.RestrictionMaxUTC = obj.maxut;
-        this.RestrictionMinMoonDistance = obj.minmdist;
-        this.RestrictionMaxMoonDistance = obj.maxmdist;
-        this.RestrictionTwilights = obj.twil;
-        this.observable = [];
+        this.ParseFrom(line);
+        this.SetExptime(this.Exptime);
         this.Scheduled = false;
-        this.FillSlot = obj.fillslot;
-        this.Constraints = obj.constraints;
-        this.inputRA = obj.inputRA;
-        this.inputDec = obj.inputDec;
+        this.observable = [];
+
         if (this.FillSlot) {
             helper.LogEntry(`Attention: object <i>${this.Name}</i> will fill its entire time slot.`);
         }
@@ -84,7 +54,7 @@ function Target(k, obj) {
         this.ObservedStartTime = null;
         this.ObservedEndTime = null;
         this.ObservedTotalTime = null;
-        this.OBData = obj.obdata;
+
         if (this.OBData.indexOf(":") !== -1) {
             const obArr = this.OBData.split(":");
             this.BacklinkToOBQueue = `http://www.not.iac.es/intranot/ob/ob_update.php?period=${parseInt(this.ProjectNumber.substring(0, 2))}&propID=${parseInt(this.ProjectNumber.substring(3))}&groupID=${obArr[2]}&blockID=${obArr[3]}`;
@@ -123,6 +93,168 @@ function Target(k, obj) {
     }
 }
 
+/**
+ * @memberof Target
+ */
+Target.prototype.ParseFrom = function (line) {
+    // Parse an input string into a Target object
+    const night = driver.night;
+    const dat = line.split(/\s+/);
+    this.Name = dat[0];
+    this.ProjectNumber = dat[9];
+    this.Epoch = parseFloat(dat[7]);
+    this.Graph = [];
+    this.Azimuth = [];
+    this.MoonDistance = [];
+    this.PAngles = [];
+    this.FullType = dat[11];
+    this.Type = (dat[11].indexOf("/") === -1 ? dat[11] : dat[11].substring(0, dat[11].indexOf("/")));
+    this.OBData = dat[12];
+    this.SkyPA = parseFloat(dat[13]);
+    this.Priority = parseFloat(dat[14]);
+    this.Constraints = dat[10];
+    const rax = dat[3].split("/");
+    const decx = dat[6]. split("/");
+    this.RA = `${dat[1]}:${dat[2]}:${rax[0]}`;
+    this.Dec = `${dat[4]}:${dat[5]}:${decx[0]}`;
+    this.shortRA = (this.RA.indexOf(".") > -1) ? this.RA.substr(0, this.RA.indexOf(".")) : this.RA;
+    this.shortDec = (this.Dec.indexOf(".") > -1) ? this.Dec.substr(0, this.Dec.indexOf(".")) : this.Dec;
+    this.inputRA = this.RA.replaceAll(":", " ");
+    this.inputDec = this.Dec.replaceAll(":", " ");
+    const ra = sla.dtf2r(parseInt(dat[1]), parseInt(dat[2]), parseFloat(rax[0]));
+    const decdeg = Math.abs(parseInt(dat[4]));
+    const decneg = dat[4].substring(0, 1) === "-";
+    let dec = sla.daf2r(decdeg, parseInt(dat[5]), parseFloat(decx[0]));
+    if (decneg) {
+        dec *= -1;
+    }
+
+    let minam = 1;
+    let maxam = 9.9;
+    let minmdist = 0;
+    let maxmdist = 180;
+    let minut = night.globalUTStart;
+    let maxut = night.globalUTEnd;
+    this.RestrictionTwilights = [];
+    const arr = dat[10].toUpperCase().split(",");
+    for (const constr of arr) {
+        if (!helper.notFloat(constr)) {
+            maxam = parseFloat(constr);
+            continue;
+        }
+        if (constr.indexOf("NT") > -1 || constr.indexOf("AT") > -1 || constr.indexOf("DARK") > -1) {
+            this.RestrictionTwilights = constr.split("+");
+            if (constr.includes("NT")) {
+                minut = night.Sunset;
+                maxut = night.Sunrise;
+            } else if (constr.includes("AT")) {
+                minut = night.ENauTwilight;
+                maxut = night.MNauTwilight;
+            } else {
+                minut = night.EAstTwilight;
+                maxut = night.MAstTwilight;
+            }
+            continue;
+        }
+        let uts = helper.ExtractUTRange(constr, ra);
+        if (uts !== null) {
+            minut = Math.max(minut, uts[0]);
+            maxut = Math.min(maxut, uts[1]);
+        } else {
+            uts = helper.ExtractAMRange(constr);
+            if (uts !== null) {
+                minam = Math.max(minam, uts[0]);
+                maxam = Math.min(maxam, uts[1]);
+            } else {
+                uts = helper.ExtractMoonRange(constr);
+                if (uts !== null) {
+                    minmdist = Math.max(minmdist, uts[0]);
+                    maxmdist = Math.min(maxmdist, uts[1]);
+                } else {
+                    helper.LogError(`Could not parse airmass/UTC/moon distance constraint from string <i>${dat[10]}</i> for target <i>${dat[0]}</i>. Please check the format of the input and the documentation.`);
+                }
+            }
+        }
+    }
+    this.RestrictionMinAlt = helper.AirmassToAltitude(maxam);
+    this.RestrictionMaxAlt = Math.min(Driver.obs_highestLimit || 90, helper.AirmassToAltitude(minam));
+    this.RestrictionMinUTC = minut;
+    this.RestrictionMaxUTC = maxut;
+    this.RestrictionMinMoonDistance = minmdist;
+    this.RestrictionMaxMoonDistance = maxmdist;
+
+    if (dat[8] === "*") {
+        this.FillSlot = true;
+        this.Exptime = null;
+    } else {
+        this.FillSlot = false;
+        this.Exptime = parseFloat(dat[8]) / sla.d2s;
+    }
+    let vminmdist = 9999;
+    let iminmdist = 0;
+    for (let i=0; i<night.Nx; i+=1) {
+        let mdist = sla.r2d * sla.dsep(night.ramoon[i], night.decmoon[i], ra, dec);
+        this.MoonDistance.push(mdist);
+        if (mdist < vminmdist) {
+            vminmdist = mdist;
+            iminmdist = i;
+        }
+        const pa = sla.dranrm(sla.pa(night.LSTangles[i] - ra, dec, Driver.obs_lat_rad));
+        this.PAngles.push(sla.r2d * pa);
+    }
+    this.MinMoonDistance = Math.round(vminmdist);
+    this.MinMoonDistanceTime = night.xaxis[iminmdist];
+    let pmra, pmdec;
+    if (rax.length === 1) {
+        pmra = 0;
+    } else {
+        // Given in arcsec/year; convert to radians/year
+        pmra = parseFloat(rax[1]) * sla.das2r;
+        // Remove the cos(dec) for SLALIB
+        pmra = pmra/Math.cos(dec);
+    }
+    if (decx.length === 1) {
+        pmdec = 0;
+    } else {
+        // Given in arcsec/year; convert to radians/year
+        pmdec = parseFloat(decx[1]) * sla.das2r;
+    }
+    /* Conversion from Besselian to Julian, if necessary */
+    if (this.Epoch > 1984) {
+        this.J2000 = [ra, dec];
+    } else {
+        let j2000;
+        /* No proper motion */
+        if (pmra === 0 && pmdec === 0) {
+            j2000 = sla.fk45z(ra, dec, this.Epoch);
+            this.J2000 = [j2000.r2000, j2000.d2000];
+        } else {
+            j2000 = sla.fk425(ra, dec, pmra, pmdec, 0, 0);
+            this.J2000 = [j2000.r2000, j2000.d2000];
+        }
+    }
+
+    let retap, retob;
+    let imax = 0;
+    let altmax = 0;
+    for (let i=0; i<night.Nx; i+=1) {
+        retap = sla.mapqk(ra, dec, pmra, pmdec, 0, 0, night.amprms[i]);
+        retob = sla.aopqk(retap.ra, retap.da, night.aoprms[i]);
+        // Approximate refracted alt
+        let ell = 0.5*Math.PI - sla.refz(retob.zob, night.ref.refa, night.ref.refb);
+        if (ell > altmax) {
+            imax = i;
+            altmax = ell;
+        }
+        this.Graph.push(sla.r2d * ell);
+        const az = sla.dranrm(retob.aob);
+        this.Azimuth.push(sla.r2d * az);
+    }
+    this.ZenithTime = night.xaxis[imax];
+    this.raRad = ra;
+    this.decRad = dec;
+};
+
 Target.prototype.SetExptime = function (exptime) {
     try {
         if (exptime === null) {
@@ -134,164 +266,6 @@ Target.prototype.SetExptime = function (exptime) {
         const hrs = Math.floor(this.ExptimeSeconds / 3600);
         const min = Math.round((this.ExptimeSeconds - hrs * 3600) / 60);
         this.ExptimeHM = `${hrs > 0 ? hrs.toFixed(0) + "h " : ""}${min.toFixed(0)}m`;
-    } catch (ex) {
-        helper.LogException(ex);
-    }
-};
-
-/**
- * @memberof TargetList
- */
-TargetList.prototype.targetStringToJSON = function (line) {
-    try {
-        // Parse an input string into a Target object
-        const night = driver.night;
-        const dat = line.split(/\s+/);
-        const obj = {};
-        obj.name = dat[0];
-        obj.project = dat[9];
-        obj.epoch = parseFloat(dat[7]);
-        obj.line = [];
-        obj.azim = [];
-        obj.moondist = [];
-        obj.pangles = [];
-        obj.type = dat[11];
-        obj.obdata = dat[12];
-        obj.skypa = parseFloat(dat[13]);
-        obj.priority = parseFloat(dat[14]);
-        obj.constraints = dat[10];
-        const rax = dat[3].split("/");
-        const decx = dat[6]. split("/");
-        obj.ra = `${dat[1]}:${dat[2]}:${rax[0]}`;
-        obj.dec = `${dat[4]}:${dat[5]}:${decx[0]}`;
-        obj.inputRA = obj.ra.replaceAll(":", " ");
-        obj.inputDec = obj.dec.replaceAll(":", " ");
-        const ra = sla.dtf2r(parseInt(dat[1]), parseInt(dat[2]), parseFloat(rax[0]));
-        const decdeg = Math.abs(parseInt(dat[4]));
-        const decneg = dat[4].substring(0, 1) === "-";
-        let dec = sla.daf2r(decdeg, parseInt(dat[5]), parseFloat(decx[0]));
-        if (decneg) {
-            dec *= -1;
-        }
-
-        obj.minam = 1;
-        obj.maxam = 9.9;
-        obj.minmdist = 0;
-        obj.maxmdist = 180;
-        obj.minut = night.globalUTStart;
-        obj.maxut = night.globalUTEnd;
-        obj.twil = [];
-        const arr = dat[10].toUpperCase().split(",");
-        for (const constr of arr) {
-            if (!helper.notFloat(constr)) {
-                obj.maxam = parseFloat(constr);
-                continue;
-            }
-            if (constr.indexOf("NT") > -1 || constr.indexOf("AT") > -1 || constr.indexOf("DARK") > -1) {
-                obj.twil = constr.split("+");
-                if (constr.includes("NT")) {
-                    obj.minut = night.Sunset;
-                    obj.maxut = night.Sunrise;
-                } else if (constr.includes("AT")) {
-                    obj.minut = night.ENauTwilight;
-                    obj.maxut = night.MNauTwilight;
-                } else {
-                    obj.minut = night.EAstTwilight;
-                    obj.maxut = night.MAstTwilight;
-                }
-                continue;
-            }
-            let uts = helper.ExtractUTRange(constr, ra);
-            if (uts !== null) {
-                obj.minut = Math.max(obj.minut, uts[0]);
-                obj.maxut = Math.min(obj.maxut, uts[1]);
-            } else {
-                uts = helper.ExtractAMRange(constr);
-                if (uts !== null) {
-                    obj.minam = Math.max(obj.minam, uts[0]);
-                    obj.maxam = Math.min(obj.maxam, uts[1]);
-                } else {
-                    uts = helper.ExtractMoonRange(constr);
-                    if (uts !== null) {
-                        obj.minmdist = Math.max(obj.minmdist, uts[0]);
-                        obj.maxmdist = Math.min(obj.maxmdist, uts[1]);
-                    } else {
-                        helper.LogError(`Could not parse airmass/UTC/moon distance constraint from string <i>${dat[10]}</i> for target <i>${dat[0]}</i>. Please check the format of the input and the documentation.`);
-                    }
-                }
-            }
-        }
-        if (dat[8] === "*") {
-            obj.fillslot = true;
-            obj.exptime = null;
-        } else {
-            obj.fillslot = false;
-            obj.exptime = parseFloat(dat[8]) / sla.d2s;
-        }
-        let minmdist = 9999;
-        let iminmdist = 0;
-        for (let i=0; i<night.Nx; i+=1) {
-            let mdist = sla.r2d * sla.dsep(night.ramoon[i], night.decmoon[i], ra, dec);
-            obj.moondist.push(mdist);
-            if (mdist < minmdist) {
-                minmdist = mdist;
-                iminmdist = i;
-            }
-            const pa = sla.dranrm(sla.pa(night.LSTangles[i] - ra, dec, Driver.obs_lat_rad));
-            obj.pangles.push(sla.r2d * pa);
-        }
-        obj.mdist = minmdist;
-        obj.mdisttime = night.xaxis[iminmdist];
-        let pmra, pmdec;
-        if (rax.length === 1) {
-            pmra = 0;
-        } else {
-            // Given in arcsec/year; convert to radians/year
-            pmra = parseFloat(rax[1]) * sla.das2r;
-            // Remove the cos(dec) for SLALIB
-            pmra = pmra/Math.cos(dec);
-        }
-        if (decx.length === 1) {
-            pmdec = 0;
-        } else {
-            // Given in arcsec/year; convert to radians/year
-            pmdec = parseFloat(decx[1]) * sla.das2r;
-        }
-        /* Conversion from Besselian to Julian, if necessary */
-        if (obj.epoch > 1984) {
-            obj.J2000 = [ra, dec];
-        } else {
-            let j2000;
-            /* No proper motion */
-            if (pmra === 0 && pmdec === 0) {
-                j2000 = sla.fk45z(ra, dec, obj.epoch);
-                obj.J2000 = [j2000.r2000, j2000.d2000];
-            } else {
-                j2000 = sla.fk425(ra, dec, pmra, pmdec, 0, 0);
-                obj.J2000 = [j2000.r2000, j2000.d2000];
-            }
-        }
-
-        let retap, retob;
-        let imax = 0;
-        let altmax = 0;
-        for (let i=0; i<night.Nx; i+=1) {
-            retap = sla.mapqk(ra, dec, pmra, pmdec, 0, 0, night.amprms[i]);
-            retob = sla.aopqk(retap.ra, retap.da, night.aoprms[i]);
-            // Approximate refracted alt
-            let ell = 0.5*Math.PI - sla.refz(retob.zob, night.ref.refa, night.ref.refb);
-            if (ell > altmax) {
-                imax = i;
-                altmax = ell;
-            }
-            obj.line.push(sla.r2d * ell);
-            const az = sla.dranrm(retob.aob);
-            obj.azim.push(sla.r2d * az);
-        }
-        obj.zenithtime = night.xaxis[imax];
-        obj.raRad = ra;
-        obj.decRad = dec;
-        return obj;
     } catch (ex) {
         helper.LogException(ex);
     }
@@ -321,17 +295,14 @@ TargetList.prototype.setTargetsSize = function () {
 /**
  * @memberof TargetList
  */
-TargetList.prototype.setTargets = function (obj) {
+TargetList.prototype.setTargets = function (lines) {
     try {
-        const res = obj.map(function (x) {
-            return this.targetStringToJSON (x);
-        }, this);
-        this.nTargets = res.length;
+        this.nTargets = lines.length;
         this.Targets = [];
         this.resetWarnings();
         this.processOfflineTime();
         for (let i = 0; i < this.nTargets; i += 1) {
-            this.Targets[i] = this.processTarget(i, res[i]);
+            this.Targets[i] = this.processTarget(i, lines[i]);
         }
         this.warnUnobservable();
         this.setTargetsSize();
@@ -343,17 +314,14 @@ TargetList.prototype.setTargets = function (obj) {
 /**
  * @memberof TargetList
  */
-TargetList.prototype.addTargets = function (obj) {
+TargetList.prototype.addTargets = function (lines) {
     try {
-        const res = obj.map(function (x) {
-            return this.targetStringToJSON (x);
-        }, this);
         const oldNobjects = this.nTargets;
-        this.nTargets += res.length;
+        this.nTargets += lines.length;
         this.resetWarnings();
         this.processOfflineTime();
         for (let i = oldNobjects; i < this.nTargets; i += 1) {
-            this.Targets[i] = this.processTarget(i, res[i - oldNobjects]);
+            this.Targets[i] = this.processTarget(i, lines[i - oldNobjects]);
         }
         this.warnUnobservable();
         this.setTargetsSize();
@@ -365,9 +333,9 @@ TargetList.prototype.addTargets = function (obj) {
 /**
  * @memberof TargetList
  */
-TargetList.prototype.processTarget = function (i, obj) {
+TargetList.prototype.processTarget = function (i, line) {
     try {
-        const target = new Target(i, obj);
+        const target = new Target(i, line);
         target.preCompute();
         target.LabelX = target.ZenithTime;
         if (target.LabelX < driver.night.ENauTwilight) {
