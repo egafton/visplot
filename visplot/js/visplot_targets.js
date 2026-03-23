@@ -899,12 +899,10 @@ TargetList.prototype.prepareScheduleForUpdate = function () {
                     updateText.push(lines[k]);
                     lines.splice(k, 1);
                     linesOriginal.splice(k, 1);
+                } else if (this.Targets[i].Observed) {
+                    reinserting.push(i);
                 } else {
-                    if (this.Targets[i].Observed) {
-                        reinserting.push(i);
-                    } else {
-                        deleting.push(i);
-                    }
+                    deleting.push(i);
                 }
             }
         }
@@ -1115,11 +1113,11 @@ TargetList.prototype.processTargetListAfterSIMBAD = function(lines) {
                 this.MaxLen.Priority = words[14].length;
             }
             let j;
-            j = (parseInt(words[this.ReqLineLen + 1]) + "").length + (words[this.ReqLineLen + 1] < 0 && words[this.ReqLineLen + 1] > -1 ? 1 : 0);
+            j = (String(parseInt(words[this.ReqLineLen + 1])) + "").length + (words[this.ReqLineLen + 1] < 0 && words[this.ReqLineLen + 1] > -1 ? 1 : 0);
             if (j > this.MaxLen.TCSpmra) {
                 this.MaxLen.TCSpmra = j;
             }
-            j = (parseInt(words[this.ReqLineLen + 3]) + "").length + (words[this.ReqLineLen + 3] < 0 && words[this.ReqLineLen + 3] > -1 ? 1 : 0);
+            j = (String(parseInt(words[this.ReqLineLen + 3])) + "").length + (words[this.ReqLineLen + 3] < 0 && words[this.ReqLineLen + 3] > -1 ? 1 : 0);
             if (j > this.MaxLen.TCSpmdec) {
                 this.MaxLen.TCSpmdec = j;
             }
@@ -1404,20 +1402,20 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
             return false;
         }
         if (words.length === 11 && (parseFloat(words[7]) === 2000 || parseFloat(words[7]) === 1950) && !helper.notFloat(words[8]) && !helper.notFloat(words[9]) && !helper.notFloat(words[10])) {
-            words = [words[0], words[1], words[2], words[3] + (parseFloat(words[8]) !== 0 ? "/" + words[8] : ""), words[4], words[5], words[6] + (parseFloat(words[9]) !== 0 ? "/" + words[9] : ""), words[7]].concat([Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo]);
+            words = [words[0], words[1], words[2], words[3] + (parseFloat(words[8]) !== 0 ? "/" + words[8] : ""), words[4], words[5], words[6] + (parseFloat(words[9]) !== 0 ? "/" + words[9] : ""), words[7]].concat([Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultInstrument]);
         }
         if (words.length === 7) {
-            words = words.concat([Driver.defaultEpoch, Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo, Driver.defaultSkyPA, "1"]);
+            words = words.concat([Driver.defaultEpoch, Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultInstrument, Driver.defaultSkyPA, "1"]);
         } else if (words.length === 8) {
-            words = words.concat([Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo, Driver.defaultSkyPA, "1"]);
+            words = words.concat([Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultInstrument, Driver.defaultSkyPA, "1"]);
         } else if (words.length === 9) {
-            words = words.concat([Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo, Driver.defaultSkyPA, "1"]);
+            words = words.concat([Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultInstrument, Driver.defaultSkyPA, "1"]);
         } else if (words.length === 10) {
-            words = words.concat([Driver.defaultAM, Driver.defaultType, Driver.defaultOBInfo, Driver.defaultSkyPA, "1"]);
+            words = words.concat([Driver.defaultAM, Driver.defaultType, Driver.defaultInstrument, Driver.defaultSkyPA, "1"]);
         } else if (words.length === 11) {
-            words = words.concat([Driver.defaultType, Driver.defaultOBInfo, Driver.defaultSkyPA, "1"]);
+            words = words.concat([Driver.defaultType, Driver.defaultInstrument, Driver.defaultSkyPA, "1"]);
         } else if (words.length === 12) {
-            words = words.concat([Driver.defaultOBInfo, Driver.defaultSkyPA, "1"]);
+            words = words.concat([Driver.defaultInstrument, Driver.defaultSkyPA, "1"]);
         } else if (words.length === 13) {
             words = words.concat([Driver.defaultSkyPA, "1"]);
         } else if (words.length === 14) {
@@ -1600,7 +1598,7 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
             }
         }
         /* OB info must be valid, or an instrument name, or "default" */
-        if (words[12] !== Driver.defaultOBInfo) {
+        if (words[12] !== Driver.defaultInstrument) {
             const arr = words[12].split(":");
             if (arr.length !== 4 && arr.length !== 1) {
                 helper.LogError(`OB info is not valid on line #${linenumber}, it should be Instrument:Mode:GroupID:BlockID!`);
@@ -1772,12 +1770,10 @@ Target.prototype.preCompute = function () {
                     this.endForbidden.push(driver.night.xaxis[i]);
                     this.beginAllowed.push(driver.night.xaxis[i]);
                 }
-            } else {
-                if (obs) {
-                    obs = false;
-                    this.endAllowed.push(driver.night.xaxis[i]);
-                    this.beginForbidden.push(driver.night.xaxis[i]);
-                }
+            } else if (obs) {
+                obs = false;
+                this.endAllowed.push(driver.night.xaxis[i]);
+                this.beginForbidden.push(driver.night.xaxis[i]);
             }
         }
         const last = this.Graph.length - 1;
@@ -1806,7 +1802,7 @@ Target.prototype.preCompute = function () {
             return;
         }
         this.FirstPossibleTime = this.beginAllowed[0];
-        for (let i = this.nAllowed; i >= 0; i--) {
+        for (let i = this.nAllowed; i >= 0; i -= 1) {
             if (this.beginAllowed[i] + this.Exptime <= this.endAllowed[i]) {
                 const lpt = this.endAllowed[i] - this.Exptime;
                 this.iLastPossibleTime = helper.MJDToIndex(lpt);

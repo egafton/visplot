@@ -35,7 +35,7 @@ serializer.BindEvents = function () {
 };
 
 /**
- * Save the observing schedule to disk.
+ * Save the observing schedule and all the settings to a file.
  */
 serializer.saveDocument = function () {
     helper.Log("Exporting schedule in visplot format...");
@@ -59,8 +59,18 @@ serializer.saveDocument = function () {
                 defaultType: Driver.defaultType,
                 defaultAM: Driver.defaultAM,
                 defaultObstime: Driver.defaultObstime,
+                defaultInstrument: Driver.defaultInstrument,
+                wPriority: Driver.wPriority,
+                wUrgency: Driver.wUrgency,
+                wAltitude: Driver.wAltitude,
+                wSlewing: Driver.wSlewing,
                 FillColors: Driver.FillColors,
-                TextColors: Driver.TextColors
+                TextColors: Driver.TextColors,
+                "opt_reschedule_later": $("#opt_reschedule_later").is(":checked"),
+                "opt_reorder_targets": $("#opt_reorder_targets").is(":checked"),
+                "opt_allow_over_axis": $("#opt_allow_over_axis").is(":checked"),
+                "opt_schedule_between": $('input[type="radio"][name="opt_schedule_between"]:checked').val(),
+                "opt_show_lastobstime": $("#opt_show_lastobstime").is(":checked")
             },
             version: window.version
         }));
@@ -145,6 +155,38 @@ serializer.loadDocument = function (e) {
                 for (let k in Driver.FillColors) {
                     Driver.FillColors = [k, obj.driver.FillColors[k]];
                     Driver.TextColors = [k, obj.driver.TextColors[k]];
+                }
+                // Backwards-compatibility
+                if (typeof obj.driver.defaultInstrument !== "undefined") {
+                    Driver.defaultInstrument = obj.driver.defaultInstrument;
+                }
+                if (typeof obj.driver.wPriority !== "undefined") {
+                    Driver.wPriority = obj.driver.wPriority;
+                }
+                if (typeof obj.driver.wUrgency !== "undefined") {
+                    Driver.wUrgency = obj.driver.wUrgency;
+                }
+                if (typeof obj.driver.wAltitude !== "undefined") {
+                    Driver.wAltitude = obj.driver.wAltitude;
+                }
+                if (typeof obj.driver.wSlewing !== "undefined") {
+                    Driver.wSlewing = obj.driver.wSlewing;
+                }
+                console.log(obj.driver);
+                if (typeof obj.driver.opt_reschedule_later !== "undefined") {
+                    $("#opt_reschedule_later").prop("checked", obj.driver.opt_reschedule_later === true);
+                }
+                if (typeof obj.driver.opt_reorder_targets !== "undefined") {
+                    $("#opt_reorder_targets").prop("checked", obj.driver.opt_reorder_targets === true);
+                }
+                if (typeof obj.driver.opt_allow_over_axis !== "undefined") {
+                    $("#opt_allow_over_axis").prop("checked", obj.driver.opt_allow_over_axis === true);
+                }
+                if (typeof obj.driver.opt_schedule_between !== "undefined") {
+                    $(`#${obj.driver.opt_schedule_between}`).prop("checked", true);
+                }
+                if (typeof obj.driver.opt_show_lastobstime !== "undefined") {
+                    $("#opt_show_lastobstime").prop("checked", obj.driver.opt_show_lastobstime === true);
                 }
                 Object.setPrototypeOf = Object.setPrototypeOf || function (object, proto) {
                     object.__proto__ = proto;

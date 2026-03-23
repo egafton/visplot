@@ -6,7 +6,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. See LICENSE.md.
  */
-$version = "5.0e";
+$version = "5.0f";
 /*
 * Version history (with brief changelog):
 *
@@ -135,6 +135,10 @@ $version = "5.0e";
 *      - Refactored pointing.php.
 *
 * 5.0e - Ran eslint on all JavaScript files and fixed all warnings/errors.
+*
+* 5.0f - Removed duplicated code during Target creation (going back to the
+*        client-server model).
+*      - Improved serialization routines.
 */
 session_start();
 if (isset($_SESSION["obinfo"])) {

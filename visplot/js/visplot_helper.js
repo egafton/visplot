@@ -172,7 +172,7 @@ helper.AirmasstoZD = function (X) {
     // Initial guess: sec z ≈ X  =>  s ≈ X - 1
     let s = X - 1;
 
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 5; i += 1) {
         // f(s) = model - X
         const f = 1 + s * (0.9981833 - s * (0.002875 + 0.0008083 * s)) - X;
 
@@ -492,12 +492,9 @@ helper.HMToMJD = function (text) {
             if (hh < driver.night.tSunset[3] - 1 && hh > driver.night.tSunrise[3] + 1) {
                 return -1;
             }
-        } else {
-            // UTC doesn't roll over during the night, so HH must be
-            // > sunset AND < sunrise
-            if (hh < driver.night.tSunset[3] - 1 || hh > driver.night.tSunrise[3] + 1) {
-                return -1;
-            }
+        } else if (hh < driver.night.tSunset[3] - 1 || hh > driver.night.tSunrise[3] + 1) {
+            // UTC doesn't roll over during the night, so HH must be > sunset AND < sunrise
+            return -1;
         }
         const jtime = new Date(Date.UTC(
             driver.night.tSunset[0],
@@ -908,7 +905,7 @@ helper.timezone = function(value) {
  */
 helper.zeros = function(dimensions) {
     const array = [];
-    for (let i=0; i<dimensions[0]; ++i) {
+    for (let i = 0; i < dimensions[0]; i += 1) {
         array.push(dimensions.length === 1 ? 0 : this.zeros(dimensions.slice(1)));
     }
     return array;
@@ -934,8 +931,8 @@ helper.bspleval = function(xx, order, knots, coeffs) {
         const x = Array.isArray(xx) ? xx : [xx];
         const npts = x.length;
         const B = helper.zeros([m-1, k+1, npts]);
-        for (let i=0; i<m-1; i++) {
-            for (let ix=0; ix<npts; ix++) {
+        for (let i = 0; i < m-1; i += 1) {
+            for (let ix = 0; ix < npts; ix += 1) {
                 B[i][0][ix] = ((x[ix] >= t[i]) && (x[ix] < t[i+1])) ? 1 : 0;
             }
         }
@@ -943,9 +940,9 @@ helper.bspleval = function(xx, order, knots, coeffs) {
             B[m-2][0][npts-1] = 1;
         }
         // Next iteratively define the higher-order basis functions, working from lower order to higher.
-        for (let j=1; j<k+1; j++) {
-            for (let i=0; i<m-j-1; i++) {
-                for (let ix=0; ix<npts; ix++) {
+        for (let j = 1; j < k+1; j += 1) {
+            for (let i = 0; i < m-j-1; i += 1) {
+                for (let ix = 0; ix < npts; ix += 1) {
                     const firstTerm = (t[i+j] === t[i]) ? 0 : ((x[ix] - t[i]) / (t[i+j] - t[i])) * B[i][j-1][ix];
                     const secondTerm = (t[i+j+1] === t[i+1]) ? 0 : ((t[i+j+1] - x[ix]) / (t[i+j+1] - t[i+1])) * B[i+1][j-1][ix];
                     B[i][j][ix] = firstTerm + secondTerm;
@@ -957,8 +954,8 @@ helper.bspleval = function(xx, order, knots, coeffs) {
         }
         // Evaluate the spline by multiplying the coefficients with the highest-order basis functions.
         const y = helper.zeros([npts]);
-        for (let i=0; i<m-k-1; i++) {
-            for (let ix=0; ix<npts; ix++) {
+        for (let i = 0; i < m-k-1; i += 1) {
+            for (let ix = 0; ix < npts; ix += 1) {
                 y[ix] += coeffs[i] * B[i][k][ix];
             }
         }

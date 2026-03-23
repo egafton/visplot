@@ -507,7 +507,7 @@ Graph.prototype.drawTargets = function (Targets, grayedOut = false) {
             let x = xleg;
             let y = yleg;
 
-            for (let ii = 1; ii <= 3; ii ++) {
+            for (let ii = 1; ii <= 3; ii += 1) {
                 this.ctx.strokeStyle = strokes[ii];
                 this.ctx.setLineDash(dashes[ii]);
                 this.ctx.lineWidth = lws[ii];

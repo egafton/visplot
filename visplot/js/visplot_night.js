@@ -202,7 +202,7 @@ Night.prototype.setEphemerides = function () {
         this.UTClabels = [];
         const startUTC = helper.mjdToUTCHours(this.Sunset);
         const firstUTC = Math.ceil(startUTC);
-        for (let h=0; h<48; h++) {
+        for (let h = 0; h < 48; h += 1) {
             const hour = (firstUTC + h)%24;
             const dayOffset = Math.floor((firstUTC + h) / 24);
             const djutc = Math.floor(this.Sunset) + dayOffset + hour / 24;
@@ -220,7 +220,7 @@ Night.prototype.setEphemerides = function () {
         startLocal = (startLocal % 24 + 24) % 24;
         // First integer LOCAL hour after sunset
         const firstLocal = Math.ceil(startLocal);
-        for (let h = 0; h < 48; h++) {
+        for (let h = 0; h < 48; h += 1) {
             const localHourRaw = firstLocal + h;
             const localHour = ((localHourRaw % 24) + 24) % 24;
             const dayOffset = Math.floor(localHourRaw / 24);
@@ -247,7 +247,7 @@ Night.prototype.setEphemerides = function () {
         if (this.MoonIllMin === this.MoonIllMax) {
             this.MoonIlluminationString = `${this.MoonIllMin}%`;
         } else {
-            this.MoonIlluminationString = `${this.MoonIllMin} – ${this.MoonIllMax}%`;
+            this.MoonIlluminationString = `${this.MoonIllMin} – ${this.MoonIllMax}%`;
         }
         this.Moonrise = 0;
         const lim = -sla.r2d * this.HorizonDip;
@@ -264,7 +264,7 @@ Night.prototype.setEphemerides = function () {
         }
         if (this.ymoon[this.Nx-1] < lim) {
             // will set
-            for (let i = this.Nx-2; i>=0; i--) {
+            for (let i = this.Nx-2; i >= 0; i -= 1) {
                 if (this.ymoon[i] > lim) {
                     this.Moonset = this.xaxis[i+1];
                     this.Moonset = this.xaxis[i+1] + (lim-sla.r2d*this.rmoon[i]- this.ymoon[i+1])*(this.xaxis[i+1]-this.xaxis[i])/(this.ymoon[i+1]-this.ymoon[i]);

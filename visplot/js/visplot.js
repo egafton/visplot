@@ -103,9 +103,9 @@ $(document).ready(function () {
                             helper.LogEntry(`Restoring default observing time to <i>${localStorage.defaultObstime}</i>`);
                             Driver.defaultObstime = localStorage.defaultObstime;
                         }
-                        if ("defaultOBInfo" in localStorage) {
-                            helper.LogEntry(`Restoring default instrument name to <i>${localStorage.defaultOBInfo}</i>`);
-                            Driver.defaultOBInfo = localStorage.defaultOBInfo;
+                        if ("defaultInstrument" in localStorage) {
+                            helper.LogEntry(`Restoring default instrument name to <i>${localStorage.defaultInstrument}</i>`);
+                            Driver.defaultInstrument = localStorage.defaultInstrument;
                         }
                         if ("wPriority" in localStorage) {
                             helper.LogEntry(`Restoring <i>Priority</i> weight to <i>${localStorage.wPriority}</i>`);

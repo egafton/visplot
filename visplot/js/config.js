@@ -528,7 +528,7 @@ config["HJST"] = {
             const extra = az.map(function (x) {
                 return 10 + (90 - Math.sign(x) * x) * tanLat;
             });
-            for (let i = 0; i < az.length; i++) {
+            for (let i = 0; i < az.length; i += 1) {
                 if (spline[i] < extra[i]) {
                     spline[i] = extra[i];
                 }

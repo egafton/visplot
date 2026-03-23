@@ -379,14 +379,12 @@ Driver.prototype.buildNightPolygon = function(ssp, alt = 0, step = 1) {
     const multiPolys = [];
     let currentBlock = [];
 
-    for (let i = 0; i < intervals.length; i++) {
+    for (let i = 0; i < intervals.length; i += 1) {
         if (intervals[i].bounds) {
             currentBlock.push(intervals[i]);
-        } else {
-            if (currentBlock.length > 0) {
-                multiPolys.push(currentBlock);
-                currentBlock = [];
-            }
+        } else if (currentBlock.length > 0) {
+            multiPolys.push(currentBlock);
+            currentBlock = [];
         }
     }
     if (currentBlock.length > 0) {
@@ -398,11 +396,11 @@ Driver.prototype.buildNightPolygon = function(ssp, alt = 0, step = 1) {
     multiPolys.forEach(block => {
         const poly = [];
         // Trace the top boundary left-to-right
-        for (let i = 0; i < block.length; i++) {
+        for (let i = 0; i < block.length; i += 1) {
             poly.push([block[i].bounds[1], block[i].lon]);
         }
         // Trace the bottom boundary right-to-left
-        for (let i = block.length - 1; i >= 0; i--) {
+        for (let i = block.length - 1; i >= 0; i -= 1) {
             poly.push([block[i].bounds[0], block[i].lon]);
         }
         // Wrap in an extra array so Leaflet treats it as a MultiPolygon structure
@@ -672,13 +670,11 @@ Driver.prototype.BtnEvtPlotTargets = function () {
                 }
                 if (ret === false) { // reschedule at will, since we are not in the middle of the night
                     driver.RequestedScheduleType = 2;
-                } else { // we are in the middle of the night...
-                    if (ret === true) { // ... but there are no new targets; just redo the schedule and replot
-                        driver.CallbackUpdateSchedule();
-                    } else { // ... and there are new targets;
-                        helper.LogEntry("Calculating altitudes for the new targets. Please wait...");
-                        driver.CallbackSetTargets($("#added_targets").val());
-                    }
+                } else if (ret === true) { // we are in the middle of the night, but there are no new targets; just redo the schedule and replot
+                    driver.CallbackUpdateSchedule();
+                } else { // ... and there are new targets;
+                    helper.LogEntry("Calculating altitudes for the new targets. Please wait...");
+                    driver.CallbackSetTargets($("#added_targets").val());
                 }
             }
             $("#plotTargets").prop("disabled", true);
@@ -857,13 +853,11 @@ Driver.prototype.EvtFrameMouseUp = function (e) {
                 this.Refresh();
             }
             this.graph.drawRHSofSchedule();
-        } else {
-            if (this.rescheduling) {
-                this.rescheduling = false;
-                this.reY = null;
-                this.graph.drawRHSofSchedule();
-                return;
-            }
+        } else if (this.rescheduling) {
+            this.rescheduling = false;
+            this.reY = null;
+            this.graph.drawRHSofSchedule();
+            return;
         }
     } catch (ex) {
         helper.LogException(ex);
@@ -1256,7 +1250,7 @@ Driver.prototype.perWordMatcher = function(params, data) {
     const text = helper.normalizeText(data.text);
 
     // Only include items that match ALL terms
-    for (let i = 0; i < terms.length; i++) {
+    for (let i = 0; i < terms.length; i += 1) {
         if (!text.includes(terms[i])) {
             return null; // no match
         }
@@ -1276,7 +1270,7 @@ Driver.prototype.BtnEvtConfig = function () {
         $("#def_type").val(Driver.defaultType);
         $("#def_maxam").val(Driver.defaultAM);
         $("#def_obstime").val(Driver.defaultObstime);
-        $("#def_instrument").val(Driver.defaultOBInfo);
+        $("#def_instrument").val(Driver.defaultInstrument);
         $("#w_priority").val(Driver.wPriority);
         $("#w_urgency").val(Driver.wUrgency);
         $("#w_altitude").val(Driver.wAltitude);
@@ -1375,8 +1369,8 @@ Driver.prototype.CallbackUpdateDefaultsAfterTelUpdate = function (resetTel) {
             }
         }
         re = $("#def_instrument").val().trim();
-        if (re !== Driver.defaultOBInfo) {
-            Driver.defaultOBInfo = re;
+        if (re !== Driver.defaultInstrument) {
+            Driver.defaultInstrument = re;
             helper.LogSuccess(`Default <i>Instrument</i> set to <i>${re}</i>.`);
         }
         re = $("#w_priority").val().trim();
@@ -1455,7 +1449,7 @@ Driver.prototype.CallbackUpdateDefaultsAfterTelUpdate = function (resetTel) {
         localStorage.setItem("defaultType", Driver.defaultType);
         localStorage.setItem("defaultAM", Driver.defaultAM);
         localStorage.setItem("defaultObstime", Driver.defaultObstime);
-        localStorage.setItem("defaultOBInfo", Driver.defaultOBInfo);
+        localStorage.setItem("defaultInstrument", Driver.defaultInstrument);
         localStorage.setItem("wPriority", Driver.wPriority);
         localStorage.setItem("wUrgency", Driver.wUrgency);
         localStorage.setItem("wAltitude", Driver.wAltitude);
@@ -1592,10 +1586,8 @@ Driver.prototype.Refresh = function () {
             graph.drawBackground();
             if (driver.scheduleMode) {
                 graph.drawSchedule();
-            } else {
-                if (targets.nTargets > 0) {
-                    graph.drawTargetNames(targets.Targets);
-                }
+            } else if (targets.nTargets > 0) {
+                graph.drawTargetNames(targets.Targets);
             }
             if (driver.mouseInsideObject > -1) {
                 this.graph.highlightTarget(targets.Targets[driver.mouseInsideObject]);
@@ -1883,16 +1875,11 @@ Object.defineProperties(Driver, {
             this._defaultType = val;
         }
     },
-    "defaultOBInfo": {
-        get: function () {
-            return this._defaultOBInfo || (config[Driver.telescopeName].defaultInstrument || 'default');
-        }, set: function (val) {
-            this._defaultOBInfo = val;
-        }
-    },
     "defaultInstrument": {
         get: function () {
-            return config[Driver.telescopeName].defaultInstrument || 'default';
+            return this._defaultInstrument || (config[Driver.telescopeName].defaultInstrument || 'default');
+        }, set: function (val) {
+            this._defaultInstrument = val;
         }
     },
     "defaultSkyPA": {
