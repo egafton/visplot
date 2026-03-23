@@ -16,9 +16,9 @@ function TargetList() {
     this.Targets = [];
     this.Offline = [];
     this.InputText = "";
-    this.VisibleLines = null; // including empty lines and comments
-    this.TargetsLines = null; // only the lines that contain proper targets
-    this.FormattedLines = null; // contains arrays or null values
+    this.VisibleLines = null; // Includes empty lines and comments
+    this.TargetsLines = null; // Only the lines that contain proper targets
+    this.FormattedLines = null; // Contains arrays or null values
     this.TCSlines = null;
     this.MaxLen = null;
     this.InputStats = null;
@@ -118,22 +118,24 @@ function Target(k, obj) {
                 this.DecLimitMaximumHA = dfun[2](sla.r2d * this.decRad);
             }
         }
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 }
 
 Target.prototype.SetExptime = function (exptime) {
     try {
-        if (exptime === null) return;
+        if (exptime === null) {
+            return;
+        }
         this.Exptime = exptime;
         this.ExptimeSeconds = Math.round(this.Exptime * sla.d2s);
         this.Exptime = Math.floor(this.Exptime / driver.night.xstep) * driver.night.xstep;
         const hrs = Math.floor(this.ExptimeSeconds / 3600);
         const min = Math.round((this.ExptimeSeconds - hrs * 3600) / 60);
         this.ExptimeHM = `${hrs > 0 ? hrs.toFixed(0) + "h " : ""}${min.toFixed(0)}m`;
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -149,10 +151,10 @@ TargetList.prototype.targetStringToJSON = function (line) {
         obj.name = dat[0];
         obj.project = dat[9];
         obj.epoch = parseFloat(dat[7]);
-        obj.line = Array();
-        obj.azim = Array();
-        obj.moondist = Array();
-        obj.pangles = Array();
+        obj.line = [];
+        obj.azim = [];
+        obj.moondist = [];
+        obj.pangles = [];
         obj.type = dat[11];
         obj.obdata = dat[12];
         obj.skypa = parseFloat(dat[13]);
@@ -244,8 +246,7 @@ TargetList.prototype.targetStringToJSON = function (line) {
         if (rax.length === 1) {
             pmra = 0;
         } else {
-            // Given in arcsec/year;
-            // convert to radians/year
+            // Given in arcsec/year; convert to radians/year
             pmra = parseFloat(rax[1]) * sla.das2r;
             // Remove the cos(dec) for SLALIB
             pmra = pmra/Math.cos(dec);
@@ -253,7 +254,7 @@ TargetList.prototype.targetStringToJSON = function (line) {
         if (decx.length === 1) {
             pmdec = 0;
         } else {
-            // convert to radians/year
+            // Given in arcsec/year; convert to radians/year
             pmdec = parseFloat(decx[1]) * sla.das2r;
         }
         /* Conversion from Besselian to Julian, if necessary */
@@ -291,8 +292,8 @@ TargetList.prototype.targetStringToJSON = function (line) {
         obj.raRad = ra;
         obj.decRad = dec;
         return obj;
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -301,8 +302,7 @@ TargetList.prototype.targetStringToJSON = function (line) {
  */
 TargetList.prototype.setTargetsSize = function () {
     try {
-        for (let i = 0; i < this.nTargets; i += 1) {
-            const tgt = this.Targets[i];
+        for (const [i, tgt] of this.Targets.entries()) {
             tgt.xlab = driver.graph.transformXLocation(tgt.LabelX);
             tgt.ylab = driver.graph.transformYLocation(tgt.LabelY);
             tgt.rxmid = driver.graph.targetsx;
@@ -313,8 +313,8 @@ TargetList.prototype.setTargetsSize = function () {
         }
         driver.graph.setTargetsSize(this.nTargets);
         this.removeClusters();
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -335,8 +335,8 @@ TargetList.prototype.setTargets = function (obj) {
         }
         this.warnUnobservable();
         this.setTargetsSize();
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -357,8 +357,8 @@ TargetList.prototype.addTargets = function (obj) {
         }
         this.warnUnobservable();
         this.setTargetsSize();
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -377,8 +377,8 @@ TargetList.prototype.processTarget = function (i, obj) {
         }
         target.LabelY = target.getAltitude(target.LabelX);
         return target;
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -409,8 +409,8 @@ Target.prototype.intersectingChain = function (Targets, checked) {
             chain = chain.concat(Targets[j].intersectingChain(Targets, checked));
         }
         return chain;
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -419,11 +419,11 @@ Target.prototype.intersectingChain = function (Targets, checked) {
  */
 TargetList.prototype.removeClusters = function () {
     try {
-        let checked = [], i, cluster, hasclusters, nIter = 0;
+        let checked = [], cluster, hasclusters, nIter = 0;
         do {
             hasclusters = false;
-            for (i = 0; i < this.nTargets; i += 1) {
-                cluster = this.Targets[i].intersectingChain(this.Targets, checked);
+            for (const target of this.Targets) {
+                cluster = target.intersectingChain(this.Targets, checked);
                 if (cluster.length > 1) {
                     hasclusters = true;
                     this.spaceOutCluster(cluster);
@@ -431,8 +431,8 @@ TargetList.prototype.removeClusters = function () {
             }
             nIter += 1;
         } while (hasclusters || nIter < 10);
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -453,8 +453,8 @@ TargetList.prototype.spaceOutCluster = function (cluster) {
                 obj.ylab = driver.graph.transformYLocation(obj.LabelY);
             } while (helper.TwoCirclesIntersect(obj.xlab, obj.ylab, driver.graph.CircleSize + 0.5, prev.xlab, prev.ylab, driver.graph.CircleSize + 0.5));
         }
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -468,8 +468,8 @@ TargetList.prototype.processOfflineTime = function () {
         for (i = 0; i < len; i += 1) {
             this.Offline.push({Start: this.BadWolfStart[i], End: this.BadWolfEnd[i]});
         }
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -499,12 +499,11 @@ TargetList.prototype.warnUnobservable = function () {
 TargetList.prototype.canSchedule = function (obj, start) {
     try {
         let end = start + obj.Exptime;
-        let overlaps = false, i, other;
-        for (i = 0; i < this.nTargets; i += 1) {
+        let overlaps = false;
+        for (const [i, other] of this.Targets.entries()) {
             if (i === this.Index) {
                 continue;
             }
-            other = this.Targets[i];
             if (!other.Scheduled) {
                 continue;
             }
@@ -518,14 +517,14 @@ TargetList.prototype.canSchedule = function (obj, start) {
             return false;
         }
 
-        for (i = 0; i < obj.nAllowed; i += 1) {
+        for (let i = 0; i < obj.nAllowed; i += 1) {
             if (start >= obj.beginAllowed[i] && end <= obj.endAllowed[i]) {
                 return true;
             }
         }
         return false;
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -568,8 +567,8 @@ TargetList.prototype.optimizeInterchangeNeighbours = function (scheduleorder) {
                 scheduleorder[i + 1] = c;
             }
         }
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -629,8 +628,8 @@ TargetList.prototype.optimizeMoveToLaterTimesIfRising = function (scheduleorder)
                 obj.Schedule(besttime);
             }
         }
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -675,8 +674,8 @@ TargetList.prototype.reorderAccordingToScheduling = function (scheduleorder) {
             }
         }
         this.Targets = newtargets;
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -769,8 +768,8 @@ TargetList.prototype.displayScheduleStatistics = function () {
                 helper.LogSuccess(`    ${projtime[j].pid}:  ${helper.ReportSHM(projtime[j].exp)}`);
             }
         }
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -794,11 +793,12 @@ TargetList.prototype.scheduleWithWeights = function (startingAt) {
             }
         }
         while (true) {
-            if (curidx >= driver.night.Nx) break;
+            if (curidx >= driver.night.Nx) {
+                break;
+            }
             const curtime = driver.night.xaxis[curidx];
             const weights = [];
-            // Get a list of all targets that can be scheduled at this time,
-            // together with their weighted priority
+            // Get a list of all targets that can be scheduled at this time, together with their weighted priority
             for (let i = 0; i < this.nTargets; i += 1) {
                 const tgt = this.Targets[i];
                 if (tgt.Observed) {
@@ -839,8 +839,8 @@ TargetList.prototype.scheduleWithWeights = function (startingAt) {
         }
         console.log("withWeights: ", scheduleorder);
         return scheduleorder;
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -850,32 +850,29 @@ TargetList.prototype.scheduleWithWeights = function (startingAt) {
 TargetList.prototype.scheduleAndOptimizeGivenOrder = function (newscheduleorder) {
     try {
         let scheduleorder = [], i, k, obj;
-        for (i = 0; i < this.nTargets; i += 1) {
-            if (this.Targets[i].Observed) { // attention here. more work to be done!
+        for (const target of this.Targets) {
+            if (target.Observed) {
                 continue;
             }
-            this.Targets[i].Scheduled = false;
-        }
-        for (i = 0; i < this.nTargets; i += 1) {
-            if (this.Targets[i].FillSlot === true) {
-                obj = this.Targets[i];
-                obj.Schedule(obj.RestrictionMinUTC);
+            target.Scheduled = false;
+            if (target.FillSlot === true) {
+                target.Schedule(obj.RestrictionMinUTC);
             }
         }
         let curtime = driver.night.Sunset;
         i = 0;
         while (i < this.nTargets && curtime <= driver.night.Sunrise) {
             k = newscheduleorder[i];
-            if (this.Targets[k].FillSlot === true) {
+            obj = this.Targets[k];
+            if (obj.FillSlot === true) {
                 scheduleorder.push(k);
                 i += 1;
                 continue;
             }
-            if (curtime > this.Targets[k].LastPossibleTime) {
+            if (curtime > obj.LastPossibleTime) {
                 i += 1;
                 continue;
             }
-            obj = this.Targets[k];
             if (this.canSchedule(obj, curtime)) {
                 obj.Schedule(curtime);
                 scheduleorder.push(k);
@@ -891,8 +888,8 @@ TargetList.prototype.scheduleAndOptimizeGivenOrder = function (newscheduleorder)
             this.reorderAccordingToScheduling(scheduleorder);
         }
         this.displayScheduleStatistics();
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -988,7 +985,7 @@ TargetList.prototype.prepareScheduleForUpdate = function () {
         // Then update the existing targets (no need to perform the astrometry again for them)
         if (updated.length > 0) {
             this.resetWarnings();
-            let newdata, obj; // change: first do badwolf
+            let newdata, obj; // Change: first do badwolf
             for (i = 0; i < updated.length; i += 1) {
                 newdata = updateText[i].trim().split(" ");
                 obj = this.Targets[updated[i]];
@@ -1011,11 +1008,10 @@ TargetList.prototype.prepareScheduleForUpdate = function () {
         // Finally, perform the astrometry for the new targets
         if (adding.length > 0) {
             return "tgts";
-        } else {
-            return true;
         }
-    } catch (e) {
-        helper.LogException(e);
+        return true;
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -1034,8 +1030,8 @@ TargetList.prototype.doSchedule = function (start, reorder) {
         } else {
             this.scheduleAndOptimizeGivenOrder(scheduleorder);
         }
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -1057,8 +1053,8 @@ TargetList.prototype.plan = function () {
         } else {
             this.doSchedule(driver.night.Sunset, true);
         }
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -1068,8 +1064,8 @@ TargetList.prototype.plan = function () {
 TargetList.prototype.updateSchedule = function () {
     try {
         this.doSchedule(this.StartingAt, false);
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -1249,8 +1245,8 @@ TargetList.prototype.processTargetListAfterSIMBAD = function(lines) {
         this.InputValid = true;
         $("#tcsExport").prop("disabled", false);
         return true;
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -1269,9 +1265,8 @@ TargetList.prototype.validateAndFormatTargets = function (force = false) {
             if (!thisList.inputHasChanged(tgts, thisList.InputText) && thisList.InputValid && !force) {
                 helper.LogEntry("Target input list has not changed, no need to revalidate.");
                 return resolve();
-            } else {
-                helper.LogEntry("Validating and formatting target input list...");
             }
+            helper.LogEntry("Validating and formatting target input list...");
             $("#tcsExport").prop("disabled", true);
             thisList.InputValid = false;
             if (tgts.length === 0) {
@@ -1283,10 +1278,12 @@ TargetList.prototype.validateAndFormatTargets = function (force = false) {
             }
             // Split it into lines
             const lines = helper.extractLines(tgts);
-            const idsToRetrieve = Array();
+            const idsToRetrieve = [];
             // Check if we need to retrieve any targets from SIMBAD
             for (const line of lines) {
-                if (line.trim() === "" || line.startsWith("#")) continue;
+                if (line.trim() === "" || line.startsWith("#")) {
+                    continue;
+                }
                 if (line.startsWith('"') && line.endsWith('"')) {
                     idsToRetrieve.push(line.substring(1, line.length - 1));
                 } else {
@@ -1298,7 +1295,7 @@ TargetList.prototype.validateAndFormatTargets = function (force = false) {
             }
             if (idsToRetrieve.length > 0) {
                 helper.LogEntry(`Will attempt to retrive the following targets from SIMBAD: ${idsToRetrieve.join(', ')}. This may take a while...`);
-                const deferreds = Array();
+                const deferreds = [];
                 for (const id of idsToRetrieve) {
                     deferreds[id] = $.get(`https://simbad.cds.unistra.fr/simbad/sim-id?output.format=ASCII&Ident=${encodeURIComponent(id)}`);
                 }
@@ -1317,8 +1314,8 @@ TargetList.prototype.validateAndFormatTargets = function (force = false) {
                 return thisList.processTargetListAfterSIMBAD(lines) ? resolve() : reject();
             }
         });
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -1345,8 +1342,8 @@ TargetList.prototype.ExportTCSCatalogue = function () {
         });
 
         helper.LogEntry("Done.");
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -1391,10 +1388,9 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
             if (UTr === null || UTr === false) {
                 helper.LogError(`Incorrect syntax in [CONSTRAINTS] on line #${linenumber}: the UTC/LST range must be a valid interval (e.g., [20:00-23:00] or [1-2])!`);
                 return false;
-            } else {
-                this.BadWolfStart.push(UTr[0]);
-                this.BadWolfEnd.push(UTr[1]);
             }
+            this.BadWolfStart.push(UTr[0]);
+            this.BadWolfEnd.push(UTr[1]);
             return [words[0], "", "", "", "", "", "", "", "*", "", words[q], "", "", "", ""];
         }
         if ((words.length === 6 && words[2].indexOf(":") === -1) ||
@@ -1489,11 +1485,10 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
             if (rax.length !== 2) {
                 helper.LogError(`Incorrect syntax for [pmRA] on line #${linenumber}!`);
                 return false;
-            } else {
-                if (helper.notFloat(rax[0]) || helper.notFloat(rax[1])) {
-                    helper.LogError(`Incorrect syntax: non-float value detected in [RA]/[pmRA] on line #${linenumber}!`);
-                    return false;
-                }
+            }
+            if (helper.notFloat(rax[0]) || helper.notFloat(rax[1])) {
+                helper.LogError(`Incorrect syntax: non-float value detected in [RA]/[pmRA] on line #${linenumber}!`);
+                return false;
             }
             words[this.ReqLineLen] = parseFloat(rax[0]);
             words[this.ReqLineLen + 1] = parseFloat(rax[1]);
@@ -1533,11 +1528,10 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
             if (rax.length !== 2) {
                 helper.LogError(`Incorrect syntax for [pmDEC] on line #${linenumber}!`);
                 return false;
-            } else {
-                if (helper.notFloat(rax[0]) || helper.notFloat(rax[1])) {
-                    helper.LogError(`Incorrect syntax: non-float value detected in [DEC]/[pmDEC] on line #${linenumber}!`);
-                    return false;
-                }
+            }
+            if (helper.notFloat(rax[0]) || helper.notFloat(rax[1])) {
+                helper.LogError(`Incorrect syntax: non-float value detected in [DEC]/[pmDEC] on line #${linenumber}!`);
+                return false;
             }
             words[this.ReqLineLen + 2] = parseFloat(rax[0]);
             words[this.ReqLineLen + 3] = parseFloat(rax[1]);
@@ -1582,7 +1576,9 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
             let good = true;
             let periodset = false;
             for (const constr of arr) {
-                if (!helper.notFloat(constr)) continue;
+                if (!helper.notFloat(constr)) {
+                    continue;
+                }
                 if (constr.startsWith("UTC[") || constr.startsWith("LST[") || constr.startsWith("HA[") || constr.startsWith("AM[") || constr.startsWith("MOON[")) {
                     if (constr.slice(-1) !== "]" || constr.indexOf("-") === -1) {
                         good = false;
@@ -1598,20 +1594,28 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
                         good = false;
                         break;
                     }
-                } else if (["NT", "AT", "DARK"].includes(constr)) {
-                    if (!periodset) {
-                        periodset = true;
-                        continue;
-                    }
-                    helper.LogError(`Conflicting constraints (NT, AT, DARK) specified on line #${linenumber}!`);
-                    return false;
                 } else {
+                    const wrds = constr.split("+");
+                    for (const wrd of wrds) {
+                        if (!["NT", "AT", "DARK"].includes(wrd)) {
+                            good = false;
+                            break;
+                        }
+                    }
+                    if (good) {
+                        if (!periodset) {
+                            periodset = true;
+                            continue;
+                        }
+                        helper.LogError(`Conflicting constraints (NT, AT, DARK) specified on line #${linenumber}!`);
+                        return false;
+                    }
                     good = false;
                     break;
                 }
             }
             if (!good) {
-                helper.LogError(`Incorrect syntax: [CONSTRAINTS] should either be a float (e.g., 2.0), a UTC range (e.g., UTC[20:00-23:00]) or an LST range (e.g. LST[2-4:30]) on line #${linenumber}!`);
+                helper.LogError(`Incorrect syntax: [CONSTRAINTS] field invalid on line #${linenumber}, please see the help.`);
                 return false;
             }
             if (helper.notInt(words[8]) && words[8] !== "*") {
@@ -1646,8 +1650,8 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
             return false;
         }
         return words;
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -1683,8 +1687,8 @@ TargetList.prototype.checkForDuplicates = function () {
         if (duplicateList.length > 0) {
             helper.LogWarning(`Duplicate lines detected: ${duplicateList.join(", ")}. Please check if that is what you actually intended, otherwise delete or comment out the duplicates.`);
         }
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -1709,11 +1713,17 @@ Target.prototype.canObserve = function (idx) {
             return 0;
         }
         if (this.RestrictionTwilights.length > 0) {
-            if (!this.RestrictionTwilights.includes("NT") && (time < driver.night.ENauTwilight || time > driver.night.MNauTwilight)) return 0;
+            if (!this.RestrictionTwilights.includes("NT") && (time < driver.night.ENauTwilight || time > driver.night.MNauTwilight)) {
+                return 0;
+            }
             if (!this.RestrictionTwilights.includes("AT") && (
                 (time > driver.night.ENauTwilight && time < driver.night.EAstTwilight) ||
-                (time > driver.night.MAstTwilight && time < driver.night.MNauTwilight))) return 0;
-            if (!this.RestrictionTwilights.includes("DARK") && (time > driver.night.EAstTwilight && time < driver.night.MAstTwilight)) return 0;
+                (time > driver.night.MAstTwilight && time < driver.night.MNauTwilight))) {
+                return 0;
+            }
+            if (!this.RestrictionTwilights.includes("DARK") && (time > driver.night.EAstTwilight && time < driver.night.MAstTwilight)) {
+                return 0;
+            }
         }
         if (!(this.RestrictionMinUTC <= time && this.RestrictionMaxUTC >= time &&
                 this.RestrictionMinAlt <= altitude && this.RestrictionMaxAlt >= altitude &&
@@ -1726,11 +1736,11 @@ Target.prototype.canObserve = function (idx) {
             }
         }
         /* Special provisions for equatorial mounts */
-        // alt(dec)
+        // Alt(Dec)
         if (this.DecLimitMinimumAlt !== null && altitude < this.DecLimitMinimumAlt) {
             return 0;
         }
-        // ha(dec)
+        // HA(Dec)
         const ha = (time - this.ZenithTime) * 24;
         if (this.DecLimitMinimumHA !== null && ha < this.DecLimitMinimumHA) {
             return 0;
@@ -1741,7 +1751,7 @@ Target.prototype.canObserve = function (idx) {
         if (this.DecLimitMinimumAltAzEast === null && this.DecLimitMinimumAltAzWest === null) {
             return 1;
         }
-        // alt(az)
+        // Alt(Az)
         let notwest = false, noteast = false;
         if ($("#opt_allow_over_axis").is(":checked")) {
             if (this.DecLimitMinimumAltAzWest !== null && altitude < this.DecLimitMinimumAltAzWest[idx]) {
@@ -1764,8 +1774,8 @@ Target.prototype.canObserve = function (idx) {
             return 2;
         }
         return 3;
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -1838,8 +1848,8 @@ Target.prototype.preCompute = function () {
             }
         }
         driver.targets.Warning2.push(this.Name);
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -1850,8 +1860,8 @@ Target.prototype.getAltitude = function (time) {
     try {
         const ii = helper.MJDToIndex(time);
         return this.Graph[ii];
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -1869,8 +1879,8 @@ Target.prototype.resetColours = function () {
             this.LabelTextColor = Driver.TextColors[this.Type];
             this.LabelStrokeColor = this.LabelFillColor;
         }
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -1886,8 +1896,8 @@ Target.prototype.ComputePositionSchedLabel = function () {
         const yshift = dist * Math.cos(angle);
         this.xmid = driver.graph.xaxis[helper.MJDToIndex(this.ScheduledMidTime)] - xshift;
         this.ymid = driver.graph.yend - driver.graph.degree * this.Graph[helper.MJDToIndex(this.ScheduledMidTime)] - yshift;
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -1904,8 +1914,8 @@ Target.prototype.Schedule = function (start) {
         this.AltEndTime = this.Graph[helper.MJDToIndex(this.ScheduledEndTime)];
         this.AltMidTime = this.Graph[helper.MJDToIndex(this.ScheduledMidTime)];
         this.ComputePositionSchedLabel();
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -1972,7 +1982,7 @@ Target.prototype.Update = function (obj) {
 
         this.preCompute();
         this.resetColours();
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };

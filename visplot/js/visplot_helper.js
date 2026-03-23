@@ -104,7 +104,9 @@ helper.LogSuccess = function (msg) {
  * @returns {void} No return value. Delegates logging to helper.LogError.
  */
 helper.LogException = function (e) {
-    if (!e) return;
+    if (!e) {
+        return;
+    }
     if (e.hasOwnProperty("message")) {
         helper.LogError(`${e.message} -- ${e.stack.split("\n")[0]}`);
     } else {
@@ -145,14 +147,14 @@ helper.padTwoDigits = function (_num) {
     try {
         const num = parseFloat(_num);
         if (num === 0) {
-            // handle -0 and +0 (for degrees of Dec, for instance)
+            // Handle -0 and +0 (for degrees of Dec, for instance)
             return 1/num < 0 ? "-00" : "00";
         }
         return num > 0
             ? (num < 10 ? `0${num.toString()}` : num.toString())
             : (num > -10 ? `-0${(-num).toString()}` : num.toString());
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -163,7 +165,9 @@ helper.padTwoDigits = function (_num) {
  * @returns {Number} ZD corresponding to the given airmass, in radians.
  */
 helper.AirmasstoZD = function (X) {
-    if (X <= 1) return 0; // zenith
+    if (X <= 1) {
+        return 0; // Zenith
+    }
 
     // Initial guess: sec z ≈ X  =>  s ≈ X - 1
     let s = X - 1;
@@ -197,8 +201,8 @@ helper.AirmasstoZD = function (X) {
 helper.AirmassToAltitude = function (airmass) {
     try {
         return 90 - sla.r2d * helper.AirmasstoZD(airmass);
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -211,8 +215,8 @@ helper.AirmassToAltitude = function (airmass) {
 helper.AltitudeToAirmass = function (altitude) {
     try {
         return sla.airmas(sla.d2r * (90 - altitude));
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -227,8 +231,8 @@ helper.AltitudeToAirmass = function (altitude) {
 helper.MJDToIndex = function (time) {
     try {
         return Math.round((time - driver.night.Sunset) / driver.night.xstep);
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -247,8 +251,8 @@ helper.dmstodeg = function (a) {
             d[0].replace(/\-/, "");
         }
         return sign * (Math.abs(parseFloat(d[0])) + parseFloat(d[1]) / 60 + parseFloat(d[2]) / 3600);
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -262,8 +266,8 @@ helper.dmstodeg = function (a) {
 helper.extractLines = function (str) {
     try {
         return str.split(/\r?\n/);
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -281,19 +285,22 @@ helper.extractLines = function (str) {
  */
 helper.parseSIMBADResponse = function (responseText) {
     try {
-        if (responseText.startsWith("!!")) return null;
+        if (responseText.startsWith("!!")) {
+            return null;
+        }
         const coordsRegex = new RegExp(/Coordinates\(ICRS.*?\):\s+(\d+)\s+(\d+)\s+([\d\.]+)\s+([+\-\d]+)\s+(\d+)\s+([\d\.]+)/g);
         const ca = coordsRegex.exec(responseText);
-        if (ca === null) return null;
+        if (ca === null) {
+            return null;
+        }
         const pmRegex = new RegExp(/Proper motions:\s+([+\-\d\.]+)\s+([+\-\d\.]+)/g);
         const pa = pmRegex.exec(responseText);
         if (pa === null) {
             return `${ca[1]} ${ca[2]} ${ca[3]} ${ca[4]} ${ca[5]} ${ca[6]}`;
-        } else {
-            return `${ca[1]} ${ca[2]} ${ca[3]}/${(parseFloat(pa[1])/1000).toFixed(5)} ${ca[4]} ${ca[5]} ${ca[6]}/${(parseFloat(pa[2])/1000).toFixed(5)}`;
         }
-    } catch (e) {
-        helper.LogException(e);
+        return `${ca[1]} ${ca[2]} ${ca[3]}/${(parseFloat(pa[1])/1000).toFixed(5)} ${ca[4]} ${ca[5]} ${ca[6]}/${(parseFloat(pa[2])/1000).toFixed(5)}`;
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -303,8 +310,8 @@ helper.parseSIMBADResponse = function (responseText) {
 helper.utc = function (time) {
     try {
         return (time.getUTCHours() + (time.getUTCMinutes() + time.getUTCSeconds() / 60) / 60) / 24;
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -315,23 +322,8 @@ helper.getMJD = function (now)
 {
     try {
         return (now.valueOf() / sla.d2s / 1000) + 40587;
-    } catch (e) {
-        helper.LogException(e);
-    }
-};
-
-/**
- * Calculate the fractional part of a number (X-[X])
- */
-helper.frac = function (X) {
-    try {
-        X -= Math.floor(X);
-        if (X < 0) {
-            X += 1.0;
-        }
-        return X;
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -348,13 +340,13 @@ helper.frac = function (X) {
 helper.HMS = function (time, sep1, sep2, sep3) {
     try {
         const h = Math.floor(time);
-        const m = Math.floor(60.0 * helper.frac(time));
-        const s = (60.0 * (60.0 * helper.frac(time) - m)).toFixed(0);
+        const m = Math.floor(60.0 * (time%1));
+        const s = (60.0 * (60.0 * (time%1) - m)).toFixed(0);
         return `${helper.padTwoDigits(h)}${sep1}` +
                `${helper.padTwoDigits(m)}${sep2}` +
                `${helper.padTwoDigits(s)}${sep3}`;
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -380,8 +372,8 @@ helper.MJDToHM = function (d, padHours=false) {
             hh = 0;
         }
         return `${padHours ? helper.padTwoDigits(hh) : hh}:${helper.padTwoDigits(mm)}`;
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -405,8 +397,8 @@ helper.MJDToHMLocal = function (d, utcOffset, padHours=false) {
         }
         hh = (hh % 24 + 24) % 24;
         return `${padHours ? helper.padTwoDigits(hh) : hh}:${helper.padTwoDigits(mm)}`;
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -430,8 +422,8 @@ helper.LSTToAngle = function (text) {
             return -1;
         }
         return sla.dtf2r(hh, mm, ss);
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -465,8 +457,8 @@ helper.LSTToMJD = function (str) {
             ut1 -= 1;
         }
         return [ut1, ut2];
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -514,8 +506,8 @@ helper.HMToMJD = function (text) {
             hh, mm, ss, 0));
         const jdiff = (jtime - jsunset) / 8.64e7;
         return driver.night.Sunset + jdiff;
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -542,11 +534,10 @@ helper.pad = function (str, len, left, w) {
         }
         if (left) {
             return `${helper.repeat(w, len - str.length)}${str}`;
-        } else {
-            return `${str}${helper.repeat(w, len - str.length)}`;
         }
-    } catch (e) {
-        helper.LogException(e);
+        return `${str}${helper.repeat(w, len - str.length)}`;
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -671,25 +662,24 @@ helper.ExtractAMRange = function (str) {
                 return false;
             }
             return [1, high];
-        } else {
-            if (str.indexOf("-") === -1) {
-                return false;
-            }
-            const pos = str.indexOf("[");
-            const inner = str.substr(pos+1, str.length - pos - 2);
-            str = inner.split("-");
-            if (str.length !== 2) {
-                return false;
-            }
-            const low = helper.filterFloat(str[0]);
-            const high = helper.filterFloat(str[1]);
-            if (isNaN(low) || isNaN(high) || low < 1 || high < 1 || low > high) {
-                return false;
-            }
-            return [low, high];
         }
-    } catch (e) {
-        helper.LogException(e);
+        if (str.indexOf("-") === -1) {
+            return false;
+        }
+        const pos = str.indexOf("[");
+        const inner = str.substr(pos+1, str.length - pos - 2);
+        str = inner.split("-");
+        if (str.length !== 2) {
+            return false;
+        }
+        const low = helper.filterFloat(str[0]);
+        const high = helper.filterFloat(str[1]);
+        if (isNaN(low) || isNaN(high) || low < 1 || high < 1 || low > high) {
+            return false;
+        }
+        return [low, high];
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -712,25 +702,24 @@ helper.ExtractMoonRange = function (str) {
                 return false;
             }
             return [low, 180];
-        } else {
-            if (str.indexOf("-") === -1) {
-                return false;
-            }
-            const pos = str.indexOf("[");
-            const inner = str.substr(pos+1, str.length - pos - 2);
-            str = inner.split("-");
-            if (str.length !== 2) {
-                return false;
-            }
-            const low = helper.filterFloat(str[0]);
-            const high = helper.filterFloat(str[1]);
-            if (isNaN(low) || isNaN(high) || low < 1 || high < 1 || low > high) {
-                return false;
-            }
-            return [low, high];
         }
-    } catch (e) {
-        helper.LogException(e);
+        if (str.indexOf("-") === -1) {
+            return false;
+        }
+        const pos = str.indexOf("[");
+        const inner = str.substr(pos+1, str.length - pos - 2);
+        str = inner.split("-");
+        if (str.length !== 2) {
+            return false;
+        }
+        const low = helper.filterFloat(str[0]);
+        const high = helper.filterFloat(str[1]);
+        if (isNaN(low) || isNaN(high) || low < 1 || high < 1 || low > high) {
+            return false;
+        }
+        return [low, high];
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -752,8 +741,8 @@ helper.ExtractLSTRange = function (str) {
             return false;
         }
         return helper.LSTToMJD(str);
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -777,8 +766,8 @@ helper.ExtractHARange = function (str, ra) {
         const raHours = sla.rtoh * ra;
         const lst = [parseFloat(str[0]) + raHours, parseFloat(str[1]) + raHours];
         return helper.LSTToMJD(lst);
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -813,8 +802,8 @@ helper.ExtractUTRange = function (str, ra = null) {
         ut1 = Math.max(driver.night.Sunset, Math.min(ut1, driver.night.Sunrise));
         ut2 = Math.max(driver.night.Sunset, Math.min(ut2, driver.night.Sunrise));
         return [ut1, ut2];
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -852,8 +841,8 @@ helper.utarc = function(altitude, tsouth, dec, pm) {
         const H = sla.rtoh * Math.acos(cost);
         const time = (tsouth + (pm === "+" ? H : -H) + 24) % 24;
         return sla.dr2tf(6, time / 24 * sla.d2pi).ihmsf;
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -879,8 +868,8 @@ helper.validColour = function(stringToTest) {
         dummy.style.color = "rgb(255, 255, 255)";
         dummy.style.color = stringToTest;
         return dummy.style.color !== "rgb(255, 255, 255)";
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -905,9 +894,8 @@ helper.offlineStrings = [
 helper.timezone = function(value) {
     if (value >= 0) {
         return `+${value.toFixed(0)}`;
-    } else {
-        return value.toFixed(0);
     }
+    return value.toFixed(0);
 };
 
 /**
@@ -975,8 +963,8 @@ helper.bspleval = function(xx, order, knots, coeffs) {
             }
         }
         return npts === 1 ? y[0] : y;
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -992,8 +980,8 @@ helper.angDist = function(a, b) {
     try {
         const d = Math.abs(a - b) % 360;
         return d > 180 ? 360 - d : d;
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -1007,8 +995,8 @@ helper.mjdToUTCHours = function(mjd) {
     try {
         const dayFrac = mjd % 1;
         return dayFrac * 24;
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -1033,8 +1021,8 @@ helper.SubsolarPoint = function() {
         const gha = sla.gmst(mjd) - sun.ra;
         const lng = sla.r2d * sla.drange(-gha);
         return [lat, lng, sun.dec, gha];
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -1052,7 +1040,7 @@ helper.normalizeText = function(str) {
             .normalize('NFD') // split letters and diacritics
             .replace(/[\u0300-\u036f]/g, '') // remove diacritics
             .toLowerCase();
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };

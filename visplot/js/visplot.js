@@ -178,8 +178,8 @@ $(document).ready(function () {
                 postInitialization();
             });
         }
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 });
 
@@ -187,7 +187,7 @@ function postInitialization() {
     try {
         /* Now that the driver is created, do some stuff that require it*/
         driver.skyGraph.skyImg.onload = function () {
-            driver.skyGraph.setup();
+            driver.skyGraph.redraw();
         };
         setInterval(function () {
             driver.skyGraph.displayTime();
@@ -239,7 +239,7 @@ function postInitialization() {
         Set up the map.
         */
         driver.SetupMap();
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 }

@@ -3182,99 +3182,98 @@ sla.planet = function (date, np) {
                 (da * da * da));
         /* Make the prediction */
         return sla.planel(date, 1, date, di, dom, dpe, da, de, dl, dm);
-    } else {
-        /* Pluto */
-        /* Time: Julian centuries since J2000. */
-        t = (date - 51544.5) / 36525;
-
-        /* OK status unless remote epoch. */
-        if (t < -1.15 || t > 1) {
-            throw new RangeError("Warning: date out of range (j=1).");
-        }
-
-        /* Fundamental arguments (radians) */
-        let dj = (sla.dj0 + sla.djd * t) * sla.d2r;
-        let ds = (sla.ds0 + sla.dsd * t) * sla.d2r;
-        let dp = (sla.dp0 + sla.dpd * t) * sla.d2r;
-
-        /* Initialize coefficients and derivatives */
-        let wlbr = [0, 0, 0];
-        let wlbrd = [0, 0, 0];
-
-        let i;
-        let j3;
-        let wj;
-        let ws;
-        let wp;
-        let al;
-        let ald;
-        let sal;
-        let cal;
-        let ac;
-        let bc;
-        /* Term by term through Meeus Table 36.A. */
-        for (j = 0; j < 43; j += 1) {
-            j3 = j * 3;
-            /* Argument and derivative (radians, radians per century). */
-            wj = sla.ijsp[j3];
-            ws = sla.ijsp[j3 + 1];
-            wp = sla.ijsp[j3 + 2];
-            al = wj * dj + ws * ds + wp * dp;
-            ald = (wj * sla.djd + ws * sla.dsd + wp * sla.dpd) * sla.d2r;
-
-            /* Functions of argument. */
-            sal = Math.sin(al);
-            cal = Math.cos(al);
-
-            /* Periodic terms in longitude, latitude, radius vector. */
-            for (i = 0; i < 3; i += 1) {
-                /* A and B coefficients (deg, AU). */
-                ac = sla.ab[j * 6 + i * 2];
-                bc = sla.ab[j * 6 + i * 2 + 1];
-                /* Periodic terms (deg, AU, deg/Jc, AU/Jc). */
-                wlbr[i] += ac * sal + bc * cal;
-                wlbrd[i] += (ac * cal - bc * sal) * ald;
-            }
-        }
-
-        /* Heliocentric longitude and derivative (radians, radians/sec). */
-        dl = (sla.dl0 + sla.dld0 * t + wlbr[0]) * sla.d2r;
-        let dld = (sla.dld0 + wlbrd[0]) * sla.d2r / sla.spc;
-
-        /* Heliocentric latitude and derivative (radians, radians/sec). */
-        let db = (sla.db0 + wlbr[1]) * sla.d2r;
-        let dbd = wlbrd[1] * sla.d2r / sla.spc;
-
-        /* Heliocentric radius vector and derivative (AU, AU/sec). */
-        let dr = sla.dr0 + wlbr[2];
-        let drd = wlbrd[2] / sla.spc;
-
-        /*  Functions of latitude, longitude, radius vector. */
-        let sl = Math.sin(dl);
-        let cl = Math.cos(dl);
-        let sb = Math.sin(db);
-        let cb = Math.cos(db);
-        let slcb = sl * cb;
-        let clcb = cl * cb;
-
-        /* Heliocentric vector and derivative, J2000 ecliptic and equinox. */
-        let x = dr * clcb;
-        let y = dr * slcb;
-        let z = dr * sb;
-        let xd = drd * clcb - dr * (cl * sb * dbd + slcb * dld);
-        let yd = drd * slcb + dr * (-sl * sb * dbd + clcb * dld);
-        let zd = drd * sb + dr * cb * dbd;
-
-        /* Transform to J2000 equator and equinox. */
-        return [
-            x,
-            y * sla.ce - z * sla.se,
-            y * sla.se + z * sla.ce,
-            xd,
-            yd * sla.ce - zd * sla.se,
-            yd * sla.se + zd * sla.ce
-        ];
     }
+    /* Pluto */
+    /* Time: Julian centuries since J2000. */
+    t = (date - 51544.5) / 36525;
+
+    /* OK status unless remote epoch. */
+    if (t < -1.15 || t > 1) {
+        throw new RangeError("Warning: date out of range (j=1).");
+    }
+
+    /* Fundamental arguments (radians) */
+    let dj = (sla.dj0 + sla.djd * t) * sla.d2r;
+    let ds = (sla.ds0 + sla.dsd * t) * sla.d2r;
+    let dp = (sla.dp0 + sla.dpd * t) * sla.d2r;
+
+    /* Initialize coefficients and derivatives */
+    let wlbr = [0, 0, 0];
+    let wlbrd = [0, 0, 0];
+
+    let i;
+    let j3;
+    let wj;
+    let ws;
+    let wp;
+    let al;
+    let ald;
+    let sal;
+    let cal;
+    let ac;
+    let bc;
+    /* Term by term through Meeus Table 36.A. */
+    for (j = 0; j < 43; j += 1) {
+        j3 = j * 3;
+        /* Argument and derivative (radians, radians per century). */
+        wj = sla.ijsp[j3];
+        ws = sla.ijsp[j3 + 1];
+        wp = sla.ijsp[j3 + 2];
+        al = wj * dj + ws * ds + wp * dp;
+        ald = (wj * sla.djd + ws * sla.dsd + wp * sla.dpd) * sla.d2r;
+
+        /* Functions of argument. */
+        sal = Math.sin(al);
+        cal = Math.cos(al);
+
+        /* Periodic terms in longitude, latitude, radius vector. */
+        for (i = 0; i < 3; i += 1) {
+            /* A and B coefficients (deg, AU). */
+            ac = sla.ab[j * 6 + i * 2];
+            bc = sla.ab[j * 6 + i * 2 + 1];
+            /* Periodic terms (deg, AU, deg/Jc, AU/Jc). */
+            wlbr[i] += ac * sal + bc * cal;
+            wlbrd[i] += (ac * cal - bc * sal) * ald;
+        }
+    }
+
+    /* Heliocentric longitude and derivative (radians, radians/sec). */
+    dl = (sla.dl0 + sla.dld0 * t + wlbr[0]) * sla.d2r;
+    let dld = (sla.dld0 + wlbrd[0]) * sla.d2r / sla.spc;
+
+    /* Heliocentric latitude and derivative (radians, radians/sec). */
+    let db = (sla.db0 + wlbr[1]) * sla.d2r;
+    let dbd = wlbrd[1] * sla.d2r / sla.spc;
+
+    /* Heliocentric radius vector and derivative (AU, AU/sec). */
+    let dr = sla.dr0 + wlbr[2];
+    let drd = wlbrd[2] / sla.spc;
+
+    /*  Functions of latitude, longitude, radius vector. */
+    let sl = Math.sin(dl);
+    let cl = Math.cos(dl);
+    let sb = Math.sin(db);
+    let cb = Math.cos(db);
+    let slcb = sl * cb;
+    let clcb = cl * cb;
+
+    /* Heliocentric vector and derivative, J2000 ecliptic and equinox. */
+    let x = dr * clcb;
+    let y = dr * slcb;
+    let z = dr * sb;
+    let xd = drd * clcb - dr * (cl * sb * dbd + slcb * dld);
+    let yd = drd * slcb + dr * (-sl * sb * dbd + clcb * dld);
+    let zd = drd * sb + dr * cb * dbd;
+
+    /* Transform to J2000 equator and equinox. */
+    return [
+        x,
+        y * sla.ce - z * sla.se,
+        y * sla.se + z * sla.ce,
+        xd,
+        yd * sla.ce - zd * sla.se,
+        yd * sla.se + zd * sla.ce
+    ];
 };
 
 /**
@@ -3344,10 +3343,9 @@ sla.dt = function (epoch) {
     } else if (epoch >= 979.0258204760233) {
         /* 979-1708: use Stephenson & Morrison's 948-1600 model */
         return 25.5 * t * t;
-    } else {
-        /* Pre-979: use Stephenson & Morrison's 390 BC to AD 948 model */
-        return 1360.0 + (320 + 44.3 * t) * t;
     }
+    /* Pre-979: use Stephenson & Morrison's 390 BC to AD 948 model */
+    return 1360.0 + (320 + 44.3 * t) * t;
 };
 
 /**
@@ -4987,9 +4985,8 @@ sla.dsepv = function (v1, v2) {
     /* Angle between the vectors. */
     if (ret.vm !== 0 || c !== 0) {
         return Math.atan2(ret.vm, c);
-    } else {
-        return 0;
     }
+    return 0;
 };
 
 /**

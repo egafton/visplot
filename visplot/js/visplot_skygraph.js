@@ -27,9 +27,9 @@ function SkyGraph(_canvas, _context) {
         this.timer = null;
         this.tcsPointing = null;
         this.skyImg = new Image();
-        this.reload();
+        this.refreshRemote();
         $("#canvasSkycam").on("mousemove", function (e) {
-            driver.skyGraph.EvtMouseMove(e, $(this));
+            driver.skyGraph.EvtMouseMove(e);
         });
         $("#canvasSkycam").on("mouseout", function () {
             driver.skyGraph.EvtMouseOut();
@@ -37,8 +37,8 @@ function SkyGraph(_canvas, _context) {
         $(document).keydown(function (e) {
             driver.skyGraph.EvtKeyDown(e);
         });
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 }
 
@@ -55,9 +55,9 @@ SkyGraph.prototype.updateTelescope = function () {
             $("#skycam_placeholder").removeClass("active");
             $("#canvasSkycam").show();
         }
-        this.reload();
-    } catch (e) {
-        helper.LogException(e);
+        this.refreshRemote();
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -67,10 +67,10 @@ SkyGraph.prototype.updateTelescope = function () {
 SkyGraph.prototype.startTimer = function () {
     try {
         this.timer = setInterval(function () {
-            driver.skyGraph.reload();
+            driver.skyGraph.refreshRemote();
         }, 30000);
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -83,16 +83,18 @@ SkyGraph.prototype.stopTimer = function () {
             clearInterval(this.timer);
             this.timer = null;
         }
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
 /**
  * @memberof SkyGraph
  */
-SkyGraph.prototype.setup = function () {
-    if (this.params === null) return;
+SkyGraph.prototype.redraw = function () {
+    if (this.params === null) {
+        return;
+    }
     try {
         this.ctx.clearRect(0, 0, this.params.imageSizeX, this.params.imageSizeY);
         this.ctx.drawImage(this.skyImg, 0, 0);
@@ -105,9 +107,37 @@ SkyGraph.prototype.setup = function () {
         }
         this.displayCoords();
         this.displayTime();
+    } catch (ex) {
+        helper.LogException(ex);
+    }
+};
+
+/**
+ * Draw user cursor marker (red crosshair)
+ */
+SkyGraph.prototype.drawCursor = function () {
+    if (this.params === null || this.cursorPx === null) {
+        return;
+    }
+    this.xhair(this.cursorPx.x, this.cursorPx.y, "", "red");
+};
+
+/**
+ * @memberof SkyGraph
+ */
+SkyGraph.prototype.refreshRemote = function () {
+    if (this.params === null) {
+        return;
+    }
+    try {
+        const t = new Date().getTime();
+        this.skyImg.src = `${this.params.url}?t=${t}`;
         $.get({
-            url: "pointing.php",
-            data: {telescope: Driver.telescopeName},
+            url: `${window.baseurl}pointing.php`,
+            data: {
+                telescope: Driver.telescopeName,
+                t: t
+            },
             success: function (obj) {
                 if (helper.notFloat(obj.alt) || helper.notFloat(obj.az)) {
                     driver.skyGraph.tcsPointing = null;
@@ -119,30 +149,8 @@ SkyGraph.prototype.setup = function () {
                 helper.LogError(msg);
             }
         });
-    } catch (e) {
-        helper.LogException(e);
-    }
-};
-
-/**
- * Draw user cursor marker (red crosshair)
- */
-SkyGraph.prototype.drawCursor = function () {
-    if (this.params === null) return;
-    if (this.cursorPx === null) return;
-
-    this.xhair(this.cursorPx.x, this.cursorPx.y, "", "red");
-};
-
-/**
- * @memberof SkyGraph
- */
-SkyGraph.prototype.reload = function () {
-    if (this.params === null) return;
-    try {
-        this.skyImg.src = `${this.params.url}?t=${new Date().getTime()}`;
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -167,8 +175,8 @@ SkyGraph.prototype.xhair = function (x, y, name, color) {
         this.ctx.font = "8pt " + this.fontFamily;
         this.ctx.fillStyle = color;
         this.ctx.fillText(name, x + 5, y - 5);
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     } finally {
         this.ctx.restore();
     }
@@ -178,7 +186,9 @@ SkyGraph.prototype.xhair = function (x, y, name, color) {
  * @memberof SkyGraph
  */
 SkyGraph.prototype.drawAxes = function () {
-    if (this.params === null) return;
+    if (this.params === null) {
+        return;
+    }
     try {
         this.ctx.save();
         this.ctx.strokeStyle = "gray";
@@ -198,8 +208,8 @@ SkyGraph.prototype.drawAxes = function () {
                 this.params.zenithY + this.params.radius * Math.sin(az));
         }
         this.ctx.stroke();
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     } finally {
         this.ctx.restore();
     }
@@ -209,7 +219,9 @@ SkyGraph.prototype.drawAxes = function () {
  * @memberof SkyGraph
  */
 SkyGraph.prototype.drawTicks = function () {
-    if (this.params === null) return;
+    if (this.params === null) {
+        return;
+    }
     try {
         this.ctx.save();
         this.ctx.textBaseline = "middle";
@@ -238,8 +250,8 @@ SkyGraph.prototype.drawTicks = function () {
             this.ctx.fillStyle = "white";
             this.ctx.fillText(this.cardinalLabels[i], x, y);
         }
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     } finally {
         this.ctx.restore();
     }
@@ -249,8 +261,9 @@ SkyGraph.prototype.drawTicks = function () {
  * @memberof SkyGraph
  */
 SkyGraph.prototype.drawPointing = function () {
-    if (this.params === null) return;
-    if (this.tcsPointing === null) return;
+    if (this.params === null || this.tcsPointing === null) {
+        return;
+    }
     try {
         this.ctx.save();
         const x = this.tcsPointing.x;
@@ -270,8 +283,8 @@ SkyGraph.prototype.drawPointing = function () {
         this.ctx.beginPath();
         this.ctx.arc(x, y, 3.5, 0, 2 * Math.PI, false);
         this.ctx.stroke();
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     } finally {
         this.ctx.restore();
     }
@@ -281,7 +294,9 @@ SkyGraph.prototype.drawPointing = function () {
  * @memberof SkyGraph
  */
 SkyGraph.prototype.drawStars = function () {
-    if (this.params === null) return;
+    if (this.params === null) {
+        return;
+    }
     try {
         if (driver.targets.nTargets === 0) {
             return;
@@ -302,8 +317,8 @@ SkyGraph.prototype.drawStars = function () {
         if (last !== null) {
             this.xhair(last[0], last[1], last[2], last[3]);
         }
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -311,7 +326,9 @@ SkyGraph.prototype.drawStars = function () {
  * @memberof SkyGraph
  */
 SkyGraph.prototype.displayCoords = function () {
-    if (this.params === null) return;
+    if (this.params === null) {
+        return;
+    }
     try {
         this.ctx.save();
         this.ctx.clearRect(0, this.params.imageSizeY, this.canvasWidth / 2, this.canvasHeight - this.params.imageSizeY);
@@ -332,8 +349,8 @@ SkyGraph.prototype.displayCoords = function () {
             this.ctx.fillText(helper.HMS(sla.rtoh * sla.dranrm(this.lst-hadec.ha), "h", "m", "s"), 121, this.params.imageSizeY + 6);
             this.ctx.fillText(helper.HMS(sla.r2d * hadec.dec, "°", "'", '"'), 235, this.params.imageSizeY + 6);
         }
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     } finally {
         this.ctx.restore();
     }
@@ -343,7 +360,9 @@ SkyGraph.prototype.displayCoords = function () {
  * @memberof SkyGraph
  */
 SkyGraph.prototype.displayTime = function () {
-    if (this.params === null) return;
+    if (this.params === null) {
+        return;
+    }
     try {
         this.ctx.save();
         const tim = new Date();
@@ -367,8 +386,8 @@ SkyGraph.prototype.displayTime = function () {
         if (this.lastAltaz !== null) {
             this.displayCoords();
         }
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     } finally {
         this.ctx.restore();
     }
@@ -384,7 +403,9 @@ SkyGraph.prototype.displayTime = function () {
  * by the telescope-specific function, or null if no suitable telescope routine exists.
  */
 SkyGraph.prototype.px2altaz = function(x, y) {
-    if (this.params === null) return null;
+    if (this.params === null) {
+        return null;
+    }
     try {
         const dx = x - this.params.zenithX;
         const dy = y - this.params.zenithY;
@@ -393,8 +414,8 @@ SkyGraph.prototype.px2altaz = function(x, y) {
             'alt': Math.PI/2 * (1-Math.pow(rho/this.params.radius, 1/this.params.distortPower)),
             'az': sla.dranrm(Math.atan2(dy, -dx) + sla.d2r * (90 - this.params.rotation))
         };
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -408,7 +429,9 @@ SkyGraph.prototype.px2altaz = function(x, y) {
  * by the telescope-specific function, or null if no suitable telescope routine exists.
  */
 SkyGraph.prototype.altaz2px = function(alt, az) {
-    if (this.params === null) return null;
+    if (this.params === null) {
+        return null;
+    }
     try {
         const rho = this.params.radius * Math.pow(1 - alt / (Math.PI / 2), this.params.distortPower);
         const theta = az - sla.d2r * (90 - this.params.rotation);
@@ -416,14 +439,15 @@ SkyGraph.prototype.altaz2px = function(alt, az) {
             'x': this.params.zenithX - rho * Math.cos(theta),
             'y': this.params.zenithY + rho * Math.sin(theta)
         };
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
 SkyGraph.prototype.EvtKeyDown = function (e) {
-    if (this.params === null) return;
-    if (this.cursorPx === null) return;
+    if (this.params === null || this.cursorPx === null) {
+        return;
+    }
 
     const step = 2; // pixels per keypress
 
@@ -450,18 +474,23 @@ SkyGraph.prototype.EvtKeyDown = function (e) {
 
     // Update derived alt/az
     this.lastAltaz = this.px2altaz(this.cursorPx.x, this.cursorPx.y);
-    this.setup();
+    this.redraw();
 };
 
 /**
  * @memberof Driver
  */
-SkyGraph.prototype.EvtMouseMove = function (e, jQthis) {
-    if (this.params === null) return;
+SkyGraph.prototype.EvtMouseMove = function (e) {
+    if (this.params === null) {
+        return;
+    }
     try {
-        if (e.pageX === undefined && e.pageY === undefined) return;
-        const posX = e.pageX - jQthis.offset().left;
-        const posY = e.pageY - jQthis.offset().top;
+        if (typeof e.pageX === "undefined" || typeof e.pageY === "undefined") {
+            return;
+        }
+        const canvas = $("#canvasSkycam");
+        const posX = e.pageX - canvas.offset().left;
+        const posY = e.pageY - canvas.offset().top;
         if ((posX < 0) || (posX >= this.params.imageSizeX) || (posY < 0) || (posY >= this.params.imageSizeY)) {
             this.lastAltaz = null;
             this.cursorPx = null;
@@ -469,9 +498,9 @@ SkyGraph.prototype.EvtMouseMove = function (e, jQthis) {
             this.lastAltaz = this.px2altaz(posX, posY);
             this.cursorPx = { x: posX, y: posY };
         }
-        this.setup();
-    } catch (e) {
-        helper.LogException(e);
+        this.redraw();
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -479,12 +508,14 @@ SkyGraph.prototype.EvtMouseMove = function (e, jQthis) {
  * @memberof Driver
  */
 SkyGraph.prototype.EvtMouseOut = function () {
-    if (this.params === null) return;
+    if (this.params === null) {
+        return;
+    }
     try {
         this.lastAltaz = null;
         this.cursorPx = null;
-        this.setup();
-    } catch (e) {
-        helper.LogException(e);
+        this.redraw();
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };

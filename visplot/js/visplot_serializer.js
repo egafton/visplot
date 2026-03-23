@@ -73,8 +73,8 @@ serializer.saveDocument = function () {
             window.saveAs(content, "schedule.visplot");
         });
         helper.LogEntry("Done.");
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -97,8 +97,8 @@ serializer.saveTCS = function () {
             });
         window.saveAs(blob, filename);
         helper.LogEntry("Done.");
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -108,23 +108,27 @@ serializer.saveTCS = function () {
 serializer.loadDocument = function (e) {
     helper.LogEntry("Importing schedule from the given file...");
     const files = e.target.files; // FileList object
-    if (files === false || files === null || files === undefined || files.length !== 1) {
+    if (files === false || files === null || typeof files === "undefined" || files.length !== 1) {
         helper.LogError("Failed to load the file.");
         return;
     }
     const newZip = new JSZip();
     newZip.loadAsync(files[0]).then(function (zip) {
-        if (zip === false || zip === null || zip === undefined) {
+        if (zip === false || zip === null || typeof zip === "undefined") {
             helper.LogError("Could not open the file because it has an invalid format.");
             return;
         }
         newZip.file("visplot.txt").async("string").then(function (txt) {
             const obj = JSON.parse(txt);
-            if (obj === false || obj === null || obj === undefined || obj.night === null || obj.night === undefined || obj.graph === null || obj.graph === undefined || obj.driver === null || obj.driver === undefined || obj.targets === null || obj.targets === undefined) {
+            if (obj === false || obj === null || typeof obj === "undefined" ||
+                obj.night === null || typeof obj.night === "undefined" ||
+                obj.graph === null || typeof obj.graph === "undefined" ||
+                obj.driver === null || typeof obj.driver === "undefined" ||
+                obj.targets === null || typeof obj.targets === "undefined") {
                 helper.LogError("Could not open the file because it has an invalid format.");
                 return;
             }
-            if (obj.version === undefined || obj.version !== window.version) {
+            if (typeof obj.version === "undefined" || obj.version !== window.version) {
                 helper.LogWarning(`The file ${files[0].name} has been produced with a different version of Visplot. Some functionality may be limited or unavailable.`);
             }
             driver.ob = obj.driver.ob;
@@ -142,9 +146,9 @@ serializer.loadDocument = function (e) {
                     Driver.FillColors = [k, obj.driver.FillColors[k]];
                     Driver.TextColors = [k, obj.driver.TextColors[k]];
                 }
-                Object.setPrototypeOf = Object.setPrototypeOf || function (obj, proto) {
-                    obj.__proto__ = proto;
-                    return obj;
+                Object.setPrototypeOf = Object.setPrototypeOf || function (object, proto) {
+                    object.__proto__ = proto;
+                    return object;
                 };
                 driver.night = Object.setPrototypeOf(obj.night, Night.prototype);
                 driver.graph = Object.setPrototypeOf(obj.graph, Graph.prototype);
@@ -170,13 +174,9 @@ serializer.loadDocument = function (e) {
                 $("#planNight").removeAttr("disabled");
                 $("#saveDoc").removeAttr("disabled");
             });
-        }).catch(function (e) {
-            helper.LogException(e);
-            return;
-        });
-    }).catch(function (e) {
-        helper.LogException(e);
-        return;
+        }).catch(ex => { helper.LogException(ex); });
+    }).catch(function (ex) {
+        helper.LogException(ex);
     });
 };
 
@@ -209,7 +209,7 @@ serializer.exportPNG = function () {
         helper.LogSuccess("Done! The png file has been opened in a new tab.");
         // Open image in a new tab
         window.open(imageData, "_blank");
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };

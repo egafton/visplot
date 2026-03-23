@@ -200,10 +200,9 @@ config["INT"] = {
         // Taken from https://www.ing.iac.es/Astronomy/telescopes/int/int_pointing_limits.html
         if (dec < -30.1583) {
             return 90; // Cannot observe
-        } else {
-            const hmin = Math.asin(0.4812 * (Math.sin(dec * 1.745329251994329576923691e-2))) * 57.29577951308232;
-            return Math.max(hmin, 20);
         }
+        const hmin = Math.asin(0.4812 * (Math.sin(dec * 1.745329251994329576923691e-2))) * 57.29577951308232;
+        return Math.max(hmin, 20);
     }],
 
     // Background image for plot
@@ -346,10 +345,9 @@ config["CAHA"] = {
         // Lowest elevation as a function of declination
         if (dec < -37) {
             return 90; // Cannot observe
-        } else {
-            const hmin = Math.asin(0.6049 * (Math.sin(dec * 1.745329251994329576923691e-2))) * 57.29577951308232;
-            return Math.max(hmin, 10.9);
         }
+        const hmin = Math.asin(0.6049 * (Math.sin(dec * 1.745329251994329576923691e-2))) * 57.29577951308232;
+        return Math.max(hmin, 10.9);
     }],
 
     // Background image for plot

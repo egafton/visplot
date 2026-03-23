@@ -34,8 +34,8 @@ function Night(y, m, d) {
         this.LocalTimelabels = []; // Local Time labels corresponding to UTCtimes ("8", "9", etc)
         this.LSTangles = []; // LST angles corresponding to UTCtimes
         this.LSTlabels = []; // LST labels corresponding to UTCtimes
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 }
 
@@ -99,9 +99,13 @@ Night.prototype.setEphemerides = function () {
         let next = sla.djcl(this.Sunset);
         this.tSunset = [next.iy, next.im, next.id, ut1[0], ut1[1], parseFloat(ut1[2]+"."+ut1[3])];
         this.ENauTwilight = utczero + sla.dtf2d(ut2[0], ut2[1], ut2[2]);
-        if (ut2[0] < ut1[0]) this.ENauTwilight += 1;
+        if (ut2[0] < ut1[0]) {
+            this.ENauTwilight += 1;
+        }
         this.EAstTwilight = utczero + sla.dtf2d(ut3[0], ut3[1], ut3[2]);
-        if (ut3[0] < ut1[0]) this.EAstTwilight += 1;
+        if (ut3[0] < ut1[0]) {
+            this.EAstTwilight += 1;
+        }
         let sret = sla.rdplan(this.Sunset + this.dut, "Sun", Driver.obs_lon_rad, Driver.obs_lat_rad);
         let mret = sla.rdplan(this.Sunset + this.dut, "Moon", Driver.obs_lon_rad, Driver.obs_lat_rad);
         let sep = sla.dsep(sret.ra, sret.dec, mret.ra, mret.dec);
@@ -125,9 +129,13 @@ Night.prototype.setEphemerides = function () {
         next = sla.djcl(this.Sunrise);
         this.tSunrise = [next.iy, next.im, next.id, ut1[0], ut1[1], parseFloat(ut1[2]+"."+ut1[3])];
         this.MNauTwilight = utczero + sla.dtf2d(ut2[0], ut2[1], ut2[2]);
-        if (ut2[0] > ut1[0]) this.MNauTwilight -= 1;
+        if (ut2[0] > ut1[0]) {
+            this.MNauTwilight -= 1;
+        }
         this.MAstTwilight = utczero + sla.dtf2d(ut3[0], ut3[1], ut3[2]);
-        if (ut3[0] > ut1[0]) this.MAstTwilight -= 1;
+        if (ut3[0] > ut1[0]) {
+            this.MAstTwilight -= 1;
+        }
         sret = sla.rdplan(this.Sunrise + this.dut, "Sun", Driver.obs_lon_rad, Driver.obs_lat_rad);
         mret = sla.rdplan(this.Sunrise + this.dut, "Moon", Driver.obs_lon_rad, Driver.obs_lat_rad);
         sep = sla.dsep(sret.ra, sret.dec, mret.ra, mret.dec);
@@ -198,7 +206,9 @@ Night.prototype.setEphemerides = function () {
             const hour = (firstUTC + h)%24;
             const dayOffset = Math.floor((firstUTC + h) / 24);
             const djutc = Math.floor(this.Sunset) + dayOffset + hour / 24;
-            if (djutc >= this.Sunrise) break;
+            if (djutc >= this.Sunrise) {
+                break;
+            }
             this.UTCtimes.push(djutc);
             this.UTClabels.push(hour === 0 ? "24" : hour.toString());
         }
@@ -219,8 +229,12 @@ Night.prototype.setEphemerides = function () {
             const utcDayOffset = Math.floor(utcHour / 24);
             utcHour = (utcHour % 24 + 24) % 24;
             const djutc = Math.floor(this.Sunset) + dayOffset + utcDayOffset + utcHour / 24;
-            if (djutc < this.Sunset) continue;
-            if (djutc >= this.Sunrise) break;
+            if (djutc < this.Sunset) {
+                continue;
+            }
+            if (djutc >= this.Sunrise) {
+                break;
+            }
             stl = sla.dr2tf(1, sla.dranrm(sla.gmst(djutc) + Driver.obs_lon_rad) + this.eqeqx);
             this.LSTlabels.push(`${stl.ihmsf[0]}:${stl.ihmsf[1] < 10 ? "0" : ""}${stl.ihmsf[1].toFixed(0)}`);
             this.LocalTimetimes.push(djutc);
@@ -259,7 +273,7 @@ Night.prototype.setEphemerides = function () {
             }
         }
         driver.targets.StartingAt = this.Sunset;
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };

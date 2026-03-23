@@ -57,7 +57,7 @@ function Driver() {
         this.scheduleMode = false;
         this.rescheduling = false;
         this.night = null;
-        this.resolvedIdentifiers = Array();
+        this.resolvedIdentifiers = [];
         this.targets = new TargetList();
         this.RequestedScheduleType = 0;
         /* Types of request:
@@ -83,7 +83,7 @@ function Driver() {
                 Tab: function () {
                     driver.targets.validateAndFormatTargets().then(function () {
                         $("#plotTargets").focus();
-                    }).catch(e => { helper.LogException(e); });
+                    }).catch(ex => { helper.LogException(ex); });
                 }
             }
         });
@@ -105,20 +105,20 @@ function Driver() {
         $("#footer-version").text(window.version);
         $("#footer-version").attr("href", `https://github.com/egafton/visplot/tree/v${window.version}`);
         window.fetch(`https://api.github.com/repos/egafton/visplot/tags`)
-            .then(res => res.json())
-            .then(res => res.forEach(tag => {
+            .then(response => response.json())
+            .then(tags => tags.forEach(tag => {
                 if (tag.name === `v${window.version}`) {
                     window.fetch(`https://api.github.com/repos/egafton/visplot/commits/${tag.commit.sha}`)
-                        .then(res => res.json())
-                        .then(res => {
-                            $("#footer-date").text(`, committed on ${res.commit.author.date.replace("T", " at ").slice(0, 19)} UTC`);
+                        .then(response => response.json())
+                        .then(info => {
+                            $("#footer-date").text(`, committed on ${info.commit.author.date.replace("T", " at ").slice(0, 19)} UTC`);
                         })
-                        .catch(e => { helper.LogException(e); });
+                        .catch(ex => { helper.LogException(ex); });
                 }
             }))
-            .catch(e => { helper.LogException(e); });
-    } catch (e) {
-        helper.LogException(e);
+            .catch(ex => { helper.LogException(ex); });
+    } catch (ex) {
+        helper.LogException(ex);
     }
 }
 
@@ -258,8 +258,8 @@ Driver.prototype.SetupMap = function() {
             }
             driver.map.setView([telescope.latitude, telescope.longitude], 16);
         });
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -272,8 +272,8 @@ Driver.prototype.startSunTimer = function() {
                 driver.updateSunAndNight();
             }
         }, 2000);
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -283,9 +283,133 @@ Driver.prototype.stopSunTimer = function() {
             clearInterval(this.sunInterval);
             this.sunInterval = null;
         }
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
+};
+
+Driver.prototype.buildNightPolygon = function(ssp, alt = 0, step = 1) {
+    const delta = ssp[2];
+    const gha = ssp[3];
+    const h = sla.d2r * alt;
+    const k = Math.sin(h);
+
+    // Helper to test if a specific coordinate is darker than our target altitude
+    const isNight = (latRad, haRad) => {
+        const altSin = Math.sin(latRad) * Math.sin(delta) + Math.cos(latRad) * Math.cos(delta) * Math.cos(haRad);
+        return altSin <= k;
+    };
+
+    const intervals = [];
+
+    // 1. Sweep Longitudes to build Latitude Intervals
+    for (let lon = -180; lon <= 180; lon += step) {
+        const lonRad = sla.d2r * lon;
+
+        // Normalize Hour Angle to [-PI, PI]
+        let haRad = gha + lonRad;
+        haRad = (haRad + Math.PI * 10) % (2 * Math.PI);
+        if (haRad > Math.PI) {
+            haRad -= 2 * Math.PI;
+        }
+
+        // Simplify our spherical equation
+        const A = Math.sin(delta);
+        const B = Math.cos(delta) * Math.cos(haRad);
+        const R = Math.sqrt(A * A + B * B);
+
+        // Edge Case: 0 Roots (Entire longitude is either 24hr Day or 24hr Night)
+        if (R === 0 || Math.abs(k / R) > 1) {
+            if (isNight(0, haRad) || isNight(Math.PI/2, haRad)) {
+                intervals.push({ lon: lon, bounds: [-90, 90] });
+            } else {
+                intervals.push({ lon: lon, bounds: null });
+            }
+            continue;
+        }
+
+        const gamma = Math.atan2(A, B);
+        const acosTerm = Math.acos(k / R);
+
+        // Calculate roots, unwrap from radians, and map to -90 to +90 bounds
+        let roots = [gamma + acosTerm, gamma - acosTerm]
+            .map(r => {
+                let n = r;
+                while (n > Math.PI) {
+                    n -= 2 * Math.PI;
+                }
+                while (n <= -Math.PI) {
+                    n += 2 * Math.PI;
+                }
+                return n;
+            })
+            .filter(r => r >= -Math.PI / 2 - 1e-5 && r <= Math.PI / 2 + 1e-5)
+            .map(r => sla.r2d * r)
+            .sort((a, b) => a - b);
+
+        // Enforce hard clamps to map edges
+        roots = roots.map(r => Math.max(-90, Math.min(90, r)));
+
+        // Extract the exact interval of night for this specific longitude
+        if (roots.length === 0) {
+            if (isNight(0, haRad)) {
+                intervals.push({ lon: lon, bounds: [-90, 90] });
+            } else {
+                intervals.push({ lon: lon, bounds: null });
+            }
+        } else if (roots.length === 1) {
+            const rLat = roots[0];
+            const testBelow = sla.d2r * ((rLat - 90) / 2);
+            if (isNight(testBelow, haRad)) {
+                intervals.push({ lon: lon, bounds: [-90, rLat] });
+            } else {
+                intervals.push({ lon: lon, bounds: [rLat, 90] });
+            }
+        } else if (roots.length === 2) {
+            const mid = sla.d2r * ((roots[0] + roots[1]) / 2);
+            if (isNight(mid, haRad)) {
+                intervals.push({ lon: lon, bounds: [roots[0], roots[1]] });
+            } else {
+                intervals.push({ lon: lon, bounds: null });
+            }
+        }
+    }
+
+    // 2. Group into contiguous MultiPolygons to avoid crossing the daytime center
+    const multiPolys = [];
+    let currentBlock = [];
+
+    for (let i = 0; i < intervals.length; i++) {
+        if (intervals[i].bounds) {
+            currentBlock.push(intervals[i]);
+        } else {
+            if (currentBlock.length > 0) {
+                multiPolys.push(currentBlock);
+                currentBlock = [];
+            }
+        }
+    }
+    if (currentBlock.length > 0) {
+        multiPolys.push(currentBlock);
+    }
+
+    // 3. Trace Top/Bottom Edges for Leaflet
+    const finalPolygons = [];
+    multiPolys.forEach(block => {
+        const poly = [];
+        // Trace the top boundary left-to-right
+        for (let i = 0; i < block.length; i++) {
+            poly.push([block[i].bounds[1], block[i].lon]);
+        }
+        // Trace the bottom boundary right-to-left
+        for (let i = block.length - 1; i >= 0; i--) {
+            poly.push([block[i].bounds[0], block[i].lon]);
+        }
+        // Wrap in an extra array so Leaflet treats it as a MultiPolygon structure
+        finalPolygons.push([poly]);
+    });
+
+    return finalPolygons;
 };
 
 Driver.prototype.updateNightPolygons = function (ssp) {
@@ -297,119 +421,12 @@ Driver.prototype.updateNightPolygons = function (ssp) {
             {name: "astronomical", alt: -18, color: '#000', opacity: 0.15}
         ];
 
-        function buildNightPolygon(ssp, alt = 0, step = 1) {
-            const delta = ssp[2];
-            const gha = ssp[3];
-            const h = sla.d2r * alt;
-            const k = Math.sin(h);
-
-            // Helper to test if a specific coordinate is darker than our target altitude
-            const isNight = (latRad, haRad) => {
-                const altSin = Math.sin(latRad) * Math.sin(delta) + Math.cos(latRad) * Math.cos(delta) * Math.cos(haRad);
-                return altSin <= k;
-            };
-
-            const intervals = [];
-
-            // 1. Sweep Longitudes to build Latitude Intervals
-            for (let lon = -180; lon <= 180; lon += step) {
-                const lonRad = sla.d2r * lon;
-
-                // Normalize Hour Angle to [-PI, PI]
-                let haRad = gha + lonRad;
-                haRad = (haRad + Math.PI * 10) % (2 * Math.PI);
-                if (haRad > Math.PI) haRad -= 2 * Math.PI;
-
-                // Simplify our spherical equation
-                const A = Math.sin(delta);
-                const B = Math.cos(delta) * Math.cos(haRad);
-                const R = Math.sqrt(A * A + B * B);
-
-                // Edge Case: 0 Roots (Entire longitude is either 24hr Day or 24hr Night)
-                if (R === 0 || Math.abs(k / R) > 1) {
-                    if (isNight(0, haRad) || isNight(Math.PI/2, haRad)) {
-                        intervals.push({ lon: lon, bounds: [-90, 90] });
-                    } else {
-                        intervals.push({ lon: lon, bounds: null });
-                    }
-                    continue;
-                }
-
-                const gamma = Math.atan2(A, B);
-                const acosTerm = Math.acos(k / R);
-
-                // Calculate roots, unwrap from radians, and map to -90 to +90 bounds
-                let roots = [gamma + acosTerm, gamma - acosTerm]
-                    .map(r => {
-                        let n = r;
-                        while (n > Math.PI) n -= 2 * Math.PI;
-                        while (n <= -Math.PI) n += 2 * Math.PI;
-                        return n;
-                    })
-                    .filter(r => r >= -Math.PI / 2 - 1e-5 && r <= Math.PI / 2 + 1e-5)
-                    .map(r => sla.r2d * r)
-                    .sort((a, b) => a - b);
-
-                // Enforce hard clamps to map edges
-                roots = roots.map(r => Math.max(-90, Math.min(90, r)));
-
-                // Extract the exact interval of night for this specific longitude
-                if (roots.length === 0) {
-                    if (isNight(0, haRad)) intervals.push({ lon: lon, bounds: [-90, 90] });
-                    else intervals.push({ lon: lon, bounds: null });
-                } else if (roots.length === 1) {
-                    const rLat = roots[0];
-                    const testBelow = sla.d2r * ((rLat - 90) / 2);
-                    if (isNight(testBelow, haRad)) intervals.push({ lon: lon, bounds: [-90, rLat] });
-                    else intervals.push({ lon: lon, bounds: [rLat, 90] });
-                } else if (roots.length === 2) {
-                    const mid = sla.d2r * ((roots[0] + roots[1]) / 2);
-                    if (isNight(mid, haRad)) intervals.push({ lon: lon, bounds: [roots[0], roots[1]] });
-                    else intervals.push({ lon: lon, bounds: null });
-                }
-            }
-
-            // 2. Group into contiguous MultiPolygons to avoid crossing the daytime center
-            const multiPolys = [];
-            let currentBlock = [];
-
-            for (let i = 0; i < intervals.length; i++) {
-                if (intervals[i].bounds) {
-                    currentBlock.push(intervals[i]);
-                } else {
-                    if (currentBlock.length > 0) {
-                        multiPolys.push(currentBlock);
-                        currentBlock = [];
-                    }
-                }
-            }
-            if (currentBlock.length > 0) {
-                multiPolys.push(currentBlock);
-            }
-
-            // 3. Trace Top/Bottom Edges for Leaflet
-            const finalPolygons = [];
-            multiPolys.forEach(block => {
-                const poly = [];
-                // Trace the top boundary left-to-right
-                for (let i = 0; i < block.length; i++) {
-                    poly.push([block[i].bounds[1], block[i].lon]);
-                }
-                // Trace the bottom boundary right-to-left
-                for (let i = block.length - 1; i >= 0; i--) {
-                    poly.push([block[i].bounds[0], block[i].lon]);
-                }
-                // Wrap in an extra array so Leaflet treats it as a MultiPolygon structure
-                finalPolygons.push([poly]);
-            });
-
-            return finalPolygons;
+        if (!driver.nightPolygons) {
+            driver.nightPolygons = {};
         }
 
-        if (!driver.nightPolygons) driver.nightPolygons = {};
-
         TWILIGHTS.forEach(tw => {
-            const polys = buildNightPolygon(ssp, tw.alt, 1);
+            const polys = driver.buildNightPolygon(ssp, tw.alt, 1);
             if (!driver.nightPolygons[tw.name]) {
                 driver.nightPolygons[tw.name] = L.polygon(polys, {
                     color: null, // No visible border wireframe
@@ -421,13 +438,16 @@ Driver.prototype.updateNightPolygons = function (ssp) {
                 driver.nightPolygons[tw.name].setLatLngs(polys);
             }
         });
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
+
 Driver.prototype.updateSunAndNight = function() {
     try {
-        if (!driver.map.hasLayer(driver.nightLayerGroup)) return;
+        if (!driver.map.hasLayer(driver.nightLayerGroup)) {
+            return;
+        }
         const ssp = helper.SubsolarPoint();
         if (!driver.sunMarker) {
             // Add sun marker
@@ -441,8 +461,8 @@ Driver.prototype.updateSunAndNight = function() {
             driver.sunMarker.setLatLng([ssp[0], ssp[1]]);
         }
         driver.updateNightPolygons(ssp);
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -461,8 +481,8 @@ Driver.prototype.highlightCurrentTelescope = function () {
             // Refresh clusters to update icons
             this.markers.refreshClusters();
         }
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -490,8 +510,8 @@ Driver.prototype.ParseOBInfoIfAny = function () {
                 this.ob = false;
             }
         }
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -525,10 +545,10 @@ Driver.prototype.CallbackSetDate = function (obj) {
             this.CMeditor.setValue(lines.join("\n"));
             this.targets.validateAndFormatTargets().then(function () {
                 $("#plotTargets").trigger("click");
-            }).catch(e => { helper.LogException(e); });
+            }).catch(ex => { helper.LogException(ex); });
         }
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -544,8 +564,8 @@ Driver.prototype.CallbackSetTargets = function (obj) {
             this.targets.setTargets(obj.split(/\r?\n/));
         }
         this.CallbackUpdateSchedule();
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -573,8 +593,8 @@ Driver.prototype.CallbackUpdateSchedule = function () {
         }
         $("#saveDoc").removeAttr("disabled");
         this.Refresh();
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -621,8 +641,8 @@ Driver.prototype.BtnEvtSetDate = function () {
         helper.LogEntry(`Initializing date to ${year}-${helper.padTwoDigits(month)}-${helper.padTwoDigits(day)}; time zone set to ${config[Driver.telescopeName].timezoneName} (${Driver.obs_timezone_abbr}), which is UTC${helper.timezone(Driver.obs_timezone)}`);
         this.night = new Night(year, month, day);
         driver.CallbackSetDate();
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -672,9 +692,9 @@ Driver.prototype.BtnEvtPlotTargets = function () {
                 }
             }
             $("#plotTargets").prop("disabled", false);
-        }).catch(e => { helper.LogException(e); });
-    } catch (e) {
-        helper.LogException(e);
+        }).catch(ex => { helper.LogException(ex); });
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -728,8 +748,8 @@ Driver.prototype.EvtFrameMouseMove = function (e) {
             this.Refresh();
             $("#canvasFrame").css("cursor", "auto");
         }
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -745,8 +765,8 @@ Driver.prototype.insideObject = function (x, y, obj) {
         // xmid, ymid: where the objid is when it is scheduled (above the scheduled time)
         // rxmid, rymid: where the objid is on the right in schedulemode
         return (this.scheduleMode && obj.Scheduled && helper.PointInsideCircle(x, y, obj.xmid, obj.ymid, this.graph.CircleSizeSq)) || ((!this.scheduleMode || (this.scheduleMode && !obj.Scheduled)) && helper.PointInsideCircle(x, y, obj.xlab, obj.ylab, this.graph.CircleSizeSq)) || (helper.PointInsideCircle(x, y, obj.rxmid, obj.rymid, this.graph.CircleSizeSq));
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -769,8 +789,8 @@ Driver.prototype.EvtFrameMouseDown = function (e) {
                 }
             }
         }
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -787,57 +807,56 @@ Driver.prototype.EvtFrameMouseUp = function (e) {
         if (x > this.graph.targetsx) {
             if (!this.rescheduling) {
                 return;
-            } else {
-                this.rescheduling = false;
-                this.reY = null;
-                let dropped = false;
-                let le, ri;
-                for (let i = 0; i < this.targets.nTargets; i += 1) {
-                    let llim = this.targets.Targets[i].ystart;
-                    let rlim = this.targets.Targets[i].yend;
-                    if (i === 0) {
-                        llim -= 20;
-                    }
-                    if (i === this.targets.nTargets - 1) {
-                        rlim += 50;
-                    }
-                    if (y >= llim && y <= rlim) {
-                        if (y <= 0.5 * (this.targets.Targets[i].ystart + this.targets.Targets[i].yend)) {
-                            le = i - 1;
-                            ri = i;
-                        } else {
-                            le = i;
-                            ri = i + 1;
-                        }
-                        if (le !== this.reObj && ri !== this.reObj) {
-                            dropped = true;
-                        }
-                        break;
-                    }
-                }
-                if (dropped) {
-                    // reObj must come between le and ri
-                    const newscheduleorder = [];
-                    for (let i = 0; i < this.targets.nTargets; i += 1) {
-                        if (i === this.reObj) {
-                            continue;
-                        }
-                        if (ri === i) {
-                            newscheduleorder.push(this.reObj);
-                        }
-                        newscheduleorder.push(i);
-                        if (i === this.targets.nTargets - 1 && le === i) {
-                            newscheduleorder.push(this.reObj);
-                        }
-                    }
-                    helper.LogEntry("Rescheduling the observing night. Please wait...");
-                    this.targets.scheduleAndOptimizeGivenOrder(newscheduleorder);
-                    helper.LogEntry("Done.");
-                    this.scheduleMode = true;
-                    this.Refresh();
-                }
-                this.graph.drawRHSofSchedule();
             }
+            this.rescheduling = false;
+            this.reY = null;
+            let dropped = false;
+            let le, ri;
+            for (let i = 0; i < this.targets.nTargets; i += 1) {
+                let llim = this.targets.Targets[i].ystart;
+                let rlim = this.targets.Targets[i].yend;
+                if (i === 0) {
+                    llim -= 20;
+                }
+                if (i === this.targets.nTargets - 1) {
+                    rlim += 50;
+                }
+                if (y >= llim && y <= rlim) {
+                    if (y <= 0.5 * (this.targets.Targets[i].ystart + this.targets.Targets[i].yend)) {
+                        le = i - 1;
+                        ri = i;
+                    } else {
+                        le = i;
+                        ri = i + 1;
+                    }
+                    if (le !== this.reObj && ri !== this.reObj) {
+                        dropped = true;
+                    }
+                    break;
+                }
+            }
+            if (dropped) {
+                // reObj must come between le and ri
+                const newscheduleorder = [];
+                for (let i = 0; i < this.targets.nTargets; i += 1) {
+                    if (i === this.reObj) {
+                        continue;
+                    }
+                    if (ri === i) {
+                        newscheduleorder.push(this.reObj);
+                    }
+                    newscheduleorder.push(i);
+                    if (i === this.targets.nTargets - 1 && le === i) {
+                        newscheduleorder.push(this.reObj);
+                    }
+                }
+                helper.LogEntry("Rescheduling the observing night. Please wait...");
+                this.targets.scheduleAndOptimizeGivenOrder(newscheduleorder);
+                helper.LogEntry("Done.");
+                this.scheduleMode = true;
+                this.Refresh();
+            }
+            this.graph.drawRHSofSchedule();
         } else {
             if (this.rescheduling) {
                 this.rescheduling = false;
@@ -846,8 +865,8 @@ Driver.prototype.EvtFrameMouseUp = function (e) {
                 return;
             }
         }
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -936,8 +955,8 @@ Driver.prototype.EvtFrameClick = function (e) {
                 break;
             }
         }
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -959,8 +978,8 @@ Driver.prototype.EvtFrameDrop = function (e) {
             this.CMeditor.setValue(`Object ${floats.join(" ")}`);
             $("#plotTargets").trigger("click");
         }
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -1008,8 +1027,8 @@ Driver.prototype.InitializeDate = function () {
         helper.LogEntry(datemsg);
         helper.LogSuccess("Page initialized.");
         $("#dateSet").trigger("click");
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -1018,7 +1037,7 @@ Driver.prototype.InitializeDate = function () {
  */
 Driver.prototype.BtnEvtSkycamClick = function () {
     try {
-        this.skyGraph.reload();
+        this.skyGraph.refreshRemote();
         this.skyGraph.startTimer();
         $.fancybox.open({
             src: "#skycamblock",
@@ -1028,9 +1047,9 @@ Driver.prototype.BtnEvtSkycamClick = function () {
                 driver.skyGraph.stopTimer();
             }
         });
-        this.skyGraph.setup();
-    } catch (e) {
-        helper.LogException(e);
+        this.skyGraph.redraw();
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -1045,8 +1064,8 @@ Driver.prototype.UpdateInstrumentList = function () {
             $("#def_instrument").append(new Option(key, key));
         }
         return tel;
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -1141,7 +1160,7 @@ Driver.prototype.BindEvents = function () {
         }
         driver.targets.validateAndFormatTargets()
             .then(function () { })
-            .catch(e => { helper.LogException(e); });
+            .catch(ex => { helper.LogException(ex); });
     };
 
     // Sample targets and target box
@@ -1160,7 +1179,7 @@ Driver.prototype.BindEvents = function () {
     $("#targets").blur(function () {
         driver.targets.validateAndFormatTargets()
             .then(function () { })
-            .catch(e => { helper.LogException(e); });
+            .catch(ex => { helper.LogException(ex); });
     });
     $("#tcsExport").click(function () {
         driver.targets.ExportTCSCatalogue();
@@ -1238,7 +1257,9 @@ Driver.prototype.perWordMatcher = function(params, data) {
 
     // Only include items that match ALL terms
     for (let i = 0; i < terms.length; i++) {
-        if (!text.includes(terms[i])) return null; // no match
+        if (!text.includes(terms[i])) {
+            return null; // no match
+        }
     }
 
     return data;
@@ -1290,14 +1311,14 @@ Driver.prototype.BtnEvtConfig = function () {
                 driver.CallbackUpdateDefaults();
             }
         });
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
 Driver.prototype.CallbackUpdateDefaultAfterTelUpdate = function (resetTel) {
     try {
-        let re, k, resetCol = false;
+        let re, resetCol = false;
         re = $("#def_epoch").val().trim();
         if (re !== Driver.defaultEpoch) {
             if (re === "1950" || re === "2000") {
@@ -1394,7 +1415,7 @@ Driver.prototype.CallbackUpdateDefaultAfterTelUpdate = function (resetTel) {
                 helper.LogSuccess(`<i>Slewing</i> weight set to <i>${re}</i>.`);
             }
         }
-        for (k in Driver.FillColors) {
+        for (const k in Driver.FillColors) {
             re = $(`#def_col_${k.replace("-", "_")}`).val().trim();
             if (re !== Driver.FillColors[k]) {
                 if (helper.validColour(re)) {
@@ -1416,8 +1437,8 @@ Driver.prototype.CallbackUpdateDefaultAfterTelUpdate = function (resetTel) {
                 }
             }
             if (resetCol) {
-                for (k = 0; k < this.targets.nTargets; k += 1) {
-                    this.targets.Targets[k].resetColours();
+                for (const target of this.targets.Targets) {
+                    target.resetColours();
                 }
             }
             if (resetTel || resetCol) {
@@ -1451,8 +1472,8 @@ Driver.prototype.CallbackUpdateDefaultAfterTelUpdate = function (resetTel) {
         localStorage.setItem("opt_schedule_between", $('input[type="radio"][name="opt_schedule_between"]:checked').val());
         localStorage.setItem("opt_show_lastobstime", $("#opt_show_lastobstime").is(":checked"));
         helper.LogEntry("Done.");
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -1481,8 +1502,8 @@ Driver.prototype.CallbackUpdateDefaults = function () {
         } else {
             driver.CallbackUpdateDefaultsAfterTelUpdate(false);
         }
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -1499,8 +1520,8 @@ Driver.prototype.CallbackShowCurrentTime = function () {
             return;
         }
         this.Refresh();
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -1580,8 +1601,8 @@ Driver.prototype.Refresh = function () {
                 this.graph.highlightTarget(targets.Targets[driver.mouseInsideObject]);
             }
         }
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -1600,8 +1621,8 @@ Driver.prototype.markAsObserved = function (observed) {
         this.Refresh();
         helper.LogSuccess(`Object <i>${obj.Name}</i> ${observed ? "" : "is no longer "}marked as <i>Observed</i>.`);
         $.fancybox.close();
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -1636,8 +1657,8 @@ Driver.prototype.rescaleCanvas = function (cnv, ctx) {
 
         // Save for later
         window.ratio = ratio;
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -1665,8 +1686,8 @@ Driver.prototype.validateProjectNumber = function (project) {
             reok = !(helper.notInt(project.substr(0, 2)) || helper.notInt(project.substr(3, 3)) || project.substr(2, 1) !== "-");
         }
         return [form, reqlen, reok];
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -1688,13 +1709,13 @@ Driver.prototype.setTelescopeName = function (val) {
                     $("#dateSet").trigger("click");
                     $("#plotTargets").trigger("click");
                     resolve();
-                }).catch(e => { helper.LogException(e); resolve(); });
+                }).catch(ex => { helper.LogException(ex); resolve(); });
             } else {
                 return resolve();
             }
         });
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 

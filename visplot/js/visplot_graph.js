@@ -28,8 +28,8 @@ function Graph(_canvas, _context) {
         this.ratio = 1.4;
         this.minheight = 400;
         this.minwidth = this.minheight * this.ratio;
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 }
 
@@ -43,16 +43,16 @@ Graph.prototype.Resize = function (_canvas) {
         this.degree = this.height / 90;
         this.xmid = this.canvasWidth / 2;
         this.yend = this.ystart + this.height;
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
 Graph.prototype.pt = function (_pt) {
     try {
         return `${Math.max(8, _pt * (1 + ((this.canvasWidth - 975) / 975) * 0.7)).toFixed(1)}pt`;
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -67,8 +67,8 @@ Graph.prototype.plotHorizontalLine = function (xstart, xend, y, dash, lw) {
         this.ctx.moveTo(xstart, y);
         this.ctx.lineTo(xend, y);
         this.ctx.stroke();
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -83,8 +83,8 @@ Graph.prototype.plotVerticalLine = function (ystart, yend, x, dash, lw) {
         this.ctx.moveTo(x, ystart);
         this.ctx.lineTo(x, yend);
         this.ctx.stroke();
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -98,8 +98,8 @@ Graph.prototype.plotText = function (text, font, color, x, y, xalign, yalign) {
         this.ctx.textBaseline = yalign;
         this.ctx.fillStyle = color;
         this.ctx.fillText(text, x, y);
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -115,8 +115,8 @@ Graph.prototype.plotRotatedText = function (text, font, x, y, xalign, yalign) {
         this.ctx.textAlign = xalign;
         this.ctx.textBaseline = yalign;
         this.ctx.fillText(text, 0, 0);
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     } finally {
         this.ctx.restore();
     }
@@ -128,8 +128,8 @@ Graph.prototype.plotRotatedText = function (text, font, x, y, xalign, yalign) {
 Graph.prototype.reverseTransformXLocation = function (xplot) {
     try {
         return driver.night.Sunset + (xplot - this.xstart) * driver.night.wnight / this.width;
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -139,8 +139,8 @@ Graph.prototype.reverseTransformXLocation = function (xplot) {
 Graph.prototype.transformXLocation = function (xnight) {
     try {
         return this.xstart + this.width * (xnight - driver.night.Sunset) / driver.night.wnight;
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -150,8 +150,8 @@ Graph.prototype.transformXLocation = function (xnight) {
 Graph.prototype.transformYLocation = function (ydegrees) {
     try {
         return this.yend - this.degree * ydegrees;
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -161,8 +161,8 @@ Graph.prototype.transformYLocation = function (ydegrees) {
 Graph.prototype.transformXWidth = function (wnight) {
     try {
         return this.width * wnight / driver.night.wnight;
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -233,8 +233,8 @@ Graph.prototype.drawRHSofSchedule = function () {
             this.ctx.lineTo(this.canvasWidth - 5, driver.reY);
             this.ctx.stroke();
         }
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -310,8 +310,8 @@ Graph.prototype.drawSchedule = function () {
         }
 
         this.drawRHSofSchedule();
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -350,8 +350,8 @@ Graph.prototype.setTargetsSize = function (ntargets) {
         } else {
             this.legendSize = "8pt";
         }
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -388,13 +388,15 @@ Graph.prototype.highlightTarget = function (target) {
         let addedSymbols = 0;
         // Add moon distances
         for (let j = 0; j < target.Graph.length; j += 1) {
-            if (target.Graph[j] < 10) continue;
+            if (target.Graph[j] < 10) {
+                continue;
+            }
             const x = driver.graph.xaxis[j];
             const y = driver.graph.yend - driver.graph.degree * target.Graph[j];
-            if (target.MoonDistance !== undefined) { // for older versions
+            if (typeof target.MoonDistance !== "undefined") { // for older versions
                 this.plotText(`☽︎ ${Math.round(target.MoonDistance[j])}°`, "10pt", target.LabelStrokeColor, x, y + 20, "center", "top");
             }
-            if (target.PAngles !== undefined) { // for older versions
+            if (typeof target.PAngles !== "undefined") { // for older versions
                 this.plotText(`∡ ${Math.round(target.PAngles[j])}°`, "10pt", target.LabelStrokeColor, x, y + 40, "center", "top");
             }
             addedSymbols += 1;
@@ -417,8 +419,8 @@ Graph.prototype.highlightTarget = function (target) {
             this.ctx.fillText(`corresponding times`, this.xleftlabels, this.transformYLocation(legendAlt-6));
         }
         this.ctx.restore();
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -520,8 +522,8 @@ Graph.prototype.drawTargets = function (Targets, grayedOut = false) {
             }
         }
         this.ctx.restore();
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -571,8 +573,8 @@ Graph.prototype.drawTargetNames = function (Targets) {
                 y += 2;
             }
         }
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -758,8 +760,8 @@ Graph.prototype.drawEphemerides = function () {
         }
 
         this.drawCurrentTime(new Date());
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -783,8 +785,8 @@ Graph.prototype.drawCurrentTime = function (now) {
         this.ctx.fill();
         this.ctx.strokeStyle = "red";
         this.plotVerticalLine(this.ystart, this.yend, xnow, [], 1);
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
 
@@ -810,8 +812,9 @@ Graph.prototype.drawBackground = function () {
             const y = this.transformYLocation(i);
             /* Dotted horizontal lines; the INT has its limit at 20 deg, so do not
             * draw the usual horizontal lines there. */
-            if (i !== 20 || Driver.telescopeName !== "INT")
+            if (i !== 20 || Driver.telescopeName !== "INT") {
                 this.plotHorizontalLine(this.xstart, this.xend, y, [1, 2], 1);
+            }
             // Tick marks
             this.plotHorizontalLine(this.xstart, this.xstart + this.tickLength, y, [], 1.2);
         }
@@ -907,7 +910,7 @@ Graph.prototype.drawBackground = function () {
         this.ctx.font = `${this.pt(7)} ${this.fontFamily}`;
         this.ctx.textAlign = "left";
         this.ctx.fillText(Driver.plotCopyright, this.xleftlabels, this.canvasHeight - 18);
-    } catch (e) {
-        helper.LogException(e);
+    } catch (ex) {
+        helper.LogException(ex);
     }
 };
