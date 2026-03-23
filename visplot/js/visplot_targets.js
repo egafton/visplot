@@ -1367,8 +1367,8 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
         /* Everything given in degrees? Convert to hex */
         let raArr, decArr;
         if (words.length === 3 && !helper.notFloat(words[1]) && !helper.notFloat(words[2])) {
-            const RAhex = sla.d2r * sla.dr2tf(2, parseFloat(words[1]));
-            const Dechex = sla.d2r * sla.dr2af(2, parseFloat(words[2]));
+            const RAhex = sla.dr2tf(2, sla.d2r * parseFloat(words[1]));
+            const Dechex = sla.dr2af(2, sla.d2r * parseFloat(words[2]));
             raArr = [`${RAhex.sign === '+' ? '' : RAhex.sign}${RAhex.ihmsf[0]}`, `${RAhex.ihmsf[1]}`, `${RAhex.ihmsf[2]}.${RAhex.ihmsf[3]}`];
             decArr = [`${Dechex.sign === '+' ? '' : Dechex.sign}${Dechex.idmsf[0]}`, `${Dechex.idmsf[1]}`, `${Dechex.idmsf[2]}.${Dechex.idmsf[3]}`];
             words = words.slice(0, 1).concat(raArr).concat(decArr);
