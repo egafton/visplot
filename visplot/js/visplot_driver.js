@@ -130,15 +130,22 @@ Driver.prototype.SetupMap = function() {
         const tileLayer = L.tileLayer(tileSource, {
             minZoom: 2,
             maxZoom: 19,
-            attribution: ""
+            attribution: "",
+            noWrap: true
         });
+        const worldBounds = L.latLngBounds(
+            [-90, -180],
+            [90, 180]
+        );
         /* Load map */
         this.map = L.map('map', {
             attributionControl: false,
             zoomControl: true,
             fullscreenControl: true,
             worldCopyJump: false,
-            layers: [tileLayer]
+            layers: [tileLayer],
+            maxBounds: worldBounds,
+            maxBoundsViscosity: 1
         });
         const baseMaps = { "Satellite Map": tileLayer};
         const clouds = L.OWM.cloudsClassic({showLegend: false, opacity: 0.6, appId: 'def7cfdebee03cd500fbdbcfc8c48e90'});
