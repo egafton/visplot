@@ -29,13 +29,13 @@ function SkyGraph(_canvas, _context) {
         this.skyImg = new Image();
         this.reload();
         $("#canvasSkycam").on("mousemove", function (e) {
-            driver.skyGraph.Evt_MouseMove(e, $(this));
+            driver.skyGraph.EvtMouseMove(e, $(this));
         });
-        $("#canvasSkycam").on("mouseout", function (e) {
-            driver.skyGraph.Evy_MouseOut();
+        $("#canvasSkycam").on("mouseout", function () {
+            driver.skyGraph.EvtMouseOut();
         });
         $(document).keydown(function (e) {
-            driver.skyGraph.Evt_KeyDown(e);
+            driver.skyGraph.EvtKeyDown(e);
         });
     } catch (e) {
         helper.LogException(e);
@@ -48,7 +48,7 @@ function SkyGraph(_canvas, _context) {
 SkyGraph.prototype.updateTelescope = function () {
     try {
         this.params = config[Driver.telescopeName].skycamParams || null;
-        if(this.params === null) {
+        if (this.params === null) {
             $("#canvasSkycam").hide();
             $("#skycam_placeholder").addClass("active");
         } else {
@@ -68,7 +68,7 @@ SkyGraph.prototype.startTimer = function () {
     try {
         this.timer = setInterval(function () {
             driver.skyGraph.reload();
-        }, 30000);  // 30 second reload
+        }, 30000);
     } catch (e) {
         helper.LogException(e);
     }
@@ -195,7 +195,7 @@ SkyGraph.prototype.drawAxes = function () {
             const az = sla.d2r * (-90 - this.params.rotation - i * dr);
             this.ctx.moveTo(this.params.zenithX, this.params.zenithY);
             this.ctx.lineTo(this.params.zenithX + this.params.radius * Math.cos(az),
-                            this.params.zenithY + this.params.radius * Math.sin(az));
+                this.params.zenithY + this.params.radius * Math.sin(az));
         }
         this.ctx.stroke();
     } catch (e) {
@@ -289,7 +289,7 @@ SkyGraph.prototype.drawStars = function () {
         let last = null;
         for (let i = 0; i < driver.targets.nTargets; i += 1) {
             const obj = driver.targets.Targets[i];
-            const altaz = sla.de2h(this.lst - obj.RA_rad, obj.Dec_rad, Driver.obs_lat_rad);
+            const altaz = sla.de2h(this.lst - obj.raRad, obj.decRad, Driver.obs_lat_rad);
             if (altaz.el > 0) {
                 const px = this.altaz2px(altaz.el, altaz.az);
                 if (this.tcsPointing !== null && Math.abs(this.tcsPointing.x - px.x) <= 2 && Math.abs(this.tcsPointing.y - px.y) <= 2) {
@@ -380,7 +380,7 @@ SkyGraph.prototype.displayTime = function () {
  *
  * @param {Number} x - X coordinate of the target pixel.
  * @param {Number} y - Y coordinate of the target pixel.
- * @returns {Object|null} An object containing alt, az, ra_hms, dec_dms as returned
+ * @returns {Object|null} An object containing the altitude and azimuth as returned
  * by the telescope-specific function, or null if no suitable telescope routine exists.
  */
 SkyGraph.prototype.px2altaz = function(x, y) {
@@ -421,27 +421,27 @@ SkyGraph.prototype.altaz2px = function(alt, az) {
     }
 };
 
-SkyGraph.prototype.Evt_KeyDown = function (e) {
+SkyGraph.prototype.EvtKeyDown = function (e) {
     if (this.params === null) return;
     if (this.cursorPx === null) return;
 
     const step = 2; // pixels per keypress
 
     switch (e.which) {
-        case 37: // left
-            this.cursorPx.x -= step;
-            break;
-        case 38: // up
-            this.cursorPx.y -= step;
-            break;
-        case 39: // right
-            this.cursorPx.x += step;
-            break;
-        case 40: // down
-            this.cursorPx.y += step;
-            break;
-        default:
-            return;
+    case 37: // left
+        this.cursorPx.x -= step;
+        break;
+    case 38: // up
+        this.cursorPx.y -= step;
+        break;
+    case 39: // right
+        this.cursorPx.x += step;
+        break;
+    case 40: // down
+        this.cursorPx.y += step;
+        break;
+    default:
+        return;
     }
 
     // Clamp to image bounds
@@ -456,18 +456,18 @@ SkyGraph.prototype.Evt_KeyDown = function (e) {
 /**
  * @memberof Driver
  */
-SkyGraph.prototype.Evt_MouseMove = function (e, jQthis) {
+SkyGraph.prototype.EvtMouseMove = function (e, jQthis) {
     if (this.params === null) return;
     try {
         if (e.pageX === undefined && e.pageY === undefined) return;
-        const pos_x = e.pageX - jQthis.offset().left;
-        const pos_y = e.pageY - jQthis.offset().top;
-        if ((pos_x < 0) || (pos_x >= this.params.imageSizeX) || (pos_y < 0) || (pos_y >= this.params.imageSizeY)) {
+        const posX = e.pageX - jQthis.offset().left;
+        const posY = e.pageY - jQthis.offset().top;
+        if ((posX < 0) || (posX >= this.params.imageSizeX) || (posY < 0) || (posY >= this.params.imageSizeY)) {
             this.lastAltaz = null;
             this.cursorPx = null;
         } else {
-            this.lastAltaz = this.px2altaz(pos_x, pos_y);
-            this.cursorPx = { x: pos_x, y: pos_y };
+            this.lastAltaz = this.px2altaz(posX, posY);
+            this.cursorPx = { x: posX, y: posY };
         }
         this.setup();
     } catch (e) {
@@ -478,7 +478,7 @@ SkyGraph.prototype.Evt_MouseMove = function (e, jQthis) {
 /**
  * @memberof Driver
  */
-SkyGraph.prototype.Evy_MouseOut = function () {
+SkyGraph.prototype.EvtMouseOut = function () {
     if (this.params === null) return;
     try {
         this.lastAltaz = null;

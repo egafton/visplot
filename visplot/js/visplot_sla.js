@@ -216,8 +216,7 @@ sla.airmas = function (zd) {
  *    {@link sla.polmo}.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss7.html}
  */
-sla.aop = function (rap, dap, date, dut, elongm, phim, hm, xp, yp,
-        tdk, pmb, rh, wl, tlr) {
+sla.aop = function (rap, dap, date, dut, elongm, phim, hm, xp, yp, tdk, pmb, rh, wl, tlr) {
     /* Star-independent parameters */
     const aoprms = sla.aoppa(date, dut, elongm, phim, hm, xp, yp, tdk, pmb, rh,
         wl, tlr);
@@ -299,8 +298,7 @@ sla.aop = function (rap, dap, date, dut, elongm, phim, hm, xp, yp,
  *    the refraction has changed.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss8.html}
  */
-sla.aoppa = function (date, dut, elongm, phim, hm, xp, yp,
-        tdk, pmb, rh, wl, tlr) {
+sla.aoppa = function (date, dut, elongm, phim, hm, xp, yp, tdk, pmb, rh, wl, tlr) {
     /* Observer's location corrected for polar motion */
     const cphim = Math.cos(phim);
     const xt = Math.cos(elongm) * cphim;
@@ -480,8 +478,7 @@ sla.aopqk = function (rap, dap, aoprms) {
         let dref;
         while (Math.abs(dzd) > 1e-10 && i < 10) {
             /* Compute refraction using current estimate of observed ZD */
-            dref = sla.refro(zdobs, aoprms[4], aoprms[5], aoprms[6],
-                    aoprms[7], aoprms[8], aoprms[0], aoprms[9], 1e-8);
+            dref = sla.refro(zdobs, aoprms[4], aoprms[5], aoprms[6], aoprms[7], aoprms[8], aoprms[0], aoprms[9], 1e-8);
             /* Remaining discrepancy */
             dzd = zdobs + dref - zdt;
             /* Update the estimate */
@@ -1091,17 +1088,23 @@ sla.deuler = function (order, phi, theta, psi) {
         const axis = order.substring(n, n + 1);
         let rotn;
         if (axis === "X" || axis === "x" || axis === "1") {
-            rotn = [[1, 0, 0],
-                    [0, c, s],
-                    [0, -s, c]];
+            rotn = [
+                [1, 0, 0],
+                [0, c, s],
+                [0, -s, c]
+            ];
         } else if (axis === "Y" || axis === "y" || axis === "2") {
-            rotn = [[c, 0, -s],
-                    [0, 1, 0],
-                    [s, 0, c]];
+            rotn = [
+                [c, 0, -s],
+                [0, 1, 0],
+                [s, 0, c]
+            ];
         } else if (axis === "Z" || axis === "z" || axis === "3") {
-            rotn = [[c, s, 0],
-                    [-s, c, 0],
-                    [0, 0, 1]];
+            rotn = [
+                [c, s, 0],
+                [-s, c, 0],
+                [0, 0, 1]
+            ];
         } else {
             break;
         }
@@ -1843,7 +1846,7 @@ sla.fk45z = function (r1950, d1950, bepoch) {
     w = (sla.epj(sla.epb2d(bepoch)) - 2000.0) / pmf;
     for (let i = 0; i < 3; i += 1) {
         v2[i] += w * v2[i + 3];
-   }
+    }
 
     /* Revert to spherical coordinates */
     const ret = sla.dcc2s(v2);
@@ -1948,7 +1951,7 @@ sla.fk425 = function (r1950, d1950, dr1950, dd1950, p1950, v1950) {
 
     let v1 = [];
     for (i = 0; i < 3; i += 1) {
-        v1[i] = r0[i]  - sla.fka[i]  + w * r0[i];
+        v1[i] = r0[i] - sla.fka[i] + w * r0[i];
         v1[i+3] = rd0[i] - sla.fkad[i] + wd * r0[i];
     }
 
@@ -2586,8 +2589,7 @@ sla.nutc = function (date) {
  * @throws {RangeError} If jform, e, aorq or dm are out of range.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss79.html}
  */
-sla.el2ue = function (date, jform, epoch, orbinc, anode, perih,
-        aorq, e, aorl, dm) {
+sla.el2ue = function (date, jform, epoch, orbinc, anode, perih, aorq, e, aorl, dm) {
     if (jform < 1 || jform > 3) {
         throw new RangeError("Illegal JFORM (j=-1).");
     }
@@ -3025,10 +3027,8 @@ sla.pv2ue = function (pv, date, pmass) {
  * - Everhart, E. & Pitkin, E.T., *Am. J. Phys.* 51, 712, 1983.
  * @see {@link http://star-www.rl.ac.uk/docs/sun67.htx/sun67ss136.html}
  */
-sla.planel = function (date, jform, epoch, orbinc, anode, perih,
-        aorq, e, aorl, dm) {
-    return sla.ue2pv(date, sla.el2ue(date, jform, epoch, orbinc, anode, perih,
-            aorq, e, aorl, dm));
+sla.planel = function (date, jform, epoch, orbinc, anode, perih, aorq, e, aorl, dm) {
+    return sla.ue2pv(date, sla.el2ue(date, jform, epoch, orbinc, anode, perih, aorq, e, aorl, dm));
 };
 
 /**
@@ -3295,12 +3295,14 @@ sla.pvobs = function (p, h, stl) {
     let c = Math.cos(stl);
     /* Speed */
     let v = sla.sr * ret.r;
-    return [ret.r * c,
-            ret.r * s,
-            ret.z,
-            -v * s,
-            v * c,
-            0];
+    return [
+        ret.r * c,
+        ret.r * s,
+        ret.z,
+        -v * s,
+        v * c,
+        0
+    ];
 };
 
 /**
@@ -3827,8 +3829,7 @@ sla.refro = function (zobs, hm, tdk, pmb, rh, wl, phi, tlr, eps) {
 
     /* Conditions at the observer. */
     let r0 = s + hmok;
-    let ret = sla.atmt(r0, tdkok, alpha, gamm2, delm2,
-            c1, c2, c3, c4, c5, c6, r0);
+    let ret = sla.atmt(r0, tdkok, alpha, gamm2, delm2, c1, c2, c3, c4, c5, c6, r0);
     let dn0 = ret.dn;
     let rdndr0 = ret.rdndr;
     let sk0 = dn0 * r0 * Math.sin(zobs2);
@@ -3836,8 +3837,7 @@ sla.refro = function (zobs, hm, tdk, pmb, rh, wl, phi, tlr, eps) {
 
     /* Conditions in the troposphere at the tropopause. */
     let rt = s + Math.max(ht, hmok);
-    ret = sla.atmt(r0, tdkok, alpha, gamm2, delm2,
-            c1, c2, c3, c4, c5, c6, rt);
+    ret = sla.atmt(r0, tdkok, alpha, gamm2, delm2, c1, c2, c3, c4, c5, c6, rt);
     let tt = ret.t;
     let dnt = ret.dn;
     let rdndrt = ret.rdndr;
@@ -3944,8 +3944,7 @@ sla.refro = function (zobs, hm, tdk, pmb, rh, wl, phi, tlr, eps) {
                     while (Math.abs(dr) > 1 && j < 4) {
                         j += 1;
                         if (k === 1) {
-                            ret = sla.atmt(r0, tdkok, alpha, gamm2, delm2,
-                                    c1, c2, c3, c4, c5, c6, rg);
+                            ret = sla.atmt(r0, tdkok, alpha, gamm2, delm2, c1, c2, c3, c4, c5, c6, rg);
                         } else {
                             ret = sla.atms(rt, tt, dnt, gamal, rg);
                         }
@@ -3959,8 +3958,7 @@ sla.refro = function (zobs, hm, tdk, pmb, rh, wl, phi, tlr, eps) {
 
                 /* Find the refractive index and integrand at R. */
                 if (k === 1) {
-                    ret = sla.atmt(r0, tdkok, alpha, gamm2, delm2,
-                            c1, c2, c3, c4, c5, c6, r);
+                    ret = sla.atmt(r0, tdkok, alpha, gamm2, delm2, c1, c2, c3, c4, c5, c6, r);
                 } else {
                     ret = sla.atms(rt, tt, dnt, gamal, r);
                 }
@@ -4919,7 +4917,6 @@ sla.mapqk = function (rm, dm, pr, pd, px, rv, amprms) {
     }
     let ret = sla.dvn(p);
     const pn = ret.uv;
-    w = ret.vm;
 
     /* Light deflection (restrained within the Sun's disc) */
     const pde = sla.dvdv(pn, ehn);
@@ -5163,22 +5160,19 @@ sla.performUnitTestsWrapped = function () {
     assertAlmostEqual(sla.airmas(1.2354), 3.015698990074724, 12);
 
     /* sla_AOP */
-    ret = sla.aop(2.7, -0.1234, 51000.1, 25, 2.1, 0.5, 3000, -0.5e-6, 1e-6,
-            280, 550, 0.6, 0.45, 0.006);
+    ret = sla.aop(2.7, -0.1234, 51000.1, 25, 2.1, 0.5, 3000, -0.5e-6, 1e-6, 280, 550, 0.6, 0.45, 0.006);
     assertAlmostEqual(ret.aob, 1.812817787123283034, 5);
     assertAlmostEqual(ret.zob, 1.393860816635714034, 5);
     assertAlmostEqual(ret.hob, -1.297808009092456683, 5);
     assertAlmostEqual(ret.dob, -0.122967060534561, 5);
     assertAlmostEqual(ret.rob, 2.699270287872084, 5);
-    ret = sla.aop(2.345, -0.1234, 51000.1, 25, 2.1, 0.5, 3000, -0.5e-6, 1e-6,
-            280, 550, 0.6, 0.45, 0.006);
+    ret = sla.aop(2.345, -0.1234, 51000.1, 25, 2.1, 0.5, 3000, -0.5e-6, 1e-6, 280, 550, 0.6, 0.45, 0.006);
     assertAlmostEqual(ret.aob, 2.019928026670621442, 5);
     assertAlmostEqual(ret.zob, 1.101316172427482466, 5);
     assertAlmostEqual(ret.hob, -0.9432923558497740862, 5);
     assertAlmostEqual(ret.dob, -0.1232144708194224, 5);
     assertAlmostEqual(ret.rob, 2.344754634629428, 5);
-    ret = sla.aop(2.345, -0.1234, 51000.1, 25, 2.1, 0.5, 3000, -0.5e-6, 1e-6,
-            280, 550, 0.6, 1e6, 0.006);
+    ret = sla.aop(2.345, -0.1234, 51000.1, 25, 2.1, 0.5, 3000, -0.5e-6, 1e-6, 280, 550, 0.6, 1e6, 0.006);
     assertAlmostEqual(ret.aob, 2.019928026670621442, 5);
     assertAlmostEqual(ret.zob, 1.101267532198003760, 5);
     assertAlmostEqual(ret.hob, -0.9432533138143315937, 5);
@@ -5186,8 +5180,7 @@ sla.performUnitTestsWrapped = function () {
     assertAlmostEqual(ret.rob, 2.344715592593984, 5);
 
     /* sla_AOPPA */
-    ret = sla.aoppa(48000.3, 25, 2.1, 0.5, 3000, -0.5e-6, 1e-6, 280,
-            550, 0.6, 0.45, 0.006);
+    ret = sla.aoppa(48000.3, 25, 2.1, 0.5, 3000, -0.5e-6, 1e-6, 280, 550, 0.6, 0.45, 0.006);
     assertAlmostEqual(ret[0], 0.4999993892136306, 13);
     assertAlmostEqual(ret[1], 0.4794250025886467, 13);
     assertAlmostEqual(ret[2], 0.8775828547167932, 13);
@@ -5204,22 +5197,19 @@ sla.performUnitTestsWrapped = function () {
     assertAlmostEqual(ret[13], 7.601916802079765, 8);
 
     /* sla_AOPQK */
-    ret = sla.aopqk(2.7, -0.1234, sla.aoppa(51000.1, 25, 2.1, 0.5, 3000,
-            -0.5e-6, 1e-6, 280, 550, 0.6, 0.45, 0.006));
+    ret = sla.aopqk(2.7, -0.1234, sla.aoppa(51000.1, 25, 2.1, 0.5, 3000, -0.5e-6, 1e-6, 280, 550, 0.6, 0.45, 0.006));
     assertAlmostEqual(ret.aob, 1.812817787123283034, 7);
     assertAlmostEqual(ret.zob, 1.393860816635714034, 7);
     assertAlmostEqual(ret.hob, -1.297808009092456683, 7);
     assertAlmostEqual(ret.dob, -0.122967060534561, 7);
     assertAlmostEqual(ret.rob, 2.699270287872084, 7);
-    ret = sla.aopqk(2.345, -0.1234, sla.aoppa(51000.1, 25, 2.1, 0.5, 3000,
-            -0.5e-6, 1e-6, 280, 550, 0.6, 0.45, 0.006));
+    ret = sla.aopqk(2.345, -0.1234, sla.aoppa(51000.1, 25, 2.1, 0.5, 3000, -0.5e-6, 1e-6, 280, 550, 0.6, 0.45, 0.006));
     assertAlmostEqual(ret.aob, 2.019928026670621442, 7);
     assertAlmostEqual(ret.zob, 1.101316172427482466, 7);
     assertAlmostEqual(ret.hob, -0.9432923558497740862, 7);
     assertAlmostEqual(ret.dob, -0.1232144708194224, 7);
     assertAlmostEqual(ret.rob, 2.344754634629428, 7);
-    ret = sla.aopqk(2.345, -0.1234, sla.aoppa(51000.1, 25, 2.1, 0.5, 3000,
-            -0.5e-6, 1e-6, 280, 550, 0.6, 1e6, 0.006));
+    ret = sla.aopqk(2.345, -0.1234, sla.aoppa(51000.1, 25, 2.1, 0.5, 3000, -0.5e-6, 1e-6, 280, 550, 0.6, 1e6, 0.006));
     assertAlmostEqual(ret.aob, 2.019928026670621442, 5);
     assertAlmostEqual(ret.zob, 1.101267532198003760, 5);
     assertAlmostEqual(ret.hob, -0.9432533138143315937, 5);
@@ -5227,8 +5217,7 @@ sla.performUnitTestsWrapped = function () {
     assertAlmostEqual(ret.rob, 2.344715592593984, 5);
 
     /* sla_ATMDSP */
-    ret = sla.atmdsp(275.9, 709.3, 0.9, 0.77, 2.007202720084551e-4,
-            -2.223037748876e-7, 0.5);
+    ret = sla.atmdsp(275.9, 709.3, 0.9, 0.77, 2.007202720084551e-4, -2.223037748876e-7, 0.5);
     assertAlmostEqual(ret.a2, 2.034523658888048e-4, 12);
     assertAlmostEqual(ret.b2, -2.250855362179e-7, 13);
 
@@ -5381,8 +5370,7 @@ sla.performUnitTestsWrapped = function () {
     assertAlmostEqual(sla.dsep(v1.a, v1.b, v2.a, v2.b), 2.8603919190246608, 7);
 
     /* sla_DSEPV */
-    assertAlmostEqual(sla.dsepv([1, 0.1, 0.2], [-3, 1e-3, 0.2]),
-            2.8603919190246608, 7);
+    assertAlmostEqual(sla.dsepv([1, 0.1, 0.2], [-3, 1e-3, 0.2]), 2.8603919190246608, 7);
 
     /* sla_DT */
     assertAlmostEqual(sla.dt(500), 4686.7, 10);
@@ -5406,9 +5394,10 @@ sla.performUnitTestsWrapped = function () {
     assertAlmostEqual(ret.vm, 1661.042127339937, 9);
 
     /* sla_DVXV */
-    ret = sla.dvxv([0.004147420704640065, -0.9496888606842218,
-            0.3131674740355448], [-0.5366267667260525, 0.06977111097651444,
-            -0.8409302618566215]);
+    ret = sla.dvxv(
+        [0.004147420704640065, -0.9496888606842218, 0.3131674740355448],
+        [-0.5366267667260525, 0.06977111097651444, -0.8409302618566215]
+    );
     assertAlmostEqual(ret[0], 0.7767720597123304, 12);
     assertAlmostEqual(ret[1], -0.1645663574562769, 12);
     assertAlmostEqual(ret[2], -0.5093390925544726, 12);
@@ -5430,8 +5419,8 @@ sla.performUnitTestsWrapped = function () {
 
     /* sla_EQECL */
     ret = sla.eqecl(0.789, -0.123, 46555);
-    assertAlmostEqual(sla.dl, 0.7036566430349022, 12);
-    assertAlmostEqual(sla.db, -0.4036047164116848, 12);
+    assertAlmostEqual(ret.dl, 0.7036566430349022, 12);
+    assertAlmostEqual(ret.db, -0.4036047164116848, 12);
 
     /* sla_EQEQX */
     assertAlmostEqual(sla.eqeqx(41234), 5.376047445838358596e-5, 12);
@@ -5484,16 +5473,14 @@ sla.performUnitTestsWrapped = function () {
     assertAlmostEqual(sla.gmsta(43999, 0.999), 3.9074971356487318, 12);
 
     /* sla_H2FK5 */
-    ret = sla.h2fk5(1.234000000272122558, -0.9869999235218543959,
-            0.000000993178295, -0.000001997665915);
+    ret = sla.h2fk5(1.234000000272122558, -0.9869999235218543959, 0.000000993178295, -0.000001997665915);
     assertAlmostEqual(ret.r5, 1.234, 13);
     assertAlmostEqual(ret.d5, -0.987, 13);
     assertAlmostEqual(ret.dr5, 1e-6, 8);
     assertAlmostEqual(ret.dd5, -2e-6, 8);
 
     /* sla_MAP */
-    ret = sla.map(6.123, -0.999, 1.23e-5, -0.987e-5,
-            0.123, 32.1, 1999, 43210.9);
+    ret = sla.map(6.123, -0.999, 1.23e-5, -0.987e-5, 0.123, 32.1, 1999, 43210.9);
     assertAlmostEqual(ret.ra, 6.117130429775647, 12);
     assertAlmostEqual(ret.da, -1.000880769038632, 12);
 
@@ -5522,14 +5509,12 @@ sla.performUnitTestsWrapped = function () {
     assertAlmostEqual(ret[20], 0.9999931188816729, 11);
 
     /* sla_MAPQK */
-    ret = sla.mapqk(1.234, -0.987, -1.2e-5, -0.99, 0.75, -23.4,
-            sla.mappa(2020, 45012.3));
+    ret = sla.mapqk(1.234, -0.987, -1.2e-5, -0.99, 0.75, -23.4, sla.mappa(2020, 45012.3));
     assertAlmostEqual(ret.ra, 1.223337584930993, 11);
     assertAlmostEqual(ret.da, 0.5558838650379129, 11);
 
     /* sla_MAPQKZ */
-    ret = sla.mapqkz(6.012, 1.234,
-            sla.mappa(2020, 45012.3));
+    ret = sla.mapqkz(6.012, 1.234, sla.mappa(2020, 45012.3));
     assertAlmostEqual(ret.ra, 6.006091119756597, 11);
     assertAlmostEqual(ret.da, 1.23045846622498, 11);
 
@@ -5624,16 +5609,12 @@ sla.performUnitTestsWrapped = function () {
     assertAlmostEqual(ret.refb, -2.2230438392616659e-7, 12);
 
     /* sla_REFRO */
-    assertAlmostEqual(sla.refro(1.4, 3456.7, 280, 678.9, 0.9, 0.55, -0.3,
-            0.006, 1e-9), 1.0671490945850398e-3, 12);
-    assertAlmostEqual(sla.refro(1.4, 3456.7, 280, 678.9, 0.9, 1000, -0.3,
-            0.006, 1e-9), 1.2973965490831413e-3, 12);
+    assertAlmostEqual(sla.refro(1.4, 3456.7, 280, 678.9, 0.9, 0.55, -0.3, 0.006, 1e-9), 1.0671490945850398e-3, 12);
+    assertAlmostEqual(sla.refro(1.4, 3456.7, 280, 678.9, 0.9, 1000, -0.3, 0.006, 1e-9), 1.2973965490831413e-3, 12);
 
     /* sla_REFZ */
-    assertAlmostEqual(sla.refz(0.567, 2.007202720084551e-4, -2.223037748876e-7),
-            0.566872285910534, 12);
-    assertAlmostEqual(sla.refz(1.55, 2.007202720084551e-4, -2.223037748876e-7),
-            1.545697350690958, 12);
+    assertAlmostEqual(sla.refz(0.567, 2.007202720084551e-4, -2.223037748876e-7), 0.566872285910534, 12);
+    assertAlmostEqual(sla.refz(1.55, 2.007202720084551e-4, -2.223037748876e-7), 1.545697350690958, 12);
 
     /* sla_ZD */
     assertAlmostEqual(sla.zd(-1.023, -0.876, -0.432), 0.8963914139430839, 12);

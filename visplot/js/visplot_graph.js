@@ -26,8 +26,8 @@ function Graph(_canvas, _context) {
         this.CircleSizeSq = 64;
         this.doubleTargets = true;
         this.ratio = 1.4;
-        this.minheight = 400; //696;
-        this.minwidth = this.minheight * this.ratio; //975;
+        this.minheight = 400;
+        this.minwidth = this.minheight * this.ratio;
     } catch (e) {
         helper.LogException(e);
     }
@@ -182,14 +182,12 @@ Graph.prototype.drawRHSofSchedule = function () {
             if (obj.Scheduled) {
                 if (this.doubleTargets) {
                     this.plotText(`${obj.Name.substr(0, this.maxLenTgtName)} (${obj.ProjectNumber})`,
-                                  "8pt",
-                                  (driver.reObj == i && driver.rescheduling) ? "blue" : "black",
-                                  this.targetsx + 15, y, "left", "bottom");
+                        "8pt", (driver.reObj === i && driver.rescheduling) ? "blue" : "black",
+                        this.targetsx + 15, y, "left", "bottom");
                 } else {
                     this.plotText(`${obj.Name.substr(0, this.maxLenTgtName)} (${obj.ProjectNumber}; UTC ${helper.MJDToHM(obj.ScheduledStartTime)})`,
-                                  "8pt",
-                                  (driver.reObj == i && driver.rescheduling) ? "blue" : "black",
-                                  this.targetsx + 15, y, "left", "bottom");
+                        "8pt", (driver.reObj === i && driver.rescheduling) ? "blue" : "black",
+                        this.targetsx + 15, y, "left", "bottom");
                 }
                 this.ctx.strokeStyle = obj.LabelStrokeColor;
                 this.ctx.fillStyle = obj.LabelFillColor;
@@ -199,9 +197,8 @@ Graph.prototype.drawRHSofSchedule = function () {
                 this.plotText((i + 1), "8pt", obj.LabelTextColor, this.targetsx, y, "center", "bottom");
             } else {
                 this.plotText(`${obj.Name} (${obj.ProjectNumber})`,
-                              "8pt",
-                              (driver.reObj == i && driver.rescheduling) ? "blue" : "black",
-                              this.targetsx + 15, y, "left", "bottom");
+                    "8pt", (driver.reObj === i && driver.rescheduling) ? "blue" : "black",
+                    this.targetsx + 15, y, "left", "bottom");
                 this.ctx.strokeStyle = "black";
                 this.ctx.fillStyle = "white";
                 this.ctx.beginPath();
@@ -214,14 +211,12 @@ Graph.prototype.drawRHSofSchedule = function () {
             if (this.doubleTargets) {
                 if (obj.Scheduled) {
                     this.plotText(`${obj.shortRA} ${obj.shortDec} (UTC ${helper.MJDToHM(obj.ScheduledStartTime)})`,
-                                  this.legendSize,
-                                  (driver.reObj == i && driver.rescheduling) ? "blue" : "black",
-                                  this.targetsx + 15, y, "left", "bottom");
+                        this.legendSize, (driver.reObj === i && driver.rescheduling) ? "blue" : "black",
+                        this.targetsx + 15, y, "left", "bottom");
                 } else {
                     this.plotText(`${obj.shortRA} ${obj.shortDec}`,
-                                  this.legendSize,
-                                  (driver.reObj == i && driver.rescheduling) ? "blue" : "black",
-                                  this.targetsx + 15, y, "left", "bottom");
+                        this.legendSize, (driver.reObj === i && driver.rescheduling) ? "blue" : "black",
+                        this.targetsx + 15, y, "left", "bottom");
                 }
                 y += this.targetsyskip + 2;
             } else {
@@ -395,7 +390,7 @@ Graph.prototype.highlightTarget = function (target) {
         for (let j = 0; j < target.Graph.length; j += 1) {
             if (target.Graph[j] < 10) continue;
             const x = driver.graph.xaxis[j];
-            let y = driver.graph.yend - driver.graph.degree * target.Graph[j];
+            const y = driver.graph.yend - driver.graph.degree * target.Graph[j];
             if (target.MoonDistance !== undefined) { // for older versions
                 this.plotText(`☽︎ ${Math.round(target.MoonDistance[j])}°`, "10pt", target.LabelStrokeColor, x, y + 20, "center", "top");
             }
@@ -413,7 +408,7 @@ Graph.prototype.highlightTarget = function (target) {
         this.ctx.textBaseline = "middle";
         if (addedSymbols > 0) {
             let legendAlt = 64;
-            if (Driver.telescopeName == "HET") {
+            if (Driver.telescopeName === "HET") {
                 legendAlt = 34;
             }
             this.ctx.fillText(`Numbers below curve`, this.xleftlabels, this.transformYLocation(legendAlt));
@@ -430,7 +425,7 @@ Graph.prototype.highlightTarget = function (target) {
 /**
  * @memberof Graph
  */
-Graph.prototype.drawTargets = function (Targets, grayed_out = false) {
+Graph.prototype.drawTargets = function (Targets, grayedOut = false) {
     try {
         this.ctx.save();
         this.ctx.strokeStyle = "black";
@@ -440,7 +435,7 @@ Graph.prototype.drawTargets = function (Targets, grayed_out = false) {
         this.ctx.clip();
         this.ctx.setLineDash([]);
         const strokes = [], dashes = [], lws = [];
-        if (grayed_out) {
+        if (grayedOut) {
             strokes[0] = "rgba(170, 170, 170, 0.3)";
             strokes[1] = "rgba(0, 0, 0, 0.3)";
             strokes[2] = "rgba(255, 85, 85, 0.3)";
@@ -453,8 +448,8 @@ Graph.prototype.drawTargets = function (Targets, grayed_out = false) {
         }
         dashes[0] = [];
         dashes[1] = [];
-        dashes[2] = [1,3];
-        dashes[3] = [2,2];
+        dashes[2] = [1, 3];
+        dashes[3] = [2, 2];
         lws[0] = 1.2;
         lws[1] = 1.2;
         lws[2] = 3.2;
@@ -559,7 +554,7 @@ Graph.prototype.drawTargetNames = function (Targets) {
             obj.rxmid = this.targetsx;
             obj.rymid = y - 6.5;
             this.plotText(`${obj.Name} (${obj.ProjectNumber})`,
-                        "8pt", "black", this.targetsx + 15, y, "left", "bottom");
+                "8pt", "black", this.targetsx + 15, y, "left", "bottom");
             this.ctx.strokeStyle = "black";
             this.ctx.fillStyle = "white";
             this.ctx.beginPath();
@@ -570,7 +565,7 @@ Graph.prototype.drawTargetNames = function (Targets) {
             y += this.targetsyskip;
             if (this.doubleTargets) {
                 this.plotText(`${obj.shortRA} ${obj.shortDec}`,
-                            this.legendSize, "black", this.targetsx + 15, y, "left", "bottom");
+                    this.legendSize, "black", this.targetsx + 15, y, "left", "bottom");
                 y += this.targetsyskip + 2;
             } else {
                 y += 2;
@@ -599,7 +594,7 @@ Graph.prototype.drawEphemerides = function () {
         // Plot the full hour UTC and ST labels (8 UTC, 9 UTC, etc) below and above the plot, respectively
         this.ctx.textAlign = "center";
         this.ctx.textBaseline = "middle";
-        const integerOffset = parseFloat(Driver.obs_timezone) == parseInt(Driver.obs_timezone);
+        const integerOffset = parseFloat(Driver.obs_timezone) === parseInt(Driver.obs_timezone);
         for (let i = 0; i < driver.night.UTCtimes.length; i += 1) {
             const xnight = driver.night.UTCtimes[i];
             const xplot = this.transformXLocation(xnight);
@@ -842,7 +837,7 @@ Graph.prototype.drawBackground = function () {
         // Tick labels on the right-hand side (corresponding to the airmass ticks)
         for (let i = 10; i <= 80; i += 5) {
             this.plotRotatedText(helper.AltitudeToAirmass(i).toFixed(2),
-                                this.pt(8), this.xend + 1.3 * this.tickLength, this.transformYLocation(i), "center", "middle");
+                this.pt(8), this.xend + 1.3 * this.tickLength, this.transformYLocation(i), "center", "middle");
         }
         // Airmass and altitude text
         this.plotRotatedText("Airmass", this.pt(8), this.xend + 1.3 * this.tickLength, this.yend - 3, "left", "middle");
@@ -851,8 +846,8 @@ Graph.prototype.drawBackground = function () {
         // Warning, if applicable
         if (Driver.obs_lowestLimit === null && Driver.obs_highestLimit === null && Driver.obs_lowerHatch === null && Driver.obs_declinationLimit === null) {
             this.ctx.fillStyle = "red";
-            this.plotRotatedText("No telescope-specific altitude or collision limits are defined.", this.pt(10), this.xleftlabels + 10, this.transformYLocation(0), "left", "middle")
-            this.plotRotatedText("Schedule may include unsafe pointings. Use with caution!", this.pt(10), this.xleftlabels + 32, this.transformYLocation(0), "left", "middle")
+            this.plotRotatedText("No telescope-specific altitude or collision limits are defined.", this.pt(10), this.xleftlabels + 10, this.transformYLocation(0), "left", "middle");
+            this.plotRotatedText("Schedule may include unsafe pointings. Use with caution!", this.pt(10), this.xleftlabels + 32, this.transformYLocation(0), "left", "middle");
             this.ctx.fillStyle = "black";
         }
 
@@ -877,28 +872,28 @@ Graph.prototype.drawBackground = function () {
         // Lowest observing altitude
         if (Driver.obs_lowestLimit !== null) {
             this.ctx.fillText(`${Driver.telescopeName} lowest limit`,
-                            this.xleftlabels, this.transformYLocation(Driver.obs_lowestLimit + 2));
-            this.ctx.fillText(`(${Driver.obs_lowestLimit.toFixed(Driver.telescopeName == "HET" ? 1 : 0)}°)`,
-                            this.xleftlabels, this.transformYLocation(Driver.obs_lowestLimit));
-            this.ctx.fillText("⟶", this.xleftarrows + (Driver.telescopeName == "HET" ? 23 : 0), this.transformYLocation(Driver.obs_lowestLimit));
+                this.xleftlabels, this.transformYLocation(Driver.obs_lowestLimit + 2));
+            this.ctx.fillText(`(${Driver.obs_lowestLimit.toFixed(Driver.telescopeName === "HET" ? 1 : 0)}°)`,
+                this.xleftlabels, this.transformYLocation(Driver.obs_lowestLimit));
+            this.ctx.fillText("⟶", this.xleftarrows + (Driver.telescopeName === "HET" ? 23 : 0), this.transformYLocation(Driver.obs_lowestLimit));
             this.plotHorizontalLine(this.xstart, this.xend, this.transformYLocation(Driver.obs_lowestLimit), [1, 2, 3, 2], 1);
         }
         // Highest observing altitude
         if (Driver.obs_highestLimit !== null) {
             this.ctx.fillText(`${Driver.telescopeName} highest limit`,
-                            this.xleftlabels, this.transformYLocation(Driver.obs_highestLimit + 2));
-            this.ctx.fillText(`(${Driver.obs_highestLimit.toFixed(Driver.telescopeName == "HET" || Driver.telescopeName == "WHT" ? 1 : 0)}°)`,
-                            this.xleftlabels, this.transformYLocation(Driver.obs_highestLimit));
+                this.xleftlabels, this.transformYLocation(Driver.obs_highestLimit + 2));
+            this.ctx.fillText(`(${Driver.obs_highestLimit.toFixed(Driver.telescopeName === "HET" || Driver.telescopeName === "WHT" ? 1 : 0)}°)`,
+                this.xleftlabels, this.transformYLocation(Driver.obs_highestLimit));
             this.ctx.fillText("⟶", this.xleftarrows, this.transformYLocation(Driver.obs_highestLimit));
             this.plotHorizontalLine(this.xstart, this.xend, this.transformYLocation(Driver.obs_highestLimit), [1, 2, 3, 2], 1);
         }
         // Constant altitude for HET
-        if (Driver.telescopeName == "HET") {
+        if (Driver.telescopeName === "HET") {
             const HETalt = 55;
             this.ctx.fillText(`${Driver.telescopeName} altitude`,
-                            this.xleftlabels, this.transformYLocation(HETalt + 2));
+                this.xleftlabels, this.transformYLocation(HETalt + 2));
             this.ctx.fillText(`(${HETalt.toFixed(0)}°)`,
-                            this.xleftlabels, this.transformYLocation(HETalt));
+                this.xleftlabels, this.transformYLocation(HETalt));
             this.ctx.fillText("⟶", this.xleftarrows, this.transformYLocation(HETalt));
             this.plotHorizontalLine(this.xstart, this.xend, this.transformYLocation(HETalt), [5, 0, 0], 1);
         }

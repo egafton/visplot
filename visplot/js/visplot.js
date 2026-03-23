@@ -26,7 +26,6 @@ $(document).ready(function () {
 
         /* Catch resize events */
         window.addEventListener("resize", driver.Refresh);
-        //window.jsplitterSettings.maxleftwidth = window.outerWidth - driver.graph.minwidth - 5;
 
         /* Sidebar toggle button */
         $("#toggle-sidebar").click(function() {
@@ -74,7 +73,7 @@ $(document).ready(function () {
         let forcetel = null;
         if ($("#default_telescope").length) {
             forcetel = $("#default_telescope").val();
-            helper.LogEntry(`Telescope <i>${forcetel}</i> specified via GET`)
+            helper.LogEntry(`Telescope <i>${forcetel}</i> specified via GET`);
         }
         if ("visplot" in localStorage) {
             helper.LogEntry("Found existing visplot configuration in the browser, restoring...");
@@ -108,21 +107,21 @@ $(document).ready(function () {
                             helper.LogEntry(`Restoring default instrument name to <i>${localStorage.defaultOBInfo}</i>`);
                             Driver.defaultOBInfo = localStorage.defaultOBInfo;
                         }
-                        if ("w_priority" in localStorage) {
-                            helper.LogEntry(`Restoring <i>Priority</i> weight to <i>${localStorage.w_priority}</i>`);
-                            Driver.w_priority = localStorage.w_priority;
+                        if ("wPriority" in localStorage) {
+                            helper.LogEntry(`Restoring <i>Priority</i> weight to <i>${localStorage.wPriority}</i>`);
+                            Driver.wPriority = localStorage.wPriority;
                         }
-                        if ("w_urgency" in localStorage) {
-                            helper.LogEntry(`Restoring <i>Urgency</i> weight to <i>${localStorage.w_urgency}</i>`);
-                            Driver.w_urgency = localStorage.w_urgency;
+                        if ("wUrgency" in localStorage) {
+                            helper.LogEntry(`Restoring <i>Urgency</i> weight to <i>${localStorage.wUrgency}</i>`);
+                            Driver.wUrgency = localStorage.wUrgency;
                         }
-                        if ("w_altitude" in localStorage) {
-                            helper.LogEntry(`Restoring <i>Altitude</i> weight to <i>${localStorage.w_altitude}</i>`);
-                            Driver.w_altitude = localStorage.w_altitude;
+                        if ("wAltitude" in localStorage) {
+                            helper.LogEntry(`Restoring <i>Altitude</i> weight to <i>${localStorage.wAltitude}</i>`);
+                            Driver.wAltitude = localStorage.wAltitude;
                         }
-                        if ("w_slewing" in localStorage) {
-                            helper.LogEntry(`Restoring <i>Slewing</i> weight to <i>${localStorage.w_slewing}</i>`);
-                            Driver.w_slewing = localStorage.w_slewing;
+                        if ("wSlewing" in localStorage) {
+                            helper.LogEntry(`Restoring <i>Slewing</i> weight to <i>${localStorage.wSlewing}</i>`);
+                            Driver.wSlewing = localStorage.wSlewing;
                         }
                         for (const k in Driver.FillColors) {
                             const key = `fill_${k}`;
@@ -161,7 +160,7 @@ $(document).ready(function () {
                         postInitialization();
                     });
                 } else {
-                    helper.LogEntry(`Saved telescope (${localStorage.telescopeName}) differs from telescope specified with GET (${forcetel}). Overriding browser settings`)
+                    helper.LogEntry(`Saved telescope (${localStorage.telescopeName}) differs from telescope specified with GET (${forcetel}). Overriding browser settings`);
                     driver.setTelescopeName(forcetel).then(function() {
                         driver.UpdateInstrumentList();
                         postInitialization();
@@ -192,12 +191,11 @@ function postInitialization() {
         };
         setInterval(function () {
             driver.skyGraph.displayTime();
-        }, 500);   // 0.5 second update times
+        }, 500);
 
         helper.LogDebug("Drawing plot background...");
         driver.graph.drawBackground();
 
-        //$("#canvasFrame").toggle();
         helper.LogDebug("Disabling buttons until the necessary quantities have been calculated...");
         $("#planNight").prop("disabled", true);
         $("#saveDoc").prop("disabled", true);
@@ -208,7 +206,7 @@ function postInitialization() {
         and plots them.
         */
         $("#dateSet").click(function () {
-            driver.BtnEvt_SetDate();
+            driver.BtnEvtSetDate();
         });
 
         /*
@@ -217,11 +215,11 @@ function postInitialization() {
         */
         $("#plotTargets").click(function () {
             driver.RequestedScheduleType = 3;
-            driver.BtnEvt_PlotTargets();
+            driver.BtnEvtPlotTargets();
         });
         $("#planNight").click(function () {
             driver.RequestedScheduleType = ($("#planNight").val() === Driver.updSchedText) ? 1 : 2;
-            driver.BtnEvt_PlotTargets();
+            driver.BtnEvtPlotTargets();
         });
 
         driver.BindEvents();
@@ -234,7 +232,7 @@ function postInitialization() {
         driver.InitializeDate();
 
         setInterval(function() {
-            driver.Callback_ShowCurrentTime();
+            driver.CallbackShowCurrentTime();
         }, 5000);
 
         /*

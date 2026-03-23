@@ -895,8 +895,7 @@ sla.itp = [
  */
 
 /* Planetary inverse masses */
-sla.amas = [6023600, 408523.5, 328900.5, 3098710,
-        1047.355, 3498.5, 22869, 19314];
+sla.amas = [6023600, 408523.5, 328900.5, 3098710, 1047.355, 3498.5, 22869, 19314];
 
 /* Tables giving the mean Keplerian elements, limited to T**2 terms */
 sla.a = [

@@ -6,7 +6,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. See LICENSE.md.
  */
-$version = "5.0d";
+$version = "5.0e";
 /*
 * Version history (with brief changelog):
 *
@@ -131,8 +131,10 @@ $version = "5.0d";
 *      - Improved handling of fractional UTC offsets.
 *      - Added night/twilight, clouds and precipitation overlays on map.
 *
-* 5.0d - Major refactoring of the all-sky camera code (and equations).
+* 5.0d - Major refactoring of the all-sky camera code, including the equations.
 *      - Refactored pointing.php.
+*
+* 5.0e - Ran eslint on all JavaScript files and fixed all warnings/errors.
 */
 session_start();
 if (isset($_SESSION["obinfo"])) {

@@ -20,20 +20,20 @@ function Night(y, m, d) {
         /* ALL time series begin at sunset and end at sunrise */
         this.Nx = 1000;
         /* Time series arrays */
-        this.xaxis = [];   /* UTC times in MJD format, from sunset to sunrise */
-        this.ymoon = [];   /* Refracted moon altitude in degrees */
-        this.rmoon = [];   /* Apparent moon radius in degrees */
-        this.ramoon = [];  /* RA of moon */
-        this.decmoon = []; /* Dec of moon */
-        this.aoprms = [];  /* Apparent to observed parameters, SLALIB */
-        this.amprms = [];  /* Mean to apparent parameters, SLALIB */
+        this.xaxis = []; // UTC times in MJD format, from sunset to sunrise
+        this.ymoon = []; // Refracted moon altitude in degrees
+        this.rmoon = []; // Apparent moon radius in degrees
+        this.ramoon = []; // RA of moon
+        this.decmoon = []; // Dec of moon
+        this.aoprms = []; // Apparent to observed parameters, SLALIB
+        this.amprms = []; // Mean to apparent parameters, SLALIB
         /* Other arrays, not of length Nx */
-        this.UTCtimes = [];                     // Position of full hours (8UT, 9UT, etc) in terms of MJD-UTC
-        this.UTClabels = [];                    // UTC labels corresponding to UTCtimes ("8", "9", etc)
-        this.LocalTimetimes = [];               // Position of full hours (8LT, 9LT, etc) in terms of MJD-UTC
-        this.LocalTimelabels = [];              // Local Time labels corresponding to UTCtimes ("8", "9", etc)
-        this.LSTangles = [];                    // LST angles corresponding to UTCtimes
-        this.LSTlabels = [];                    // LST labels corresponding to UTCtimes
+        this.UTCtimes = []; // Position of full hours (8UT, 9UT, etc) in terms of MJD-UTC
+        this.UTClabels = []; // UTC labels corresponding to UTCtimes ("8", "9", etc)
+        this.LocalTimetimes = []; // Position of full hours (8LT, 9LT, etc) in terms of MJD-UTC
+        this.LocalTimelabels = []; // Local Time labels corresponding to UTCtimes ("8", "9", etc)
+        this.LSTangles = []; // LST angles corresponding to UTCtimes
+        this.LSTlabels = []; // LST labels corresponding to UTCtimes
     } catch (e) {
         helper.LogException(e);
     }
@@ -42,7 +42,7 @@ function Night(y, m, d) {
 /**
  * @memberof Night
  */
-Night.prototype.setEphemerides = function (obj) {
+Night.prototype.setEphemerides = function () {
     try {
         /**
          * First, pre-compute certain SLALIB parameters for this night
@@ -56,7 +56,7 @@ Night.prototype.setEphemerides = function (obj) {
         // Convert it to UTC
         const utcMidnight = telMidnight.clone().tz("UTC");
         // Convert it to MJD (include the fractional day)
-        this.utcMidnight = sla.cldj(utcMidnight.year(), utcMidnight.month() + 1, utcMidnight.date()) + utcMidnight.hour() / 24
+        this.utcMidnight = sla.cldj(utcMidnight.year(), utcMidnight.month() + 1, utcMidnight.date()) + utcMidnight.hour() / 24;
         this.ut1Midnight = this.utcMidnight + Driver.current_dut;
         this.dut = sla.dtt(this.utcMidnight) / sla.d2s;
         this.ttMidnight = this.utcMidnight + this.dut;
@@ -68,14 +68,15 @@ Night.prototype.setEphemerides = function (obj) {
         * However, at high altitude (low pressure) this can be smaller by about 10 arcminutes, so that
         * needs to be adjusted */
         const stdPres = 1013.25; // hPa
-        const stdTemp = 298.15;  // K, 15 deg
-        const sitePres = stdPres * Math.exp(-9.80665 * 0.0289644 * Driver.obs_alt / stdTemp / 8.31447)
+        const stdTemp = 298.15; // K, 15 deg
+        const sitePres = stdPres * Math.exp(-9.80665 * 0.0289644 * Driver.obs_alt / stdTemp / 8.31447);
         const siteTemp = stdTemp-0.0065*Driver.obs_alt; // 15 deg at sea level, use TLR to reduce temperature
         const siteWvlen = 0.55;
         const siteHum = 0.2;
         this.ref = sla.refco(Driver.obs_alt, siteTemp, sitePres, siteHum, siteWvlen, Driver.obs_lat_rad, 0.0065);
-        this.RefractionAtHorizon = sla.refro(0.5*Math.PI, Driver.obs_alt, siteTemp, sitePres, siteHum, siteWvlen,
-                                            Driver.obs_lat_rad, 0.0065, 1e-8);
+        this.RefractionAtHorizon = sla.refro(0.5*Math.PI, Driver.obs_alt,
+            siteTemp, sitePres, siteHum, siteWvlen,
+            Driver.obs_lat_rad, 0.0065, 1e-8);
         this.HorizonDip = Math.acos(sla.a0 / (Driver.obs_alt + sla.a0));
         /* For target altitude curves:
         * Since sla.aopqk would be extremely slow beyond zd of 76 deg, the apparent
@@ -135,21 +136,21 @@ Night.prototype.setEphemerides = function (obj) {
 
 
         switch ($('input[type="radio"][name="opt_schedule_between"]:checked').val()) {
-            case "sunset-sunrise":
-                this.global_UTstart = this.Sunset;
-                this.global_UTend = this.Sunrise;
-                break;
-            case "astronomical":
-                this.global_UTstart = this.EAstTwilight;
-                this.global_UTend = this.MAstTwilight;
-                break;
-            default:
-                this.global_UTstart = this.ENauTwilight;
-                this.global_UTend = this.MNauTwilight;
+        case "sunset-sunrise":
+            this.globalUTStart = this.Sunset;
+            this.globalUTEnd = this.Sunrise;
+            break;
+        case "astronomical":
+            this.globalUTStart = this.EAstTwilight;
+            this.globalUTEnd = this.MAstTwilight;
+            break;
+        default:
+            this.globalUTStart = this.ENauTwilight;
+            this.globalUTEnd = this.MNauTwilight;
         }
 
-        this.wnight = this.Sunrise - this.Sunset;   // Length of the night in days
-        this.xstep = this.wnight / this.Nx;         // Resolution of the time array
+        this.wnight = this.Sunrise - this.Sunset; // Length of the night in days
+        this.xstep = this.wnight / this.Nx; // Resolution of the time array
         let aop;
 
         this.xaxis = [];
@@ -158,12 +159,12 @@ Night.prototype.setEphemerides = function (obj) {
         this.ramoon = [];
         this.decmoon = [];
         this.LSTangles = [];
-        for (let i = 0; i < this.Nx; i += 1) {          // ... and its initialization
+        for (let i = 0; i < this.Nx; i += 1) { // ... and its initialization
             const ut = this.Sunset + this.xstep * i;
             this.xaxis.push(ut);
             if (i === 0) {
                 aop = sla.aoppa(ut, this.dut*sla.d2s, Driver.obs_lon_rad, Driver.obs_lat_rad,
-                                Driver.obs_alt, 0, 0, siteTemp, 0, siteHum, siteWvlen, 0.0065);
+                    Driver.obs_alt, 0, 0, siteTemp, 0, siteHum, siteWvlen, 0.0065);
             } else {
                 sla.aoppat(ut, aop);
             }
@@ -187,7 +188,7 @@ Night.prototype.setEphemerides = function (obj) {
         this.DateSunset = new Date(Date.UTC(this.tSunset[0], this.tSunset[1]-1, this.tSunset[2], this.tSunset[3], this.tSunset[4], this.tSunset[5], 0));
         this.DateSunrise = new Date(Date.UTC(this.tSunrise[0], this.tSunrise[1]-1, this.tSunrise[2], this.tSunrise[3], this.tSunrise[4], this.tSunrise[5], 0));
         this.DarkTime = (this.MAstTwilight - this.EAstTwilight);
-        this.NightLength = (this.global_UTend - this.global_UTstart);
+        this.NightLength = (this.globalUTEnd - this.globalUTStart);
         // Calculate UTC and LST labels
         this.UTCtimes = [];
         this.UTClabels = [];
@@ -228,7 +229,7 @@ Night.prototype.setEphemerides = function (obj) {
         // Moon stuff
         this.MoonIllMin = Math.max(Math.floor(Math.min(this.MoonIllStart, this.MoonIllEnd)), 0);
         this.MoonIllMax = Math.min(Math.ceil(Math.max(this.MoonIllStart, this.MoonIllEnd)), 100);
-        this.MoonIllumination = Math.max(this.MoonIllStart, this.MoonIllEnd);   // Maximum moon illumination throughout the night
+        this.MoonIllumination = Math.max(this.MoonIllStart, this.MoonIllEnd); // Maximum moon illumination throughout the night
         if (this.MoonIllMin === this.MoonIllMax) {
             this.MoonIlluminationString = `${this.MoonIllMin}%`;
         } else {

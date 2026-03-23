@@ -70,7 +70,7 @@ serializer.saveDocument = function () {
             compression: "DEFLATE",
             compressionOptions: {level: 9}
         }).then(function (content) {
-            saveAs(content, "schedule.visplot");
+            window.saveAs(content, "schedule.visplot");
         });
         helper.LogEntry("Done.");
     } catch (e) {
@@ -81,7 +81,7 @@ serializer.saveDocument = function () {
 /**
  * Save the list of targets in TCS format to disk.
  */
- serializer.saveTCS = function () {
+serializer.saveTCS = function () {
     helper.Log("Exporting schedule in TCS format...");
     let filename;
     if ($.inArray(Driver.telescopeName, ["NOT", "WHT", "INT"]) >= 0) {
@@ -95,7 +95,7 @@ serializer.saveDocument = function () {
             {
                 type: "text/plain;charset=utf-8"
             });
-        saveAs(blob, filename);
+        window.saveAs(blob, filename);
         helper.LogEntry("Done.");
     } catch (e) {
         helper.LogException(e);
@@ -108,24 +108,24 @@ serializer.saveDocument = function () {
 serializer.loadDocument = function (e) {
     helper.LogEntry("Importing schedule from the given file...");
     const files = e.target.files; // FileList object
-    if (files === false || files === null || files === undefined || files.length != 1) {
+    if (files === false || files === null || files === undefined || files.length !== 1) {
         helper.LogError("Failed to load the file.");
         return;
     }
-    const new_zip = new JSZip();
-    new_zip.loadAsync(files[0]).then(function (zip) {
+    const newZip = new JSZip();
+    newZip.loadAsync(files[0]).then(function (zip) {
         if (zip === false || zip === null || zip === undefined) {
             helper.LogError("Could not open the file because it has an invalid format.");
             return;
         }
-        new_zip.file("visplot.txt").async("string").then(function (txt) {
+        newZip.file("visplot.txt").async("string").then(function (txt) {
             const obj = JSON.parse(txt);
             if (obj === false || obj === null || obj === undefined || obj.night === null || obj.night === undefined || obj.graph === null || obj.graph === undefined || obj.driver === null || obj.driver === undefined || obj.targets === null || obj.targets === undefined) {
                 helper.LogError("Could not open the file because it has an invalid format.");
                 return;
             }
-            if (obj.version === undefined || obj.version != window.version) {
-                helper.LogWarning(`The file ${files[0].name} has been produced with a different version of Visplot. Some functionality may be limited or unavailable.`)
+            if (obj.version === undefined || obj.version !== window.version) {
+                helper.LogWarning(`The file ${files[0].name} has been produced with a different version of Visplot. Some functionality may be limited or unavailable.`);
             }
             driver.ob = obj.driver.ob;
             driver.obdata = obj.driver.obdata;
@@ -146,10 +146,6 @@ serializer.loadDocument = function (e) {
                     obj.__proto__ = proto;
                     return obj;
                 };
-                let deserialize = function (object) {
-                    Object.setPrototypeOf(object, window[object["#"]].prototype);
-                    return object;
-                };
                 driver.night = Object.setPrototypeOf(obj.night, Night.prototype);
                 driver.graph = Object.setPrototypeOf(obj.graph, Graph.prototype);
                 driver.targets = Object.setPrototypeOf(obj.targets, TargetList.prototype);
@@ -167,7 +163,7 @@ serializer.loadDocument = function (e) {
                 driver.nightInitialized = true;
                 driver.Refresh();
                 if (driver.scheduleMode) {
-                    driver.targets.display_scheduleStatistics();
+                    driver.targets.displayScheduleStatistics();
                     $("#planNight").val(Driver.updSchedText);
                 }
                 $("#tcsExport").removeAttr("disabled");

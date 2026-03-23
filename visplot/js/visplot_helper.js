@@ -20,7 +20,7 @@
  * @returns {String[]} An array of substrings resulting from the split.
  */
 String.prototype.rsplit = function(sep, maxsplit) {
-    var split = this.split(sep || /s+/);
+    const split = this.split(sep || /s+/);
     return maxsplit ? [ split.slice(0, -maxsplit).join(sep) ].concat(split.slice(-maxsplit)) : split;
 };
 
@@ -363,7 +363,7 @@ helper.HMS = function (time, sep1, sep2, sep3) {
  */
 helper.MJDToHM = function (d, padHours=false) {
     try {
-        let t = new Date(driver.night.DateSunset);
+        const t = new Date(driver.night.DateSunset);
         t.setUTCSeconds(t.getUTCSeconds() + (d - driver.night.Sunset) * sla.d2s);
         const ss = t.getUTCSeconds();
         let mm = t.getUTCMinutes();
@@ -372,11 +372,11 @@ helper.MJDToHM = function (d, padHours=false) {
         if (ss > 30) {
             mm += 1;
         }
-        if (mm == 60) {
+        if (mm === 60) {
             hh += 1;
             mm = 0;
         }
-        if (hh == 24) {
+        if (hh === 24) {
             hh = 0;
         }
         return `${padHours ? helper.padTwoDigits(hh) : hh}:${helper.padTwoDigits(mm)}`;
@@ -390,7 +390,7 @@ helper.MJDToHM = function (d, padHours=false) {
  */
 helper.MJDToHMLocal = function (d, utcOffset, padHours=false) {
     try {
-        let t = new Date(driver.night.DateSunset);
+        const t = new Date(driver.night.DateSunset);
         t.setUTCSeconds(t.getUTCSeconds() + (d - driver.night.Sunset) * sla.d2s + utcOffset * 3600);
         const ss = t.getUTCSeconds();
         let mm = t.getUTCMinutes();
@@ -399,7 +399,7 @@ helper.MJDToHMLocal = function (d, utcOffset, padHours=false) {
         if (ss > 30) {
             mm += 1;
         }
-        if (mm == 60) {
+        if (mm === 60) {
             hh += 1;
             mm = 0;
         }
@@ -441,36 +441,26 @@ helper.LSTToAngle = function (text) {
 helper.LSTToMJD = function (str) {
     try {
         let rad1 = helper.LSTToAngle(str[0]);
-        let rad2 = helper.LSTToAngle(str[1]);
+        const rad2 = helper.LSTToAngle(str[1]);
         if (rad1 === -1 || rad2 === -1) {
             return false;
         }
-        let sunset = driver.night.stlSunset;
+        const sunset = driver.night.stlSunset;
         /* If LST1 is larger, then we have to go around 00:00 */
         if (rad1 > rad2) {
             rad1 -= sla.d2pi;
         }
         /* Sidereal day is not 86400 seconds, but 86164.1! */
-        let jdiff1 = (rad1-sunset)*86164.1 / sla.d2pi;
-        let jdiff2 = (rad2-sunset)*86164.1 / sla.d2pi;
+        const jdiff1 = (rad1-sunset)*86164.1 / sla.d2pi;
+        const jdiff2 = (rad2-sunset)*86164.1 / sla.d2pi;
         let ut1 = driver.night.Sunset + jdiff1 / sla.d2s;
         let ut2 = driver.night.Sunset + jdiff2 / sla.d2s;
         if (ut2 < driver.night.Sunset) {
             ut1 += 1;
             ut2 += 1;
         }
-        if (ut1 < driver.night.Sunset) {
-            ut1 = driver.night.Sunset;
-        }
-        if (ut2 < driver.night.Sunset) {
-            ut2 = driver.night.Sunset;
-        }
-        if (ut1 > driver.night.Sunrise) {
-            ut1 = driver.night.Sunrise;
-        }
-        if (ut2 > driver.night.Sunrise) {
-            ut2 = driver.night.Sunrise;
-        }
+        ut1 = Math.max(driver.night.Sunset, Math.min(ut1, driver.night.Sunrise));
+        ut2 = Math.max(driver.night.Sunset, Math.min(ut2, driver.night.Sunrise));
         if (ut1 > ut2) {
             ut1 -= 1;
         }
@@ -588,8 +578,7 @@ helper.filterInt = function (value) {
  *
  */
 helper.filterFloat = function (value) {
-    if (/^(\-|\+)?([0-9]+(\.[0-9]+)?|Infinity)$/
-            .test(value)) {
+    if (/^(\-|\+)?([0-9]+(\.[0-9]+)?|Infinity)$/.test(value)) {
         return Number(value);
     }
     return NaN;
@@ -618,7 +607,7 @@ helper.ReportSHM = function (sec) {
     }
     let hh = Math.floor(sec / 3600);
     let mm = Math.round((sec - hh * 3600) / 60);
-    if (mm == 60) {
+    if (mm === 60) {
         hh += 1;
         mm = 0;
     }
@@ -629,13 +618,13 @@ helper.ReportSHM = function (sec) {
  *
  */
 helper.LunarPhaseExplanation = function (phase) {
-    if (phase == "D") {
+    if (phase === "D") {
         return "D (dark time)";
     }
-    if (phase == "G") {
+    if (phase === "G") {
         return "G (gray time)";
     }
-    if (phase == "N") {
+    if (phase === "N") {
         return "N (no constraint / bright time)";
     }
     return "";
@@ -785,8 +774,8 @@ helper.ExtractHARange = function (str, ra) {
         if (str.length !== 2) {
             return false;
         }
-        const ra_h = sla.rtoh * ra;
-        const lst = [parseFloat(str[0]) + ra_h, parseFloat(str[1]) + ra_h];
+        const raHours = sla.rtoh * ra;
+        const lst = [parseFloat(str[0]) + raHours, parseFloat(str[1]) + raHours];
         return helper.LSTToMJD(lst);
     } catch (e) {
         helper.LogException(e);
@@ -802,7 +791,7 @@ helper.ExtractUTRange = function (str, ra = null) {
             if (str.startsWith("LST[")) {
                 return helper.ExtractLSTRange(str);
             }
-            if (str.startsWith("HA["))  {
+            if (str.startsWith("HA[")) {
                 return helper.ExtractHARange(str, ra || 0);
             }
             return null;
@@ -821,18 +810,8 @@ helper.ExtractUTRange = function (str, ra = null) {
         if (ut1 === -1 || ut2 === -1) {
             return false;
         }
-        if (ut1 < driver.night.Sunset) {
-            ut1 = driver.night.Sunset;
-        }
-        if (ut2 < driver.night.Sunset) {
-            ut2 = driver.night.Sunset;
-        }
-        if (ut1 > driver.night.Sunrise) {
-            ut1 = driver.night.Sunrise;
-        }
-        if (ut2 > driver.night.Sunrise) {
-            ut2 = driver.night.Sunrise;
-        }
+        ut1 = Math.max(driver.night.Sunset, Math.min(ut1, driver.night.Sunrise));
+        ut2 = Math.max(driver.night.Sunset, Math.min(ut2, driver.night.Sunrise));
         return [ut1, ut2];
     } catch (e) {
         helper.LogException(e);
@@ -940,9 +919,9 @@ helper.timezone = function(value) {
  * @returns {Array} A nested array of zeros with the specified shape.
  */
 helper.zeros = function(dimensions) {
-    let array = [];
+    const array = [];
     for (let i=0; i<dimensions[0]; ++i) {
-        array.push(dimensions.length == 1 ? 0 : this.zeros(dimensions.slice(1)));
+        array.push(dimensions.length === 1 ? 0 : this.zeros(dimensions.slice(1)));
     }
     return array;
 };
@@ -959,32 +938,32 @@ helper.zeros = function(dimensions) {
  * @param {Number[]} coeffs - Coefficients for the B-spline basis functions.
  * @returns {Number|Number[]} The evaluated spline value(s).
  */
- helper.bspleval = function(xx, order, knots, coeffs) {
+helper.bspleval = function(xx, order, knots, coeffs) {
     try {
         const k = order;
         const t = knots;
         const m = t.length;
         const x = Array.isArray(xx) ? xx : [xx];
         const npts = x.length;
-        const B = helper.zeros([m-1,k+1,npts]);
+        const B = helper.zeros([m-1, k+1, npts]);
         for (let i=0; i<m-1; i++) {
             for (let ix=0; ix<npts; ix++) {
                 B[i][0][ix] = ((x[ix] >= t[i]) && (x[ix] < t[i+1])) ? 1 : 0;
             }
         }
-        if (k == 0) {
+        if (k === 0) {
             B[m-2][0][npts-1] = 1;
         }
         // Next iteratively define the higher-order basis functions, working from lower order to higher.
         for (let j=1; j<k+1; j++) {
             for (let i=0; i<m-j-1; i++) {
                 for (let ix=0; ix<npts; ix++) {
-                    let first_term = (t[i+j] == t[i]) ? 0 : ((x[ix] - t[i]) / (t[i+j] - t[i])) * B[i][j-1][ix];
-                    let second_term = (t[i+j+1] == t[i+1]) ? 0 : ((t[i+j+1] - x[ix]) / (t[i+j+1] - t[i+1])) * B[i+1][j-1][ix];
-                    B[i][j][ix] = first_term + second_term;
+                    const firstTerm = (t[i+j] === t[i]) ? 0 : ((x[ix] - t[i]) / (t[i+j] - t[i])) * B[i][j-1][ix];
+                    const secondTerm = (t[i+j+1] === t[i+1]) ? 0 : ((t[i+j+1] - x[ix]) / (t[i+j+1] - t[i+1])) * B[i+1][j-1][ix];
+                    B[i][j][ix] = firstTerm + secondTerm;
                 }
             }
-            if (k == 0) {
+            if (k === 0) {
                 B[m-j-2][j][npts-1] = 1;
             }
         }
@@ -995,7 +974,7 @@ helper.zeros = function(dimensions) {
                 y[ix] += coeffs[i] * B[i][k][ix];
             }
         }
-        return npts == 1 ? y[0] : y;
+        return npts === 1 ? y[0] : y;
     } catch (e) {
         helper.LogException(e);
     }
@@ -1070,8 +1049,8 @@ helper.SubsolarPoint = function() {
 helper.normalizeText = function(str) {
     try {
         return str
-            .normalize('NFD')                 // split letters and diacritics
-            .replace(/[\u0300-\u036f]/g, '')  // remove diacritics
+            .normalize('NFD') // split letters and diacritics
+            .replace(/[\u0300-\u036f]/g, '') // remove diacritics
             .toLowerCase();
     } catch (e) {
         helper.LogException(e);
