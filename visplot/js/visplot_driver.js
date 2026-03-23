@@ -1316,7 +1316,7 @@ Driver.prototype.BtnEvtConfig = function () {
     }
 };
 
-Driver.prototype.CallbackUpdateDefaultAfterTelUpdate = function (resetTel) {
+Driver.prototype.CallbackUpdateDefaultsAfterTelUpdate = function (resetTel) {
     try {
         let re, resetCol = false;
         re = $("#def_epoch").val().trim();
