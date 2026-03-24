@@ -28,7 +28,7 @@ function SkyGraph(_canvas, _context) {
         this.tcsPointing = null;
         this.skyImg = new Image();
         this.skyImg.onload = () => { this.redraw(); };
-        this.skyImg.onerror = (err) => { helper.LogError(`Sky image failed to load: ${err}`); };
+        this.skyImg.onerror = () => { helper.LogError("Sky image failed to load"); };
         this.refreshRemote();
         $("#canvasSkycam").on("mousemove", function (e) {
             driver.skyGraph.EvtMouseMove(e);
@@ -146,6 +146,7 @@ SkyGraph.prototype.refreshRemote = function () {
                 telescope: Driver.telescopeName,
                 t: t
             },
+            timeout: config.skycamTcsTimeout,
             success: function (obj) {
                 if (helper.notFloat(obj.alt) || helper.notFloat(obj.az)) {
                     driver.skyGraph.tcsPointing = null;

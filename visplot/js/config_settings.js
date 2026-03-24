@@ -23,9 +23,11 @@ const config = {
     ],
     skycamTimeRefreshInterval: 500, // ms
     skycamImageRefreshInterval: 30000, // ms
+    skycamRequestTimeout: 3000, // ms
+    skycamTcsTimeout: 3000, // ms
     skycamTcsCrosshairColor: "#9f3",
-    skycamImageSizeX: 640,
-    skycamImageSizeY: 480,
+    skycamImageSizeX: 640, // px
+    skycamImageSizeY: 480, // px
     stdPressure: 1013.25, // hPa
     stdTemperature: 298.15, // K, 15 deg
     gravAcceleration: 9.80665, // m/s^2
@@ -109,8 +111,9 @@ const config = {
     },
     aladinOpticalSurvey: "P/DSS2/color",
     aladinInfraredSurvey: "P/2MASS/color",
-    simbadCoordsRegex: new RegExp(/Coordinates\(ICRS.*?\):\s+(\d+)\s+(\d+)\s+([\d\.]+)\s+([+\-\d]+)\s+(\d+)\s+([\d\.]+)/g),
-    simbadPMRegex: new RegExp(/Proper motions:\s+([+\-\d\.]+)\s+([+\-\d\.]+)/g),
+    simbadTimeout: 3000, // ms
+    simbadCoordsRegex: String.raw`Coordinates\(ICRS.*?\):\s+(\d+)\s+(\d+)\s+([\d\.]+)\s+([+\-\d]+)\s+(\d+)\s+([\d\.]+)`,
+    simbadPMRegex: String.raw`Proper motions:\s+([+\-\d\.]+)\s+([+\-\d\.]+)`,
     simbadURL: function(identifier) {
         return `https://simbad.cds.unistra.fr/simbad/sim-id?output.format=ASCII&Ident=${encodeURIComponent(identifier)}`;
     },

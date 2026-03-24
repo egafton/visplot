@@ -1271,7 +1271,6 @@ TargetList.prototype.validateAndFormatTargets = function (force = false) {
                 if (id === null) {
                     continue;
                 }
-                console.log(id.toLowerCase());
                 if (config.planets.includes(id.toLowerCase())) {
                     idsRdplan.push(id);
                 } else {
@@ -1284,24 +1283,33 @@ TargetList.prototype.validateAndFormatTargets = function (force = false) {
                     const ra = helper.HMS(sla.rtoh * rd.ra, " ", " ", "", 2);
                     const dec = helper.HMS(sla.r2d * rd.dec, " ", " ", "", 1);
                     driver.resolvedIdentifiers[id] = `${ra} ${dec}`;
-                    console.log(`Resolved ${id} to ${ra} ${dec}`);
                 }
             }
             if (idsToRetrieve.length > 0) {
                 helper.LogEntry(`Will attempt to retrive the following targets from SIMBAD: ${idsToRetrieve.join(', ')}. This may take a while...`);
-                const deferreds = [];
-                for (const id of idsToRetrieve) {
-                    deferreds[id] = $.get(config.simbadURL(id));
-                }
-                $.when(...Object.values(deferreds)).then(function() {
+                const deferreds = idsToRetrieve.map(id => {
+                    return $.get({
+                        url: config.simbadURL(id),
+                        timeout: config.simbadTimeout
+                    }).then(
+                        data => ({ id, data, error: null }), // success
+                        jqXHR => ({ id, data: null, error: jqXHR }) // failure
+                    );
+                });
+                $.when(...deferreds).then(function(...results) {
                     helper.LogEntry("Results received from SIMBAD, will proceed to parse the targets.");
-                    for (const [id, deferred] of Object.entries(deferreds)) {
-                        const resolution = helper.parseSIMBADResponse(deferred.responseText);
-                        driver.resolvedIdentifiers[id] = resolution;
-                        if (resolution === null) {
-                            helper.LogError(`Target identifier unknown to SIMBAD: ${id}`);
+                    results.forEach(result => {
+                        const { id, data, error } = result;
+                        if (error) {
+                            helper.LogError(`Request failed for ${id} (${error.statusText || 'timeout'})`);
+                        } else {
+                            const resolution = helper.parseSIMBADResponse(data);
+                            driver.resolvedIdentifiers[id] = resolution;
+                            if (resolution === null) {
+                                helper.LogError(`Target identifier unknown to SIMBAD: ${id}`);
+                            }
                         }
-                    }
+                    });
                     return thisList.processTargetListAfterSIMBAD(lines) ? resolve() : reject();
                 });
             } else {

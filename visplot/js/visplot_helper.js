@@ -278,17 +278,18 @@ helper.parseSIMBADResponse = function (responseText) {
         if (responseText.startsWith("!!")) {
             return null;
         }
-        const ca = config.simbadCoordsRegex.exec(responseText);
+        const ca = new RegExp(config.simbadCoordsRegex, "g").exec(responseText);
         if (ca === null) {
             return null;
         }
-        const pa = config.simbadPMRegex.exec(responseText);
+        const pa = new RegExp(config.simbadPMRegex, "g").exec(responseText);
         if (pa === null) {
             return `${ca[1]} ${ca[2]} ${ca[3]} ${ca[4]} ${ca[5]} ${ca[6]}`;
         }
         return `${ca[1]} ${ca[2]} ${ca[3]}/${(parseFloat(pa[1])/1000).toFixed(5)} ${ca[4]} ${ca[5]} ${ca[6]}/${(parseFloat(pa[2])/1000).toFixed(5)}`;
     } catch (ex) {
         helper.LogException(ex);
+        return null;
     }
 };
 
