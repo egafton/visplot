@@ -190,20 +190,6 @@ Target.prototype.ParseFrom = function (line) {
         this.FillSlot = false;
         this.Exptime = parseFloat(dat[8]) / sla.d2s;
     }
-    let vminmdist = 9999;
-    let iminmdist = 0;
-    for (let i=0; i<night.Nx; i+=1) {
-        let mdist = sla.r2d * sla.dsep(night.ramoon[i], night.decmoon[i], ra, dec);
-        this.MoonDistance.push(mdist);
-        if (mdist < vminmdist) {
-            vminmdist = mdist;
-            iminmdist = i;
-        }
-        const pa = sla.dranrm(sla.pa(night.LSTangles[i] - ra, dec, Driver.obs_lat_rad));
-        this.PAngles.push(sla.r2d * pa);
-    }
-    this.MinMoonDistance = Math.round(vminmdist);
-    this.MinMoonDistanceTime = night.xaxis[iminmdist];
     let pmra, pmdec;
     if (rax.length === 1) {
         pmra = 0;
@@ -234,12 +220,23 @@ Target.prototype.ParseFrom = function (line) {
         }
     }
 
-    let retap, retob;
+    let retap, retob, rd, rap, dap;
     let imax = 0;
     let altmax = 0;
+    let vminmdist = 9999;
+    let iminmdist = 0;
     for (let i=0; i<night.Nx; i+=1) {
-        retap = sla.mapqk(ra, dec, pmra, pmdec, 0, 0, night.amprms[i]);
-        retob = sla.aopqk(retap.ra, retap.da, night.aoprms[i]);
+        if (config.planets.includes(this.Name.toLowerCase())) {
+            rd = sla.rdplan(night.xaxis[i], this.Name, Driver.obs_lon_rad, Driver.obs_lat_rad);
+            rap = rd.ra;
+            dap = rd.dec;
+        } else {
+            retap = sla.mapqk(ra, dec, pmra, pmdec, 0, 0, night.amprms[i]);
+            rap = retap.ra;
+            dap = retap.da;
+        }
+        // retob contains the topocentric zd WITHOUT refraction (too slow)
+        retob = sla.aopqk(rap, dap, night.aoprms[i]);
         // Approximate refracted alt
         let ell = sla.pihalf - sla.refz(retob.zob, night.ref.refa, night.ref.refb);
         if (ell > altmax) {
@@ -247,10 +244,20 @@ Target.prototype.ParseFrom = function (line) {
             altmax = ell;
         }
         this.Graph.push(sla.r2d * ell);
-        const az = sla.dranrm(retob.aob);
-        this.Azimuth.push(sla.r2d * az);
+        this.Azimuth.push(sla.r2d * sla.dranrm(retob.aob));
+        // Moon distance
+        let mdist = sla.r2d * sla.dsep(night.ramoon[i], night.decmoon[i], rap, dap);
+        this.MoonDistance.push(mdist);
+        if (mdist < vminmdist) {
+            vminmdist = mdist;
+            iminmdist = i;
+        }
+        const pa = sla.dranrm(sla.pa(night.LSTangles[i] - rap, dap, Driver.obs_lat_rad));
+        this.PAngles.push(sla.r2d * pa);
     }
     this.ZenithTime = night.xaxis[imax];
+    this.MinMoonDistance = Math.round(vminmdist);
+    this.MinMoonDistanceTime = night.xaxis[iminmdist];
     this.raRad = ra;
     this.decRad = dec;
 };
@@ -1245,19 +1252,39 @@ TargetList.prototype.validateAndFormatTargets = function (force = false) {
             }
             // Split it into lines
             const lines = helper.extractLines(tgts);
+            const idsRdplan = [];
             const idsToRetrieve = [];
             // Check if we need to retrieve any targets from SIMBAD
             for (const line of lines) {
+                let id = null;
                 if (line.trim() === "" || line.startsWith("#")) {
                     continue;
                 }
                 if (line.startsWith('"') && line.endsWith('"')) {
-                    idsToRetrieve.push(line.substring(1, line.length - 1));
+                    id = line.substring(1, line.length - 1);
                 } else {
                     const words = line.split(/\s+/g);
                     if (words.length === 1) {
-                        idsToRetrieve.push(words[0]);
+                        id = words[0];
                     }
+                }
+                if (id === null) {
+                    continue;
+                }
+                console.log(id.toLowerCase());
+                if (config.planets.includes(id.toLowerCase())) {
+                    idsRdplan.push(id);
+                } else {
+                    idsToRetrieve.push(id);
+                }
+            }
+            if (idsRdplan.length > 0) {
+                for (const id of idsRdplan) {
+                    const rd = sla.rdplan(driver.night.Sunset, id, Driver.obs_lon_rad, Driver.obs_lat_rad);
+                    const ra = helper.HMS(sla.rtoh * rd.ra, " ", " ", "", 2);
+                    const dec = helper.HMS(sla.r2d * rd.dec, " ", " ", "", 1);
+                    driver.resolvedIdentifiers[id] = `${ra} ${dec}`;
+                    console.log(`Resolved ${id} to ${ra} ${dec}`);
                 }
             }
             if (idsToRetrieve.length > 0) {

@@ -3459,17 +3459,17 @@ sla.prenut = function (epoch, date) {
 /**
  * @summary **Apparent [α,δ] of Planet**
  * @param {Number} date - MJD of observation (JD-2400000.5)
- * @param {Number} np - Planet:
- *                       1 = Mercury
- *                       2 = Venus
- *                       3 = Moon
- *                       4 = Mars
- *                       5 = Jupiter
- *                       6 = Saturn
- *                       7 = Uranus
- *                       8 = Neptune
- *                       9 = Pluto
- *                       else = Sun
+ * @param {Number|String} np - Planet:
+ *                              1 = Mercury
+ *                              2 = Venus
+ *                              3 = Moon
+ *                              4 = Mars
+ *                              5 = Jupiter
+ *                              6 = Saturn
+ *                              7 = Uranus
+ *                              8 = Neptune
+ *                              9 = Pluto
+ *                              else = Sun
  * @param {Number} elong - Observer's longitude (east +ve) (radians)
  * @param {Number} phi - Observer's latitude (radians)
  * @returns {Array} [0-1] topocentric apparent [α,δ] (radians)
@@ -3511,25 +3511,26 @@ sla.rdplan = function (date, np, elong, phi) {
     ];
     /* Classify NP */
     let ip;
-    if (np <= 0 || np > 9 || np === "Sun") {
+    const nplower = String(np).toLowerCase();
+    if (np <= 0 || np > 9 || nplower === "sun") {
         ip = 0;
-    } else if (np === 1 || np === "Mercury") {
+    } else if (np === 1 || nplower === "mercury") {
         ip = 1;
-    } else if (np === 2 || np === "Venus") {
+    } else if (np === 2 || nplower === "venus") {
         ip = 2;
-    } else if (np === 3 || np === "Moon") {
+    } else if (np === 3 || nplower === "moon") {
         ip = 3;
-    } else if (np === 4 || np === "Mars") {
+    } else if (np === 4 || nplower === "mars") {
         ip = 4;
-    } else if (np === 5 || np === "Jupiter") {
+    } else if (np === 5 || nplower === "jupiter") {
         ip = 5;
-    } else if (np === 6 || np === "Saturn") {
+    } else if (np === 6 || nplower === "saturn") {
         ip = 6;
-    } else if (np === 7 || np === "Uranus") {
+    } else if (np === 7 || nplower === "uranus") {
         ip = 7;
-    } else if (np === 8 || np === "Neptune") {
+    } else if (np === 8 || nplower === "neptune") {
         ip = 8;
-    } else if (np === 9 || np === "Pluto") {
+    } else if (np === 9 || nplower === "pluto") {
         ip = 9;
     } else {
         throw new RangeError("Unknown planet given as argument to sla.rdplan.");

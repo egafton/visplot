@@ -93,6 +93,7 @@ const config = {
     defaultWAltitude: 1,
     defaultWSlewing: 1,
     nightCutoff: 10, // if local hour is smaller, show the plot for previous night by default
+    planets: ["mercury", "venus", "moon", "mars", "jupiter", "saturn", "uranus", "neptune", "pluto"], // celestial bodies for which sla.rdplan works (exclude the Sun at night...)
     aladinDefaultSettings: {
         target: `0.0 0.0`,
         survey: "P/DSS2/color",
