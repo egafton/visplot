@@ -11,12 +11,12 @@
 /**
  * An associative array storing telescope configuration.
  */
-var config = {};
+const telescopes = {};
 
 /**
  * Configuration for the 2.5m Nordic Optical Telescope.
  */
-config["NOT"] = {
+telescopes["NOT"] = {
     // Name of the observatory site
     site: "Roque de Los Muchachos",
 
@@ -98,7 +98,7 @@ config["NOT"] = {
 /**
  * Configuration for the 4.2m William Herschel Telescope.
  */
-config["WHT"] = {
+telescopes["WHT"] = {
     // Name of the observatory site
     site: "Roque de Los Muchachos",
 
@@ -130,7 +130,7 @@ config["WHT"] = {
     background: "img/telescopes/WHT.jpg",
 
     // Parameters for performing astrometry on the skycam image
-    skycamParams: config["NOT"].skycamParams,
+    skycamParams: telescopes["NOT"].skycamParams,
 
     // Instrument definitions; fov in arcminutes
     instruments: {
@@ -166,7 +166,7 @@ config["WHT"] = {
 /**
  * Configuration for the 2.5m Isaac Newton Telescope.
  */
-config["INT"] = {
+telescopes["INT"] = {
     // Name of the observatory site
     site: "Roque de Los Muchachos",
 
@@ -209,7 +209,7 @@ config["INT"] = {
     background: "img/telescopes/INT.jpg",
 
     // Parameters for performing astrometry on the skycam image
-    skycamParams: config["NOT"].skycamParams,
+    skycamParams: telescopes["NOT"].skycamParams,
 
     // Instrument definitions; fov in arcminutes
     instruments: {
@@ -236,7 +236,7 @@ config["INT"] = {
 /**
  * Configuration for the Catalina Sky Survey 1.5m telescope on Mt. Lemmon
  */
-config["CSS 60in"] = {
+telescopes["CSS 60in"] = {
     // Name of the observatory site
     site: "Mt. Lemmon",
 
@@ -277,7 +277,7 @@ config["CSS 60in"] = {
 /**
  * Configuration for the Wyoming Infrared Observatory 2.3m telescope on Jelm Mt.
  */
-config["WIRO"] = {
+telescopes["WIRO"] = {
     // Name of the observatory site
     site: "Jelm Mt.",
 
@@ -318,7 +318,7 @@ config["WIRO"] = {
 /**
  * Configuration for the 2.2m telescope at the Calar Alto Observatory.
  */
-config["CAHA"] = {
+telescopes["CAHA"] = {
     // Name of the observatory site
     site: "Calar Alto Observatory",
 
@@ -384,7 +384,7 @@ config["CAHA"] = {
 /**
  * Configuration for the Observatorio Astrofísico de Javalambre in Teruel.
  */
-config["OAJ"] = {
+telescopes["OAJ"] = {
     // Name of the observatory site
     site: "Observatorio Astrofísico de Javalambre",
 
@@ -425,7 +425,7 @@ config["OAJ"] = {
 /**
  * Configuration for the 8.3m Subaru Telescope.
  */
-config["Subaru"] = {
+telescopes["Subaru"] = {
     // Name of the observatory site
     site: "Mauna Kea",
 
@@ -492,7 +492,7 @@ config["Subaru"] = {
 /**
  * Configuration for the 2.7m Harlan J. Smith Telescope.
  */
-config["HJST"] = {
+telescopes["HJST"] = {
     // Name of the observatory site
     site: "Mt. Locke, McDonald Observatory",
 
@@ -519,12 +519,12 @@ config["HJST"] = {
         // Lowest alt as a function of az
         const spline = helper.bspleval(
             az,
-            config["HJST"].interpOrder,
-            west ? config["HJST"].westKnots : (instr === "GCMS" ? config["HJST"].eastGCMSKnots : config["HJST"].eastKnots),
-            west ? config["HJST"].westCoeffs : (instr === "GCMS" ? config["HJST"].eastGCMSCoeffs : config["HJST"].eastCoeffs));
+            telescopes["HJST"].interpOrder,
+            west ? telescopes["HJST"].westKnots : (instr === "GCMS" ? telescopes["HJST"].eastGCMSKnots : telescopes["HJST"].eastKnots),
+            west ? telescopes["HJST"].westCoeffs : (instr === "GCMS" ? telescopes["HJST"].eastGCMSCoeffs : telescopes["HJST"].eastCoeffs));
         if (west) {
             // Extra constraint from mount
-            const tanLat = Math.tan(sla.d2r * config["HJST"].latitude);
+            const tanLat = Math.tan(sla.d2r * telescopes["HJST"].latitude);
             const extra = az.map(function (x) {
                 return 10 + (90 - Math.sign(x) * x) * tanLat;
             });
@@ -595,7 +595,7 @@ config["HJST"] = {
 /**
  * Configuration for the 2.1m Otto Struve Telescope.
  */
-config["OST"] = {
+telescopes["OST"] = {
     // Name of the observatory site
     site: "Mt. Locke, McDonald Observatory",
 
@@ -627,7 +627,7 @@ config["OST"] = {
     background: "img/telescopes/OST.jpg",
 
     // Parameters for performing astrometry on the skycam image
-    skycamParams: config["HJST"].skycamParams,
+    skycamParams: telescopes["HJST"].skycamParams,
 
     // Instrument definitions; fov in arcminutes
     instruments: {
@@ -648,7 +648,7 @@ config["OST"] = {
 /**
  * Configuration for the 10m Hobby-Eberly Telescope.
  */
-config["HET"] = {
+telescopes["HET"] = {
     // Name of the observatory site
     site: "Mt. Fowlkes, McDonald Observatory",
 
@@ -677,7 +677,7 @@ config["HET"] = {
     background: "img/telescopes/HET.jpg",
 
     // Parameters for performing astrometry on the skycam image
-    skycamParams: config["HJST"].skycamParams,
+    skycamParams: telescopes["HJST"].skycamParams,
 
     // Instrument definitions; fov in arcminutes
     instruments: {
@@ -698,7 +698,7 @@ config["HET"] = {
 /**
  * Configuration for the 17in Kennon Observatory
  */
-config["CDK"] = {
+telescopes["CDK"] = {
     // Name of the observatory site
     site: "Kennon Observatory",
 
@@ -739,7 +739,7 @@ config["CDK"] = {
 /**
  * Configuration for the Dark Sky Observatory, Appalachian State University
  */
-config["DSO"] = {
+telescopes["DSO"] = {
     // Name of the observatory site
     site: "Appalachian State University",
 
@@ -792,7 +792,7 @@ config["DSO"] = {
 /**
  * Configuration for the Clarence T. Jones Observatory, University of Tennessee at Chattanooga
  */
-config["CTJO"] = {
+telescopes["CTJO"] = {
     // Name of the observatory site
     site: "University of Tennessee at Chattanooga",
 
@@ -833,7 +833,7 @@ config["CTJO"] = {
 /**
  * Configuration for the 2.5m Nordic Optical Telescope.
  */
-config["VLT"] = {
+telescopes["VLT"] = {
     // Name of the observatory site
     site: "Cerro Paranal",
 
@@ -880,7 +880,7 @@ config["VLT"] = {
 /**
  * Configuration for other telescopes (no details).
  */
-config["TNG"] = {
+telescopes["TNG"] = {
     site: "Roque de Los Muchachos",
     name: "Telescopio Nazionale Galileo 3.6m",
     location: "La Palma, Spain",
@@ -889,7 +889,7 @@ config["TNG"] = {
     altitude: 2359,
     timezoneName: "Atlantic/Canary"
 };
-config["Mercator Telescope"] = {
+telescopes["Mercator Telescope"] = {
     site: "Roque de Los Muchachos",
     name: "Mercator Telescope 1.2m",
     location: "La Palma, Spain",
@@ -898,7 +898,7 @@ config["Mercator Telescope"] = {
     altitude: 2331,
     timezoneName: "Atlantic/Canary"
 };
-config["GTC"] = {
+telescopes["GTC"] = {
     site: "Roque de Los Muchachos",
     name: "Gran Telescopio Canarias 10.4m",
     location: "La Palma, Spain",
@@ -907,7 +907,7 @@ config["GTC"] = {
     altitude: 2267,
     timezoneName: "Atlantic/Canary"
 };
-config["LBT"] = {
+telescopes["LBT"] = {
     site: "Mt. Graham",
     name: "Large Binocular Telescope 2×8.4m",
     location: "Arizona, United States",
@@ -916,7 +916,7 @@ config["LBT"] = {
     altitude: 3221,
     timezoneName: "America/Phoenix"
 };
-config["VATT"] = {
+telescopes["VATT"] = {
     site: "Mt. Graham",
     name: "Vatican Advanced Technology Telescope 72in",
     location: "Arizona, United States",
@@ -925,7 +925,7 @@ config["VATT"] = {
     altitude: 3178,
     timezoneName: "America/Phoenix"
 };
-config["MMT"] = {
+telescopes["MMT"] = {
     site: "Mt. Hopkins",
     name: "MMT Observatory 6.5m",
     location: "Arizona, United States",
@@ -934,7 +934,7 @@ config["MMT"] = {
     altitude: 2616,
     timezoneName: "America/Phoenix"
 };
-config["Hale Telescope"] = {
+telescopes["Hale Telescope"] = {
     site: "Palomar Observatory",
     name: "Hale Telescope 200in",
     location: "California, United States",
@@ -943,7 +943,7 @@ config["Hale Telescope"] = {
     altitude: 1713,
     timezoneName: "US/Pacific"
 };
-config["Magellan Telescopes"] = {
+telescopes["Magellan Telescopes"] = {
     site: "Las Campanas Observatory",
     name: "Magellan Telescopes 2×6.5m",
     location: "Chile",
@@ -952,7 +952,7 @@ config["Magellan Telescopes"] = {
     altitude: 2392,
     timezoneName: "America/Santiago"
 };
-config["Du Pont Telescope"] = {
+telescopes["Du Pont Telescope"] = {
     site: "Las Campanas Observatory",
     name: "Du Pont Telescope 2.5m",
     location: "Chile",
@@ -961,7 +961,7 @@ config["Du Pont Telescope"] = {
     altitude: 2380,
     timezoneName: "America/Santiago"
 };
-config["Haleakala Observatory"] = {
+telescopes["Haleakala Observatory"] = {
     name: "Haleakala Observatory",
     location: "Hawaii, United States",
     latitude: 20.70799,
@@ -969,7 +969,7 @@ config["Haleakala Observatory"] = {
     altitude: 3052,
     timezoneName: "US/Hawaii"
 };
-config["MPG/ESO"] = {
+telescopes["MPG/ESO"] = {
     site: "La Silla Observatory",
     name: "MPG/ESO Telescope 2.2m",
     location: "Chile",
@@ -978,7 +978,7 @@ config["MPG/ESO"] = {
     altitude: 2375,
     timezoneName: "America/Santiago"
 };
-config["ESO"] = {
+telescopes["ESO"] = {
     site: "La Silla Observatory",
     name: "ESO Telescope 3.6m",
     location: "Chile",
@@ -987,7 +987,7 @@ config["ESO"] = {
     altitude: 2400,
     timezoneName: "America/Santiago"
 };
-config["NTT"] = {
+telescopes["NTT"] = {
     site: "La Silla Observatory",
     name: "New Technology Telescope 3.58m",
     location: "Chile",
@@ -996,7 +996,7 @@ config["NTT"] = {
     altitude: 2375,
     timezoneName: "America/Santiago"
 };
-config["W. M. Keck Observatory"] = {
+telescopes["W. M. Keck Observatory"] = {
     site: "Mauna Kea",
     name: "Keck Telescopes 2×10m",
     location: "Hawaii, United States",
@@ -1005,7 +1005,7 @@ config["W. M. Keck Observatory"] = {
     altitude: 4145,
     timezoneName: "US/Hawaii"
 };
-config["Gemini North"] = {
+telescopes["Gemini North"] = {
     site: "Mauna Kea",
     name: "Gemini North 8.1m",
     location: "Hawaii, United States",
@@ -1014,7 +1014,7 @@ config["Gemini North"] = {
     altitude: 4213,
     timezoneName: "US/Hawaii"
 };
-config["CFHT"] = {
+telescopes["CFHT"] = {
     site: "Mauna Kea",
     name: "Canada–France–Hawaii Telescope 3.58m",
     location: "Hawaii, United States",
@@ -1023,7 +1023,7 @@ config["CFHT"] = {
     altitude: 4204,
     timezoneName: "US/Hawaii"
 };
-config["UKIRT"] = {
+telescopes["UKIRT"] = {
     site: "Mauna Kea",
     name: "United Kingdom Infra-Red Telescope 3.8m",
     location: "Hawaii, United States",
@@ -1032,7 +1032,7 @@ config["UKIRT"] = {
     altitude: 4194,
     timezoneName: "US/Hawaii"
 };
-config["Gemini South"] = {
+telescopes["Gemini South"] = {
     site: "Cerro Pachón",
     name: "Gemini South 8.1m",
     location: "Chile",
@@ -1041,7 +1041,7 @@ config["Gemini South"] = {
     altitude: 2722,
     timezoneName: "America/Santiago"
 };
-config["TAO"] = {
+telescopes["TAO"] = {
     site: "Cerro Chajnantor",
     name: "Tokyo Atacama Observatory 6.5m",
     location: "Chile",
@@ -1050,7 +1050,7 @@ config["TAO"] = {
     altitude: 5640,
     timezoneName: "America/Santiago"
 };
-config["LSST"] = {
+telescopes["LSST"] = {
     site: "Cerro Pachón",
     name: "Vera C. Rubin Observatory 8.4m",
     location: "Chile",
@@ -1059,7 +1059,7 @@ config["LSST"] = {
     altitude: 2672,
     timezoneName: "America/Santiago"
 };
-config["SOAR"] = {
+telescopes["SOAR"] = {
     site: "Cerro Pachón",
     name: "SOAR Telescope 4.1m",
     location: "Chile",
@@ -1068,7 +1068,7 @@ config["SOAR"] = {
     altitude: 2738,
     timezoneName: "America/Santiago"
 };
-config["Blanco 4m"] = {
+telescopes["Blanco 4m"] = {
     site: "Cerro Tololo",
     name: "Victor M. Blanco Telescope 4m",
     location: "Chile",
@@ -1077,7 +1077,7 @@ config["Blanco 4m"] = {
     altitude: 2207,
     timezoneName: "America/Santiago"
 };
-config["Hooker Telescope"] = {
+telescopes["Hooker Telescope"] = {
     site: "Mt. Wilson",
     name: "Hooker Telescope 100in",
     location: "California, United States",
@@ -1086,7 +1086,7 @@ config["Hooker Telescope"] = {
     altitude: 1742,
     timezoneName: "US/Pacific"
 };
-config["Shane Telescope"] = {
+telescopes["Shane Telescope"] = {
     site: "Lick Observatory",
     name: "Shane Telescope 120in",
     location: "California, United States",
@@ -1095,7 +1095,7 @@ config["Shane Telescope"] = {
     altitude: 1283,
     timezoneName: "US/Pacific"
 };
-config["SALT"] = {
+telescopes["SALT"] = {
     site: "South African Astronomical Observatory",
     name: "Southern African Large Telescope 9.2m",
     location: "Sutherland, South Africa",
@@ -1104,7 +1104,7 @@ config["SALT"] = {
     altitude: 1837,
     timezoneName: "Africa/Johannesburg"
 };
-config["Radcliffe Telescope"] = {
+telescopes["Radcliffe Telescope"] = {
     site: "South African Astronomical Observatory",
     name: "Radcliffe Telescope 74in",
     location: "Sutherland, South Africa",
@@ -1113,7 +1113,7 @@ config["Radcliffe Telescope"] = {
     altitude: 1798,
     timezoneName: "Africa/Johannesburg"
 };
-config["Carlos Sánchez Telescope"] = {
+telescopes["Carlos Sánchez Telescope"] = {
     site: "Teide Observatory",
     name: "Carlos Sánchez Infrared Telescope 1.52m",
     location: "Tenerife, Spain",
@@ -1122,7 +1122,7 @@ config["Carlos Sánchez Telescope"] = {
     altitude: 2390,
     timezoneName: "Atlantic/Canary"
 };
-config["ESA OGS"] = {
+telescopes["ESA OGS"] = {
     site: "Teide Observatory",
     name: "ESA Optical Ground Station 1m",
     location: "Tenerife, Spain",
@@ -1131,7 +1131,7 @@ config["ESA OGS"] = {
     altitude: 2400,
     timezoneName: "Atlantic/Canary"
 };
-config["IAC80"] = {
+telescopes["IAC80"] = {
     site: "Teide Observatory",
     name: "IAC80 Telescope 0.8m",
     location: "Tenerife, Spain",
@@ -1140,7 +1140,7 @@ config["IAC80"] = {
     altitude: 2381,
     timezoneName: "Atlantic/Canary"
 };
-config["Skinakas Observatory"] = {
+telescopes["Skinakas Observatory"] = {
     name: "Skinakas Observatory 1.3m",
     location: "Crete, Greece",
     latitude: 35.21180,
@@ -1148,7 +1148,7 @@ config["Skinakas Observatory"] = {
     altitude: 1750,
     timezoneName: "Europe/Athens"
 };
-config["Kryoneri Observatory"] = {
+telescopes["Kryoneri Observatory"] = {
     name: "Kryoneri Observatory 1.3m",
     location: "Greece",
     latitude: 37.97194,
@@ -1156,7 +1156,7 @@ config["Kryoneri Observatory"] = {
     altitude: 930,
     timezoneName: "Europe/Athens"
 };
-config["Tautenburg Observatory"] = {
+telescopes["Tautenburg Observatory"] = {
     name: "Tautenburg Observatory 2m",
     location: "Thüringen, Germany",
     latitude: 50.98016,
@@ -1164,7 +1164,7 @@ config["Tautenburg Observatory"] = {
     altitude: 341,
     timezoneName: "Europe/Berlin"
 };
-config["AAT"] = {
+telescopes["AAT"] = {
     site: "Siding Spring Observatory",
     name: "Anglo-Australian Telescope 3.9m",
     location: "New South Wales, Australia",
@@ -1173,7 +1173,7 @@ config["AAT"] = {
     altitude: 1164,
     timezoneName: "Australia/Sydney"
 };
-config["Armagh Observatory"] = {
+telescopes["Armagh Observatory"] = {
     name: "Armagh Observatory",
     location: "Northern Ireland, United Kingdom",
     latitude: 54.35211,
@@ -1181,7 +1181,7 @@ config["Armagh Observatory"] = {
     altitude: 61,
     timezoneName: "Europe/Belfast"
 };
-config["ARC"] = {
+telescopes["ARC"] = {
     site: "Apache Point Observatory",
     name: "ARC 3.5m",
     location: "New Mexico, United States",
@@ -1190,7 +1190,7 @@ config["ARC"] = {
     altitude: 2788,
     timezoneName: "America/Denver"
 };
-config["SDSS"] = {
+telescopes["SDSS"] = {
     site: "Apache Point Observatory",
     name: "SDSS 2.5m",
     location: "New Mexico, United States",
@@ -1199,7 +1199,7 @@ config["SDSS"] = {
     altitude: 2788,
     timezoneName: "America/Denver"
 };
-config["Seimei Telescope"] = {
+telescopes["Seimei Telescope"] = {
     site: "Okayama Observatory",
     name: "Seimei Telescope 3.8m",
     location: "Japan",
@@ -1208,7 +1208,7 @@ config["Seimei Telescope"] = {
     altitude: 372,
     timezoneName: "Asia/Tokyo"
 };
-config["Mayall Telescope"] = {
+telescopes["Mayall Telescope"] = {
     site: "Kitt Peak",
     name: "Mayall Telescope 4m",
     location: "Arizona, United States",
@@ -1217,7 +1217,7 @@ config["Mayall Telescope"] = {
     altitude: 2120,
     timezoneName: "America/Phoenix"
 };
-config["Bok Telescope"] = {
+telescopes["Bok Telescope"] = {
     site: "Kitt Peak",
     name: "Bok Telescope 90in",
     location: "Arizona, United States",
@@ -1226,7 +1226,7 @@ config["Bok Telescope"] = {
     altitude: 2031,
     timezoneName: "America/Phoenix"
 };
-config["OSN"] = {
+telescopes["OSN"] = {
     site: "Sierra Nevada Observatory",
     name: "OSN 1.5m",
     location: "Granada, Spain",
@@ -1235,7 +1235,7 @@ config["OSN"] = {
     altitude: 2896,
     timezoneName: "Europe/Madrid"
 };
-config["VISTA"] = {
+telescopes["VISTA"] = {
     site: "Cerro Paranal",
     name: "VISTA 4.1m",
     location: "Chile",
@@ -1244,7 +1244,7 @@ config["VISTA"] = {
     altitude: 2518,
     timezoneName: "America/Santiago"
 };
-config["Wise Observatory"] = {
+telescopes["Wise Observatory"] = {
     name: "Wise Observatory 1m",
     location: "Israel",
     latitude: 30.59737,
@@ -1252,7 +1252,7 @@ config["Wise Observatory"] = {
     altitude: 875,
     timezoneName: "Asia/Jerusalem"
 };
-config["TRAPPIST-North"] = {
+telescopes["TRAPPIST-North"] = {
     site: "Oukaïmeden Observatory",
     name: "TRAPPIST-North 0.6m",
     location: "Morocco",
@@ -1261,7 +1261,7 @@ config["TRAPPIST-North"] = {
     altitude: 2750,
     timezoneName: "Africa/Casablanca"
 };
-config["TRAPPIST-South"] = {
+telescopes["TRAPPIST-South"] = {
     site: "La Silla Observatory",
     name: "TRAPPIST-South 0.6m",
     location: "Chile",
@@ -1270,7 +1270,7 @@ config["TRAPPIST-South"] = {
     altitude: 2313,
     timezoneName: "America/Santiago"
 };
-config["JS 2.15m"] = {
+telescopes["JS 2.15m"] = {
     site: "Leoncito Astronomical Complex",
     name: "Jorge Sahade Telescope 2.15m",
     location: "Argentina",
@@ -1279,7 +1279,7 @@ config["JS 2.15m"] = {
     altitude: 2483,
     timezoneName: "America/Argentina/San_Juan"
 };
-config["AlbaNova"] = {
+telescopes["AlbaNova"] = {
     site: "Stockholms universitet",
     name: "AlbaNova Telescope 0.8m",
     location: "Sweden",
@@ -1288,7 +1288,7 @@ config["AlbaNova"] = {
     altitude: 36,
     timezoneName: "Europe/Stockholm"
 };
-config["Brorfelde Observatory"] = {
+telescopes["Brorfelde Observatory"] = {
     name: "Brorfelde Observatory 77cm",
     location: "Denmark",
     latitude: 55.62466,
@@ -1296,7 +1296,7 @@ config["Brorfelde Observatory"] = {
     altitude: 60,
     timezoneName: "Europe/Copenhagen"
 };
-config["MOA Telescope 1.8m"] = {
+telescopes["MOA Telescope 1.8m"] = {
     site: "Mt. John Observatory",
     name: "MOA Telescope 1.8m",
     location: "New Zealand",
@@ -1305,7 +1305,7 @@ config["MOA Telescope 1.8m"] = {
     altitude: 1029,
     timezoneName: "Pacific/Auckland"
 };
-config["Valongo Observatory"] = {
+telescopes["Valongo Observatory"] = {
     name: "Valongo Observatory 0.42m",
     location: "Brazil",
     latitude: -22.89849,
@@ -1313,7 +1313,7 @@ config["Valongo Observatory"] = {
     altitude: 23,
     timezoneName: "America/Sao_Paulo"
 };
-config["Sertão de Itaparica Observatory"] = {
+telescopes["Sertão de Itaparica Observatory"] = {
     name: "Sertão de Itaparica Observatory 1m",
     location: "Brazil",
     latitude: -8.79220,
@@ -1321,7 +1321,7 @@ config["Sertão de Itaparica Observatory"] = {
     altitude: 390,
     timezoneName: "America/Sao_Paulo"
 };
-config["Pico dos Dias Observatory"] = {
+telescopes["Pico dos Dias Observatory"] = {
     name: "Pico dos Dias Observatory 1.6m",
     location: "Brazil",
     latitude: -22.53494,
@@ -1329,7 +1329,7 @@ config["Pico dos Dias Observatory"] = {
     altitude: 1864,
     timezoneName: "America/Sao_Paulo"
 };
-config["Observatorio Astronómico Nacional, Mexico"] = {
+telescopes["Observatorio Astronómico Nacional, Mexico"] = {
     name: "Observatorio Astronómico Nacional 2.1m",
     location: "Baja California, Mexico",
     latitude: 31.04412,
@@ -1337,7 +1337,7 @@ config["Observatorio Astronómico Nacional, Mexico"] = {
     altitude: 2830,
     timezoneName: "America/Tijuana"
 };
-config["Guillermo Haro Observatory"] = {
+telescopes["Guillermo Haro Observatory"] = {
     name: "Guillermo Haro Observatory 2.1m",
     location: "Sonora, Mexico",
     latitude: 31.05311,
@@ -1345,7 +1345,7 @@ config["Guillermo Haro Observatory"] = {
     altitude: 2480,
     timezoneName: "America/Hermosillo"
 };
-config["Byurakan Observatory"] = {
+telescopes["Byurakan Observatory"] = {
     name: "Byurakan Observatory 2.6m",
     location: "Armenia",
     latitude: 40.33029,
@@ -1353,7 +1353,7 @@ config["Byurakan Observatory"] = {
     altitude: 1406,
     timezoneName: "Asia/Yerevan"
 };
-config["Lulin Observatory"] = {
+telescopes["Lulin Observatory"] = {
     name: "Lulin Observatory 1m",
     location: "Taiwan",
     latitude: 23.46937,
@@ -1361,7 +1361,7 @@ config["Lulin Observatory"] = {
     altitude: 2862,
     timezoneName: "Asia/Taipei"
 };
-config["LAMOST"] = {
+telescopes["LAMOST"] = {
     site: "Xinglong Station",
     name: "LAMOST 4m",
     location: "China",
@@ -1370,7 +1370,7 @@ config["LAMOST"] = {
     altitude: 960,
     timezoneName: "Asia/Shanghai"
 };
-config["Lijiang Telescope"] = {
+telescopes["Lijiang Telescope"] = {
     site: "Yunnan Observatory",
     name: "Lijiang Telescope 2.4m",
     location: "China",
@@ -1379,7 +1379,7 @@ config["Lijiang Telescope"] = {
     altitude: 2014,
     timezoneName: "Asia/Shanghai"
 };
-config["Ali Observatory"] = {
+telescopes["Ali Observatory"] = {
     name: "Ali Observatory",
     location: "Tibet, China",
     latitude: 32.32541,
@@ -1387,7 +1387,7 @@ config["Ali Observatory"] = {
     altitude: 5035,
     timezoneName: "Asia/Shanghai"
 };
-config["INO340"] = {
+telescopes["INO340"] = {
     site: "Iranian National Observatory",
     name: "INO340 3.4m",
     location: "Iran",
@@ -1396,7 +1396,7 @@ config["INO340"] = {
     altitude: 3572,
     timezoneName: "Asia/Tehran"
 };
-config["BTA-6"] = {
+telescopes["BTA-6"] = {
     site: "Special Astrophysical Observatory",
     name: "BTA-6 6m",
     location: "Russia",
@@ -1405,7 +1405,7 @@ config["BTA-6"] = {
     altitude: 2070,
     timezoneName: "Europe/Moscow"
 };
-config["Pulkovo Observatory"] = {
+telescopes["Pulkovo Observatory"] = {
     name: "Pulkovo Observatory",
     location: "Russia",
     latitude: 59.77181,
@@ -1413,7 +1413,7 @@ config["Pulkovo Observatory"] = {
     altitude: 81,
     timezoneName: "Europe/Moscow"
 };
-config["Sharjah Astronomical Observatory"] = {
+telescopes["Sharjah Astronomical Observatory"] = {
     name: "Sharjah Astronomical Observatory",
     location: "Dubai, United Arab Emirates",
     latitude: 25.28257,
@@ -1421,7 +1421,7 @@ config["Sharjah Astronomical Observatory"] = {
     altitude: 17,
     timezoneName: "Asia/Dubai"
 };
-config["Tien Shan Astronomical Observatory"] = {
+telescopes["Tien Shan Astronomical Observatory"] = {
     name: "Tien Shan Astronomical Observatory 1m",
     location: "Kazakhstan",
     latitude: 43.05725,
@@ -1429,7 +1429,7 @@ config["Tien Shan Astronomical Observatory"] = {
     altitude: 2735,
     timezoneName: "Asia/Almaty"
 };
-config["AZT-20"] = {
+telescopes["AZT-20"] = {
     site: "Assy-Turgen Observatory",
     name: "AZT-20 1.5m",
     location: "Kazakhstan",
@@ -1438,7 +1438,7 @@ config["AZT-20"] = {
     altitude: 2750,
     timezoneName: "Asia/Almaty"
 };
-config["AZT-24"] = {
+telescopes["AZT-24"] = {
     site: "Campo Imperatore Observatory",
     name: "AZT-24 1.1m",
     location: "Abruzzo, Italy",
@@ -1447,7 +1447,7 @@ config["AZT-24"] = {
     altitude: 2154,
     timezoneName: "Europe/Rome"
 };
-config["MINERVA-Australis"] = {
+telescopes["MINERVA-Australis"] = {
     site: "Mt. Kent Observatory",
     name: "MINERVA-Australis 4×0.7m",
     location: "Queensland, Australia",
@@ -1456,7 +1456,7 @@ config["MINERVA-Australis"] = {
     altitude: 682,
     timezoneName: "Australia/Brisbane"
 };
-config["Mt. Stromlo Observatory"] = {
+telescopes["Mt. Stromlo Observatory"] = {
     name: "Mt. Stromlo Observatory 74in",
     location: "Canberra, Australia",
     latitude: -35.31911,
@@ -1464,7 +1464,7 @@ config["Mt. Stromlo Observatory"] = {
     altitude: 767,
     timezoneName: "Australia/Sydney"
 };
-config["CSS 0.7m"] = {
+telescopes["CSS 0.7m"] = {
     site: "Mt. Bigelow",
     name: "Catalina Sky Survey 0.7m Schmidt",
     location: "Arizona, United States",
@@ -1473,7 +1473,7 @@ config["CSS 0.7m"] = {
     altitude: 2516,
     timezoneName: "America/Phoenix"
 };
-config["CSS 40in"] = {
+telescopes["CSS 40in"] = {
     site: "Mt. Lemmon",
     name: "Catalina Sky Survey 40in Follow-up Telescope",
     location: "Arizona, United States",
@@ -1482,7 +1482,7 @@ config["CSS 40in"] = {
     altitude: 2789,
     timezoneName: "America/Phoenix"
 };
-config["Kuiper Telescope"] = {
+telescopes["Kuiper Telescope"] = {
     site: "Mt. Bigelow",
     name: "Kuiper Telescope 61in",
     location: "Arizona, United States",
@@ -1491,7 +1491,7 @@ config["Kuiper Telescope"] = {
     altitude: 2520,
     timezoneName: "America/Phoenix"
 };
-config["TNT"] = {
+telescopes["TNT"] = {
     site: "Thai National Observatory",
     name: "Thai National Telescope 2.4m",
     location: "Thailand",
@@ -1500,7 +1500,7 @@ config["TNT"] = {
     altitude: 2457,
     timezoneName: "Asia/Bangkok"
 };
-config["HCT"] = {
+telescopes["HCT"] = {
     site: "Indian Astronomical Observatory",
     name: "Himalayan Chandra Telescope 2m",
     location: "India",
@@ -1509,7 +1509,7 @@ config["HCT"] = {
     altitude: 4500,
     timezoneName: "Asia/Kolkata"
 };
-config["Halley's Mount"] = {
+telescopes["Halley's Mount"] = {
     name: "Halley's Mount",
     location: "Saint Helena",
     latitude: -15.96202,
@@ -1517,7 +1517,7 @@ config["Halley's Mount"] = {
     altitude: 659,
     timezoneName: "Atlantic/St_Helena"
 };
-config["Dominion Astrophysical Observatory"] = {
+telescopes["Dominion Astrophysical Observatory"] = {
     name: "Dominion Astrophysical Observatory 72in",
     location: "British Columbia, Canada",
     latitude: 48.51978,
@@ -1525,7 +1525,7 @@ config["Dominion Astrophysical Observatory"] = {
     altitude: 229,
     timezoneName: "America/Vancouver"
 };
-config["Observatorio Astronómico Nacional, Colombia"] = {
+telescopes["Observatorio Astronómico Nacional, Colombia"] = {
     name: "Observatorio Astronómico Nacional 20cm",
     location: "Bogotá, Canada",
     latitude: 4.59621,
@@ -1533,7 +1533,7 @@ config["Observatorio Astronómico Nacional, Colombia"] = {
     altitude: 2555,
     timezoneName: "America/Bogota"
 };
-config["RTT150"] = {
+telescopes["RTT150"] = {
     site: "TÜBİTAK National Observatory",
     name: "RTT150 1.5m",
     location: "Antalya, Turkey",
@@ -1542,7 +1542,7 @@ config["RTT150"] = {
     altitude: 2457,
     timezoneName: "Europe/Istanbul"
 };
-config["Aristarchos Telescope"] = {
+telescopes["Aristarchos Telescope"] = {
     site: "Helmos Observatory",
     name: "Aristarchos Telescope 2.3m",
     location: "Greece",
@@ -1551,7 +1551,7 @@ config["Aristarchos Telescope"] = {
     altitude: 2340,
     timezoneName: "Europe/Athens"
 };
-config["TJO"] = {
+telescopes["TJO"] = {
     site: "Montsec Observatory",
     name: "Joan Oró Telescope 0.8m",
     location: "Lleida, Spain",
@@ -1560,7 +1560,7 @@ config["TJO"] = {
     altitude: 1570,
     timezoneName: "Europe/Madrid"
 };
-config["Rosemary Hill Observatory"] = {
+telescopes["Rosemary Hill Observatory"] = {
     name: "Rosemary Hill Observatory 30in",
     location: "Florida, United States",
     latitude: 29.4001,
@@ -1568,7 +1568,7 @@ config["Rosemary Hill Observatory"] = {
     altitude: 23,
     timezoneName: "US/Eastern"
 };
-config["Perek Telescope"] = {
+telescopes["Perek Telescope"] = {
     site: "Ondřejov Observatory",
     name: "Perek Telescope 2m",
     location: "Czech Republic",
@@ -1577,7 +1577,7 @@ config["Perek Telescope"] = {
     altitude: 528,
     timezoneName: "Europe/Prague"
 };
-config["Kottamia Astronomical Observatory"] = {
+telescopes["Kottamia Astronomical Observatory"] = {
     name: "Kottamia Astronomical Observatory 74in",
     location: "Egypt",
     latitude: 29.93406,
@@ -1585,7 +1585,7 @@ config["Kottamia Astronomical Observatory"] = {
     altitude: 450,
     timezoneName: "Africa/Cairo"
 };
-config["Santa Martina Observatory"] = {
+telescopes["Santa Martina Observatory"] = {
     name: "Santa Martina Observatory",
     location: "Chile",
     latitude: -33.26913,
@@ -1593,7 +1593,7 @@ config["Santa Martina Observatory"] = {
     altitude: 1449,
     timezoneName: "America/Santiago"
 };
-config["Piszkéstető Station"] = {
+telescopes["Piszkéstető Station"] = {
     name: "Piszkéstető Station",
     location: "Hungary",
     latitude: 47.91746,
@@ -1601,7 +1601,7 @@ config["Piszkéstető Station"] = {
     altitude: 944,
     timezoneName: "Europe/Budapest"
 };
-config["Milanković Telescope"] = {
+telescopes["Milanković Telescope"] = {
     site: "Vidojevica Astronomical Station",
     name: "Milanković Telescope 1.4m",
     location: "Hungary",
@@ -1610,7 +1610,7 @@ config["Milanković Telescope"] = {
     altitude: 1150,
     timezoneName: "Europe/Belgrade"
 };
-config["Rozhen Observatory"] = {
+telescopes["Rozhen Observatory"] = {
     name: "Rozhen Observatory 2m",
     location: "Bulgaria",
     latitude: 41.69316,
@@ -1618,7 +1618,7 @@ config["Rozhen Observatory"] = {
     altitude: 1759,
     timezoneName: "Europe/Sofia"
 };
-config["Haute-Provence Observatory"] = {
+telescopes["Haute-Provence Observatory"] = {
     name: "Haute-Provence Observatory 1.93m",
     location: "France",
     latitude: 43.93144,
@@ -1626,7 +1626,7 @@ config["Haute-Provence Observatory"] = {
     altitude: 650,
     timezoneName: "Europe/Paris"
 };
-config["US Naval Observatory"] = {
+telescopes["US Naval Observatory"] = {
     name: "US Naval Observatory 26in",
     location: "Washington, D.C., United States",
     latitude: 38.92096,
@@ -1634,7 +1634,7 @@ config["US Naval Observatory"] = {
     altitude: 81,
     timezoneName: "America/New_York"
 };
-config["KST"] = {
+telescopes["KST"] = {
     site: "US Naval Observatory Flagstaff Station",
     name: "Kaj Strand Telescope 61in",
     location: "Arizona, United States",
@@ -1643,7 +1643,7 @@ config["KST"] = {
     altitude: 2282,
     timezoneName: "America/Phoenix"
 };
-config["LDT"] = {
+telescopes["LDT"] = {
     site: "Lowell Observatory",
     name: "Lowell Discovery Telescope 4.3m",
     location: "Arizona, United States",
@@ -1652,7 +1652,7 @@ config["LDT"] = {
     altitude: 2360,
     timezoneName: "America/Phoenix"
 };
-config["Perkins Telescope"] = {
+telescopes["Perkins Telescope"] = {
     site: "Lowell Observatory",
     name: "Perkins Telescope 72in",
     location: "Arizona, United States",
@@ -1661,7 +1661,7 @@ config["Perkins Telescope"] = {
     altitude: 2206,
     timezoneName: "America/Phoenix"
 };
-config["Hall Telescope"] = {
+telescopes["Hall Telescope"] = {
     site: "Lowell Observatory",
     name: "Hall Telescope 42in",
     location: "Arizona, United States",
@@ -1670,7 +1670,7 @@ config["Hall Telescope"] = {
     altitude: 2206,
     timezoneName: "America/Phoenix"
 };
-config["GOTO North"] = {
+telescopes["GOTO North"] = {
     site: "Roque de Los Muchachos",
     name: "Gravitational-wave Optical Transient Observer 4×0.4m",
     location: "La Palma, Spain",
@@ -1679,7 +1679,7 @@ config["GOTO North"] = {
     altitude: 2300,
     timezoneName: "Atlantic/Canary"
 };
-config["GOTO South"] = {
+telescopes["GOTO South"] = {
     site: "Siding Spring Observatory",
     name: "Gravitational-wave Optical Transient Observer 4×0.4m",
     location: "New South Wales, Australia",

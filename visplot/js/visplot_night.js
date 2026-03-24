@@ -18,7 +18,7 @@ function Night(y, m, d) {
         this.year = y;
         /* Size of all time series (e.g., altitude curves) */
         /* ALL time series begin at sunset and end at sunrise */
-        this.Nx = 1000;
+        this.Nx = config.graphResolutionTimeAxis;
         /* Time series arrays */
         this.xaxis = []; // UTC times in MJD format, from sunset to sunrise
         this.ymoon = []; // Refracted moon altitude in degrees
@@ -52,7 +52,7 @@ Night.prototype.setEphemerides = function () {
         // the night (equation of equinoxes, TT-UTC, etc.), precompute them.
 
         // Midnight tonight at the telescope
-        const telMidnight = moment.tz(`${this.year}-${helper.padTwoDigits(this.month)}-${helper.padTwoDigits(this.day)}`, config[Driver.telescopeName].timezoneName).add(1, "days");
+        const telMidnight = moment.tz(`${this.year}-${helper.padTwoDigits(this.month)}-${helper.padTwoDigits(this.day)}`, telescopes[Driver.telescopeName].timezoneName).add(1, "days");
         // Convert it to UTC
         const utcMidnight = telMidnight.clone().tz("UTC");
         // Convert it to MJD (include the fractional day)
@@ -67,16 +67,16 @@ Night.prototype.setEphemerides = function () {
         * which is approximately equal to what SLALIB gives at sea-level.
         * However, at high altitude (low pressure) this can be smaller by about 10 arcminutes, so that
         * needs to be adjusted */
-        const stdPres = 1013.25; // hPa
-        const stdTemp = 298.15; // K, 15 deg
+        const stdPres = config.stdPressure;
+        const stdTemp = config.stdTemperature;
         const sitePres = stdPres * Math.exp(-9.80665 * 0.0289644 * Driver.obs_alt / stdTemp / 8.31447);
-        const siteTemp = stdTemp-0.0065*Driver.obs_alt; // 15 deg at sea level, use TLR to reduce temperature
-        const siteWvlen = 0.55;
-        const siteHum = 0.2;
-        this.ref = sla.refco(Driver.obs_alt, siteTemp, sitePres, siteHum, siteWvlen, Driver.obs_lat_rad, 0.0065);
-        this.RefractionAtHorizon = sla.refro(0.5*Math.PI, Driver.obs_alt,
+        const siteTemp = stdTemp + config.refractionTLR*Driver.obs_alt; // 15 deg at sea level, use TLR to reduce temperature
+        const siteWvlen = config.refractionWavelength;
+        const siteHum = config.refractionHumidity;
+        this.ref = sla.refco(Driver.obs_alt, siteTemp, sitePres, siteHum, siteWvlen, Driver.obs_lat_rad, config.refractionTLR);
+        this.RefractionAtHorizon = sla.refro(sla.pihalf, Driver.obs_alt,
             siteTemp, sitePres, siteHum, siteWvlen,
-            Driver.obs_lat_rad, 0.0065, 1e-8);
+            Driver.obs_lat_rad, config.refractionTLR, 1e-8);
         this.HorizonDip = Math.acos(sla.a0 / (Driver.obs_alt + sla.a0));
         /* For target altitude curves:
         * Since sla.aopqk would be extremely slow beyond zd of 76 deg, the apparent
@@ -172,7 +172,7 @@ Night.prototype.setEphemerides = function () {
             this.xaxis.push(ut);
             if (i === 0) {
                 aop = sla.aoppa(ut, this.dut*sla.d2s, Driver.obs_lon_rad, Driver.obs_lat_rad,
-                    Driver.obs_alt, 0, 0, siteTemp, 0, siteHum, siteWvlen, 0.0065);
+                    Driver.obs_alt, 0, 0, siteTemp, 0, siteHum, siteWvlen, config.refractionTLR);
             } else {
                 sla.aoppat(ut, aop);
             }
@@ -186,7 +186,7 @@ Night.prototype.setEphemerides = function () {
             // Topocentric zd of Moon WITHOUT refraction
             ret = sla.aopqk(ret.ra, ret.dec, aop);
             // Approximate refracted alt
-            const ell = 0.5*Math.PI - sla.refz(ret.zob, this.ref.refa, this.ref.refb);
+            const ell = sla.pihalf - sla.refz(ret.zob, this.ref.refa, this.ref.refb);
             this.ymoon.push(sla.r2d * ell);
             this.rmoon.push(0.5*diam);
             // LST angles

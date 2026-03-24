@@ -288,13 +288,11 @@ helper.parseSIMBADResponse = function (responseText) {
         if (responseText.startsWith("!!")) {
             return null;
         }
-        const coordsRegex = new RegExp(/Coordinates\(ICRS.*?\):\s+(\d+)\s+(\d+)\s+([\d\.]+)\s+([+\-\d]+)\s+(\d+)\s+([\d\.]+)/g);
-        const ca = coordsRegex.exec(responseText);
+        const ca = config.simbadCoordsRegex.exec(responseText);
         if (ca === null) {
             return null;
         }
-        const pmRegex = new RegExp(/Proper motions:\s+([+\-\d\.]+)\s+([+\-\d\.]+)/g);
-        const pa = pmRegex.exec(responseText);
+        const pa = config.simbadPMRegex.exec(responseText);
         if (pa === null) {
             return `${ca[1]} ${ca[2]} ${ca[3]} ${ca[4]} ${ca[5]} ${ca[6]}`;
         }
@@ -869,17 +867,6 @@ helper.validColour = function(stringToTest) {
         helper.LogException(ex);
     }
 };
-
-/**
- * Predefined strings used to indicate offline or unavailable telescope for
- * scheduling (e.g., bad weather, time assigned to a different user, etc.).
- *
- * @type {String[]}
- */
-helper.offlineStrings = [
-    "Offline",
-    "BadWolf"
-];
 
 /**
  * Format a timezone offset as a signed integer string.

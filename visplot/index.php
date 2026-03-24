@@ -139,6 +139,7 @@ $version = "5.0f";
 * 5.0f - Removed duplicated code during Target creation (going back to the
 *        client-server model).
 *      - Improved serialization routines.
+*      - Refactored config files.
 */
 session_start();
 if (isset($_SESSION["obinfo"])) {
@@ -462,7 +463,8 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
     <script src="<?php echo($baseurl);?>js/moment-timezone-with-data.min.js?v=<?php echo($version);?>"></script>
     <script src="<?php echo($baseurl);?>js/leaflet-openweathermap.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
     <!-- Configuration files -->
-    <script src="<?php echo($baseurl);?>js/config.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
+    <script src="<?php echo($baseurl);?>js/config_settings.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
+    <script src="<?php echo($baseurl);?>js/config_telescopes.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
     <!-- Main JS code -->
     <script src="<?php echo($baseurl);?>js/visplot_slacoeffs.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
     <script src="<?php echo($baseurl);?>js/visplot_sla.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>

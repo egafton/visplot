@@ -27,6 +27,8 @@ sla.cj = 3155760000;
 sla.spc = sla.cj;
 /* @constant {Number} Two pi */
 sla.d2pi = 2 * Math.PI;
+/* @constant {Number} Half pi */
+sla.pihalf = Math.PI / 2;
 /* @constant {Number} Degrees of time to radians */
 sla.d2r = Math.PI / 180;
 /* @constant {Number} Seconds in a day */

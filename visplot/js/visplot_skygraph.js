@@ -18,7 +18,7 @@ function SkyGraph(_canvas, _context) {
         this.ctx = _context;
         this.canvasWidth = _canvas.width;
         this.canvasHeight = _canvas.height;
-        this.fontFamily = "Ubuntu, sans-serif";
+        this.fontFamily = config.graphFont;
         this.cardinalLabels = ["N", "E", "S", "W"];
         this.lastAltaz = null;
         this.cursorPx = null;
@@ -47,7 +47,7 @@ function SkyGraph(_canvas, _context) {
  */
 SkyGraph.prototype.updateTelescope = function () {
     try {
-        this.params = config[Driver.telescopeName].skycamParams || null;
+        this.params = telescopes[Driver.telescopeName].skycamParams || null;
         if (this.params === null) {
             $("#canvasSkycam").hide();
             $("#skycam_placeholder").addClass("active");
@@ -68,7 +68,7 @@ SkyGraph.prototype.startTimer = function () {
     try {
         this.timer = setInterval(function () {
             driver.skyGraph.refreshRemote();
-        }, 30000);
+        }, config.skycamImageRefreshInterval);
     } catch (ex) {
         helper.LogException(ex);
     }
@@ -195,7 +195,7 @@ SkyGraph.prototype.drawAxes = function () {
         for (let i = 90; i >= 0; i -= 30) {
             const r = this.params.radius * Math.pow(1 - i / 90, this.params.distortPower);
             this.ctx.beginPath();
-            this.ctx.arc(this.params.zenithX, this.params.zenithY, r, 0, 2 * Math.PI, false);
+            this.ctx.arc(this.params.zenithX, this.params.zenithY, r, 0, sla.d2pi, false);
             this.ctx.stroke();
         }
         this.ctx.beginPath();
@@ -281,7 +281,7 @@ SkyGraph.prototype.drawPointing = function () {
         this.ctx.lineTo(x + 2, y - 2);
         this.ctx.stroke();
         this.ctx.beginPath();
-        this.ctx.arc(x, y, 3.5, 0, 2 * Math.PI, false);
+        this.ctx.arc(x, y, 3.5, 0, sla.d2pi, false);
         this.ctx.stroke();
     } catch (ex) {
         helper.LogException(ex);
@@ -411,7 +411,7 @@ SkyGraph.prototype.px2altaz = function(x, y) {
         const dy = y - this.params.zenithY;
         const rho = Math.sqrt(dx*dx + dy*dy);
         return {
-            'alt': Math.PI/2 * (1-Math.pow(rho/this.params.radius, 1/this.params.distortPower)),
+            'alt': sla.pihalf * (1-Math.pow(rho/this.params.radius, 1/this.params.distortPower)),
             'az': sla.dranrm(Math.atan2(dy, -dx) + sla.d2r * (90 - this.params.rotation))
         };
     } catch (ex) {
@@ -433,7 +433,7 @@ SkyGraph.prototype.altaz2px = function(alt, az) {
         return null;
     }
     try {
-        const rho = this.params.radius * Math.pow(1 - alt / (Math.PI / 2), this.params.distortPower);
+        const rho = this.params.radius * Math.pow(1 - alt / sla.pihalf, this.params.distortPower);
         const theta = az - sla.d2r * (90 - this.params.rotation);
         return {
             'x': this.params.zenithX - rho * Math.cos(theta),

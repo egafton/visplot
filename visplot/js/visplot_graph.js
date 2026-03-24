@@ -20,7 +20,7 @@ function Graph(_canvas, _context) {
         this.ystart = 92;
         this.xleftarrows = this.xstart - 50;
         this.tickLength = 7;
-        this.fontFamily = "Ubuntu, sans-serif";
+        this.fontFamily = config.graphFont;
         this.maxLenTgtName = 10;
         this.CircleSize = 8;
         this.CircleSizeSq = 64;
@@ -192,7 +192,7 @@ Graph.prototype.drawRHSofSchedule = function () {
                 this.ctx.strokeStyle = obj.LabelStrokeColor;
                 this.ctx.fillStyle = obj.LabelFillColor;
                 this.ctx.beginPath();
-                this.ctx.arc(this.targetsx, y - 6.5, this.CircleSize, 0, 2 * Math.PI, false);
+                this.ctx.arc(this.targetsx, y - 6.5, this.CircleSize, 0, sla.d2pi, false);
                 this.ctx.fill();
                 this.plotText((i + 1), "8pt", obj.LabelTextColor, this.targetsx, y, "center", "bottom");
             } else {
@@ -202,7 +202,7 @@ Graph.prototype.drawRHSofSchedule = function () {
                 this.ctx.strokeStyle = "black";
                 this.ctx.fillStyle = "white";
                 this.ctx.beginPath();
-                this.ctx.arc(this.targetsx, y - 6.5, this.CircleSize, 0, 2 * Math.PI, false);
+                this.ctx.arc(this.targetsx, y - 6.5, this.CircleSize, 0, sla.d2pi, false);
                 this.ctx.fill();
                 this.ctx.stroke();
                 this.plotText((i + 1), "8pt", "black", this.targetsx, y, "center", "bottom");
@@ -272,14 +272,14 @@ Graph.prototype.drawSchedule = function () {
                 this.ctx.strokeStyle = obj.LabelStrokeColor;
                 this.ctx.fillStyle = obj.LabelFillColor;
                 this.ctx.beginPath();
-                this.ctx.arc(obj.xmid, obj.ymid, this.CircleSize, 0, 2 * Math.PI, false);
+                this.ctx.arc(obj.xmid, obj.ymid, this.CircleSize, 0, sla.d2pi, false);
                 this.ctx.fill();
                 this.plotText((i + 1), "8pt", obj.LabelTextColor, obj.xmid, obj.ymid, "center", "middle");
             } else {
                 this.ctx.strokeStyle = "black";
                 this.ctx.fillStyle = "white";
                 this.ctx.beginPath();
-                this.ctx.arc(obj.xlab, obj.ylab, this.CircleSize, 0, 2 * Math.PI, false);
+                this.ctx.arc(obj.xlab, obj.ylab, this.CircleSize, 0, sla.d2pi, false);
                 this.ctx.fill();
                 this.ctx.stroke();
                 this.plotText((i + 1), "8pt", "black", obj.xlab, obj.ylab, "center", "middle");
@@ -379,7 +379,7 @@ Graph.prototype.highlightTarget = function (target) {
         if ($("#opt_show_lastobstime").is(":checked")) {
             if (target.ObservableTonight !== false) {
                 this.ctx.beginPath();
-                this.ctx.arc(this.transformXLocation(target.LastPossibleTime), this.transformYLocation(target.Graph[target.iLastPossibleTime]), 5, 0, 2 * Math.PI, false);
+                this.ctx.arc(this.transformXLocation(target.LastPossibleTime), this.transformYLocation(target.Graph[target.iLastPossibleTime]), 5, 0, sla.d2pi, false);
                 this.ctx.fillStyle = "red";
                 this.ctx.fill();
                 this.ctx.fillStyle = "black";
@@ -483,7 +483,7 @@ Graph.prototype.drawTargets = function (Targets, grayedOut = false) {
             if ($("#opt_show_lastobstime").is(":checked")) {
                 if (obj.ObservableTonight !== false) {
                     this.ctx.beginPath();
-                    this.ctx.arc(this.transformXLocation(obj.LastPossibleTime), this.transformYLocation(obj.Graph[obj.iLastPossibleTime]), 5, 0, 2 * Math.PI, false);
+                    this.ctx.arc(this.transformXLocation(obj.LastPossibleTime), this.transformYLocation(obj.Graph[obj.iLastPossibleTime]), 5, 0, sla.d2pi, false);
                     this.ctx.fillStyle = "red";
                     this.ctx.fill();
                     this.ctx.fillStyle = "black";
@@ -544,7 +544,7 @@ Graph.prototype.drawTargetNames = function (Targets) {
             this.ctx.strokeStyle = "black";
             this.ctx.fillStyle = "white";
             this.ctx.beginPath();
-            this.ctx.arc(obj.xlab, obj.ylab, this.CircleSize, 0, 2 * Math.PI, false);
+            this.ctx.arc(obj.xlab, obj.ylab, this.CircleSize, 0, sla.d2pi, false);
             this.ctx.fill();
             this.ctx.stroke();
             this.plotText((i + 1), "8pt", "black", obj.xlab, obj.ylab, "center", "middle");
@@ -560,7 +560,7 @@ Graph.prototype.drawTargetNames = function (Targets) {
             this.ctx.strokeStyle = "black";
             this.ctx.fillStyle = "white";
             this.ctx.beginPath();
-            this.ctx.arc(this.targetsx, y - 6.5, this.CircleSize, 0, 2 * Math.PI, false);
+            this.ctx.arc(this.targetsx, y - 6.5, this.CircleSize, 0, sla.d2pi, false);
             this.ctx.fill();
             this.ctx.stroke();
             this.plotText((i + 1), "8pt", "black", this.targetsx, y, "center", "bottom");
@@ -909,7 +909,7 @@ Graph.prototype.drawBackground = function () {
         // Copyright notice
         this.ctx.font = `${this.pt(7)} ${this.fontFamily}`;
         this.ctx.textAlign = "left";
-        this.ctx.fillText(Driver.plotCopyright, this.xleftlabels, this.canvasHeight - 18);
+        this.ctx.fillText(config.graphCopyright, this.xleftlabels, this.canvasHeight - 18);
     } catch (ex) {
         helper.LogException(ex);
     }

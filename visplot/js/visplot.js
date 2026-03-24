@@ -57,17 +57,15 @@ $(document).ready(function () {
         }
 
         // Populate the telescope select input
-        Object.entries(config)
+        Object.entries(telescopes)
             .sort(([, a], [, b]) => a.name.localeCompare(b.name))
             .forEach(([key, value]) => {
                 $("#def_telescope").append(new Option(`${value.name}${value.site ? ', ' + value.site : ''} (${value.location})`, key));
             });
-        $("#num_telescopes").html(Object.keys(config).length);
+        $("#num_telescopes").html(Object.keys(telescopes).length);
 
         /*
-        * If there is a configuration saved in localStorage (this is a nice
-        * feature of modern browsers), copy its entries over on to the default
-        * config.
+        * If there is a configuration saved in localStorage, retrieve it.
         */
         /* Override telescope name if specified via GET */
         let forcetel = null;
@@ -191,7 +189,7 @@ function postInitialization() {
         };
         setInterval(function () {
             driver.skyGraph.displayTime();
-        }, 500);
+        }, config.skycamTimeRefreshInterval);
 
         helper.LogDebug("Drawing plot background...");
         driver.graph.drawBackground();
@@ -233,7 +231,7 @@ function postInitialization() {
 
         setInterval(function() {
             driver.CallbackShowCurrentTime();
-        }, 5000);
+        }, config.graphCurrentTimeRefreshInterval);
 
         /*
         Set up the map.

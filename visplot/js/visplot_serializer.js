@@ -41,7 +41,7 @@ serializer.saveDocument = function () {
     helper.Log("Exporting schedule in visplot format...");
     try {
         const zip = new JSZip();
-        zip.file("visplot.txt", JSON.stringify({
+        zip.file(config.visplotDocName, JSON.stringify({
             night: driver.night,
             graph: driver.graph,
             targets: driver.targets,
@@ -74,13 +74,8 @@ serializer.saveDocument = function () {
             },
             version: window.version
         }));
-        zip.generateAsync({
-            mimeType: "application/octet-stream",
-            type: "blob",
-            compression: "DEFLATE",
-            compressionOptions: {level: 9}
-        }).then(function (content) {
-            window.saveAs(content, "schedule.visplot");
+        zip.generateAsync(config.visplotZipOptions).then(function (content) {
+            window.saveAs(content, config.visplotZipName);
         });
         helper.LogEntry("Done.");
     } catch (ex) {
@@ -94,9 +89,9 @@ serializer.saveDocument = function () {
 serializer.saveTCS = function () {
     helper.Log("Exporting schedule in TCS format...");
     let filename;
-    if ($.inArray(Driver.telescopeName, ["NOT", "WHT", "INT"]) >= 0) {
+    if (["NOT", "WHT", "INT"].includes(Driver.telescopeName)) {
         filename = "visplot.cat";
-    } else if ($.inArray(Driver.telescopeName, ["HJST", "OST"]) >= 0) {
+    } else if (["HJST", "OST"].includes(Driver.telescopeName)) {
         filename = "visplot.wrk";
     }
     try {
@@ -128,7 +123,7 @@ serializer.loadDocument = function (e) {
             helper.LogError("Could not open the file because it has an invalid format.");
             return;
         }
-        newZip.file("visplot.txt").async("string").then(function (txt) {
+        newZip.file(config.visplotDocName).async("string").then(function (txt) {
             const obj = JSON.parse(txt);
             if (obj === false || obj === null || typeof obj === "undefined" ||
                 obj.night === null || typeof obj.night === "undefined" ||

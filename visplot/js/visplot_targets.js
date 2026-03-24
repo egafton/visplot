@@ -241,7 +241,7 @@ Target.prototype.ParseFrom = function (line) {
         retap = sla.mapqk(ra, dec, pmra, pmdec, 0, 0, night.amprms[i]);
         retob = sla.aopqk(retap.ra, retap.da, night.aoprms[i]);
         // Approximate refracted alt
-        let ell = 0.5*Math.PI - sla.refz(retob.zob, night.ref.refa, night.ref.refb);
+        let ell = sla.pihalf - sla.refz(retob.zob, night.ref.refa, night.ref.refb);
         if (ell > altmax) {
             imax = i;
             altmax = ell;
@@ -1140,7 +1140,7 @@ TargetList.prototype.processTargetListAfterSIMBAD = function(lines) {
                 continue;
             }
             const words = this.FormattedLines[i];
-            const badwolf = $.inArray(words[0], helper.offlineStrings) !== -1;
+            const badwolf = config.offlineStrings.includes(words[0]);
             const padded = [
                 helper.pad(words[0], this.MaxLen.Name, false, " "),
                 helper.pad(words[1], 2, true, badwolf ? " " : "0"),
@@ -1161,7 +1161,7 @@ TargetList.prototype.processTargetListAfterSIMBAD = function(lines) {
             this.VisibleLines.push(padded.join(" "));
             if (!badwolf) {
                 this.InputStats.Actual += 1;
-                if ($.inArray(Driver.telescopeName, ["NOT", "WHT", "INT"]) >= 0) {
+                if (["NOT", "WHT", "INT"].includes(Driver.telescopeName)) {
                     this.TCSlines.push(helper.pad(words[0].replace(/[^A-Za-z0-9\_\+\-]+/g, ""), this.MaxLen.Name, false, " ") + " " +
                         helper.padTwoDigits(words[1]) + ":" +
                         helper.padTwoDigits(words[2]) + ":" +
@@ -1173,7 +1173,7 @@ TargetList.prototype.processTargetListAfterSIMBAD = function(lines) {
                         helper.pad(parseFloat(words[this.ReqLineLen + 1]).toFixed(2).toString(), this.MaxLen.TCSpmra + 3, true, " ") + " " +
                         helper.pad(parseFloat(words[this.ReqLineLen + 3]).toFixed(2).toString(), this.MaxLen.TCSpmdec + 3, true, " ") + " " +
                         "0.0");
-                } else if ($.inArray(Driver.telescopeName, ["HJST", "OST"]) >= 0) {
+                } else if (["HJST", "OST"].includes(Driver.telescopeName)) {
                     this.TCSlines.push(
                         helper.pad(this.InputStats.Actual.toString(), 2, true, " ") + " " +
                         '"' + helper.pad(words[0].replace(/[^A-Za-z0-9\_\+\-]+/g, ""), this.MaxLen.Name, false, " ") + '" ' +
@@ -1266,7 +1266,7 @@ TargetList.prototype.validateAndFormatTargets = function (force = false) {
                 helper.LogEntry(`Will attempt to retrive the following targets from SIMBAD: ${idsToRetrieve.join(', ')}. This may take a while...`);
                 const deferreds = [];
                 for (const id of idsToRetrieve) {
-                    deferreds[id] = $.get(`https://simbad.cds.unistra.fr/simbad/sim-id?output.format=ASCII&Ident=${encodeURIComponent(id)}`);
+                    deferreds[id] = $.get(config.simbadURL(id));
                 }
                 $.when(...Object.values(deferreds)).then(function() {
                     helper.LogEntry("Results received from SIMBAD, will proceed to parse the targets.");
@@ -1339,7 +1339,7 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
     if (words.length <= 1) {
         throw new Error("For each object you must provide at least the Name, RA and Dec");
     }
-    if ($.inArray(words[0], helper.offlineStrings) !== -1) {
+    if (config.offlineStrings.includes(words[0])) {
         if (words.length < 2 || words.length > 3) {
             throw new Error("For offline time you must provide a valid UTC or LST range");
         }
@@ -1400,21 +1400,21 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
         words = [words[0], words[1], words[2], words[3] + (parseFloat(words[8]) !== 0 ? "/" + words[8] : ""), words[4], words[5], words[6] + (parseFloat(words[9]) !== 0 ? "/" + words[9] : ""), words[7]].concat([Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultInstrument]);
     }
     if (words.length === 7) {
-        words = words.concat([Driver.defaultEpoch, Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultInstrument, Driver.defaultSkyPA, "1"]);
+        words = words.concat([Driver.defaultEpoch, Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultInstrument, Driver.defaultSkyPA, config.defaultPriority]);
     } else if (words.length === 8) {
-        words = words.concat([Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultInstrument, Driver.defaultSkyPA, "1"]);
+        words = words.concat([Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultInstrument, Driver.defaultSkyPA, config.defaultPriority]);
     } else if (words.length === 9) {
-        words = words.concat([Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultInstrument, Driver.defaultSkyPA, "1"]);
+        words = words.concat([Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultInstrument, Driver.defaultSkyPA, config.defaultPriority]);
     } else if (words.length === 10) {
-        words = words.concat([Driver.defaultAM, Driver.defaultType, Driver.defaultInstrument, Driver.defaultSkyPA, "1"]);
+        words = words.concat([Driver.defaultAM, Driver.defaultType, Driver.defaultInstrument, Driver.defaultSkyPA, config.defaultPriority]);
     } else if (words.length === 11) {
-        words = words.concat([Driver.defaultType, Driver.defaultInstrument, Driver.defaultSkyPA, "1"]);
+        words = words.concat([Driver.defaultType, Driver.defaultInstrument, Driver.defaultSkyPA, config.defaultPriority]);
     } else if (words.length === 12) {
-        words = words.concat([Driver.defaultInstrument, Driver.defaultSkyPA, "1"]);
+        words = words.concat([Driver.defaultInstrument, Driver.defaultSkyPA, config.defaultPriority]);
     } else if (words.length === 13) {
-        words = words.concat([Driver.defaultSkyPA, "1"]);
+        words = words.concat([Driver.defaultSkyPA, config.defaultPriority]);
     } else if (words.length === 14) {
-        words = words.concat(["1"]);
+        words = words.concat([config.defaultPriority]);
     }
     // Sanity check: there must now be exactly this.ReqLineLen entries in the array
     if (words.length !== this.ReqLineLen) {
@@ -1563,10 +1563,10 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
         }
     }
     /* Validate observation type */
-    if ($.inArray(words[11], ["Monitor", "ToO", "SoftToO", "Payback", "Fast-Track", "Service", "CATService", "Visitor", "Staff"]) === -1) {
+    if (!config.allowedTypes.includes(words[11])) {
         const wl = words[11].length;
         if (words[11].indexOf("Staff/") !== 0 || (words[11].indexOf("Staff/") === 0 && (wl < 8 || wl > 9))) {
-            throw new Error("[TYPE] must be one of the following: <i>Monitor</i>, <i>ToO</i>, <i>SoftToO</i>, <i>Payback</i>, <i>Fast-Track</i>, <i>Service</i>, <i>CATService</i>, <i>Visitor</i>, <i>Staff</i>");
+            throw new Error("[TYPE] must be one of the following: " + config.allowedTypes.map(type => `<i>${type}</i>`).join(", "));
         }
     }
     /* OB info must be valid, or an instrument name, or "default" */
