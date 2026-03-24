@@ -6,7 +6,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. See LICENSE.md.
  */
-$version = "5.0f";
+$version = "5.0g";
 /*
 * Version history (with brief changelog):
 *
@@ -139,7 +139,8 @@ $version = "5.0f";
 * 5.0f - Removed duplicated code during Target creation (going back to the
 *        client-server model).
 *      - Improved serialization routines.
-*      - Refactored config files.
+*
+* 5.0g - Refactored config files.
 */
 session_start();
 if (isset($_SESSION["obinfo"])) {
