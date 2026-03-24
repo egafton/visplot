@@ -23,14 +23,15 @@ const config = {
     ],
     skycamTimeRefreshInterval: 500, // ms
     skycamImageRefreshInterval: 30000, // ms
+    skycamTcsCrosshairColor: "#9f3",
     stdPressure: 1013.25, // hPa
     stdTemperature: 298.15, // K, 15 deg
     refractionTLR: -0.0065, // temperature lapse rate, K/m
     refractionWavelength: 0.55, // microns
     refractionHumidity: 0.2, // 0-1
-    visplotDocName: "visplot.txt", // name of file inside zip archive
-    visplotZipName: "schedule.visplot", // name of zip archive
-    visplotZipOptions: {
+    zipContent: "visplot.txt", // name of file inside zip archive
+    zipName: "schedule.visplot", // name of zip archive
+    zipOptions: {
         mimeType: "application/octet-stream",
         type: "blob",
         compression: "DEFLATE",
@@ -40,6 +41,13 @@ const config = {
     },
     githubURL: "https://github.com/egafton/visplot",
     githubAPIURL: "https://api.github.com/repos/egafton/visplot",
+    defaultTelescopeName: "NOT",
+    defaultTelescopeImage: "img/telescopes/default.jpg",
+    defaultEpoch: 2000, // Julian year
+    defaultObstime: 600, // s
+    defaultMaxAirmass: 2,
+    defaultType: "Staff",
+    allowedTypes: ["Monitor", "ToO", "SoftToO", "Payback", "Fast-Track", "Service", "CATService", "Visitor", "Staff"],
     defaultFillColors: {
         "Monitor": "orange",
         "ToO": "#FF9900",
@@ -62,17 +70,11 @@ const config = {
         "Visitor": "white",
         "Staff": "white"
     },
-    defaultTelescopeName: "NOT",
-    defaultTelescopeImage: "img/telescopes/default.jpg",
-    defaultEpoch: "2000",
-    defaultObstime: "600",
-    defaultMaxAirmass: "2.0",
-    defaultType: "Staff",
-    defaultSkyPA: "0",
-    defaultPriority: "1",
+    defaultSkyPA: 0, // deg
+    defaultPriority: 1,
     defaultInstrumentList: {
         default: {
-            fov: 6,
+            fov: 6, // arcmin
             type: "optical",
             flip: null
         }
@@ -81,7 +83,6 @@ const config = {
     defaultProject: function(tel) {
         return tel === "HJST" ? "223-2701" : (tel === "OST" ? "223-2101" : ( tel === "HET" ? "UT223-001" : "65-199"));
     },
-    allowedTypes: ["Monitor", "ToO", "SoftToO", "Payback", "Fast-Track", "Service", "CATService", "Visitor", "Staff"],
     defaultWPriority: 2,
     defaultWUrgency: 1,
     defaultWAltitude: 1,
@@ -90,7 +91,7 @@ const config = {
     aladinDefaultSettings: {
         target: `0.0 0.0`,
         survey: "P/DSS2/color",
-        fov: 0.1,
+        fov: 0.1, // deg
         pa: 0,
         flip: null,
         reticle: true,
@@ -116,12 +117,12 @@ const config = {
         noWrap: true
     },
     mapWorldBounds: [
-        [-90, -180],
-        [90, 180]
+        [-90, -180], // deg
+        [90, 180] // deg
     ],
     mapInitialView: [21, 5],
     mapInitialZoom: 2,
-    mapMaxClusterRadius: 40,
+    mapMaxClusterRadius: 40, // px
     mapRedPinURL: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
     mapBluePinURL: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png",
     mapShadowPinURL: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
@@ -133,7 +134,7 @@ const config = {
         {name: "nautical", alt: -12, color: '#000', opacity: 0.2},
         {name: "astronomical", alt: -18, color: '#000', opacity: 0.15}
     ],
-    axialTilt: 23.4394,
+    axialTilt: 23.4394, // deg
     blanksNorthern: [
         "Blank00+06 00:06:57.17 +06:06:22.2",
         "Blank01+06 01:08:41.88 +06:23:43.5",

@@ -1780,14 +1780,14 @@ Object.defineProperties(Driver, {
     },
     "defaultEpoch": {
         get: function () {
-            return this._defaultEpoch || config.defaultEpoch;
+            return this._defaultEpoch || String(config.defaultEpoch);
         }, set: function (val) {
             this._defaultEpoch = val;
         }
     },
     "defaultObstime": {
         get: function () {
-            return this._defaultObstime || config.defaultObstime;
+            return this._defaultObstime || String(config.defaultObstime);
         }, set: function (val) {
             this._defaultObstime = val;
         }
@@ -1801,7 +1801,7 @@ Object.defineProperties(Driver, {
     },
     "defaultAM": {
         get: function () {
-            return this._defaultAM || config.defaultMaxAirmass;
+            return this._defaultAM || config.defaultMaxAirmass.toFixed(1);
         }, set: function (val) {
             this._defaultAM = val;
         }
@@ -1822,9 +1822,14 @@ Object.defineProperties(Driver, {
     },
     "defaultSkyPA": {
         get: function () {
-            return this._defaultSkyPA || config.defaultSkyPA;
+            return this._defaultSkyPA || String(config.defaultSkyPA);
         }, set: function (val) {
             this._defaultSkyPA = val;
+        }
+    },
+    "defaultPriority": {
+        get: function() {
+            return String(config.defaultPriority);
         }
     },
     "wPriority": {

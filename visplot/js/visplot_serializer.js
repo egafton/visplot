@@ -41,7 +41,7 @@ serializer.saveDocument = function () {
     helper.Log("Exporting schedule in visplot format...");
     try {
         const zip = new JSZip();
-        zip.file(config.visplotDocName, JSON.stringify({
+        zip.file(config.zipContent, JSON.stringify({
             night: driver.night,
             graph: driver.graph,
             targets: driver.targets,
@@ -74,8 +74,8 @@ serializer.saveDocument = function () {
             },
             version: window.version
         }));
-        zip.generateAsync(config.visplotZipOptions).then(function (content) {
-            window.saveAs(content, config.visplotZipName);
+        zip.generateAsync(config.zipOptions).then(function (content) {
+            window.saveAs(content, config.zipName);
         });
         helper.LogEntry("Done.");
     } catch (ex) {
@@ -123,7 +123,7 @@ serializer.loadDocument = function (e) {
             helper.LogError("Could not open the file because it has an invalid format.");
             return;
         }
-        newZip.file(config.visplotDocName).async("string").then(function (txt) {
+        newZip.file(config.zipContent).async("string").then(function (txt) {
             const obj = JSON.parse(txt);
             if (obj === false || obj === null || typeof obj === "undefined" ||
                 obj.night === null || typeof obj.night === "undefined" ||

@@ -1400,21 +1400,21 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
         words = [words[0], words[1], words[2], words[3] + (parseFloat(words[8]) !== 0 ? "/" + words[8] : ""), words[4], words[5], words[6] + (parseFloat(words[9]) !== 0 ? "/" + words[9] : ""), words[7]].concat([Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultInstrument]);
     }
     if (words.length === 7) {
-        words = words.concat([Driver.defaultEpoch, Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultInstrument, Driver.defaultSkyPA, config.defaultPriority]);
+        words = words.concat([Driver.defaultEpoch, Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultInstrument, Driver.defaultSkyPA, Driver.defaultPriority]);
     } else if (words.length === 8) {
-        words = words.concat([Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultInstrument, Driver.defaultSkyPA, config.defaultPriority]);
+        words = words.concat([Driver.defaultObstime, Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultInstrument, Driver.defaultSkyPA, Driver.defaultPriority]);
     } else if (words.length === 9) {
-        words = words.concat([Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultInstrument, Driver.defaultSkyPA, config.defaultPriority]);
+        words = words.concat([Driver.defaultProject, Driver.defaultAM, Driver.defaultType, Driver.defaultInstrument, Driver.defaultSkyPA, Driver.defaultPriority]);
     } else if (words.length === 10) {
-        words = words.concat([Driver.defaultAM, Driver.defaultType, Driver.defaultInstrument, Driver.defaultSkyPA, config.defaultPriority]);
+        words = words.concat([Driver.defaultAM, Driver.defaultType, Driver.defaultInstrument, Driver.defaultSkyPA, Driver.defaultPriority]);
     } else if (words.length === 11) {
-        words = words.concat([Driver.defaultType, Driver.defaultInstrument, Driver.defaultSkyPA, config.defaultPriority]);
+        words = words.concat([Driver.defaultType, Driver.defaultInstrument, Driver.defaultSkyPA, Driver.defaultPriority]);
     } else if (words.length === 12) {
-        words = words.concat([Driver.defaultInstrument, Driver.defaultSkyPA, config.defaultPriority]);
+        words = words.concat([Driver.defaultInstrument, Driver.defaultSkyPA, Driver.defaultPriority]);
     } else if (words.length === 13) {
-        words = words.concat([Driver.defaultSkyPA, config.defaultPriority]);
+        words = words.concat([Driver.defaultSkyPA, Driver.defaultPriority]);
     } else if (words.length === 14) {
-        words = words.concat([config.defaultPriority]);
+        words = words.concat([Driver.defaultPriority]);
     }
     // Sanity check: there must now be exactly this.ReqLineLen entries in the array
     if (words.length !== this.ReqLineLen) {

@@ -268,7 +268,7 @@ SkyGraph.prototype.drawPointing = function () {
         this.ctx.save();
         const x = this.tcsPointing.x;
         const y = this.tcsPointing.y;
-        this.ctx.strokeStyle = "#9f3";
+        this.ctx.strokeStyle = config.skycamTcsCrosshairColor;
         this.ctx.lineWidth = 1;
         this.ctx.beginPath();
         this.ctx.moveTo(x - 6, y - 6);
@@ -308,7 +308,7 @@ SkyGraph.prototype.drawStars = function () {
             if (altaz.el > 0) {
                 const px = this.altaz2px(altaz.el, altaz.az);
                 if (this.tcsPointing !== null && Math.abs(this.tcsPointing.x - px.x) <= 2 && Math.abs(this.tcsPointing.y - px.y) <= 2) {
-                    last = [px.x, px.y, obj.Name, "#9f3"];
+                    last = [px.x, px.y, obj.Name, config.skycamTcsCrosshairColor];
                 } else {
                     this.xhair(px.x, px.y, obj.Name, obj.LabelFillColor);
                 }
