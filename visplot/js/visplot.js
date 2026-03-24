@@ -184,9 +184,6 @@ $(document).ready(function () {
 function postInitialization() {
     try {
         /* Now that the driver is created, do some stuff that require it*/
-        driver.skyGraph.skyImg.onload = function () {
-            driver.skyGraph.redraw();
-        };
         setInterval(function () {
             driver.skyGraph.displayTime();
         }, config.skycamTimeRefreshInterval);

@@ -129,24 +129,9 @@ Driver.prototype.SetupMap = function() {
         // Add layers
         L.control.layers(baseMaps, overlayMaps).addTo(this.map);
         /* Equator and tropics */
-        L.polyline([[0, -180], [0, 180]], {
-            color: '#ffff88',
-            opacity: 0.5,
-            weight: 2,
-            dashArray: [3, 3]
-        }).addTo(this.map);
-        L.polyline([[23.4394, -180], [23.4394, 180]], {
-            color: '#ffffee',
-            opacity: 0.5,
-            weight: 2,
-            dashArray: [3, 3]
-        }).addTo(this.map);
-        L.polyline([[-23.4394, -180], [-23.4394, 180]], {
-            color: '#ffffee',
-            opacity: 0.5,
-            weight: 2,
-            dashArray: [3, 3]
-        }).addTo(this.map);
+        L.polyline([[0, -180], [0, 180]], config.mapEquatorStyle).addTo(this.map);
+        L.polyline([[config.axialTilt, -180], [config.axialTilt, 180]], config.mapTropicsStyle).addTo(this.map);
+        L.polyline([[-config.axialTilt, -180], [-config.axialTilt, 180]], config.mapTropicsStyle).addTo(this.map);
         function addLineLabel(lat, text, map) {
             return L.marker([lat, -165], {
                 icon: L.divIcon({
@@ -206,7 +191,8 @@ Driver.prototype.SetupMap = function() {
         });
         for (const [key, telescope] of Object.entries(telescopes)) {
             const marker = L.marker(
-                {lng: telescope.longitude, lat: telescope.latitude}, {icon: this.bluePin, alt: key}
+                {lng: telescope.longitude, lat: telescope.latitude},
+                {icon: this.bluePin, alt: key}
             ).bindTooltip(
                 telescope.name + (telescope.site ? `, ${telescope.site}` : "") + ` (${telescope.location})`
             ).on("click", function() {
@@ -282,9 +268,7 @@ Driver.prototype.buildNightPolygon = function(ssp, alt = 0, step = 1) {
     // 1. Sweep Longitudes to build Latitude Intervals
     for (let lon = -180; lon <= 180; lon += step) {
         const lonRad = sla.d2r * lon;
-
-        // Normalize Hour Angle to [-PI, PI]
-        let haRad = sla.drange(gha + lonRad);
+        const haRad = sla.drange(gha + lonRad);
 
         // Simplify our spherical equation
         const A = Math.sin(delta);
@@ -843,13 +827,9 @@ Driver.prototype.EvtFrameClick = function (e) {
             const obj = this.targets.Targets[i];
             if (this.insideObject(x, y, obj)) {
                 const moonHasSet = obj.Scheduled ? (this.night.ymoon[helper.MJDToIndex(obj.ScheduledMidTime)] < 0) : false;
-                const LunarPhase = moonHasSet ? "D" :
-                    (this.night.MoonIllumination <= 40 ? "D" : (
-                        this.night.MoonIllumination <= 70 ? (obj.MinMoonDistance <= 90 ? "G" : "D")
-                            : (obj.MinMoonDistance <= 60 ? "N" : "G")
-                    ));
+                const LunarPhase = moonHasSet ? "D" : (this.night.MoonIllumination <= 40 ? "D" : (this.night.MoonIllumination <= 70 ? (obj.MinMoonDistance <= 90 ? "G" : "D") : (obj.MinMoonDistance <= 60 ? "N" : "G")));
                 $("#details_title").html(obj.Name);
-                const info = `<h2 class="h2-instr">Object details</h2>` +
+                let finalString = '<h2 class="h2-instr">Object details</h2>' +
                     `<p class="pp">Proposal: <b>${obj.ProjectNumber}</b></p>` +
                     `<p class="pp">Type: <span style="margin-top:-2px;color:${obj.LabelFillColor}">&#11044;</span>&nbsp;<b>${obj.FullType}</b></p>` +
                     `<p class="pp">RA: <b>${obj.RA}</b></p>` +
@@ -858,34 +838,52 @@ Driver.prototype.EvtFrameClick = function (e) {
                     `<p class="pp">Moon Distance: <span title="${helper.LunarPhaseExplanation(LunarPhase)}"><b>${obj.MinMoonDistance}°</b> (${LunarPhase})</span></p>` +
                     `<p class="pp">Moon Closest At: <b>${helper.MJDToHM(obj.MinMoonDistanceTime, true)} UTC</b></p>` +
                     `<p class="pp">Obstime: <b>${obj.ExptimeSeconds.toFixed(0)} s</b> (${obj.ExptimeHM})</p>` +
-                    (obj.ExtraInfo === null && obj.BacklinkToOBQueue === null && obj.Instrument !== null
-                        ? `<p class="pp">Instrument: <b>${obj.Instrument}</b></p>`
-                        : "") +
-                    (obj.ExtraInfo === null
-                        ? ""
-                        : `<p class="pp">Instrument/Mode: <b>${obj.ExtraInfo}</b></p>`) +
-                    (obj.BacklinkToOBQueue === null
-                        ? ""
-                        : `<p class="pp"><a href="${obj.BacklinkToOBQueue}" target="_blank">OB update link (Staff)</a></p>
-                        <p class="pp"><a href="${obj.BacklinkToOBQueuePublic}" target="_blank">OB update link (Public)</a></p>`) +
-                    (this.scheduleMode || obj.Scheduled || obj.Observed
-                        ? `<div style="height:5px; padding-top: 15px"></div><h2 class="h2-instr">Scheduling</h2>`
-                        : "") +
-                    (this.scheduleMode
-                        ? (obj.Scheduled
-                            ? `<p class="pp">Suggested UTC: <b>${helper.MJDToHM(obj.ScheduledStartTime)}–${helper.MJDToHM(obj.ScheduledEndTime)}</b></p>`
-                            : `<p class="pp">Not scheduled for observation.</p>`)
-                        + `<p class="pp2"><span style="display:inline-block;width:80px">Started:</span><input type="text" class="inpshort" id="actual_start" /></p>`
-                        + `<p class="pp2"><span style="display:inline-block;width:80px">Finished:</span><input type="text" class="inpshort" id="actual_end" /></p>`
-                        + `<p class="pp2"><span style="display:inline-block;width:80px">Comments:</span><textarea id="popcomm"></textarea></p>`
-                        : "") +
-                    ((obj.Scheduled)
-                        ? (`<input type="hidden" id="id_of_observed" value="${i}" />`
-                            + (obj.Observed
-                                ? `<input id="unmark_as_observed" type="button" value="Remove the Observed tag" onclick="driver.markAsObserved(false);" />`
-                                : `<input id="mark_as_observed" type="button" value="Mark as Observed" onclick="driver.markAsObserved(true);" />`))
-                        : "");
-                $("#details_info").html(info);
+                    "$INSTRUMENT" +
+                    "$MODE" +
+                    "$BACKLINK" +
+                    "$SCHEDULE";
+                if (obj.ExtraInfo === null && obj.BacklinkToOBQueue === null && obj.Instrument !== null) {
+                    finalString = finalString.replace("$INSTRUMENT", "");
+                } else {
+                    finalString = finalString.replace("$INSTRUMENT", `<p class="pp">Instrument: <b>${obj.Instrument}</b></p>`);
+                }
+                if (obj.ExtraInfo === null) {
+                    finalString = finalString.replace("$MODE", "");
+                } else {
+                    finalString = finalString.replace("$MODE", `<p class="pp">Instrument/Mode: <b>${obj.ExtraInfo}</b></p>`);
+                }
+                if (obj.BacklinkToOBQueue === null) {
+                    finalString = finalString.replace("$BACKLINK", "");
+                } else {
+                    const backlink = `<p class="pp"><a href="${obj.BacklinkToOBQueue}" target="_blank">OB update link (Staff)</a></p>` +
+                        `<p class="pp"><a href="${obj.BacklinkToOBQueuePublic}" target="_blank">OB update link (Public)</a></p>`;
+                    finalString = finalString.replace("$BACKLINK", backlink);
+                }
+                if (this.scheduleMode || obj.Scheduled || obj.Observed) {
+                    let schedText = '<div style="height:5px; padding-top: 15px"></div><h2 class="h2-instr">Scheduling</h2>';
+                    if (this.scheduleMode) {
+                        if (obj.Scheduled) {
+                            schedText += `<p class="pp">Suggested UTC: <b>${helper.MJDToHM(obj.ScheduledStartTime)}–${helper.MJDToHM(obj.ScheduledEndTime)}</b></p>`;
+                        } else {
+                            schedText += '<p class="pp">Not scheduled for observation.</p>';
+                        }
+                        schedText += '<p class="pp2"><span style="display:inline-block;width:80px">Started:</span><input type="text" class="inpshort" id="actual_start" /></p>';
+                        schedText += '<p class="pp2"><span style="display:inline-block;width:80px">Finished:</span><input type="text" class="inpshort" id="actual_end" /></p>';
+                        schedText += '<p class="pp2"><span style="display:inline-block;width:80px">Comments:</span><textarea id="popcomm"></textarea></p>';
+                    }
+                    if (obj.Scheduled) {
+                        schedText += `<input type="hidden" id="id_of_observed" value="${i}" />`;
+                        if (obj.Observed) {
+                            schedText += '<input id="unmark_as_observed" type="button" value="Remove the Observed tag" onclick="driver.markAsObserved(false);" />';
+                        } else {
+                            schedText += '<input id="mark_as_observed" type="button" value="Mark as Observed" onclick="driver.markAsObserved(true);" />';
+                        }
+                    }
+                    finalString = finalString.replace("$SCHEDULE", schedText);
+                } else {
+                    finalString = finalString.replace("$SCHEDULE", "");
+                }
+                $("#details_info").html(finalString);
                 if (this.scheduleMode) {
                     $("#actual_start").val(obj.ObservedStartTime);
                     $("#actual_end").val(obj.ObservedEndTime);
@@ -901,9 +899,7 @@ Driver.prototype.EvtFrameClick = function (e) {
                 }
                 const fov = Driver.instruments[instrument].fov / 60;
                 const flip = Driver.instruments[instrument].flip;
-                const surveyName = Driver.instruments[instrument].type === "optical"
-                    ? config.aladinOpticalSurvey
-                    : config.aladinInfraredSurvey;
+                const surveyName = Driver.instruments[instrument].type === "optical" ? config.aladinOpticalSurvey : config.aladinInfraredSurvey;
                 $("#details_map_hang").html(surveyName);
                 this.objAladin.setImageSurvey(surveyName);
                 this.objAladin.setFov(fov);
@@ -1769,11 +1765,11 @@ Object.defineProperties(Driver, {
     },
     "plotTitle": {
         get: function () {
-            const lon = this.obs_lon_deg < 0 ? 360 + this.obs_lon_deg : this.obs_lon_deg;
+            const lon = sla.r2d * sla.drange(this.obs_lon_rad);
             const telescope = telescopes[this.telescopeName];
             return `Altitudes at ${this.telescopeName}, ` +
                 (typeof telescope.site !== "undefined" && telescope.site !== null ? telescope.site + ", " : "") +
-                (lon <= 180 ? lon.toFixed(4) + "E " : (360 - lon).toFixed(4) + "W ") +
+                (lon >= 0 ? `${lon.toFixed(4)}E ` : `${Math.abs(lon).toFixed(4)}W `) +
                 (this.obs_lat_deg > 0 ? `+${this.obs_lat_deg.toFixed(4)}N` : `${Math.abs(this.obs_lat_deg).toFixed(4)}S`) +
                 ", " + this.obs_alt.toFixed(0) + " m above sea level";
         }

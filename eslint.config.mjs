@@ -91,6 +91,7 @@ export default [
       "eol-last": "error",
       "comma-dangle": "error",
       "camelcase": "error",
+      "operator-linebreak": "error",
       "yoda": ["error", "never"],
       "func-name-matching": "error",
       "func-names": ["error", "never"],

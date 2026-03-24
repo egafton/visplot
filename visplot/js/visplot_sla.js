@@ -220,8 +220,7 @@ sla.airmas = function (zd) {
  */
 sla.aop = function (rap, dap, date, dut, elongm, phim, hm, xp, yp, tdk, pmb, rh, wl, tlr) {
     /* Star-independent parameters */
-    const aoprms = sla.aoppa(date, dut, elongm, phim, hm, xp, yp, tdk, pmb, rh,
-        wl, tlr);
+    const aoprms = sla.aoppa(date, dut, elongm, phim, hm, xp, yp, tdk, pmb, rh, wl, tlr);
     /* Apparent to observed */
     return sla.aopqk(rap, dap, aoprms);
 };

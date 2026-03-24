@@ -50,8 +50,6 @@ telescopes["NOT"] = {
     // Parameters for performing astrometry on the skycam image
     skycamParams: {
         url: "http://www.gtc.iac.es/multimedia/netcam/camaraAllSky.jpg",
-        imageSizeX: 640,
-        imageSizeY: 480,
         zenithX: 326,
         zenithY: 250,
         radius: 320,
@@ -356,8 +354,6 @@ telescopes["CAHA"] = {
     // Parameters for performing astrometry on the skycam image
     skycamParams: {
         url: "http://www.caha.es/WDXI/ASTMON/images/Johnson_V.png",
-        imageSizeX: 640,
-        imageSizeY: 480,
         zenithX: 186,
         zenithY: 211,
         radius: 186,
@@ -552,8 +548,6 @@ telescopes["HJST"] = {
     // Parameters for performing astrometry on the skycam image
     skycamParams: {
         url: "http://monet-n-sky.as.utexas.edu/jpg/1/image.jpg",
-        imageSizeX: 640,
-        imageSizeY: 480,
         zenithX: 339,
         zenithY: 254,
         radius: 288,
@@ -764,8 +758,6 @@ telescopes["DSO"] = {
     // Parameters for performing astrometry on the skycam image
     skycamParams: {
         url: "https://dsoftp.appstate.edu/dsoftp/NewSite/dsoftp/Webcams/DSO-AllSky-CurrentImage.JPG",
-        imageSizeX: 640,
-        imageSizeY: 480,
         zenithX: 314,
         zenithY: 235,
         radius: 294,

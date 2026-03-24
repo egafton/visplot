@@ -124,15 +124,7 @@ helper.LogException = function (e) {
  * @returns {void} No return value. Produces a side effect on the DOM.
  */
 helper.Log = function (msg, cls) {
-    const cd = new Date();
-    $("#logger").append(`<span class="${cls}">` +
-            `[${cd.getUTCFullYear()}-` +
-            helper.pad((cd.getUTCMonth()+1).toString(), 2, true, "0") + "-" +
-            helper.pad(cd.getUTCDate().toString(), 2, true, "0") + " " +
-            helper.pad(cd.getUTCHours().toString(), 2, true, "0") + ":" +
-            helper.pad(cd.getUTCMinutes().toString(), 2, true, "0") + ":" +
-            helper.pad(cd.getUTCSeconds().toString(), 2, true, "0") + "] " +
-            msg + "</span>");
+    $("#logger").append(`<span class="${cls}">[${moment().format("YYYY-MM-DD HH:mm:ss")}] ${msg}</span>`);
     $("#logger").scrollTop($("#logger")[0].scrollHeight);
 };
 
@@ -150,9 +142,7 @@ helper.padTwoDigits = function (_num) {
             // Handle -0 and +0 (for degrees of Dec, for instance)
             return 1/num < 0 ? "-00" : "00";
         }
-        return num > 0
-            ? (num < 10 ? `0${num.toString()}` : num.toString())
-            : (num > -10 ? `-0${(-num).toString()}` : num.toString());
+        return num > 0 ? (num < 10 ? `0${num.toString()}` : num.toString()) : (num > -10 ? `-0${(-num).toString()}` : num.toString());
     } catch (ex) {
         helper.LogException(ex);
     }

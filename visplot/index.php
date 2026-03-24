@@ -6,7 +6,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. See LICENSE.md.
  */
-$version = "5.0g";
+$version = "5.0h";
 /*
 * Version history (with brief changelog):
 *
@@ -141,6 +141,8 @@ $version = "5.0g";
 *      - Improved serialization routines.
 *
 * 5.0g - Refactored config files.
+*
+* 5.0h - Improvements to all-sky camera and throughout the code.
 */
 session_start();
 if (isset($_SESSION["obinfo"])) {
@@ -276,7 +278,6 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
             <div id="details_map"><span id="details_map_hang"></span></div>
         </div> <!-- #details -->
         <div id="skycamblock">
-            <div id="skycam_placeholder">No sky camera has been configured for the selected telescope.</div>
             <canvas id="canvasSkycam" width="640" height="515"></canvas>
         </div> <!-- #skycamblock -->
         <div id="tcscat">

@@ -125,15 +125,17 @@ serializer.loadDocument = function (e) {
         }
         newZip.file(config.zipContent).async("string").then(function (txt) {
             const obj = JSON.parse(txt);
-            if (obj === false || obj === null || typeof obj === "undefined" ||
-                obj.night === null || typeof obj.night === "undefined" ||
-                obj.graph === null || typeof obj.graph === "undefined" ||
-                obj.driver === null || typeof obj.driver === "undefined" ||
-                obj.targets === null || typeof obj.targets === "undefined") {
+            const badObj = obj === false || obj === null || typeof obj === "undefined";
+            const badNight = obj.night === null || typeof obj.night === "undefined";
+            const badGraph = obj.graph === null || typeof obj.graph === "undefined";
+            const badDriver = obj.driver === null || typeof obj.driver === "undefined";
+            const badTargets = obj.targets === null || typeof obj.targets === "undefined";
+            if (badObj || badNight || badGraph || badDriver || badTargets) {
                 helper.LogError("Could not open the file because it has an invalid format.");
                 return;
             }
-            if (typeof obj.version === "undefined" || obj.version !== window.version) {
+            const badVersion = obj.version === null || typeof obj.version === "undefined" || obj.version !== window.version;
+            if (badVersion) {
                 helper.LogWarning(`The file ${files[0].name} has been produced with a different version of Visplot. Some functionality may be limited or unavailable.`);
             }
             driver.ob = obj.driver.ob;
@@ -167,7 +169,6 @@ serializer.loadDocument = function (e) {
                 if (typeof obj.driver.wSlewing !== "undefined") {
                     Driver.wSlewing = obj.driver.wSlewing;
                 }
-                console.log(obj.driver);
                 if (typeof obj.driver.opt_reschedule_later !== "undefined") {
                     $("#opt_reschedule_later").prop("checked", obj.driver.opt_reschedule_later === true);
                 }

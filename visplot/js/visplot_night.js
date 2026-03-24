@@ -69,14 +69,12 @@ Night.prototype.setEphemerides = function () {
         * needs to be adjusted */
         const stdPres = config.stdPressure;
         const stdTemp = config.stdTemperature;
-        const sitePres = stdPres * Math.exp(-9.80665 * 0.0289644 * Driver.obs_alt / stdTemp / 8.31447);
+        const sitePres = stdPres * Math.exp(-config.gravAcceleration * config.molarMass * Driver.obs_alt / stdTemp / config.gasConstant);
         const siteTemp = stdTemp + config.refractionTLR*Driver.obs_alt; // 15 deg at sea level, use TLR to reduce temperature
         const siteWvlen = config.refractionWavelength;
         const siteHum = config.refractionHumidity;
         this.ref = sla.refco(Driver.obs_alt, siteTemp, sitePres, siteHum, siteWvlen, Driver.obs_lat_rad, config.refractionTLR);
-        this.RefractionAtHorizon = sla.refro(sla.pihalf, Driver.obs_alt,
-            siteTemp, sitePres, siteHum, siteWvlen,
-            Driver.obs_lat_rad, config.refractionTLR, 1e-8);
+        this.RefractionAtHorizon = sla.refro(sla.pihalf, Driver.obs_alt, siteTemp, sitePres, siteHum, siteWvlen, Driver.obs_lat_rad, config.refractionTLR, 1e-8);
         this.HorizonDip = Math.acos(sla.a0 / (Driver.obs_alt + sla.a0));
         /* For target altitude curves:
         * Since sla.aopqk would be extremely slow beyond zd of 76 deg, the apparent
@@ -109,8 +107,6 @@ Night.prototype.setEphemerides = function () {
         let sret = sla.rdplan(this.Sunset + this.dut, "Sun", Driver.obs_lon_rad, Driver.obs_lat_rad);
         let mret = sla.rdplan(this.Sunset + this.dut, "Moon", Driver.obs_lon_rad, Driver.obs_lat_rad);
         let sep = sla.dsep(sret.ra, sret.dec, mret.ra, mret.dec);
-        this.moonra = mret.ra;
-        this.moondec = mret.dec;
         this.MoonIllStart = (1 - Math.cos(sep)) * 0.5 * 100;
         this.stlSunset = helper.stl(this.Sunset, this.eqeqx);
 
@@ -142,7 +138,6 @@ Night.prototype.setEphemerides = function () {
         this.MoonIllEnd = (1 - Math.cos(sep)) * 0.5 * 100;
         this.stlSunrise = helper.stl(this.Sunrise, this.eqeqx);
 
-
         switch ($('input[type="radio"][name="opt_schedule_between"]:checked').val()) {
         case "sunset-sunrise":
             this.globalUTStart = this.Sunset;
@@ -171,8 +166,7 @@ Night.prototype.setEphemerides = function () {
             const ut = this.Sunset + this.xstep * i;
             this.xaxis.push(ut);
             if (i === 0) {
-                aop = sla.aoppa(ut, this.dut*sla.d2s, Driver.obs_lon_rad, Driver.obs_lat_rad,
-                    Driver.obs_alt, 0, 0, siteTemp, 0, siteHum, siteWvlen, config.refractionTLR);
+                aop = sla.aoppa(ut, this.dut*sla.d2s, Driver.obs_lon_rad, Driver.obs_lat_rad, Driver.obs_alt, 0, 0, siteTemp, 0, siteHum, siteWvlen, config.refractionTLR);
             } else {
                 sla.aoppat(ut, aop);
             }

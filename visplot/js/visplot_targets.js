@@ -359,8 +359,7 @@ Target.prototype.intersectingChain = function (Targets, checked) {
         if (checked.indexOf(this.Index) > -1) {
             return [];
         }
-        if (this.xlab < driver.graph.xstart || this.xlab > driver.graph.xstart + driver.graph.width ||
-                this.ylab > driver.graph.yend) {
+        if (this.xlab < driver.graph.xstart || this.xlab > driver.graph.xstart + driver.graph.width || this.ylab > driver.graph.yend) {
             return [];
         }
         checked.push(this.Index);
@@ -522,8 +521,7 @@ TargetList.prototype.optimizeInterchangeNeighbours = function (scheduleorder) {
             am1if = obj1.getAltitude(obj1.ScheduledStartTime + obj2.Exptime + 0.5 * obj1.Exptime);
             am2if = obj2.getAltitude(obj1.ScheduledStartTime + 0.5 * obj2.Exptime);
             exchange = false;
-            if (((am1now < am2now) && (am2if > am1now) && (am1if > am1now)) ||
-                    ((am2now < am1now) && (am1if > am2now) && (am2if > am2now))) {
+            if (((am1now < am2now) && (am2if > am1now) && (am1if > am1now)) || ((am2now < am1now) && (am1if > am2now) && (am2if > am2now))) {
                 exchange = true;
             }
             t1 = obj1.ScheduledStartTime;
@@ -574,8 +572,7 @@ TargetList.prototype.optimizeMoveToLaterTimesIfRising = function (scheduleorder)
                     if (this.Targets[kj].Scheduled === false) {
                         continue;
                     }
-                    if (curtime + obj.Exptime <= this.Targets[kj].ScheduledStartTime ||
-                            curtime >= this.Targets[kj].ScheduledEndTime) {
+                    if (curtime + obj.Exptime <= this.Targets[kj].ScheduledStartTime || curtime >= this.Targets[kj].ScheduledEndTime) {
                         continue;
                     }
                     overlaps = true;
@@ -780,7 +777,7 @@ TargetList.prototype.scheduleWithWeights = function (startingAt) {
                     continue;
                 }
                 // Calculate weight
-                const priority = tgt.Priority / maxpriority; // 0-1;
+                const priority = tgt.Priority / maxpriority; // 0-1
                 const urgency = 1 / (tgt.LastPossibleTime - curtime + 1); // 0-1, becomes 1 at the last possible time
                 const altitude = Math.sin(sla.d2r * tgt.Graph[curidx]); // 0-1, the higher the altitude the better
                 const slewing = lastra === null ? 1 : 1-sla.dsep(lastra, lastdec, tgt.raRad, tgt.decRad) / Math.PI; // 0-1, 1 if no slewing, 0 if 180 deg slewing
@@ -937,16 +934,11 @@ TargetList.prototype.prepareScheduleForUpdate = function () {
             return driver.targets.Targets[idx].Name;
         };
         helper.LogSuccess("Status report:");
-        helper.LogEntry("  Unchanged existing targets: " + unchanged.length +
-                (unchanged.length > 0 ? ` (<i>${unchanged.map(fnn).join(", ")}</i>)` : ""));
-        helper.LogEntry("  Updated existing targets: " + updated.length +
-                (updated.length > 0 ? ` (<i>${updated.map(fnn).join(", ")}</i>)` : ""));
-        helper.LogEntry("  Deleted observed targets (must add them back): " + reinserting.length +
-                (reinserting.length > 0 ? ` (<i>${reinserting.map(fnn).join(", ")}</i>)` : ""));
-        helper.LogEntry("  Removed targets: " + deleting.length +
-                (deleting.length > 0 ? ` (<i>${deleting.map(fnn).join(", ")}</i>)` : ""));
-        helper.LogEntry("  New targets (will insert): " + adding.length +
-                (adding.length > 0 ? ` (<i>${adding.join(", ")}</i>)` : ""));
+        helper.LogEntry("  Unchanged existing targets: " + unchanged.length + (unchanged.length > 0 ? ` (<i>${unchanged.map(fnn).join(", ")}</i>)` : ""));
+        helper.LogEntry("  Updated existing targets: " + updated.length + (updated.length > 0 ? ` (<i>${updated.map(fnn).join(", ")}</i>)` : ""));
+        helper.LogEntry("  Deleted observed targets (must add them back): " + reinserting.length + (reinserting.length > 0 ? ` (<i>${reinserting.map(fnn).join(", ")}</i>)` : ""));
+        helper.LogEntry("  Removed targets: " + deleting.length + (deleting.length > 0 ? ` (<i>${deleting.map(fnn).join(", ")}</i>)` : ""));
+        helper.LogEntry("  New targets (will insert): " + adding.length + (adding.length > 0 ? ` (<i>${adding.join(", ")}</i>)` : ""));
         // Unchanged targets remain unchanged. Nothing to do
         // Then update the existing targets (no need to perform the astrometry again for them)
         if (updated.length > 0) {
@@ -1162,7 +1154,8 @@ TargetList.prototype.processTargetListAfterSIMBAD = function(lines) {
             if (!badwolf) {
                 this.InputStats.Actual += 1;
                 if (["NOT", "WHT", "INT"].includes(Driver.telescopeName)) {
-                    this.TCSlines.push(helper.pad(words[0].replace(/[^A-Za-z0-9\_\+\-]+/g, ""), this.MaxLen.Name, false, " ") + " " +
+                    this.TCSlines.push(
+                        helper.pad(words[0].replace(/[^A-Za-z0-9\_\+\-]+/g, ""), this.MaxLen.Name, false, " ") + " " +
                         helper.padTwoDigits(words[1]) + ":" +
                         helper.padTwoDigits(words[2]) + ":" +
                         helper.pad(parseFloat(words[this.ReqLineLen]).toFixed(2).toString(), 5, true, "0") + " " +
@@ -1175,8 +1168,7 @@ TargetList.prototype.processTargetListAfterSIMBAD = function(lines) {
                         "0.0");
                 } else if (["HJST", "OST"].includes(Driver.telescopeName)) {
                     this.TCSlines.push(
-                        helper.pad(this.InputStats.Actual.toString(), 2, true, " ") + " " +
-                        '"' + helper.pad(words[0].replace(/[^A-Za-z0-9\_\+\-]+/g, ""), this.MaxLen.Name, false, " ") + '" ' +
+                        helper.pad(this.InputStats.Actual.toString(), 2, true, " ") + " " + '"' + helper.pad(words[0].replace(/[^A-Za-z0-9\_\+\-]+/g, ""), this.MaxLen.Name, false, " ") + '" ' +
                         helper.padTwoDigits(words[1]) + " " +
                         helper.padTwoDigits(words[2]) + " " +
                         helper.pad(parseFloat(words[this.ReqLineLen]).toFixed(2).toString(), 5, true, "0") + " " +
@@ -1193,9 +1185,15 @@ TargetList.prototype.processTargetListAfterSIMBAD = function(lines) {
 
         if (this.InputStats.Actual === 0) {
             if (this.InputStats.Commented > 0 || this.InputStats.Empty > 0) {
-                helper.LogError("No valid targets found (input consists of " +
-                        (this.InputStats.Commented > 0 ? helper.plural(this.InputStats.Commented, "commented-out line") + (this.InputStats.Empty > 0 ? " and " : "") : "") +
-                        (this.InputStats.Empty > 0 ? helper.plural(this.InputStats.Empty, "empty line") : "") + ").");
+                const commentedPart = this.InputStats.Commented > 0 ? helper.plural(this.InputStats.Commented, "commented-out line") : null;
+                const emptyPart = this.InputStats.Empty > 0 ? helper.plural(this.InputStats.Empty, "empty line") : null;
+                let details;
+                if (commentedPart !== null && emptyPart !== null) {
+                    details = `${commentedPart} and ${emptyPart}`;
+                } else {
+                    details = commentedPart ?? emptyPart;
+                }
+                helper.LogError(`No valid targets found (input consists of ${details}).`);
             } else {
                 helper.LogError("No targets given.");
             }
@@ -1357,9 +1355,7 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
         this.BadWolfEnd.push(UTr[1]);
         return [words[0], "", "", "", "", "", "", "", "*", "", words[q], "", "", "", ""];
     }
-    if ((words.length === 6 && words[2].indexOf(":") === -1) ||
-        (words.length === 2 && words[0].indexOf(":") !== -1 && words[1].indexOf(":") !== -1 ) ||
-        (words.length === 2 && !helper.notFloat(words[0]) && !helper.notFloat(words[1]))) {
+    if ((words.length === 6 && words[2].indexOf(":") === -1) || (words.length === 2 && words[0].indexOf(":") !== -1 && words[1].indexOf(":") !== -1 ) || (words.length === 2 && !helper.notFloat(words[0]) && !helper.notFloat(words[1]))) {
         words = [`Object${linenumber}`].concat(words);
     }
     /* Everything given in degrees? Convert to hex */
@@ -1648,18 +1644,14 @@ Target.prototype.canObserve = function (idx) {
             if (!this.RestrictionTwilights.includes("NT") && (time < driver.night.ENauTwilight || time > driver.night.MNauTwilight)) {
                 return 0;
             }
-            if (!this.RestrictionTwilights.includes("AT") && (
-                (time > driver.night.ENauTwilight && time < driver.night.EAstTwilight) ||
-                (time > driver.night.MAstTwilight && time < driver.night.MNauTwilight))) {
+            if (!this.RestrictionTwilights.includes("AT") && ((time > driver.night.ENauTwilight && time < driver.night.EAstTwilight) || (time > driver.night.MAstTwilight && time < driver.night.MNauTwilight))) {
                 return 0;
             }
             if (!this.RestrictionTwilights.includes("DARK") && (time > driver.night.EAstTwilight && time < driver.night.MAstTwilight)) {
                 return 0;
             }
         }
-        if (!(this.RestrictionMinUTC <= time && this.RestrictionMaxUTC >= time &&
-                this.RestrictionMinAlt <= altitude && this.RestrictionMaxAlt >= altitude &&
-                this.RestrictionMinMoonDistance <= moondist && this.RestrictionMaxMoonDistance >= moondist)) {
+        if (!(this.RestrictionMinUTC <= time && this.RestrictionMaxUTC >= time && this.RestrictionMinAlt <= altitude && this.RestrictionMaxAlt >= altitude && this.RestrictionMinMoonDistance <= moondist && this.RestrictionMaxMoonDistance >= moondist)) {
             return 0;
         }
         for (let i = 0; i < driver.targets.Offline.length; i += 1) {

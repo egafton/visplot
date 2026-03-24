@@ -24,8 +24,13 @@ const config = {
     skycamTimeRefreshInterval: 500, // ms
     skycamImageRefreshInterval: 30000, // ms
     skycamTcsCrosshairColor: "#9f3",
+    skycamImageSizeX: 640,
+    skycamImageSizeY: 480,
     stdPressure: 1013.25, // hPa
     stdTemperature: 298.15, // K, 15 deg
+    gravAcceleration: 9.80665, // m/s^2
+    molarMass: 0.0289644, // kg/mol
+    gasConstant: 8.31446, // J/(mol*K)
     refractionTLR: -0.0065, // temperature lapse rate, K/m
     refractionWavelength: 0.55, // microns
     refractionHumidity: 0.2, // 0-1
@@ -134,6 +139,18 @@ const config = {
         {name: "nautical", alt: -12, color: '#000', opacity: 0.2},
         {name: "astronomical", alt: -18, color: '#000', opacity: 0.15}
     ],
+    mapEquatorStyle: {
+        color: '#ffff88',
+        opacity: 0.5,
+        weight: 2,
+        dashArray: [3, 3]
+    },
+    mapTropicsStyle: {
+        color: '#ffffee',
+        opacity: 0.5,
+        weight: 2,
+        dashArray: [3, 3]
+    },
     axialTilt: 23.4394, // deg
     blanksNorthern: [
         "Blank00+06 00:06:57.17 +06:06:22.2",
