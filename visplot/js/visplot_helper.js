@@ -327,10 +327,12 @@ helper.getMJD = function (now)
  */
 helper.HMS = function (time, sep1, sep2, sep3) {
     try {
-        const h = Math.floor(time);
-        const m = Math.floor(60.0 * (time%1));
-        const s = (60.0 * (60.0 * (time%1) - m)).toFixed(0);
-        return `${helper.padTwoDigits(h)}${sep1}` +
+        const sign = time < 0 ? "-" : "";
+        const absTime = Math.abs(time);
+        const h = Math.floor(absTime);
+        const m = Math.floor(60.0 * (absTime%1));
+        const s = (60.0 * (60.0 * (absTime%1) - m)).toFixed(0);
+        return `${sign}${helper.padTwoDigits(h)}${sep1}` +
                `${helper.padTwoDigits(m)}${sep2}` +
                `${helper.padTwoDigits(s)}${sep3}`;
     } catch (ex) {
