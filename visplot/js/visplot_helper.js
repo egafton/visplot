@@ -323,15 +323,29 @@ helper.getMJD = function (now)
  * @param {String} sep1 - Separator after hours (e.g., 'h' or ':').
  * @param {String} sep2 - Separator after minutes (e.g., 'm' or ':').
  * @param {String} sep3 - Separator after seconds (e.g., 's' or '').
+ * @param {Number} precision - Number of decimals for the seconds.
  * @returns {String|undefined} Formatted HMS string, or undefined if an exception occurs.
  */
-helper.HMS = function (time, sep1, sep2, sep3) {
+helper.HMS = function (time, sep1, sep2, sep3, precision=0) {
     try {
         const sign = time < 0 ? "-" : "";
         const absTime = Math.abs(time);
-        const h = Math.floor(absTime);
-        const m = Math.floor(60.0 * (absTime%1));
-        const s = (60.0 * (60.0 * (absTime%1) - m)).toFixed(0);
+        let h = Math.floor(absTime);
+        const frac = absTime % 1;
+        let m = Math.floor(60.0 * frac);
+        let s = (60.0 * (60.0 * frac - m));
+        // Round seconds to desired precision
+        const factor = Math.pow(10, precision);
+        s = Math.round(s * factor) / factor;
+        // Normalization
+        if (s >= 60) {
+            s = 0;
+            m += 1;
+        }
+        if (m >= 60) {
+            m = 0;
+            h += 1;
+        }
         return `${sign}${helper.padTwoDigits(h)}${sep1}` +
                `${helper.padTwoDigits(m)}${sep2}` +
                `${helper.padTwoDigits(s)}${sep3}`;
