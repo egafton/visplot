@@ -1248,147 +1248,142 @@ TargetList.prototype.processTargetListAfterSIMBAD = function(lines) {
  *     by adding spaces so that the various columns fall nicely under each
  *     other.
  */
-TargetList.prototype.validateAndFormatTargets = function (force = false) {
-    try {
-        const thisList = this;
-        return new Promise(function(resolve, reject) {
-            // Retrieve content of #targets textarea
-            const tgts = driver.CMeditor.getValue();
-            if (!thisList.inputHasChanged(tgts, thisList.InputText) && thisList.InputValid && !force) {
-                helper.LogEntry("Target input list has not changed, no need to revalidate.");
-                return resolve();
-            }
-            helper.LogEntry("Validating and formatting target input list...");
-            $("#tcsExport").prop("disabled", true);
-            thisList.InputValid = false;
-            if (tgts.length === 0) {
-                if (force) {
-                    return resolve();
-                }
-                helper.LogError("Please fill in the <i>Targets</i> field.");
-                return reject();
-            }
-            // Split it into lines
-            const lines = helper.extractLines(tgts);
-            const idsRdplan = [];
-            const idsToRetrieve = [];
-            // Check if we need to retrieve any targets from SIMBAD
-            for (const line of lines) {
-                if (line.trim() === "" || line.startsWith("#")) {
-                    continue;
-                }
-                const words = helper.splitQuoted(line);
-                const name = helper.asIdentifier(words);
-                if (name === null) {
-                    continue;
-                }
-                const nameLower = name.toLowerCase();
-                if (config.planets.includes(nameLower)) {
-                    idsRdplan.push(nameLower);
-                } else if (nameLower in driver.resolvedIdentifiers) {
-                    helper.LogEntry(`Target <i>${name}</i> is already cached`);
-                } else {
-                    idsToRetrieve.push(name);
-                }
-            }
-            if (idsRdplan.length > 0) {
-                for (const id of idsRdplan) {
-                    const rd = sla.rdplan(driver.night.Sunset, id, Driver.obs_lon_rad, Driver.obs_lat_rad);
-                    const ra = helper.HMS(sla.rtoh * rd.ra, " ", " ", "", 2);
-                    const dec = helper.HMS(sla.r2d * rd.dec, " ", " ", "", 1);
-                    driver.resolvedIdentifiers[id] = `${ra} ${dec}`;
-                }
-            }
-            if (idsToRetrieve.length > 0) {
-                helper.LogEntry(`Will attempt to retrive the following targets from SIMBAD: ${idsToRetrieve.join(', ')}. This may take a while...`);
-                const simbadDeferreds = idsToRetrieve.map(id => {
-                    return $.get({
-                        url: config.simbadURL(id),
-                        timeout: config.simbadTimeout
-                    }).then(
-                        data => ({ id, data, error: null }), // success
-                        jqXHR => ({ id, data: null, error: jqXHR }) // failure
-                    );
+TargetList.prototype.validateAndFormatTargets = async function (force = false) {
+    const thisList = this;
+    // Retrieve content of #targets textarea
+    const tgts = driver.CMeditor.getValue();
+    if (!thisList.inputHasChanged(tgts, thisList.InputText) && thisList.InputValid && !force) {
+        helper.LogEntry("Target input list has not changed, no need to revalidate.");
+        return;
+    }
+    helper.LogEntry("Validating and formatting target input list...");
+    $("#tcsExport").prop("disabled", true);
+    thisList.InputValid = false;
+    if (tgts.length === 0) {
+        if (force) {
+            return;
+        }
+        helper.LogError("Please fill in the <i>Targets</i> field.");
+        throw new Error("Empty target list");
+    }
+    // Split it into lines
+    const lines = helper.extractLines(tgts);
+    const idsRdplan = [];
+    const idsForSimbad = [];
+    const idsForHorizons = [];
+    // Check if we need to retrieve any targets from SIMBAD
+    for (const line of lines) {
+        if (line.trim() === "" || line.startsWith("#")) {
+            continue;
+        }
+        const words = helper.splitQuoted(line);
+        const name = helper.asIdentifier(words);
+        if (name === null) {
+            continue;
+        }
+        const nameLower = name.toLowerCase();
+        if (nameLower in driver.resolvedIdentifiers) {
+            helper.LogEntry(`Target <i>${name}</i> is already cached`);
+        } else if (config.planets.includes(nameLower)) {
+            idsRdplan.push(nameLower);
+        } else if (nameLower in driver.majorBodies) {
+            idsForHorizons.push(name);
+        } else {
+            idsForSimbad.push(name);
+        }
+    }
+    for (const id of idsRdplan) {
+        const rd = sla.rdplan(driver.night.Sunset, id, Driver.obs_lon_rad, Driver.obs_lat_rad);
+        const ra = helper.HMS(sla.rtoh * rd.ra, " ", " ", "", 2);
+        const dec = helper.HMS(sla.r2d * rd.dec, " ", " ", "", 1);
+        driver.resolvedIdentifiers[id] = `${ra} ${dec}`;
+    }
+    if (idsForSimbad.length > 0) {
+        helper.LogEntry(`Retrieving targets from SIMBAD: ${idsForSimbad.join(', ')}. This may take a while...`);
+        const simbadResults = await Promise.all(idsForSimbad.map(async (id) => {
+            try {
+                const data = await $.get({
+                    url: config.simbadURL(id),
+                    timeout: config.simbadTimeout
                 });
-                $.when(...simbadDeferreds).then(function(...sresults) {
-                    helper.LogEntry("Results received from SIMBAD, will proceed to parse the targets.");
-                    const unresolved = [];
-                    sresults.forEach(result => {
-                        const { id, data, error } = result;
-                        if (error) {
-                            helper.LogError(`SIMBAD request failed for ${id} (${error.statusText || 'timeout'})`);
-                            unresolved.push(id);
-                            return;
-                        }
-                        const resolution = helper.parseSIMBADResponse(data);
-                        if (resolution === null) {
-                            unresolved.push(id);
-                            helper.LogWarning(`Target ${id} is not in SIMBAD; trying JPL Horizons.`);
-                        } else {
-                            driver.resolvedIdentifiers[id.toLowerCase()] = resolution;
-                        }
-                    });
-                    // If nothing unresolved, continue
-                    if (unresolved.length === 0) {
-                        return thisList.processTargetListAfterSIMBAD(lines) ? resolve() : reject();
-                    }
-                    // Fall back to Horizons JPL
-                    helper.LogEntry(`Attempting Horizons resolution for: ${unresolved.join(', ')}`);
-                    const horizonsDeferreds = unresolved.map(id => {
-                        return $.get({
-                            url: config.horizonsURL({
-                                'COMMAND': `'${id}'`,
-                                'SITE_COORD': `'${Driver.obs_lon_deg},${Driver.obs_lat_deg},${Driver.obs_alt/1000}'`,
-                                'START_TIME': driver.night.Sunset,
-                                'STOP_TIME': driver.night.Sunrise
-                            }), // you define this
-                            timeout: config.horizonsTimeout
-                        }).then(
-                            data => ({ id, data, error: null }),
-                            jqXHR => ({ id, data: null, error: jqXHR })
-                        );
-                    });
-
-                    $.when(...horizonsDeferreds).then(function(...hResults) {
-                        const stillUnresolved = [];
-                        hResults.forEach(result => {
-                            const { id, data, error } = result;
-                            if (error) {
-                                helper.LogError(`Horizons request failed for ${id} (${error.statusText || 'timeout'})`);
-                                stillUnresolved.push(id);
-                                return;
-                            }
-                            try {
-                                const parsed = typeof data === "string" ? JSON.parse(data) : data;
-                                if (parsed && parsed.length > 0) {
-                                    // Store full ephemeris (array of {mjd, ra_deg, dec_deg})
-                                    driver.resolvedEphemerides[id.toLowerCase()] = parsed;
-                                    const first = helper.interpolateEphemeris(parsed, driver.night.Sunset);
-                                    const ra = helper.HMS(first.ra/15, " ", " ", " ", 2);
-                                    const dec = helper.HMS(first.dec, " ", " ", " ", 1);
-                                    driver.resolvedIdentifiers[id.toLowerCase()] = `${ra} ${dec} 2000`;
-                                } else {
-                                    helper.LogError(`No ephemeride returned for ${id}`);
-                                    stillUnresolved.push(id);
-                                }
-                            } catch (ex) {
-                                helper.LogError(`Invalid Horizons response for ${id}: ${ex}`);
-                                stillUnresolved.push(id);
-                            }
-                        });
-                        if (stillUnresolved.length > 0) {
-                            helper.LogError(`Unresolved targets: ${stillUnresolved.join(', ')}`);
-                        }
-                        return thisList.processTargetListAfterSIMBAD(lines) ? resolve() : reject();
-                    });
-
-                });
+                return ({id, data, error: null});
+            } catch (error) {
+                return ({id, data: null, error});
+            }
+        }));
+        helper.LogEntry("Results received from SIMBAD");
+        for (const {id, data, error} of simbadResults) {
+            if (error) {
+                helper.LogError(`SIMBAD request failed for ${id} (${error})`);
+                idsForHorizons.push(id);
+                continue;
+            }
+            const resolution = helper.parseSIMBADResponse(data);
+            if (resolution === null) {
+                helper.LogWarning(`Target ${id} is not in SIMBAD; trying JPL Horizons.`);
+                idsForHorizons.push(id);
             } else {
-                return thisList.processTargetListAfterSIMBAD(lines) ? resolve() : reject();
+                driver.resolvedIdentifiers[id.toLowerCase()] = resolution;
             }
-        });
-    } catch (ex) {
-        helper.LogException(ex);
+        }
+    }
+    if (idsForHorizons.length > 0) {
+        helper.LogEntry(`Retrieving targets from JPL Horizons: ${idsForHorizons.join(', ')}. This may take a while...`);
+        const horizonResults = await Promise.all(idsForHorizons.map(async (id) => {
+            const idLower = id.toLowerCase();
+            const idSend = idLower in driver.majorBodies ? driver.majorBodies[idLower] : id;
+            try {
+                const data = await $.get({
+                    url: config.horizonsURL({
+                        'COMMAND': `'${idSend}'`,
+                        'SITE_COORD': `'${Driver.obs_lon_deg},${Driver.obs_lat_deg},${Driver.obs_alt/1000}'`,
+                        'START_TIME': driver.night.Sunset,
+                        'STOP_TIME': driver.night.Sunrise
+                    }), // you define this
+                    timeout: config.horizonsTimeout
+                });
+                return ({id, data, error: null});
+            } catch (error) {
+                return ({id, data: null, error});
+            }
+        }));
+        const stillUnresolved = [];
+        helper.LogEntry("Results received from Horizons");
+        for (const {id, data, error} of horizonResults) {
+            if (error) {
+                helper.LogError(`Horizons request failed for ${id} (${error}})`);
+                stillUnresolved.push(id);
+                continue;
+            }
+            try {
+                const parsed = typeof data === "string" ? JSON.parse(data) : data;
+                if (parsed && parsed.error) {
+                    helper.LogWarning(`Horizons error for ${id}: ${parsed.error}`);
+                    stillUnresolved.push(id);
+                    continue;
+                }
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    // Store full ephemeris (array of {mjd, ra_deg, dec_deg})
+                    driver.resolvedEphemerides[id.toLowerCase()] = parsed;
+                    const first = helper.interpolateEphemeris(parsed, driver.night.Sunset);
+                    const ra = helper.HMS(first.ra/15, " ", " ", " ", 2);
+                    const dec = helper.HMS(first.dec, " ", " ", " ", 1);
+                    driver.resolvedIdentifiers[id.toLowerCase()] = `${ra} ${dec} 2000`;
+                } else {
+                    helper.LogWarning(`No ephemerides returned for ${id}`);
+                    stillUnresolved.push(id);
+                }
+            } catch (ex) {
+                helper.LogError(`Invalid Horizons response for ${id}: ${ex}`);
+                stillUnresolved.push(id);
+            }
+        }
+        if (stillUnresolved.length > 0) {
+            helper.LogError(`Unresolved targets: ${stillUnresolved.join(', ')}`);
+        }
+    }
+    if (!thisList.processTargetListAfterSIMBAD(lines)) {
+        throw new Error("Post-processing failure");
     }
 };
 

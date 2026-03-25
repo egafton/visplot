@@ -40,6 +40,16 @@ function Driver() {
         this.obdata = null; // Actual JSON-decoded object containing OB info
         this.obprocessed = false; // OB info is processed automatically only once, upon page load
 
+        /* Retrieve list major bodies from JPL Horizons */
+        this.majorBodies = {};
+        $.get({
+            url: config.horizonsURL({'COMMAND': `'MB'`}), // you define this
+            timeout: 20000
+        }).then(function(data) {
+            driver.majorBodies = data;
+            helper.LogEntry(`Retrieved a list of ${Object.keys(data).length} major bodies from JPL Horizons.`);
+        });
+
         // Night, targets, planning
         this.nightInitialized = false;
         this.scheduleMode = false;
