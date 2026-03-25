@@ -118,6 +118,7 @@ $ch = curl_init($url);
 curl_setopt_array($ch, [
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_FOLLOWLOCATION => true,
+    CURLOPT_SSL_VERIFYPEER => false,
     CURLOPT_TIMEOUT => 10,          // total timeout
     CURLOPT_CONNECTTIMEOUT => 5,    // connection timeout
 ]);
