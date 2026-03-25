@@ -191,13 +191,13 @@ Night.prototype.setEphemerides = function () {
         this.DateSunrise = new Date(Date.UTC(this.tSunrise[0], this.tSunrise[1]-1, this.tSunrise[2], this.tSunrise[3], this.tSunrise[4], this.tSunrise[5], 0));
         this.DarkTime = (this.MAstTwilight - this.EAstTwilight);
         this.NightLength = (this.globalUTEnd - this.globalUTStart);
-        // Calculate UTC and LST labels
+        // Calculate UTC labels
         this.UTCtimes = [];
         this.UTClabels = [];
         const startUTC = helper.mjdToUTCHours(this.Sunset);
         const firstUTC = Math.ceil(startUTC);
         for (let h = 0; h < 48; h += 1) {
-            const hour = (firstUTC + h)%24;
+            const hour = (firstUTC + h) % 24;
             const dayOffset = Math.floor((firstUTC + h) / 24);
             const djutc = Math.floor(this.Sunset) + dayOffset + hour / 24;
             if (djutc >= this.Sunrise) {
@@ -206,29 +206,36 @@ Night.prototype.setEphemerides = function () {
             this.UTCtimes.push(djutc);
             this.UTClabels.push(hour === 0 ? "24" : hour.toString());
         }
+        // Calculate LST labels
         this.LocalTimetimes = [];
         this.LocalTimelabels = [];
         const tz = parseFloat(Driver.obs_timezone);
-        // Convert start into LOCAL fractional hour
-        let startLocal = startUTC + tz;
-        startLocal = (startLocal % 24 + 24) % 24;
-        // First integer LOCAL hour after sunset
-        const firstLocal = Math.ceil(startLocal);
+        const tzDays = tz / 24;
+        // Find the Sunset in LOCAL time (MJD)
+        const sunsetLocalMJD = this.Sunset + tzDays;
+        // Find the first integer local hour after sunset
+        // We take the fractional part of the local MJD and scale to 24 hours
+        const sunsetLocalHour = (sunsetLocalMJD % 1) * 24;
+        const firstLocalHour = Math.ceil(sunsetLocalHour);
+        // Get the "floor" of the local MJD day to use as a base
+        const localDayBase = Math.floor(sunsetLocalMJD);
         for (let h = 0; h < 48; h += 1) {
-            const localHourRaw = firstLocal + h;
-            const localHour = ((localHourRaw % 24) + 24) % 24;
-            const dayOffset = Math.floor(localHourRaw / 24);
-            // Convert LOCAL → UTC
-            let utcHour = localHour - tz;
-            const utcDayOffset = Math.floor(utcHour / 24);
-            utcHour = (utcHour % 24 + 24) % 24;
-            const djutc = Math.floor(this.Sunset) + dayOffset + utcDayOffset + utcHour / 24;
-            if (djutc < this.Sunset) {
+            // Current local time in MJD
+            const currentLocalMJD = localDayBase + (firstLocalHour + h) / 24;
+            // Convert back to UTC MJD
+            const djutc = currentLocalMJD - tzDays;
+            // Safety: ensure we haven't looped before the actual sunset
+            // (can happen if Math.ceil pushes us back depending on floating point)
+            if (djutc < this.Sunset - 0.0001) {
                 continue;
             }
+            // Stop if we hit sunrise
             if (djutc >= this.Sunrise) {
                 break;
             }
+            // Calculate Labels
+            const localHour = (firstLocalHour + h) % 24;
+            // LST calculation
             stl = sla.dr2tf(1, sla.dranrm(sla.gmst(djutc) + Driver.obs_lon_rad) + this.eqeqx);
             this.LSTlabels.push(`${stl.ihmsf[0]}:${stl.ihmsf[1] < 10 ? "0" : ""}${stl.ihmsf[1].toFixed(0)}`);
             this.LocalTimetimes.push(djutc);
