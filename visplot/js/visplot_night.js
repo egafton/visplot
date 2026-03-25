@@ -267,6 +267,11 @@ Night.prototype.setEphemerides = function () {
             }
         }
         driver.targets.StartingAt = this.Sunset;
+
+        // Remove cached ephemerides
+        helper.LogDebug("Cleaning up cached ephemerides...");
+        driver.resolvedEphemerides = {};
+        driver.resolvedIdentifiers = {};
     } catch (ex) {
         helper.LogException(ex);
     }

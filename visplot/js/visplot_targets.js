@@ -99,7 +99,7 @@ function Target(k, line) {
 Target.prototype.ParseFrom = function (line) {
     // Parse an input string into a Target object
     const night = driver.night;
-    const dat = line.split(/\s+/);
+    const dat = helper.splitQuoted(line);
     this.Name = dat[0];
     this.ProjectNumber = dat[9];
     this.Epoch = parseFloat(dat[7]);
@@ -225,11 +225,17 @@ Target.prototype.ParseFrom = function (line) {
     let altmax = 0;
     let vminmdist = 9999;
     let iminmdist = 0;
-    for (let i=0; i<night.Nx; i+=1) {
-        if (config.planets.includes(this.Name.toLowerCase())) {
-            rd = sla.rdplan(night.xaxis[i], this.Name, Driver.obs_lon_rad, Driver.obs_lat_rad);
+    const id = this.Name.toLowerCase();
+    for (let i = 0; i < night.Nx; i += 1) {
+        if (config.planets.includes(id)) {
+            rd = sla.rdplan(night.xaxis[i], id, Driver.obs_lon_rad, Driver.obs_lat_rad);
             rap = rd.ra;
             dap = rd.dec;
+        } else if (id in driver.resolvedEphemerides) {
+            rd = helper.interpolateEphemeris(driver.resolvedEphemerides[id], night.xaxis[i]);
+            retap = sla.mapqk(sla.d2r * rd.ra, sla.d2r * rd.dec, 0, 0, 0, 0, night.amprms[i]);
+            rap = retap.ra;
+            dap = retap.da;
         } else {
             retap = sla.mapqk(ra, dec, pmra, pmdec, 0, 0, night.amprms[i]);
             rap = retap.ra;
@@ -809,7 +815,6 @@ TargetList.prototype.scheduleWithWeights = function (startingAt) {
             lastra = obj.raRad;
             lastdec = obj.decRad;
         }
-        console.log("withWeights: ", scheduleorder);
         return scheduleorder;
     } catch (ex) {
         helper.LogException(ex);
@@ -952,8 +957,8 @@ TargetList.prototype.prepareScheduleForUpdate = function () {
             this.resetWarnings();
             let newdata, obj; // Change: first do badwolf
             for (i = 0; i < updated.length; i += 1) {
-                newdata = updateText[i].trim().split(" ");
-                obj = this.Targets[updated[i]];
+                newdata = helper.splitQuoted(updateText[i]);
+                obj = this.Targets[updated[i]]; // bug?
                 obj.Update(newdata.slice(8));
             }
             this.warnUnobservable();
@@ -1082,7 +1087,7 @@ TargetList.prototype.processTargetListAfterSIMBAD = function(lines) {
             }
             const mLTN = driver.graph.maxLenTgtName;
             if (words[0].length > mLTN) {
-                words[0] = words[0].substr(0, mLTN);
+                words[0] = helper.quoteIfNeeded(helper.unquote(words[0]).substr(0, mLTN));
             }
             if (words[0].length > this.MaxLen.Name) {
                 this.MaxLen.Name = words[0].length;
@@ -1125,7 +1130,7 @@ TargetList.prototype.processTargetListAfterSIMBAD = function(lines) {
             }
             this.FormattedLines.push(words);
         }
-        this.InputStats = {Empty: 0, Commented: 0, Actual: 0};
+        this.InputStats = {Empty: 0, Commented: 0, BadWolf: 0, Actual: 0};
         this.TCSlines = [];
         for (let i = 0; i < this.FormattedLines.length; i += 1) {
             if (this.FormattedLines[i] === null) {
@@ -1187,20 +1192,33 @@ TargetList.prototype.processTargetListAfterSIMBAD = function(lines) {
                         helper.pad(parseFloat(words[this.ReqLineLen + 3]).toFixed(2).toString(), this.MaxLen.TCSpmdec + 3, true, " "));
                 }
                 this.TargetsLines.push(padded.join(" "));
+            } else {
+                this.InputStats.BadWolf += 1;
             }
         }
 
         if (this.InputStats.Actual === 0) {
-            if (this.InputStats.Commented > 0 || this.InputStats.Empty > 0) {
-                const commentedPart = this.InputStats.Commented > 0 ? helper.plural(this.InputStats.Commented, "commented-out line") : null;
-                const emptyPart = this.InputStats.Empty > 0 ? helper.plural(this.InputStats.Empty, "empty line") : null;
+            const parts = [];
+            if (this.InputStats.Commented > 0) {
+                parts.push(helper.plural(this.InputStats.Commented, "commented-out line"));
+            }
+            if (this.InputStats.Empty > 0) {
+                parts.push(helper.plural(this.InputStats.Empty, "empty line"));
+            }
+            if (this.InputStats.BadWolf > 0) {
+                parts.push(helper.plural(this.InputStats.BadWolf, "offline string"));
+            }
+            if (parts.length > 0) {
+                // Combine with commas and 'and'
                 let details;
-                if (commentedPart !== null && emptyPart !== null) {
-                    details = `${commentedPart} and ${emptyPart}`;
-                } else {
-                    details = commentedPart ?? emptyPart;
+                if (parts.length === 1) {
+                    details = parts[0];
+                } else if (parts.length === 2) {
+                    details = `${parts[0]} and ${parts[1]}`;
+                } else { // 3 or more
+                    details = `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`;
                 }
-                helper.LogError(`No valid targets found (input consists of ${details}).`);
+                helper.LogWarning(`No valid targets found (input consists of ${details}).`);
             } else {
                 helper.LogError("No targets given.");
             }
@@ -1256,25 +1274,21 @@ TargetList.prototype.validateAndFormatTargets = function (force = false) {
             const idsToRetrieve = [];
             // Check if we need to retrieve any targets from SIMBAD
             for (const line of lines) {
-                let id = null;
                 if (line.trim() === "" || line.startsWith("#")) {
                     continue;
                 }
-                if (line.startsWith('"') && line.endsWith('"')) {
-                    id = line.substring(1, line.length - 1);
-                } else {
-                    const words = line.split(/\s+/g);
-                    if (words.length === 1) {
-                        id = words[0];
-                    }
-                }
-                if (id === null) {
+                const words = helper.splitQuoted(line);
+                const name = helper.asIdentifier(words);
+                if (name === null) {
                     continue;
                 }
-                if (config.planets.includes(id.toLowerCase())) {
-                    idsRdplan.push(id);
+                const nameLower = name.toLowerCase();
+                if (config.planets.includes(nameLower)) {
+                    idsRdplan.push(nameLower);
+                } else if (nameLower in driver.resolvedIdentifiers) {
+                    helper.LogEntry(`Target <i>${name}</i> is already cached`);
                 } else {
-                    idsToRetrieve.push(id);
+                    idsToRetrieve.push(name);
                 }
             }
             if (idsRdplan.length > 0) {
@@ -1287,7 +1301,7 @@ TargetList.prototype.validateAndFormatTargets = function (force = false) {
             }
             if (idsToRetrieve.length > 0) {
                 helper.LogEntry(`Will attempt to retrive the following targets from SIMBAD: ${idsToRetrieve.join(', ')}. This may take a while...`);
-                const deferreds = idsToRetrieve.map(id => {
+                const simbadDeferreds = idsToRetrieve.map(id => {
                     return $.get({
                         url: config.simbadURL(id),
                         timeout: config.simbadTimeout
@@ -1296,21 +1310,78 @@ TargetList.prototype.validateAndFormatTargets = function (force = false) {
                         jqXHR => ({ id, data: null, error: jqXHR }) // failure
                     );
                 });
-                $.when(...deferreds).then(function(...results) {
+                $.when(...simbadDeferreds).then(function(...sresults) {
                     helper.LogEntry("Results received from SIMBAD, will proceed to parse the targets.");
-                    results.forEach(result => {
+                    const unresolved = [];
+                    sresults.forEach(result => {
                         const { id, data, error } = result;
                         if (error) {
-                            helper.LogError(`Request failed for ${id} (${error.statusText || 'timeout'})`);
+                            helper.LogError(`SIMBAD request failed for ${id} (${error.statusText || 'timeout'})`);
+                            unresolved.push(id);
+                            return;
+                        }
+                        const resolution = helper.parseSIMBADResponse(data);
+                        if (resolution === null) {
+                            unresolved.push(id);
+                            helper.LogWarning(`Target ${id} is not in SIMBAD; trying JPL Horizons.`);
                         } else {
-                            const resolution = helper.parseSIMBADResponse(data);
-                            driver.resolvedIdentifiers[id] = resolution;
-                            if (resolution === null) {
-                                helper.LogError(`Target identifier unknown to SIMBAD: ${id}`);
-                            }
+                            driver.resolvedIdentifiers[id.toLowerCase()] = resolution;
                         }
                     });
-                    return thisList.processTargetListAfterSIMBAD(lines) ? resolve() : reject();
+                    // If nothing unresolved, continue
+                    if (unresolved.length === 0) {
+                        return thisList.processTargetListAfterSIMBAD(lines) ? resolve() : reject();
+                    }
+                    // Fall back to Horizons JPL
+                    helper.LogEntry(`Attempting Horizons resolution for: ${unresolved.join(', ')}`);
+                    const horizonsDeferreds = unresolved.map(id => {
+                        return $.get({
+                            url: config.horizonsURL({
+                                'COMMAND': `'${id}'`,
+                                'SITE_COORD': `'${Driver.obs_lon_deg},${Driver.obs_lat_deg},${Driver.obs_alt/1000}'`,
+                                'START_TIME': driver.night.Sunset,
+                                'STOP_TIME': driver.night.Sunrise
+                            }), // you define this
+                            timeout: config.horizonsTimeout
+                        }).then(
+                            data => ({ id, data, error: null }),
+                            jqXHR => ({ id, data: null, error: jqXHR })
+                        );
+                    });
+
+                    $.when(...horizonsDeferreds).then(function(...hResults) {
+                        const stillUnresolved = [];
+                        hResults.forEach(result => {
+                            const { id, data, error } = result;
+                            if (error) {
+                                helper.LogError(`Horizons request failed for ${id} (${error.statusText || 'timeout'})`);
+                                stillUnresolved.push(id);
+                                return;
+                            }
+                            try {
+                                const parsed = typeof data === "string" ? JSON.parse(data) : data;
+                                if (parsed && parsed.length > 0) {
+                                    // Store full ephemeris (array of {mjd, ra_deg, dec_deg})
+                                    driver.resolvedEphemerides[id.toLowerCase()] = parsed;
+                                    const first = helper.interpolateEphemeris(parsed, driver.night.Sunset);
+                                    const ra = helper.HMS(first.ra/15, " ", " ", " ", 2);
+                                    const dec = helper.HMS(first.dec, " ", " ", " ", 1);
+                                    driver.resolvedIdentifiers[id.toLowerCase()] = `${ra} ${dec} 2000`;
+                                } else {
+                                    helper.LogError(`No ephemeride returned for ${id}`);
+                                    stillUnresolved.push(id);
+                                }
+                            } catch (ex) {
+                                helper.LogError(`Invalid Horizons response for ${id}: ${ex}`);
+                                stillUnresolved.push(id);
+                            }
+                        });
+                        if (stillUnresolved.length > 0) {
+                            helper.LogError(`Unresolved targets: ${stillUnresolved.join(', ')}`);
+                        }
+                        return thisList.processTargetListAfterSIMBAD(lines) ? resolve() : reject();
+                    });
+
                 });
             } else {
                 return thisList.processTargetListAfterSIMBAD(lines) ? resolve() : reject();
@@ -1356,16 +1427,13 @@ TargetList.prototype.ExportTCSCatalogue = function () {
  */
 TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
     // Split by white spaces and colons
-    let words = linetext.split(/\s+/g);
+    let words = helper.splitQuoted(linetext);
     // Check if this is a known identifier
-    if (linetext.startsWith('"') && linetext.endsWith('"')) {
-        const identifier = linetext.substring(1, linetext.length - 1);
-        if (identifier in driver.resolvedIdentifiers) {
-            words = `${identifier.replaceAll(" ", "_")} ${driver.resolvedIdentifiers[identifier]}`.split(/\s+/g);
-        }
-    } else if (words.length === 1) {
-        if (words[0] in driver.resolvedIdentifiers) {
-            words = `${words[0]} ${driver.resolvedIdentifiers[words[0]]}`.split(/\s+/g);
+    const name = helper.asIdentifier(words);
+    if (name !== null) {
+        const nameLower = name.toLowerCase();
+        if (nameLower in driver.resolvedIdentifiers) {
+            words = helper.splitQuoted(`${helper.quoteIfNeeded(name)} ${driver.resolvedIdentifiers[nameLower]}`);
         }
     }
     // Sanity check: minimum number of fields
@@ -1615,6 +1683,8 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
     if (helper.notFloat(words[14])) {
         throw new Error("Non-float value detected in [PRIORITY]");
     }
+    /* Quote back the name, if necessary */
+    words[0] = helper.quoteIfNeeded(words[0]);
     return words;
 };
 

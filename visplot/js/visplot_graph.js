@@ -21,7 +21,7 @@ function Graph(_canvas, _context) {
         this.xleftarrows = this.xstart - 50;
         this.tickLength = 7;
         this.fontFamily = config.graphFont;
-        this.maxLenTgtName = 10;
+        this.maxLenTgtName = 14;
         this.CircleSize = 8;
         this.CircleSizeSq = 64;
         this.doubleTargets = true;

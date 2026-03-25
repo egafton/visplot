@@ -143,6 +143,8 @@ $version = "5.0h";
 * 5.0g - Refactored config files.
 *
 * 5.0h - Improvements to all-sky camera and throughout the code.
+*      - Now correctly retrieving multiple targets from SIMBAD (again).
+*      - Visplot can now resolve and plot non-sidereal targets using JPL Horizons.
 */
 session_start();
 if (isset($_SESSION["obinfo"])) {

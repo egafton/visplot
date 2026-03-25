@@ -12,10 +12,6 @@
  */
 $(document).ready(function () {
     try {
-        /*
-        * Available error IDs: 61+
-        */
-
         /* Perform the unit tests for slalib */
         sla.performUnitTests();
 

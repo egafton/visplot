@@ -38,7 +38,8 @@ export default [
         Option: "readonly",
         Image: "readonly",
         JSZip: "readonly",
-        CodeMirror: "readonly"
+        CodeMirror: "readonly",
+        URLSearchParams: "readonly"
       },
     },
     rules: {

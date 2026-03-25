@@ -53,6 +53,8 @@ serializer.saveDocument = function () {
                 obprocessed: driver.obprocessed,
                 nightInitialized: driver.nightInitialized,
                 scheduleMode: driver.scheduleMode,
+                resolvedEphemerides: driver.resolvedEphemerides,
+                resolvedIdentifiers: driver.resolvedIdentifiers,
                 telescopeName: Driver.telescopeName,
                 defaultEpoch: Driver.defaultEpoch,
                 defaultProject: Driver.defaultProject,
@@ -143,6 +145,16 @@ serializer.loadDocument = function (e) {
             driver.obprocessed = obj.driver.obprocessed;
             driver.nightInitialized = obj.driver.nightInitialized;
             driver.scheduleMode = obj.driver.scheduleMode;
+            if (typeof obj.driver.resolvedEphemerides !== "undefined") {
+                driver.resolvedEphemerides = obj.driver.resolvedEphemerides;
+            } else {
+                driver.resolvedEphemerides = {};
+            }
+            if (typeof obj.driver.resolvedIdentifiers !== "undefined") {
+                driver.resolvedIdentifiers = obj.driver.resolvedIdentifiers;
+            } else {
+                driver.resolvedIdentifiers = {};
+            }
             driver.setTelescopeName(obj.driver.telescopeName).then(function() {
                 Driver.defaultEpoch = obj.driver.defaultEpoch;
                 Driver.defaultProject = obj.driver.defaultProject;

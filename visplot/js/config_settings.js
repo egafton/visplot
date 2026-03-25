@@ -111,12 +111,20 @@ const config = {
     },
     aladinOpticalSurvey: "P/DSS2/color",
     aladinInfraredSurvey: "P/2MASS/color",
-    simbadTimeout: 3000, // ms
     simbadCoordsRegex: String.raw`Coordinates\(ICRS.*?\):\s+(\d+)\s+(\d+)\s+([\d\.]+)\s+([+\-\d]+)\s+(\d+)\s+([\d\.]+)`,
     simbadPMRegex: String.raw`Proper motions:\s+([+\-\d\.]+)\s+([+\-\d\.]+)`,
     simbadURL: function(identifier) {
         return `https://simbad.cds.unistra.fr/simbad/sim-id?output.format=ASCII&Ident=${encodeURIComponent(identifier)}`;
     },
+    simbadTimeout: 3000, // ms
+    horizonsURL: function(params) {
+        const query = new URLSearchParams();
+        for (const [key, value] of Object.entries(params)) {
+            query.append(key, value);
+        }
+        return `${window.baseurl}horizons_proxy.php?${query.toString()}`;
+    },
+    horizonsTimeout: 5000, // ms
     mapAPIKey: "def7cfdebee03cd500fbdbcfc8c48e90",
     mapTileSource: "https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
     mapTileSettings: {

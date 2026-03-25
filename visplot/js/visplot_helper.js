@@ -1035,3 +1035,95 @@ helper.normalizeText = function(str) {
         helper.LogException(ex);
     }
 };
+
+helper.splitQuoted = function(line) {
+    return line.match(/(["'])(.*?)\1|(\S+)/g).map(w => {
+        // Remove surrounding quotes if they exist
+        if (/^["'].*["']$/.test(w)) {
+            return w.slice(1, -1);
+        }
+        return w;
+    });
+};
+
+helper.quoteIfNeeded = function(word) {
+    // If no spaces or quotes, return as-is
+    if (!/\s/.test(word) && !/[\'"]/.test(word)) {
+        return word;
+    }
+
+    // If contains double quotes but not single quotes → wrap in single quotes
+    if (word.includes('"') && !word.includes("'")) {
+        return `'${word}'`;
+    }
+
+    // If contains single quotes but not double quotes → wrap in double quotes
+    if (word.includes("'") && !word.includes('"')) {
+        return `"${word}"`;
+    }
+
+    // If contains both quotes → escape double quotes and wrap in double quotes
+    if (word.includes('"') && word.includes("'")) {
+        const escaped = word.replace(/"/g, '\\"');
+        return `"${escaped}"`;
+    }
+
+    // Default: wrap in double quotes
+    return `"${word}"`;
+};
+
+helper.unquote = function(word) {
+    if ((word.startsWith('"') && word.endsWith('"')) ||
+        (word.startsWith("'") && word.endsWith("'"))) {
+        return word.slice(1, -1);
+    }
+    return word;
+};
+
+helper.interpolateEphemeris = function(ephemArray, t) {
+    if (!ephemArray || ephemArray.length === 0) {
+        helper.LogError("Invalid interpolation for ephemerides? ephemArray is empty");
+        return null;
+    }
+    // Find indices surrounding t
+    let i = 0;
+    while (i < ephemArray.length && ephemArray[i].mjd < t) {
+        i += 1;
+    }
+    // i is now the first entry with mjd >= t
+    if (i === 0) {
+        helper.LogError("Invalid interpolation for ephemerides? i===0");
+        return {
+            ra: ephemArray[0].ra_deg,
+            dec: ephemArray[0].dec_deg
+        };
+    }
+    if (i === ephemArray.length) {
+        helper.LogError("Invalid interpolation for ephemerides? i===ephemArray.length");
+        return {
+            ra: ephemArray[ephemArray.length-1].ra_deg,
+            dec: ephemArray[ephemArray.length-1].dec_deg
+        };
+    }
+    const before = ephemArray[i - 1];
+    const after = ephemArray[i];
+    const factor = (t - before.mjd) / (after.mjd - before.mjd);
+    return {
+        ra: before.ra_deg + factor * (after.ra_deg - before.ra_deg),
+        dec: before.dec_deg + factor * (after.dec_deg - before.dec_deg)
+    };
+};
+
+helper.asIdentifier = function(words) {
+    if (words.length === 1) {
+        return words[0];
+    } else if (words.length > 2) {
+        return null;
+    } else if (helper.notFloat(words[0]) || helper.notFloat(words[1])) {
+        if (config.offlineStrings.includes(words[0])) {
+            return null;
+        }
+        return words.join(" ");
+    }
+    return null;
+};

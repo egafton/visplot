@@ -45,7 +45,8 @@ function Driver() {
         this.scheduleMode = false;
         this.rescheduling = false;
         this.night = null;
-        this.resolvedIdentifiers = [];
+        this.resolvedIdentifiers = {};
+        this.resolvedEphemerides = {}; // for JPL Horizons
         this.targets = new TargetList();
         this.RequestedScheduleType = 0;
         /* Types of request:
