@@ -6,7 +6,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. See LICENSE.md.
  */
-$version = "5.0h";
+$version = "5.0i";
 /*
 * Version history (with brief changelog):
 *
@@ -145,6 +145,8 @@ $version = "5.0h";
 * 5.0h - Improvements to all-sky camera and throughout the code.
 *      - Now correctly retrieving multiple targets from SIMBAD (again).
 *      - Visplot can now resolve and plot non-sidereal targets using JPL Horizons.
+*
+* 5.0i - Now exporting pdf instead of png images.
 */
 session_start();
 if (isset($_SESSION["obinfo"])) {
