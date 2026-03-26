@@ -6,7 +6,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. See LICENSE.md.
  */
-$version = "5.0i";
+$version = "5.0j";
 /*
 * Version history (with brief changelog):
 *
@@ -147,6 +147,9 @@ $version = "5.0i";
 *      - Visplot can now resolve and plot non-sidereal targets using JPL Horizons.
 *
 * 5.0i - Now exporting pdf instead of png images.
+*
+* 5.0j - Fixed timezone bug during serialization.
+*      - Driver attributes now use camelCase.
 */
 session_start();
 if (isset($_SESSION["obinfo"])) {

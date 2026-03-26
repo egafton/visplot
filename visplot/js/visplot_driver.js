@@ -1697,34 +1697,34 @@ Driver._textObj = config.defaultTextColors;
  * @memberof Driver
  */
 Object.defineProperties(Driver, {
-    "telescopeName": {
+    telescopeName: {
         get: function () {
             return this._telescopeName || config.defaultTelescopeName;
         }
     },
-    "updSchedText": {
+    updSchedText: {
         get: function () {
             return "Update schedule";
         }
     },
-    "obs_lat_deg": {
+    obsLatDeg: {
         get: function () {
             return telescopes[this.telescopeName].latitude;
         }
     },
-    "obs_lon_deg": {
+    obsLonDeg: {
         get: function () {
             return telescopes[this.telescopeName].longitude;
         }
     },
-    "obs_lat_rad": {
+    obsLatRad: {
         get: function () {
-            return sla.d2r * Driver.obs_lat_deg;
+            return sla.d2r * Driver.obsLatDeg;
         }
     },
-    "obs_lon_rad": {
+    obsLonRad: {
         get: function () {
-            return sla.d2r * Driver.obs_lon_deg;
+            return sla.d2r * Driver.obsLonDeg;
         }
     },
     obsTimezone: {
@@ -1748,150 +1748,150 @@ Object.defineProperties(Driver, {
             telescopes[this.telescopeName].tzDescription = val;
         }
     },
-    "obs_alt": {
+    obsAltitude: {
         get: function () {
             return telescopes[this.telescopeName].altitude;
         }
     },
-    "current_dut": {
+    currentDut: {
         get: function () {
             // Reported in milliseconds -> Julian days
             return 68.9677 / (1000 * sla.d2s);
         }
     },
-    "obs_lowestLimit": {
+    obsLowestLimit: {
         get: function () {
             return telescopes[this.telescopeName].lowestLimit || null;
         }
     },
-    "obs_highestLimit": {
+    obsHighestLimit: {
         get: function () {
             return telescopes[this.telescopeName].highestLimit || null;
         }
     },
-    "obs_declinationLimit": {
+    obsDeclinationLimit: {
         get: function () {
             return telescopes[this.telescopeName].declinationLimit || null;
         }
     },
-    "obs_lowerHatch": {
+    obsLowerHatch: {
         get: function () {
             return telescopes[this.telescopeName].vignetteLimit || null;
         }
     },
-    "plotTitle": {
+    plotTitle: {
         get: function () {
-            const lon = sla.r2d * sla.drange(this.obs_lon_rad);
+            const lon = sla.r2d * sla.drange(this.obsLonRad);
             const telescope = telescopes[this.telescopeName];
             return `Altitudes at ${this.telescopeName}, ` +
                 (typeof telescope.site !== "undefined" && telescope.site !== null ? telescope.site + ", " : "") +
                 (lon >= 0 ? `${lon.toFixed(4)}E ` : `${Math.abs(lon).toFixed(4)}W `) +
-                (this.obs_lat_deg > 0 ? `+${this.obs_lat_deg.toFixed(4)}N` : `${Math.abs(this.obs_lat_deg).toFixed(4)}S`) +
-                ", " + this.obs_alt.toFixed(0) + " m above sea level";
+                (this.obsLatDeg > 0 ? `+${this.obsLatDeg.toFixed(4)}N` : `${Math.abs(this.obsLatDeg).toFixed(4)}S`) +
+                ", " + this.obsAltitude.toFixed(0) + " m above sea level";
         }
     },
-    "defaultEpoch": {
+    defaultEpoch: {
         get: function () {
             return this._defaultEpoch || String(config.defaultEpoch);
         }, set: function (val) {
             this._defaultEpoch = val;
         }
     },
-    "defaultObstime": {
+    defaultObstime: {
         get: function () {
             return this._defaultObstime || String(config.defaultObstime);
         }, set: function (val) {
             this._defaultObstime = val;
         }
     },
-    "defaultProject": {
+    defaultProject: {
         get: function () {
             return this._defaultProject || config.defaultProject(Driver.telescopeName);
         }, set: function (val) {
             this._defaultProject = val;
         }
     },
-    "defaultAM": {
+    defaultAM: {
         get: function () {
             return this._defaultAM || config.defaultMaxAirmass.toFixed(1);
         }, set: function (val) {
             this._defaultAM = val;
         }
     },
-    "defaultType": {
+    defaultType: {
         get: function () {
             return this._defaultType || config.defaultType;
         }, set: function (val) {
             this._defaultType = val;
         }
     },
-    "defaultInstrument": {
+    defaultInstrument: {
         get: function () {
             return this._defaultInstrument || (telescopes[Driver.telescopeName].defaultInstrument || config.defaultInstrument);
         }, set: function (val) {
             this._defaultInstrument = val;
         }
     },
-    "defaultSkyPA": {
+    defaultSkyPA: {
         get: function () {
             return this._defaultSkyPA || String(config.defaultSkyPA);
         }, set: function (val) {
             this._defaultSkyPA = val;
         }
     },
-    "defaultPriority": {
+    defaultPriority: {
         get: function() {
             return String(config.defaultPriority);
         }
     },
-    "wPriority": {
+    wPriority: {
         get: function() {
             return this._wPriority || config.defaultWPriority;
         }, set: function(val) {
             this._wPriority = val;
         }
     },
-    "wUrgency": {
+    wUrgency: {
         get: function() {
             return this._wUrgency || config.defaultWUrgency;
         }, set: function(val) {
             this._wUrgency = val;
         }
     },
-    "wAltitude": {
+    wAltitude: {
         get: function() {
             return this._wAltitude || config.defaultWAltitude;
         }, set: function(val) {
             this._wAltitude = val;
         }
     },
-    "wSlewing": {
+    wSlewing: {
         get: function() {
             return this._wSlewing || config.defaultWSlewing;
         }, set: function(val) {
             this._wSlewing = val;
         }
     },
-    "instruments": {
+    instruments: {
         get: function() {
             return telescopes[Driver.telescopeName].instruments || config.defaultInstrumentList;
         }
     },
-    "FillColors": {
+    FillColors: {
         get: function () {
             return this._fillObj;
         }, set: function (val) {
             this._fillObj[val[0]] = val[1];
         }
     },
-    "TextColors": {
+    TextColors: {
         get: function () {
             return this._textObj;
         }, set: function (val) {
             this._textObj[val[0]] = val[1];
         }
     },
-    "BlankFieldsNorth": {
+    BlankFieldsNorth: {
         get: function () {
             return "# Northern blank fields\n" +
                    config.blanksNorthern.map(function (e) {
@@ -1899,7 +1899,7 @@ Object.defineProperties(Driver, {
                    }).filter(Boolean).join("\n");
         }
     },
-    "BlankFieldsSouth": {
+    BlankFieldsSouth: {
         get: function () {
             return "# Southern blank fields\n" +
                    config.blanksSouthern.map(function (e) {
@@ -1907,7 +1907,7 @@ Object.defineProperties(Driver, {
                    }).filter(Boolean).join("\n");
         }
     },
-    "StandardsNorth": {
+    StandardsNorth: {
         get: function () {
             return "# Northern spectrophotometric standards\n" +
                    config.standardsNorthern.map(function (e) {
@@ -1915,7 +1915,7 @@ Object.defineProperties(Driver, {
                    }).filter(Boolean).join("\n");
         }
     },
-    "StandardsSouth": {
+    StandardsSouth: {
         get: function () {
             return "# Southern spectrophotometric standards\n" +
                    config.standardsSouthern.map(function (e) {

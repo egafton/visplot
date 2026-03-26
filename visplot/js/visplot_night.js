@@ -57,7 +57,7 @@ Night.prototype.setEphemerides = function () {
         const utcMidnight = telMidnight.clone().tz("UTC");
         // Convert it to MJD (include the fractional day)
         this.utcMidnight = sla.cldj(utcMidnight.year(), utcMidnight.month() + 1, utcMidnight.date()) + utcMidnight.hour() / 24;
-        this.ut1Midnight = this.utcMidnight + Driver.current_dut;
+        this.ut1Midnight = this.utcMidnight + Driver.currentDut;
         this.dut = sla.dtt(this.utcMidnight) / sla.d2s;
         this.ttMidnight = this.utcMidnight + this.dut;
         this.eqeqx = sla.eqeqx(this.ttMidnight);
@@ -69,13 +69,13 @@ Night.prototype.setEphemerides = function () {
         * needs to be adjusted */
         const stdPres = config.stdPressure;
         const stdTemp = config.stdTemperature;
-        const sitePres = stdPres * Math.exp(-config.gravAcceleration * config.molarMass * Driver.obs_alt / stdTemp / config.gasConstant);
-        const siteTemp = stdTemp + config.refractionTLR*Driver.obs_alt; // 15 deg at sea level, use TLR to reduce temperature
+        const sitePres = stdPres * Math.exp(-config.gravAcceleration * config.molarMass * Driver.obsAltitude / stdTemp / config.gasConstant);
+        const siteTemp = stdTemp + config.refractionTLR*Driver.obsAltitude; // 15 deg at sea level, use TLR to reduce temperature
         const siteWvlen = config.refractionWavelength;
         const siteHum = config.refractionHumidity;
-        this.ref = sla.refco(Driver.obs_alt, siteTemp, sitePres, siteHum, siteWvlen, Driver.obs_lat_rad, config.refractionTLR);
-        this.RefractionAtHorizon = sla.refro(sla.pihalf, Driver.obs_alt, siteTemp, sitePres, siteHum, siteWvlen, Driver.obs_lat_rad, config.refractionTLR, 1e-8);
-        this.HorizonDip = Math.acos(sla.a0 / (Driver.obs_alt + sla.a0));
+        this.ref = sla.refco(Driver.obsAltitude, siteTemp, sitePres, siteHum, siteWvlen, Driver.obsLatRad, config.refractionTLR);
+        this.RefractionAtHorizon = sla.refro(sla.pihalf, Driver.obsAltitude, siteTemp, sitePres, siteHum, siteWvlen, Driver.obsLatRad, config.refractionTLR, 1e-8);
+        this.HorizonDip = Math.acos(sla.a0 / (Driver.obsAltitude + sla.a0));
         /* For target altitude curves:
         * Since sla.aopqk would be extremely slow beyond zd of 76 deg, the apparent
         * topocentric zds are computed without refraction. Then, sla.refz is called
@@ -84,7 +84,7 @@ Night.prototype.setEphemerides = function () {
 
         // Previous noon; sunset; evening twilights
         let stl = helper.stl(this.utcMidnight-0.5, this.eqeqx);
-        let ret = sla.rdplan(this.ttMidnight-0.5, "Sun", Driver.obs_lon_rad, Driver.obs_lat_rad);
+        let ret = sla.rdplan(this.ttMidnight-0.5, "Sun", Driver.obsLonRad, Driver.obsLatRad);
         let tsouth = ((12 - Driver.obsTimezone) - sla.rtoh * sla.drange(stl - ret.ra)) % 24;
         let ut1 = helper.utarc(-0.5*ret.diam - this.RefractionAtHorizon - this.HorizonDip, tsouth, ret.dec, "+");
         let ut2 = helper.utarc(-12*sla.d2r, tsouth, ret.dec, "+");
@@ -104,15 +104,15 @@ Night.prototype.setEphemerides = function () {
         if (ut3[0] < ut1[0]) {
             this.EAstTwilight += 1;
         }
-        let sret = sla.rdplan(this.Sunset + this.dut, "Sun", Driver.obs_lon_rad, Driver.obs_lat_rad);
-        let mret = sla.rdplan(this.Sunset + this.dut, "Moon", Driver.obs_lon_rad, Driver.obs_lat_rad);
+        let sret = sla.rdplan(this.Sunset + this.dut, "Sun", Driver.obsLonRad, Driver.obsLatRad);
+        let mret = sla.rdplan(this.Sunset + this.dut, "Moon", Driver.obsLonRad, Driver.obsLatRad);
         let sep = sla.dsep(sret.ra, sret.dec, mret.ra, mret.dec);
         this.MoonIllStart = (1 - Math.cos(sep)) * 0.5 * 100;
         this.stlSunset = helper.stl(this.Sunset, this.eqeqx);
 
         // Next noon; sunrise; morning twilight
         stl = helper.stl(this.utcMidnight+0.5, this.eqeqx);
-        ret = sla.rdplan(this.ttMidnight+0.5, "Sun", Driver.obs_lon_rad, Driver.obs_lat_rad);
+        ret = sla.rdplan(this.ttMidnight+0.5, "Sun", Driver.obsLonRad, Driver.obsLatRad);
         tsouth = ((12 - Driver.obsTimezone) - sla.rtoh * sla.drange(stl - ret.ra)) % 24;
         ut1 = helper.utarc(-0.5*ret.diam - this.RefractionAtHorizon - this.HorizonDip, tsouth, ret.dec, "-");
         ut2 = helper.utarc(-12*sla.d2r, tsouth, ret.dec, "-");
@@ -132,8 +132,8 @@ Night.prototype.setEphemerides = function () {
         if (ut3[0] > ut1[0]) {
             this.MAstTwilight -= 1;
         }
-        sret = sla.rdplan(this.Sunrise + this.dut, "Sun", Driver.obs_lon_rad, Driver.obs_lat_rad);
-        mret = sla.rdplan(this.Sunrise + this.dut, "Moon", Driver.obs_lon_rad, Driver.obs_lat_rad);
+        sret = sla.rdplan(this.Sunrise + this.dut, "Sun", Driver.obsLonRad, Driver.obsLatRad);
+        mret = sla.rdplan(this.Sunrise + this.dut, "Moon", Driver.obsLonRad, Driver.obsLatRad);
         sep = sla.dsep(sret.ra, sret.dec, mret.ra, mret.dec);
         this.MoonIllEnd = (1 - Math.cos(sep)) * 0.5 * 100;
         this.stlSunrise = helper.stl(this.Sunrise, this.eqeqx);
@@ -166,14 +166,14 @@ Night.prototype.setEphemerides = function () {
             const ut = this.Sunset + this.xstep * i;
             this.xaxis.push(ut);
             if (i === 0) {
-                aop = sla.aoppa(ut, this.dut*sla.d2s, Driver.obs_lon_rad, Driver.obs_lat_rad, Driver.obs_alt, 0, 0, siteTemp, 0, siteHum, siteWvlen, config.refractionTLR);
+                aop = sla.aoppa(ut, this.dut*sla.d2s, Driver.obsLonRad, Driver.obsLatRad, Driver.obsAltitude, 0, 0, siteTemp, 0, siteHum, siteWvlen, config.refractionTLR);
             } else {
                 sla.aoppat(ut, aop);
             }
             this.aoprms[i] = Object.assign({}, aop);
             this.amprms[i] = sla.mappa(2000, ut + this.dut);
             // Apparent RA, Dec of Moon
-            ret = sla.rdplan(ut + this.dut, "Moon", Driver.obs_lon_rad, Driver.obs_lat_rad);
+            ret = sla.rdplan(ut + this.dut, "Moon", Driver.obsLonRad, Driver.obsLatRad);
             this.ramoon.push(ret.ra);
             this.decmoon.push(ret.dec);
             const diam = ret.diam;
@@ -184,7 +184,7 @@ Night.prototype.setEphemerides = function () {
             this.ymoon.push(sla.r2d * ell);
             this.rmoon.push(0.5*diam);
             // LST angles
-            const lstangle = sla.dranrm(sla.gmst(ut) + Driver.obs_lon_rad) + this.eqeqx;
+            const lstangle = sla.dranrm(sla.gmst(ut) + Driver.obsLonRad) + this.eqeqx;
             this.LSTangles.push(lstangle);
         }
         this.DateSunset = new Date(Date.UTC(this.tSunset[0], this.tSunset[1]-1, this.tSunset[2], this.tSunset[3], this.tSunset[4], this.tSunset[5], 0));
@@ -236,7 +236,7 @@ Night.prototype.setEphemerides = function () {
             // Calculate Labels
             const localHour = (firstLocalHour + h) % 24;
             // LST calculation
-            stl = sla.dr2tf(1, sla.dranrm(sla.gmst(djutc) + Driver.obs_lon_rad) + this.eqeqx);
+            stl = sla.dr2tf(1, sla.dranrm(sla.gmst(djutc) + Driver.obsLonRad) + this.eqeqx);
             this.LSTlabels.push(`${stl.ihmsf[0]}:${stl.ihmsf[1] < 10 ? "0" : ""}${stl.ihmsf[1].toFixed(0)}`);
             this.LocalTimetimes.push(djutc);
             this.LocalTimelabels.push(localHour === 0 ? "24" : localHour.toString());

@@ -815,8 +815,8 @@ helper.ExtractUTRange = function (str, ra = null) {
  * @param {Number} eqeqx - Equation of the equinoxes
  */
 helper.stl = function(utc, eqeqx) {
-    return sla.dranrm(sla.gmst(utc + Driver.current_dut) +
-                      Driver.obs_lon_rad +
+    return sla.dranrm(sla.gmst(utc + Driver.currentDut) +
+                      Driver.obsLonRad +
                       eqeqx);
 };
 
@@ -833,8 +833,8 @@ helper.utarc = function(altitude, tsouth, dec, pm) {
         if (pm !== "+" && pm !== "-") {
             throw new Error("pm must be '+' (setting) or '-' (rising)");
         }
-        const sinφ = Math.sin(Driver.obs_lat_rad);
-        const cosφ = Math.cos(Driver.obs_lat_rad);
+        const sinφ = Math.sin(Driver.obsLatRad);
+        const cosφ = Math.cos(Driver.obsLatRad);
         const cost = (Math.sin(altitude) - sinφ * Math.sin(dec)) / (cosφ * Math.cos(dec));
         // Object never reaches requested altitude
         if (cost > 1 || cost < -1) {

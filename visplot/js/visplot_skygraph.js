@@ -23,7 +23,7 @@ function SkyGraph(_canvas, _context) {
         this.lastAltaz = null;
         this.cursorPx = null;
         const mjd = helper.getMJD(new Date());
-        this.lst = sla.dranrm(sla.gmst(mjd) + Driver.obs_lon_rad + sla.eqeqx(mjd));
+        this.lst = sla.dranrm(sla.gmst(mjd) + Driver.obsLonRad + sla.eqeqx(mjd));
         this.timer = null;
         this.tcsPointing = null;
         this.skyImg = new Image();
@@ -321,7 +321,7 @@ SkyGraph.prototype.drawStars = function () {
         let last = null;
         for (let i = 0; i < driver.targets.nTargets; i += 1) {
             const obj = driver.targets.Targets[i];
-            const altaz = sla.de2h(this.lst - obj.raRad, obj.decRad, Driver.obs_lat_rad);
+            const altaz = sla.de2h(this.lst - obj.raRad, obj.decRad, Driver.obsLatRad);
             if (altaz.el > 0) {
                 const px = this.altaz2px(altaz.el, altaz.az);
                 if (this.tcsPointing !== null && Math.abs(this.tcsPointing.x - px.x) <= 2 && Math.abs(this.tcsPointing.y - px.y) <= 2) {
@@ -362,7 +362,7 @@ SkyGraph.prototype.displayCoords = function () {
             this.ctx.fillText(Math.round(sla.r2d*this.lastAltaz.az), 20, config.skycamImageSizeY + 6);
             const altDeg = Math.round(sla.r2d*this.lastAltaz.alt);
             this.ctx.fillText(altDeg > 10 ? altDeg : "low", 74, config.skycamImageSizeY + 6);
-            const hadec = sla.dh2e(this.lastAltaz.az, this.lastAltaz.alt, Driver.obs_lat_rad);
+            const hadec = sla.dh2e(this.lastAltaz.az, this.lastAltaz.alt, Driver.obsLatRad);
             this.ctx.fillText(helper.HMS(sla.rtoh * sla.dranrm(this.lst-hadec.ha), "h", "m", "s"), 121, config.skycamImageSizeY + 6);
             this.ctx.fillText(helper.HMS(sla.r2d * hadec.dec, "°", "'", '"'), 235, config.skycamImageSizeY + 6);
         }
@@ -382,7 +382,7 @@ SkyGraph.prototype.displayTime = function () {
         const lt = moment.tz(telescopes[Driver.telescopeName].timezoneName);
         const utc = lt.clone().tz("UTC");
         const mjd = helper.getMJD(lt);
-        this.lst = sla.dranrm(sla.gmst(mjd) + Driver.obs_lon_rad + sla.eqeqx(mjd));
+        this.lst = sla.dranrm(sla.gmst(mjd) + Driver.obsLonRad + sla.eqeqx(mjd));
         const UTtext = `UTC ${utc.format("YYYY-MM-DD HH:mm:ss")}`;
         const LTtext = `LT ${lt.format("YYYY-MM-DD HH:mm:ss")}`;
         const MJDtext = `MJD ${mjd.toFixed(5)}`;

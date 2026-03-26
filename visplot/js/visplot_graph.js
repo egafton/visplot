@@ -829,7 +829,7 @@ Graph.prototype.drawBackground = function (ctx, rectangleLast = false) {
         this.plotRotatedText(ctx, "Altitude", this.pt(11), this.xstart - 45, 0.5 * (this.ystart + this.yend), "center", "middle");
 
         // Warning, if applicable
-        if (Driver.obs_lowestLimit === null && Driver.obs_highestLimit === null && Driver.obs_lowerHatch === null && Driver.obs_declinationLimit === null) {
+        if (Driver.obsLowestLimit === null && Driver.obsHighestLimit === null && Driver.obsLowerHatch === null && Driver.obsDeclinationLimit === null) {
             ctx.fillStyle = "red";
             this.plotRotatedText(ctx, "No telescope-specific altitude or collision limits are defined.", this.pt(10), this.xleftlabels + 10, this.transformYLocation(0), "left", "middle");
             this.plotRotatedText(ctx, "Schedule may include unsafe pointings. Use with caution!", this.pt(10), this.xleftlabels + 32, this.transformYLocation(0), "left", "middle");
@@ -842,11 +842,11 @@ Graph.prototype.drawBackground = function (ctx, rectangleLast = false) {
         ctx.textBaseline = "middle";
         ctx.strokeStyle = "black";
         // Closed lower hatch, 0% vignetting
-        if (Driver.obs_lowerHatch !== null) {
-            ctx.fillText("Closed lower hatch", this.xleftlabels, this.transformYLocation(Driver.obs_lowerHatch + 2));
-            ctx.fillText("0% vignetting", this.xleftlabels, this.transformYLocation(Driver.obs_lowerHatch));
-            ctx.fillText("–›", this.xleftarrows, this.transformYLocation(Driver.obs_lowerHatch));
-            this.plotHorizontalLine(ctx, this.xstart, this.xend, this.transformYLocation(Driver.obs_lowerHatch), [1, 2, 3, 2], 1);
+        if (Driver.obsLowerHatch !== null) {
+            ctx.fillText("Closed lower hatch", this.xleftlabels, this.transformYLocation(Driver.obsLowerHatch + 2));
+            ctx.fillText("0% vignetting", this.xleftlabels, this.transformYLocation(Driver.obsLowerHatch));
+            ctx.fillText("–›", this.xleftarrows, this.transformYLocation(Driver.obsLowerHatch));
+            this.plotHorizontalLine(ctx, this.xstart, this.xend, this.transformYLocation(Driver.obsLowerHatch), [1, 2, 3, 2], 1);
         }
         // Closed lower hatch, 50% vignetting (only for NOT)
         if (Driver.telescopeName === "NOT") {
@@ -855,18 +855,18 @@ Graph.prototype.drawBackground = function (ctx, rectangleLast = false) {
             ctx.fillText("–›", this.xleftarrows, this.transformYLocation(20));
         }
         // Lowest observing altitude
-        if (Driver.obs_lowestLimit !== null) {
-            ctx.fillText(`${Driver.telescopeName} lowest limit`, this.xleftlabels, this.transformYLocation(Driver.obs_lowestLimit + 2));
-            ctx.fillText(`(${Driver.obs_lowestLimit.toFixed(Driver.telescopeName === "HET" ? 1 : 0)}°)`, this.xleftlabels, this.transformYLocation(Driver.obs_lowestLimit));
-            ctx.fillText("–›", this.xleftarrows + (Driver.telescopeName === "HET" ? 23 : 0), this.transformYLocation(Driver.obs_lowestLimit));
-            this.plotHorizontalLine(ctx, this.xstart, this.xend, this.transformYLocation(Driver.obs_lowestLimit), [1, 2, 3, 2], 1);
+        if (Driver.obsLowestLimit !== null) {
+            ctx.fillText(`${Driver.telescopeName} lowest limit`, this.xleftlabels, this.transformYLocation(Driver.obsLowestLimit + 2));
+            ctx.fillText(`(${Driver.obsLowestLimit.toFixed(Driver.telescopeName === "HET" ? 1 : 0)}°)`, this.xleftlabels, this.transformYLocation(Driver.obsLowestLimit));
+            ctx.fillText("–›", this.xleftarrows + (Driver.telescopeName === "HET" ? 23 : 0), this.transformYLocation(Driver.obsLowestLimit));
+            this.plotHorizontalLine(ctx, this.xstart, this.xend, this.transformYLocation(Driver.obsLowestLimit), [1, 2, 3, 2], 1);
         }
         // Highest observing altitude
-        if (Driver.obs_highestLimit !== null) {
-            ctx.fillText(`${Driver.telescopeName} highest limit`, this.xleftlabels, this.transformYLocation(Driver.obs_highestLimit + 2));
-            ctx.fillText(`(${Driver.obs_highestLimit.toFixed(Driver.telescopeName === "HET" || Driver.telescopeName === "WHT" ? 1 : 0)}°)`, this.xleftlabels, this.transformYLocation(Driver.obs_highestLimit));
-            ctx.fillText("–›", this.xleftarrows, this.transformYLocation(Driver.obs_highestLimit));
-            this.plotHorizontalLine(ctx, this.xstart, this.xend, this.transformYLocation(Driver.obs_highestLimit), [1, 2, 3, 2], 1);
+        if (Driver.obsHighestLimit !== null) {
+            ctx.fillText(`${Driver.telescopeName} highest limit`, this.xleftlabels, this.transformYLocation(Driver.obsHighestLimit + 2));
+            ctx.fillText(`(${Driver.obsHighestLimit.toFixed(Driver.telescopeName === "HET" || Driver.telescopeName === "WHT" ? 1 : 0)}°)`, this.xleftlabels, this.transformYLocation(Driver.obsHighestLimit));
+            ctx.fillText("–›", this.xleftarrows, this.transformYLocation(Driver.obsHighestLimit));
+            this.plotHorizontalLine(ctx, this.xstart, this.xend, this.transformYLocation(Driver.obsHighestLimit), [1, 2, 3, 2], 1);
         }
         // Constant altitude for HET
         if (Driver.telescopeName === "HET") {

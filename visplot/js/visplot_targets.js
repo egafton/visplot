@@ -71,7 +71,7 @@ function Target(k, line) {
         this.ReconstructedMinimumInput = `${this.Name} ${this.inputRA} ${this.inputDec} ${this.Epoch}`;
         this.Comments = null;
 
-        const dfun = Driver.obs_declinationLimit;
+        const dfun = Driver.obsDeclinationLimit;
         this.DecLimitMinimumAlt = null;
         this.DecLimitMinimumAltAzEast = null;
         this.DecLimitMinimumAltAzWest = null;
@@ -177,7 +177,7 @@ Target.prototype.ParseFrom = function (line) {
         }
     }
     this.RestrictionMinAlt = helper.AirmassToAltitude(maxam);
-    this.RestrictionMaxAlt = Math.min(Driver.obs_highestLimit || 90, helper.AirmassToAltitude(minam));
+    this.RestrictionMaxAlt = Math.min(Driver.obsHighestLimit || 90, helper.AirmassToAltitude(minam));
     this.RestrictionMinUTC = minut;
     this.RestrictionMaxUTC = maxut;
     this.RestrictionMinMoonDistance = minmdist;
@@ -228,7 +228,7 @@ Target.prototype.ParseFrom = function (line) {
     const id = this.Name.toLowerCase();
     for (let i = 0; i < night.Nx; i += 1) {
         if (config.planets.includes(id)) {
-            rd = sla.rdplan(night.xaxis[i], id, Driver.obs_lon_rad, Driver.obs_lat_rad);
+            rd = sla.rdplan(night.xaxis[i], id, Driver.obsLonRad, Driver.obsLatRad);
             rap = rd.ra;
             dap = rd.dec;
         } else if (id in driver.resolvedEphemerides) {
@@ -258,7 +258,7 @@ Target.prototype.ParseFrom = function (line) {
             vminmdist = mdist;
             iminmdist = i;
         }
-        const pa = sla.dranrm(sla.pa(night.LSTangles[i] - rap, dap, Driver.obs_lat_rad));
+        const pa = sla.dranrm(sla.pa(night.LSTangles[i] - rap, dap, Driver.obsLatRad));
         this.PAngles.push(sla.r2d * pa);
     }
     this.ZenithTime = night.xaxis[imax];
@@ -1293,7 +1293,7 @@ TargetList.prototype.validateAndFormatTargets = async function (force = false) {
         }
     }
     for (const id of idsRdplan) {
-        const rd = sla.rdplan(driver.night.Sunset, id, Driver.obs_lon_rad, Driver.obs_lat_rad);
+        const rd = sla.rdplan(driver.night.Sunset, id, Driver.obsLonRad, Driver.obsLatRad);
         const ra = helper.HMS(sla.rtoh * rd.ra, " ", " ", "", 2);
         const dec = helper.HMS(sla.r2d * rd.dec, " ", " ", "", 1);
         driver.resolvedIdentifiers[id] = `${ra} ${dec}`;
@@ -1336,7 +1336,7 @@ TargetList.prototype.validateAndFormatTargets = async function (force = false) {
                 const data = await $.get({
                     url: config.horizonsURL({
                         'COMMAND': `'${idSend}'`,
-                        'SITE_COORD': `'${Driver.obs_lon_deg},${Driver.obs_lat_deg},${Driver.obs_alt/1000}'`,
+                        'SITE_COORD': `'${Driver.obsLonDeg},${Driver.obsLatDeg},${Driver.obsAltitude/1000}'`,
                         'START_TIME': driver.night.Sunset,
                         'STOP_TIME': driver.night.Sunrise
                     }), // you define this
@@ -1734,10 +1734,10 @@ Target.prototype.canObserve = function (idx) {
         const altitude = this.Graph[idx];
         const moondist = this.MoonDistance[idx];
 
-        if (Driver.obs_lowestLimit !== null && altitude < Driver.obs_lowestLimit) {
+        if (Driver.obsLowestLimit !== null && altitude < Driver.obsLowestLimit) {
             return 0;
         }
-        if (Driver.obs_highestLimit !== null && altitude > Driver.obs_highestLimit) {
+        if (Driver.obsHighestLimit !== null && altitude > Driver.obsHighestLimit) {
             return 0;
         }
         if (this.RestrictionTwilights.length > 0) {
