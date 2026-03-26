@@ -1498,18 +1498,18 @@ Driver.prototype.CallbackShowCurrentTime = function () {
 Driver.prototype.Refresh = function () {
     try {
         // Cache some variables
-        const graph = this.graph;
-        const canvas = this.canvas;
-        const context = this.context;
-        const night = this.night;
-        const targets = this.targets;
-        const minwidth = this.graph.minwidth;
-        const minheight = this.graph.minheight;
-        const ratio = this.graph.ratio;
+        const graph = driver.graph;
+        const canvas = driver.canvas;
+        const context = driver.context;
+        const night = driver.night;
+        const targets = driver.targets;
+        const minwidth = driver.graph.minwidth;
+        const minheight = driver.graph.minheight;
+        const ratio = driver.graph.ratio;
         const winheight = parseInt(window.innerHeight) - 4;
         let winwidth = parseInt(window.innerWidth);
         if (window.jsplitterSettings) {
-            window.jsplitterSettings.maxleftwidth = winwidth - this.graph.minwidth - 10;
+            window.jsplitterSettings.maxleftwidth = winwidth - driver.graph.minwidth - 10;
         }
         if ($("#sidebar").is(":visible")) {
             winwidth -= $("#sidebar").innerWidth() + 10;
@@ -1533,7 +1533,7 @@ Driver.prototype.Refresh = function () {
         $("#canvasFrame").width(`${cw}px`);
         canvas.height = ch;
         canvas.width = cw;
-        this.rescaleCanvas(canvas, context);
+        driver.rescaleCanvas(canvas, context);
 
         // Measure text to figure out margins
         graph.canvasWidth = cw;
@@ -1542,7 +1542,7 @@ Driver.prototype.Refresh = function () {
         context.font = `${graph.pt(8)} ${graph.fontFamily}`;
         const w2 = context.measureText("Closed lower hatch").width;
         graph.xstart = graph.xleftlabels + w1 + w2 + graph.tickLength + 5;
-        const w3 = context.measureText("⟶").width;
+        const w3 = context.measureText("–›").width;
         graph.xleftarrows = graph.xstart - w1 - w3 - 10;
         graph.Resize(canvas);
 
@@ -1564,7 +1564,7 @@ Driver.prototype.Refresh = function () {
                 graph.drawTargetNames(context, targets.Targets);
             }
             if (driver.mouseInsideObject > -1) {
-                this.graph.highlightTarget(context, targets.Targets[driver.mouseInsideObject]);
+                driver.graph.highlightTarget(context, targets.Targets[driver.mouseInsideObject]);
             }
         }
     } catch (ex) {

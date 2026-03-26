@@ -250,7 +250,7 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
                     <div id="buttons">
                         <div id="lb_skycm"><input type="button" value="Show SkyCam" id="showSkyCam" /></div>
                         <div id="lb_exprt"><input type="button" value="Export PNG" id="pngExport" /></div>
-                        <div id="lb_exprt"><input type="button" value="Export SVG" id="svgExport" /></div>
+                        <div id="lb_exprt"><input type="button" value="Export PDF" id="pdfExport" /></div>
                         <div id="lb_tcsex"><input type="button" value="TCS format" id="tcsExport" /></div>
                         <div id="lb_svdoc"><input type="button" value="Save" id="saveDoc" /></div>
                         <div id="lb_lddoc"><span class="middle">&nbsp;<label for="loadDoc">Load: <input type="file" value="Load" id="loadDoc" /></label></span></div>
@@ -462,6 +462,9 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.fullscreen/4.0.0/Control.FullScreen.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pdfkit@0.18.0/js/pdfkit.standalone.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/blob-stream-browserify@0.1.3/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/svg-to-pdfkit@0.1.8/source.min.js"></script>
     <!-- Locally-hosted, 3rd party libraries -->
     <script src="<?php echo($baseurl);?>js/aladin.min.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
     <script src="<?php echo($baseurl);?>js/jsplitter.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>

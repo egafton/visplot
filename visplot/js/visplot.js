@@ -185,7 +185,7 @@ function postInitialization() {
         }, config.skycamTimeRefreshInterval);
 
         helper.LogDebug("Drawing plot background...");
-        driver.graph.drawBackground();
+        driver.graph.drawBackground(driver.context);
 
         helper.LogDebug("Disabling buttons until the necessary quantities have been calculated...");
         $("#planNight").prop("disabled", true);

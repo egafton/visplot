@@ -624,11 +624,11 @@ Graph.prototype.drawEphemerides = function (ctx) {
         // Print the LST, S.set and S.rise labels
         ctx.font = `${this.pt(8)} ${this.fontFamily}`;
         ctx.textAlign = "right";
-        ctx.fillText("LST   ⟶", this.xstart - 25, this.ystart - 35);
+        ctx.fillText("LST   –›", this.xstart - 25, this.ystart - 35);
         if (Driver.obs_timezone !== 0) {
-            ctx.fillText(`${Driver.obs_timezone_abbr}   ⟶`, this.xstart - 25, this.ystart - 10);
+            ctx.fillText(`${Driver.obs_timezone_abbr}   –›`, this.xstart - 25, this.ystart - 10);
             ctx.textAlign = "left";
-            ctx.fillText("UTC   ⟶", this.xstart - 60, this.yend + 10);
+            ctx.fillText("UTC   –›", this.xstart - 60, this.yend + 10);
         }
         ctx.textAlign = "center";
         ctx.fillText("S.set", this.xstart, this.ystart - 22);
@@ -845,27 +845,27 @@ Graph.prototype.drawBackground = function (ctx, rectangleLast = false) {
         if (Driver.obs_lowerHatch !== null) {
             ctx.fillText("Closed lower hatch", this.xleftlabels, this.transformYLocation(Driver.obs_lowerHatch + 2));
             ctx.fillText("0% vignetting", this.xleftlabels, this.transformYLocation(Driver.obs_lowerHatch));
-            ctx.fillText("⟶", this.xleftarrows, this.transformYLocation(Driver.obs_lowerHatch));
+            ctx.fillText("–›", this.xleftarrows, this.transformYLocation(Driver.obs_lowerHatch));
             this.plotHorizontalLine(ctx, this.xstart, this.xend, this.transformYLocation(Driver.obs_lowerHatch), [1, 2, 3, 2], 1);
         }
         // Closed lower hatch, 50% vignetting (only for NOT)
         if (Driver.telescopeName === "NOT") {
             ctx.fillText("Closed lower hatch", this.xleftlabels, this.transformYLocation(22));
             ctx.fillText("50% vignetting", this.xleftlabels, this.transformYLocation(20));
-            ctx.fillText("⟶", this.xleftarrows, this.transformYLocation(20));
+            ctx.fillText("–›", this.xleftarrows, this.transformYLocation(20));
         }
         // Lowest observing altitude
         if (Driver.obs_lowestLimit !== null) {
             ctx.fillText(`${Driver.telescopeName} lowest limit`, this.xleftlabels, this.transformYLocation(Driver.obs_lowestLimit + 2));
             ctx.fillText(`(${Driver.obs_lowestLimit.toFixed(Driver.telescopeName === "HET" ? 1 : 0)}°)`, this.xleftlabels, this.transformYLocation(Driver.obs_lowestLimit));
-            ctx.fillText("⟶", this.xleftarrows + (Driver.telescopeName === "HET" ? 23 : 0), this.transformYLocation(Driver.obs_lowestLimit));
+            ctx.fillText("–›", this.xleftarrows + (Driver.telescopeName === "HET" ? 23 : 0), this.transformYLocation(Driver.obs_lowestLimit));
             this.plotHorizontalLine(ctx, this.xstart, this.xend, this.transformYLocation(Driver.obs_lowestLimit), [1, 2, 3, 2], 1);
         }
         // Highest observing altitude
         if (Driver.obs_highestLimit !== null) {
             ctx.fillText(`${Driver.telescopeName} highest limit`, this.xleftlabels, this.transformYLocation(Driver.obs_highestLimit + 2));
             ctx.fillText(`(${Driver.obs_highestLimit.toFixed(Driver.telescopeName === "HET" || Driver.telescopeName === "WHT" ? 1 : 0)}°)`, this.xleftlabels, this.transformYLocation(Driver.obs_highestLimit));
-            ctx.fillText("⟶", this.xleftarrows, this.transformYLocation(Driver.obs_highestLimit));
+            ctx.fillText("–›", this.xleftarrows, this.transformYLocation(Driver.obs_highestLimit));
             this.plotHorizontalLine(ctx, this.xstart, this.xend, this.transformYLocation(Driver.obs_highestLimit), [1, 2, 3, 2], 1);
         }
         // Constant altitude for HET
@@ -873,7 +873,7 @@ Graph.prototype.drawBackground = function (ctx, rectangleLast = false) {
             const HETalt = 55;
             ctx.fillText(`${Driver.telescopeName} altitude`, this.xleftlabels, this.transformYLocation(HETalt + 2));
             ctx.fillText(`(${HETalt.toFixed(0)}°)`, this.xleftlabels, this.transformYLocation(HETalt));
-            ctx.fillText("⟶", this.xleftarrows, this.transformYLocation(HETalt));
+            ctx.fillText("–›", this.xleftarrows, this.transformYLocation(HETalt));
             this.plotHorizontalLine(ctx, this.xstart, this.xend, this.transformYLocation(HETalt), [5, 0, 0], 1);
         }
 

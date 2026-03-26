@@ -40,8 +40,10 @@ export default [
         JSZip: "readonly",
         CodeMirror: "readonly",
         C2S: "readonly",
-        URL: "readonly",
-        URLSearchParams: "readonly"
+        URLSearchParams: "readonly",
+        PDFDocument: "readonly",
+        blobStream: "readonly",
+        SVGtoPDF: "readonly"
       },
     },
     rules: {

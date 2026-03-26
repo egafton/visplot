@@ -29,8 +29,8 @@ serializer.BindEvents = function () {
         serializer.exportPNG();
     });
 
-    $("#svgExport").click(function () {
-        serializer.exportSVG();
+    $("#pdfExport").click(function () {
+        serializer.exportPDF();
     });
 
     $("#tcsSave").click(function () {
@@ -267,14 +267,14 @@ serializer.exportPNG = function () {
 };
 
 /**
- * Export the canvas as a svg file.
+ * Export the canvas as a pdf file.
  */
-serializer.exportSVG = function () {
+serializer.exportPDF = async function () {
     try {
         helper.LogEntry("Trying to export svg file...");
         // Save context state
-        const w = driver.canvas.width;
-        const h = driver.canvas.height;
+        const w = driver.canvas.width / window.devicePixelRatio;
+        const h = driver.canvas.height / window.devicePixelRatio;
         const ctx = new C2S(w, h);
         const graph = driver.graph;
         graph.drawTargets(ctx, driver.targets.Targets, false);
@@ -285,12 +285,35 @@ serializer.exportSVG = function () {
         } else {
             graph.drawTargetNames(ctx, driver.targets.Targets);
         }
-        const svgstring = ctx.getSerializedSvg(true);
-        const blob = new Blob([svgstring], { type: "image/svg+xml" });
-        const url = URL.createObjectURL(blob);
-        // Open image in a new tab
-        const win = window.open(url, "_blank");
-        win.onload = () => URL.revokeObjectURL(url);
+        const svgString = ctx.getSerializedSvg(true);
+        const res = await window.fetch(`${window.baseurl}assets/Ubuntu-Regular.ttf`);
+        const fontData = await res.arrayBuffer();
+        // Create PDF document
+        const ratio = 72/96;
+        const doc = new PDFDocument({
+            size: [w*ratio, h*ratio],
+            margin: 0
+        });
+        doc.registerFont("Ubuntu", fontData);
+        doc.font("Ubuntu");
+        const stream = doc.pipe(blobStream());
+        SVGtoPDF(doc, svgString, 0, 0, {
+            fontCallback: (family) => {
+                // Normalize the family string
+                const name = family.toLowerCase();
+                // Primary font: Ubuntu
+                if (name.includes("ubuntu")) {
+                    return "Ubuntu";
+                }
+                // Fallback for missing symbols (arrows, boxes, etc.)
+                return "Helvetica";
+            }
+        });
+        doc.end();
+        stream.on("finish", function () {
+            const url = stream.toBlobURL("application/pdf");
+            window.open(url, "_blank");
+        });
     } catch (ex) {
         helper.LogException(ex);
     }
