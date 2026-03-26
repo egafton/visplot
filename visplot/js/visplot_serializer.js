@@ -222,7 +222,7 @@ serializer.loadDocument = function (e) {
                 if (typeof obj.driver.obsTimezoneAbbr !== "undefined") {
                     Driver.obsTimezoneAbbr = obj.driver.obsTimezoneAbbr;
                 }
-                if (typeof obj.driver.objTimezoneDescription !== "undefined") {
+                if (typeof obj.driver.obsTimezoneDescription !== "undefined") {
                     Driver.obsTimezoneDescription = obj.driver.obsTimezoneDescription;
                 }
                 driver.Refresh();
