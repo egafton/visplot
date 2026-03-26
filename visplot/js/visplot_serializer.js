@@ -62,6 +62,9 @@ serializer.saveDocument = function () {
                 defaultAM: Driver.defaultAM,
                 defaultObstime: Driver.defaultObstime,
                 defaultInstrument: Driver.defaultInstrument,
+                obsTimezone: Driver.obsTimezone,
+                obsTimezoneAbbr: Driver.obsTimezoneAbbr,
+                obsTimezoneDescription: Driver.obsTimezoneDescription,
                 wPriority: Driver.wPriority,
                 wUrgency: Driver.wUrgency,
                 wAltitude: Driver.wAltitude,
@@ -213,6 +216,15 @@ serializer.loadDocument = function (e) {
                 $("#dateD").val(helper.padTwoDigits(driver.night.day));
                 driver.CMeditor.setValue(obj.tgts);
                 driver.nightInitialized = true;
+                if (typeof obj.driver.obsTimezone !== "undefined") {
+                    Driver.obsTimezone = obj.driver.obsTimezone;
+                }
+                if (typeof obj.driver.obsTimezoneAbbr !== "undefined") {
+                    Driver.obsTimezoneAbbr = obj.driver.obsTimezoneAbbr;
+                }
+                if (typeof obj.driver.objTimezoneDescription !== "undefined") {
+                    Driver.obsTimezoneDescription = obj.driver.obsTimezoneDescription;
+                }
                 driver.Refresh();
                 if (driver.scheduleMode) {
                     driver.targets.displayScheduleStatistics();

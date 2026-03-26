@@ -85,7 +85,7 @@ Night.prototype.setEphemerides = function () {
         // Previous noon; sunset; evening twilights
         let stl = helper.stl(this.utcMidnight-0.5, this.eqeqx);
         let ret = sla.rdplan(this.ttMidnight-0.5, "Sun", Driver.obs_lon_rad, Driver.obs_lat_rad);
-        let tsouth = ((12 - Driver.obs_timezone) - sla.rtoh * sla.drange(stl - ret.ra)) % 24;
+        let tsouth = ((12 - Driver.obsTimezone) - sla.rtoh * sla.drange(stl - ret.ra)) % 24;
         let ut1 = helper.utarc(-0.5*ret.diam - this.RefractionAtHorizon - this.HorizonDip, tsouth, ret.dec, "+");
         let ut2 = helper.utarc(-12*sla.d2r, tsouth, ret.dec, "+");
         let ut3 = helper.utarc(-18*sla.d2r, tsouth, ret.dec, "+");
@@ -113,7 +113,7 @@ Night.prototype.setEphemerides = function () {
         // Next noon; sunrise; morning twilight
         stl = helper.stl(this.utcMidnight+0.5, this.eqeqx);
         ret = sla.rdplan(this.ttMidnight+0.5, "Sun", Driver.obs_lon_rad, Driver.obs_lat_rad);
-        tsouth = ((12 - Driver.obs_timezone) - sla.rtoh * sla.drange(stl - ret.ra)) % 24;
+        tsouth = ((12 - Driver.obsTimezone) - sla.rtoh * sla.drange(stl - ret.ra)) % 24;
         ut1 = helper.utarc(-0.5*ret.diam - this.RefractionAtHorizon - this.HorizonDip, tsouth, ret.dec, "-");
         ut2 = helper.utarc(-12*sla.d2r, tsouth, ret.dec, "-");
         ut3 = helper.utarc(-18*sla.d2r, tsouth, ret.dec, "-");
@@ -209,7 +209,7 @@ Night.prototype.setEphemerides = function () {
         // Calculate LST labels
         this.LocalTimetimes = [];
         this.LocalTimelabels = [];
-        const tz = parseFloat(Driver.obs_timezone);
+        const tz = parseFloat(Driver.obsTimezone);
         const tzDays = tz / 24;
         // Find the Sunset in LOCAL time (MJD)
         const sunsetLocalMJD = this.Sunset + tzDays;

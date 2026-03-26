@@ -460,8 +460,7 @@ Driver.prototype.ParseOBInfoIfAny = function () {
                 this.ob = true;
                 if (this.obdata.Telescope.length) {
                     helper.LogEntry(`Setting telescope to <i>${this.obdata.Telescope}</i>.`);
-                    driver.setTelescopeName(this.obdata.Telescope)
-                        .then(function () { });
+                    driver.setTelescopeName(this.obdata.Telescope).then(function () { });
                 }
             } else {
                 helper.LogError("Could not decode JSON object. Falling back to standard (non-OB) visplot...");
@@ -581,11 +580,11 @@ Driver.prototype.BtnEvtSetDate = function () {
             helper.LogError(`Invalid day (${day}) for ${year}-${helper.padTwoDigits(month)}. Please enter a number between 1 and ${dmax}.`);
             return;
         }
-        const telescope = telescopes[Driver.telescopeName];
-        const zone = moment.tz.zone(telescope.timezoneName);
+        const timezoneName = telescopes[Driver.telescopeName].timezoneName;
+        const zone = moment.tz.zone(timezoneName);
         const tstamp = new Date(year, month - 1, day, 20);
         const offset = -zone.utcOffset(tstamp) / 60;
-        telescope.timezone = offset;
+        Driver.obsTimezone = offset;
         let abbr = zone.abbr(tstamp);
         let desc;
         if (abbr[0] === "+" || abbr[0] === "-") {
@@ -594,9 +593,9 @@ Driver.prototype.BtnEvtSetDate = function () {
         } else {
             desc = `${abbr}, UTC${offset < 0 ? '-' : '+'}${Math.abs(offset)}`;
         }
-        telescope.tzAbbr = abbr;
-        telescope.tzDescription = desc;
-        helper.LogEntry(`Initializing date to ${year}-${helper.padTwoDigits(month)}-${helper.padTwoDigits(day)}; time zone set to ${telescope.timezoneName} (${abbr}), which is UTC${helper.timezone(offset)}`);
+        Driver.obsTimezoneAbbr = abbr;
+        Driver.obsTimezoneDescription = desc;
+        helper.LogEntry(`Initializing date to ${year}-${helper.padTwoDigits(month)}-${helper.padTwoDigits(day)}; time zone set to ${timezoneName} (${abbr}), which is UTC${helper.timezone(offset)}`);
         this.night = new Night(year, month, day);
         driver.CallbackSetDate();
     } catch (ex) {
@@ -962,17 +961,16 @@ Driver.prototype.InitializeDate = function () {
             day = parseInt(this.obdata.Date.substr(6, 2));
             datemsg = `Date set to ${year}-${helper.padTwoDigits(month)}-${helper.padTwoDigits(day)}, as provided by the OB queue.`;
         } else {
-            const telescope = telescopes[Driver.telescopeName];
-            const timezoneName = telescope.timezoneName; // cache
+            const timezoneName = telescopes[Driver.telescopeName].timezoneName; // cache
             const zone = moment.tz.zone(timezoneName); // time zone at the telescope
             const localTimeAtTel = moment.tz(timezoneName); // local time at the telescope
-            telescope.timezone = (-zone.utcOffset(localTimeAtTel) / 60); // e.g., -11
+            Driver.obsTimezone = (-zone.utcOffset(localTimeAtTel) / 60); // e.g., -11
             let abbr = zone.abbr(localTimeAtTel);
             if (abbr[0] === "+" || abbr[0] === "-") {
                 abbr = `UTC${abbr}`;
             }
-            telescope.tzAbbr = abbr; // e.g., WEST
-            helper.LogEntry(`Current time at the telescope is ${localTimeAtTel.format()}, time zone set to ${timezoneName} (${Driver.obs_timezone_abbr}), which is UTC${helper.timezone(Driver.obs_timezone)}`);
+            Driver.obsTimezoneAbbr = abbr; // e.g., WEST
+            helper.LogEntry(`Current time at the telescope is ${localTimeAtTel.format()}, time zone set to ${timezoneName} (${Driver.obsTimezoneAbbr}), which is UTC${helper.timezone(Driver.obsTimezone)}`);
             let thedate;
             const localHourAtTel = localTimeAtTel.hour();
             if (localHourAtTel < config.nightCutoff) {
@@ -1729,19 +1727,25 @@ Object.defineProperties(Driver, {
             return sla.d2r * Driver.obs_lon_deg;
         }
     },
-    "obs_timezone": {
+    obsTimezone: {
         get: function () {
             return telescopes[this.telescopeName].timezone;
+        }, set: function (val) {
+            telescopes[this.telescopeName].timezone = val;
         }
     },
-    "obs_timezone_abbr": {
+    obsTimezoneAbbr: {
         get: function () {
             return telescopes[this.telescopeName].tzAbbr;
+        }, set: function (val) {
+            telescopes[this.telescopeName].tzAbbr = val;
         }
     },
-    "obs_timezone_description": {
+    obsTimezoneDescription: {
         get: function () {
             return telescopes[this.telescopeName].tzDescription;
+        }, set: function (val) {
+            telescopes[this.telescopeName].tzDescription = val;
         }
     },
     "obs_alt": {
