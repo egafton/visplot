@@ -29,6 +29,10 @@ serializer.BindEvents = function () {
         serializer.exportPNG();
     });
 
+    $("#svgExport").click(function () {
+        serializer.exportSVG();
+    });
+
     $("#tcsSave").click(function () {
         serializer.saveTCS();
     });
@@ -212,8 +216,6 @@ serializer.loadDocument = function (e) {
                 $("#dateM").val(helper.padTwoDigits(driver.night.month));
                 $("#dateD").val(helper.padTwoDigits(driver.night.day));
                 driver.CMeditor.setValue(obj.tgts);
-                driver.graph.ctx = driver.context;
-                driver.graph.canvas = driver.canvas;
                 driver.nightInitialized = true;
                 driver.Refresh();
                 if (driver.scheduleMode) {
@@ -259,6 +261,36 @@ serializer.exportPNG = function () {
         helper.LogSuccess("Done! The png file has been opened in a new tab.");
         // Open image in a new tab
         window.open(imageData, "_blank");
+    } catch (ex) {
+        helper.LogException(ex);
+    }
+};
+
+/**
+ * Export the canvas as a svg file.
+ */
+serializer.exportSVG = function () {
+    try {
+        helper.LogEntry("Trying to export svg file...");
+        // Save context state
+        const w = driver.canvas.width;
+        const h = driver.canvas.height;
+        const ctx = new C2S(w, h);
+        const graph = driver.graph;
+        graph.drawTargets(ctx, driver.targets.Targets, false);
+        graph.drawEphemerides(ctx);
+        graph.drawBackground(ctx, true);
+        if (driver.scheduleMode) {
+            graph.drawSchedule(ctx);
+        } else {
+            graph.drawTargetNames(ctx, driver.targets.Targets);
+        }
+        const svgstring = ctx.getSerializedSvg(true);
+        const blob = new Blob([svgstring], { type: "image/svg+xml" });
+        const url = URL.createObjectURL(blob);
+        // Open image in a new tab
+        const win = window.open(url, "_blank");
+        win.onload = () => URL.revokeObjectURL(url);
     } catch (ex) {
         helper.LogException(ex);
     }

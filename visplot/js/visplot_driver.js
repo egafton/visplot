@@ -669,14 +669,14 @@ Driver.prototype.EvtFrameMouseMove = function (e) {
                 for (let i = 0; i < this.targets.nTargets; i += 1) {
                     const obj = this.targets.Targets[i];
                     if (y >= obj.ystart && y <= obj.yend) {
-                        this.reY = (y <= 0.5 * (obj.ystart + obj.yend) ? obj.ystart : obj.yend) + 1.5;
+                        this.reY = (y <= 0.5 * (obj.ystart + obj.yend) ? obj.ystart : obj.yend);
                         break;
                     }
                 }
             } else {
                 this.reY = null;
             }
-            this.graph.drawRHSofSchedule();
+            this.graph.drawRHSofSchedule(this.context);
             return;
         }
         for (let i = 0; i < this.targets.nTargets; i += 1) {
@@ -685,14 +685,14 @@ Driver.prototype.EvtFrameMouseMove = function (e) {
                 if (this.mouseInsideObject !== i) {
                     this.mouseInsideObject = i;
                     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                    this.graph.drawTargets(this.targets.Targets, true);
-                    this.graph.highlightTarget(obj);
-                    this.graph.drawEphemerides();
-                    this.graph.drawBackground();
+                    this.graph.drawTargets(this.context, this.targets.Targets, true);
+                    this.graph.highlightTarget(this.context, obj);
+                    this.graph.drawEphemerides(this.context);
+                    this.graph.drawBackground(this.context);
                     if (this.scheduleMode) {
-                        this.graph.drawSchedule();
+                        this.graph.drawSchedule(this.context);
                     } else {
-                        this.graph.drawTargetNames(this.targets.Targets);
+                        this.graph.drawTargetNames(this.context, this.targets.Targets);
                     }
                     $("#canvasFrame").css("cursor", "pointer");
                 }
@@ -741,7 +741,7 @@ Driver.prototype.EvtFrameMouseDown = function (e) {
                 if (y >= this.targets.Targets[i].ystart && y <= this.targets.Targets[i].yend) {
                     this.reObj = i;
                     this.rescheduling = true;
-                    this.graph.drawRHSofSchedule();
+                    this.graph.drawRHSofSchedule(this.context);
                 }
             }
         }
@@ -812,11 +812,11 @@ Driver.prototype.EvtFrameMouseUp = function (e) {
                 this.scheduleMode = true;
                 this.Refresh();
             }
-            this.graph.drawRHSofSchedule();
+            this.graph.drawRHSofSchedule(this.context);
         } else if (this.rescheduling) {
             this.rescheduling = false;
             this.reY = null;
-            this.graph.drawRHSofSchedule();
+            this.graph.drawRHSofSchedule(this.context);
             return;
         }
     } catch (ex) {
@@ -1498,17 +1498,18 @@ Driver.prototype.CallbackShowCurrentTime = function () {
 Driver.prototype.Refresh = function () {
     try {
         // Cache some variables
-        const graph = driver.graph;
-        const canvas = driver.canvas;
-        const context = driver.context;
-        const targets = driver.targets;
-        const minwidth = driver.graph.minwidth;
-        const minheight = driver.graph.minheight;
-        const ratio = driver.graph.ratio;
+        const graph = this.graph;
+        const canvas = this.canvas;
+        const context = this.context;
+        const night = this.night;
+        const targets = this.targets;
+        const minwidth = this.graph.minwidth;
+        const minheight = this.graph.minheight;
+        const ratio = this.graph.ratio;
         const winheight = parseInt(window.innerHeight) - 4;
         let winwidth = parseInt(window.innerWidth);
         if (window.jsplitterSettings) {
-            window.jsplitterSettings.maxleftwidth = winwidth - driver.graph.minwidth - 10;
+            window.jsplitterSettings.maxleftwidth = winwidth - this.graph.minwidth - 10;
         }
         if ($("#sidebar").is(":visible")) {
             winwidth -= $("#sidebar").innerWidth() + 10;
@@ -1532,7 +1533,7 @@ Driver.prototype.Refresh = function () {
         $("#canvasFrame").width(`${cw}px`);
         canvas.height = ch;
         canvas.width = cw;
-        driver.rescaleCanvas(canvas, context);
+        this.rescaleCanvas(canvas, context);
 
         // Measure text to figure out margins
         graph.canvasWidth = cw;
@@ -1549,21 +1550,21 @@ Driver.prototype.Refresh = function () {
         context.clearRect(0, 0, canvas.width, canvas.height);
         /* Recalculate xaxis */
         graph.xaxis = [];
-        for (let i = 0; i < driver.night.Nx; i += 1) {
-            graph.xaxis.push(graph.xstart + graph.width * (driver.night.xaxis[i] - driver.night.Sunset) / driver.night.wnight);
+        for (let i = 0; i < night.Nx; i += 1) {
+            graph.xaxis.push(graph.xstart + graph.width * (night.xaxis[i] - night.Sunset) / night.wnight);
         }
         targets.setTargetsSize();
-        graph.drawTargets(targets.Targets, driver.mouseInsideObject > -1);
-        graph.drawEphemerides();
+        graph.drawTargets(context, targets.Targets, driver.mouseInsideObject > -1);
+        graph.drawEphemerides(context);
         if (driver.nightInitialized) {
-            graph.drawBackground();
+            graph.drawBackground(context);
             if (driver.scheduleMode) {
-                graph.drawSchedule();
+                graph.drawSchedule(context);
             } else if (targets.nTargets > 0) {
-                graph.drawTargetNames(targets.Targets);
+                graph.drawTargetNames(context, targets.Targets);
             }
             if (driver.mouseInsideObject > -1) {
-                this.graph.highlightTarget(targets.Targets[driver.mouseInsideObject]);
+                this.graph.highlightTarget(context, targets.Targets[driver.mouseInsideObject]);
             }
         }
     } catch (ex) {

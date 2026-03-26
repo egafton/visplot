@@ -11,10 +11,8 @@
  * @class
  * @constructor
  */
-function Graph(_canvas, _context) {
+function Graph() {
     try {
-        this.canvas = _canvas;
-        this.ctx = _context;
         this.xleftlabels = 25;
         this.xstart = 157;
         this.ystart = 92;
@@ -59,14 +57,14 @@ Graph.prototype.pt = function (_pt) {
 /**
  * @memberof Graph
  */
-Graph.prototype.plotHorizontalLine = function (xstart, xend, y, dash, lw) {
+Graph.prototype.plotHorizontalLine = function (ctx, xstart, xend, y, dash, lw) {
     try {
-        this.ctx.beginPath();
-        this.ctx.lineWidth = lw;
-        this.ctx.setLineDash(dash);
-        this.ctx.moveTo(xstart, y);
-        this.ctx.lineTo(xend, y);
-        this.ctx.stroke();
+        ctx.beginPath();
+        ctx.lineWidth = lw;
+        ctx.setLineDash(dash);
+        ctx.moveTo(xstart, y);
+        ctx.lineTo(xend, y);
+        ctx.stroke();
     } catch (ex) {
         helper.LogException(ex);
     }
@@ -75,14 +73,14 @@ Graph.prototype.plotHorizontalLine = function (xstart, xend, y, dash, lw) {
 /**
  * @memberof Graph
  */
-Graph.prototype.plotVerticalLine = function (ystart, yend, x, dash, lw) {
+Graph.prototype.plotVerticalLine = function (ctx, ystart, yend, x, dash, lw) {
     try {
-        this.ctx.beginPath();
-        this.ctx.lineWidth = lw;
-        this.ctx.setLineDash(dash);
-        this.ctx.moveTo(x, ystart);
-        this.ctx.lineTo(x, yend);
-        this.ctx.stroke();
+        ctx.beginPath();
+        ctx.lineWidth = lw;
+        ctx.setLineDash(dash);
+        ctx.moveTo(x, ystart);
+        ctx.lineTo(x, yend);
+        ctx.stroke();
     } catch (ex) {
         helper.LogException(ex);
     }
@@ -91,13 +89,13 @@ Graph.prototype.plotVerticalLine = function (ystart, yend, x, dash, lw) {
 /**
  * @memberof Graph
  */
-Graph.prototype.plotText = function (text, font, color, x, y, xalign, yalign) {
+Graph.prototype.plotText = function (ctx, text, font, color, x, y, xalign, yalign) {
     try {
-        this.ctx.font = `${font} ${this.fontFamily}`;
-        this.ctx.textAlign = xalign;
-        this.ctx.textBaseline = yalign;
-        this.ctx.fillStyle = color;
-        this.ctx.fillText(text, x, y);
+        ctx.font = `${font} ${this.fontFamily}`;
+        ctx.textAlign = xalign;
+        ctx.textBaseline = yalign;
+        ctx.fillStyle = color;
+        ctx.fillText(text, x, y);
     } catch (ex) {
         helper.LogException(ex);
     }
@@ -106,19 +104,19 @@ Graph.prototype.plotText = function (text, font, color, x, y, xalign, yalign) {
 /**
  * @memberof Graph
  */
-Graph.prototype.plotRotatedText = function (text, font, x, y, xalign, yalign) {
+Graph.prototype.plotRotatedText = function (ctx, text, font, x, y, xalign, yalign) {
     try {
-        this.ctx.save();
-        this.ctx.font = `${font} ${this.fontFamily}`;
-        this.ctx.translate(x, y);
-        this.ctx.rotate(Math.PI * 1.5);
-        this.ctx.textAlign = xalign;
-        this.ctx.textBaseline = yalign;
-        this.ctx.fillText(text, 0, 0);
+        ctx.save();
+        ctx.font = `${font} ${this.fontFamily}`;
+        ctx.translate(x, y);
+        ctx.rotate(Math.PI * 1.5);
+        ctx.textAlign = xalign;
+        ctx.textBaseline = yalign;
+        ctx.fillText(text, 0, 0);
     } catch (ex) {
         helper.LogException(ex);
     } finally {
-        this.ctx.restore();
+        ctx.restore();
     }
 };
 
@@ -169,69 +167,60 @@ Graph.prototype.transformXWidth = function (wnight) {
 /**
  * @memberof Graph
  */
-Graph.prototype.drawRHSofSchedule = function () {
+Graph.prototype.drawRHSofSchedule = function (ctx) {
     try {
-        this.ctx.clearRect(this.targetsx - 15, this.targetsy - this.targetsyskip - 5, this.canvas.width - this.targetsx + 15, this.canvas.height);
-        this.ctx.strokeStyle = "black";
-        this.ctx.lineWidth = 1.2;
+        ctx.clearRect(this.targetsx - 15, this.targetsy - this.targetsyskip - 5, this.canvasWidth - this.targetsx + 15, this.canvasHeight);
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 1.2;
         let y = this.targetsy;
-        this.ctx.setLineDash([]);
-        for (let i = 0; i < driver.targets.nTargets; i += 1) {
-            const obj = driver.targets.Targets[i];
+        const Targets = driver.targets.Targets;
+        ctx.setLineDash([]);
+        for (let i = 0; i < Targets.length; i += 1) {
+            const obj = Targets[i];
+            obj.rxmid = this.targetsx;
+            obj.rymid = y - 6.5;
             obj.ystart = y - this.targetsyskip - 1;
             if (obj.Scheduled) {
                 if (this.doubleTargets) {
-                    this.plotText(`${obj.Name.substr(0, this.maxLenTgtName)} (${obj.ProjectNumber})`,
-                        "8pt", (driver.reObj === i && driver.rescheduling) ? "blue" : "black",
-                        this.targetsx + 15, y, "left", "bottom");
+                    this.plotText(ctx, `${obj.Name.substr(0, this.maxLenTgtName)} (${obj.ProjectNumber})`, "8pt", (driver.reObj === i && driver.rescheduling) ? "blue" : "black", obj.rxmid + 15, obj.rymid - 1, "left", "middle");
                 } else {
-                    this.plotText(`${obj.Name.substr(0, this.maxLenTgtName)} (${obj.ProjectNumber}; UTC ${helper.MJDToHM(obj.ScheduledStartTime)})`,
-                        "8pt", (driver.reObj === i && driver.rescheduling) ? "blue" : "black",
-                        this.targetsx + 15, y, "left", "bottom");
+                    this.plotText(ctx, `${obj.Name.substr(0, this.maxLenTgtName)} (${obj.ProjectNumber}; UTC ${helper.MJDToHM(obj.ScheduledStartTime)})`, "8pt", (driver.reObj === i && driver.rescheduling) ? "blue" : "black", obj.rxmid + 15, obj.rymid - 1, "left", "middle");
                 }
-                this.ctx.strokeStyle = obj.LabelStrokeColor;
-                this.ctx.fillStyle = obj.LabelFillColor;
-                this.ctx.beginPath();
-                this.ctx.arc(this.targetsx, y - 6.5, this.CircleSize, 0, sla.d2pi, false);
-                this.ctx.fill();
-                this.plotText((i + 1), "8pt", obj.LabelTextColor, this.targetsx, y, "center", "bottom");
+                ctx.strokeStyle = obj.LabelStrokeColor;
+                ctx.fillStyle = obj.LabelFillColor;
+                ctx.beginPath();
+                ctx.arc(obj.rxmid, obj.rymid, this.CircleSize, 0, sla.d2pi, false);
+                ctx.fill();
+                this.plotText(ctx, String(i+1), "8pt", obj.LabelTextColor, obj.rxmid, obj.rymid, "center", "middle");
             } else {
-                this.plotText(`${obj.Name} (${obj.ProjectNumber})`,
-                    "8pt", (driver.reObj === i && driver.rescheduling) ? "blue" : "black",
-                    this.targetsx + 15, y, "left", "bottom");
-                this.ctx.strokeStyle = "black";
-                this.ctx.fillStyle = "white";
-                this.ctx.beginPath();
-                this.ctx.arc(this.targetsx, y - 6.5, this.CircleSize, 0, sla.d2pi, false);
-                this.ctx.fill();
-                this.ctx.stroke();
-                this.plotText((i + 1), "8pt", "black", this.targetsx, y, "center", "bottom");
+                this.plotText(ctx, `${obj.Name} (${obj.ProjectNumber})`, "8pt", (driver.reObj === i && driver.rescheduling) ? "blue" : "black", obj.rxmid + 15, obj.rymid - 1, "left", "middle");
+                ctx.strokeStyle = "black";
+                ctx.fillStyle = "white";
+                ctx.beginPath();
+                ctx.arc(obj.rxmid, obj.rymid, this.CircleSize, 0, sla.d2pi, false);
+                ctx.fill();
+                ctx.stroke();
+                this.plotText(ctx, String(i+1), "8pt", "black", obj.rxmid, obj.rymid, "center", "middle");
             }
-            y += this.targetsyskip;
             if (this.doubleTargets) {
                 if (obj.Scheduled) {
-                    this.plotText(`${obj.shortRA} ${obj.shortDec} (UTC ${helper.MJDToHM(obj.ScheduledStartTime)})`,
-                        this.legendSize, (driver.reObj === i && driver.rescheduling) ? "blue" : "black",
-                        this.targetsx + 15, y, "left", "bottom");
+                    this.plotText(ctx, `${obj.shortRA} ${obj.shortDec} (UTC ${helper.MJDToHM(obj.ScheduledStartTime)})`, this.legendSize, (driver.reObj === i && driver.rescheduling) ? "blue" : "black", obj.rxmid + 15, obj.rymid + this.targetsyskip - 1, "left", "middle");
                 } else {
-                    this.plotText(`${obj.shortRA} ${obj.shortDec}`,
-                        this.legendSize, (driver.reObj === i && driver.rescheduling) ? "blue" : "black",
-                        this.targetsx + 15, y, "left", "bottom");
+                    this.plotText(ctx, `${obj.shortRA} ${obj.shortDec}`, this.legendSize, (driver.reObj === i && driver.rescheduling) ? "blue" : "black", obj.rxmid + 15, obj.rymid + this.targetsyskip - 1, "left", "middle");
                 }
-                y += this.targetsyskip + 2;
-            } else {
-                y += 2;
+                y += this.targetsyskip;
             }
-            obj.yend = y - this.targetsyskip - 1;
+            obj.yend = y + 1;
+            y += this.targetsyskip + 2;
         }
-        this.ctx.fillStyle = "black";
+        ctx.fillStyle = "black";
 
         if (driver.reY !== null) {
-            this.ctx.strokeStyle = "blue";
-            this.ctx.beginPath();
-            this.ctx.moveTo(this.targetsx + 15, driver.reY);
-            this.ctx.lineTo(this.canvasWidth - 5, driver.reY);
-            this.ctx.stroke();
+            ctx.strokeStyle = "blue";
+            ctx.beginPath();
+            ctx.moveTo(this.targetsx + 15, driver.reY);
+            ctx.lineTo(this.canvasWidth - 5, driver.reY);
+            ctx.stroke();
         }
     } catch (ex) {
         helper.LogException(ex);
@@ -241,14 +230,14 @@ Graph.prototype.drawRHSofSchedule = function () {
 /**
  * @memberof Graph
  */
-Graph.prototype.drawSchedule = function () {
+Graph.prototype.drawSchedule = function (ctx) {
     try {
-        this.ctx.setLineDash([]);
-        this.ctx.save();
-        this.ctx.rect(this.xstart, this.ystart, this.width, this.height);
-        this.ctx.clip();
-        this.ctx.lineWidth = 5;
-        this.ctx.strokeStyle = "black";
+        ctx.setLineDash([]);
+        ctx.save();
+        ctx.rect(this.xstart, this.ystart, this.width, this.height);
+        ctx.clip();
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = "black";
         for (let i = 0; i < driver.targets.nTargets; i += 1) {
             if (driver.targets.Targets[i].Scheduled === false) {
                 continue;
@@ -257,37 +246,37 @@ Graph.prototype.drawSchedule = function () {
             const iScheduledStartTime = helper.MJDToIndex(obj.ScheduledStartTime);
             const iScheduledEndTime = helper.MJDToIndex(obj.ScheduledEndTime);
 
-            this.ctx.strokeStyle = obj.LabelStrokeColor;
-            this.ctx.beginPath();
-            this.ctx.moveTo(this.xaxis[iScheduledStartTime], this.transformYLocation(obj.Graph[iScheduledStartTime]));
+            ctx.strokeStyle = obj.LabelStrokeColor;
+            ctx.beginPath();
+            ctx.moveTo(this.xaxis[iScheduledStartTime], this.transformYLocation(obj.Graph[iScheduledStartTime]));
             for (let j = iScheduledStartTime + 1; j <= iScheduledEndTime; j += 1) {
-                this.ctx.lineTo(this.xaxis[j], this.transformYLocation(obj.Graph[j]));
+                ctx.lineTo(this.xaxis[j], this.transformYLocation(obj.Graph[j]));
             }
-            this.ctx.stroke();
+            ctx.stroke();
         }
-        this.ctx.lineWidth = 1.2;
+        ctx.lineWidth = 1.2;
         for (let i = 0; i < driver.targets.nTargets; i += 1) {
             const obj = driver.targets.Targets[i];
             if (obj.Scheduled) {
-                this.ctx.strokeStyle = obj.LabelStrokeColor;
-                this.ctx.fillStyle = obj.LabelFillColor;
-                this.ctx.beginPath();
-                this.ctx.arc(obj.xmid, obj.ymid, this.CircleSize, 0, sla.d2pi, false);
-                this.ctx.fill();
-                this.plotText((i + 1), "8pt", obj.LabelTextColor, obj.xmid, obj.ymid, "center", "middle");
+                ctx.strokeStyle = obj.LabelStrokeColor;
+                ctx.fillStyle = obj.LabelFillColor;
+                ctx.beginPath();
+                ctx.arc(obj.xmid, obj.ymid, this.CircleSize, 0, sla.d2pi, false);
+                ctx.fill();
+                this.plotText(ctx, String(i+1), "8pt", obj.LabelTextColor, obj.xmid, obj.ymid, "center", "middle");
             } else {
-                this.ctx.strokeStyle = "black";
-                this.ctx.fillStyle = "white";
-                this.ctx.beginPath();
-                this.ctx.arc(obj.xlab, obj.ylab, this.CircleSize, 0, sla.d2pi, false);
-                this.ctx.fill();
-                this.ctx.stroke();
-                this.plotText((i + 1), "8pt", "black", obj.xlab, obj.ylab, "center", "middle");
+                ctx.strokeStyle = "black";
+                ctx.fillStyle = "white";
+                ctx.beginPath();
+                ctx.arc(obj.xlab, obj.ylab, this.CircleSize, 0, sla.d2pi, false);
+                ctx.fill();
+                ctx.stroke();
+                this.plotText(ctx, String(i+1), "8pt", "black", obj.xlab, obj.ylab, "center", "middle");
             }
         }
-        this.ctx.restore();
+        ctx.restore();
 
-        this.ctx.lineWidth = 4;
+        ctx.lineWidth = 4;
         for (let i = 0; i < driver.targets.nTargets; i += 1) {
             if (driver.targets.Targets[i].Scheduled === false) {
                 continue;
@@ -295,21 +284,21 @@ Graph.prototype.drawSchedule = function () {
             const obj = driver.targets.Targets[i];
             const iScheduledStartTime = helper.MJDToIndex(obj.ScheduledStartTime);
             const iScheduledEndTime = helper.MJDToIndex(obj.ScheduledEndTime);
-            this.ctx.strokeStyle = obj.LabelStrokeColor;
-            this.ctx.beginPath();
-            this.ctx.moveTo(this.xaxis[iScheduledStartTime], this.yend + 2.6);
-            this.ctx.lineTo(this.xaxis[iScheduledEndTime], this.yend + 2.6);
-            this.ctx.stroke();
+            ctx.strokeStyle = obj.LabelStrokeColor;
+            ctx.beginPath();
+            ctx.moveTo(this.xaxis[iScheduledStartTime], this.yend + 2.6);
+            ctx.lineTo(this.xaxis[iScheduledEndTime], this.yend + 2.6);
+            ctx.stroke();
         }
         for (let i = 0; i < driver.targets.BadWolfStart.length; i += 1) {
-            this.ctx.strokeStyle = "red";
-            this.ctx.beginPath();
-            this.ctx.moveTo(this.transformXLocation(driver.targets.BadWolfStart[i]), this.yend + 2.6);
-            this.ctx.lineTo(this.transformXLocation(driver.targets.BadWolfEnd[i]), this.yend + 2.6);
-            this.ctx.stroke();
+            ctx.strokeStyle = "red";
+            ctx.beginPath();
+            ctx.moveTo(this.transformXLocation(driver.targets.BadWolfStart[i]), this.yend + 2.6);
+            ctx.lineTo(this.transformXLocation(driver.targets.BadWolfEnd[i]), this.yend + 2.6);
+            ctx.stroke();
         }
 
-        this.drawRHSofSchedule();
+        this.drawRHSofSchedule(ctx);
     } catch (ex) {
         helper.LogException(ex);
     }
@@ -358,31 +347,31 @@ Graph.prototype.setTargetsSize = function (ntargets) {
 /**
  * @memberof Graph
  */
-Graph.prototype.highlightTarget = function (target) {
+Graph.prototype.highlightTarget = function (ctx, target) {
     try {
-        this.ctx.save();
-        this.ctx.strokeStyle = "black";
-        this.ctx.beginPath();
-        this.ctx.lineWidth = 0;
-        this.ctx.rect(this.xstart, this.ystart, this.width, this.height);
-        this.ctx.clip();
-        this.ctx.setLineDash([]);
-        this.ctx.beginPath();
+        ctx.save();
+        ctx.strokeStyle = "black";
+        ctx.beginPath();
+        ctx.lineWidth = 0;
+        ctx.rect(this.xstart, this.ystart, this.width, this.height);
+        ctx.clip();
+        ctx.setLineDash([]);
+        ctx.beginPath();
         // Are we starting from allowed conditions?
-        this.ctx.strokeStyle = target.LabelStrokeColor;
-        this.ctx.lineWidth = 2;
-        this.ctx.moveTo(this.xaxis[0], this.transformYLocation(target.Graph[0]));
+        ctx.strokeStyle = target.LabelStrokeColor;
+        ctx.lineWidth = 2;
+        ctx.moveTo(this.xaxis[0], this.transformYLocation(target.Graph[0]));
         for (let j = 1; j < target.Graph.length; j += 1) {
-            this.ctx.lineTo(this.xaxis[j], this.transformYLocation(target.Graph[j]));
+            ctx.lineTo(this.xaxis[j], this.transformYLocation(target.Graph[j]));
         }
-        this.ctx.stroke();
+        ctx.stroke();
         if ($("#opt_show_lastobstime").is(":checked")) {
             if (target.ObservableTonight !== false) {
-                this.ctx.beginPath();
-                this.ctx.arc(this.transformXLocation(target.LastPossibleTime), this.transformYLocation(target.Graph[target.iLastPossibleTime]), 5, 0, sla.d2pi, false);
-                this.ctx.fillStyle = "red";
-                this.ctx.fill();
-                this.ctx.fillStyle = "black";
+                ctx.beginPath();
+                ctx.arc(this.transformXLocation(target.LastPossibleTime), this.transformYLocation(target.Graph[target.iLastPossibleTime]), 5, 0, sla.d2pi, false);
+                ctx.fillStyle = "red";
+                ctx.fill();
+                ctx.fillStyle = "black";
             }
         }
         let addedSymbols = 0;
@@ -394,31 +383,31 @@ Graph.prototype.highlightTarget = function (target) {
             const x = driver.graph.xaxis[j];
             const y = driver.graph.yend - driver.graph.degree * target.Graph[j];
             if (typeof target.MoonDistance !== "undefined") { // for older versions
-                this.plotText(`☽︎ ${Math.round(target.MoonDistance[j])}°`, "10pt", target.LabelStrokeColor, x, y + 20, "center", "top");
+                this.plotText(ctx, `☽︎ ${Math.round(target.MoonDistance[j])}°`, "10pt", target.LabelStrokeColor, x, y + 20, "center", "top");
             }
             if (typeof target.PAngles !== "undefined") { // for older versions
-                this.plotText(`∡ ${Math.round(target.PAngles[j])}°`, "10pt", target.LabelStrokeColor, x, y + 40, "center", "top");
+                this.plotText(ctx, `∡ ${Math.round(target.PAngles[j])}°`, "10pt", target.LabelStrokeColor, x, y + 40, "center", "top");
             }
             addedSymbols += 1;
             j += 100;
         }
-        this.ctx.restore();
-        this.ctx.save();
-        this.ctx.strokeStyle = "black";
-        this.ctx.font = `${this.pt(8)} ${this.fontFamily}`;
-        this.ctx.textAlign = "left";
-        this.ctx.textBaseline = "middle";
+        ctx.restore();
+        ctx.save();
+        ctx.strokeStyle = "black";
+        ctx.font = `${this.pt(8)} ${this.fontFamily}`;
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
         if (addedSymbols > 0) {
             let legendAlt = 64;
             if (Driver.telescopeName === "HET") {
                 legendAlt = 34;
             }
-            this.ctx.fillText(`Numbers below curve`, this.xleftlabels, this.transformYLocation(legendAlt));
-            this.ctx.fillText(`are Moon distance (☽︎)`, this.xleftlabels, this.transformYLocation(legendAlt-2));
-            this.ctx.fillText(`and P.A. (∡) at the`, this.xleftlabels, this.transformYLocation(legendAlt-4));
-            this.ctx.fillText(`corresponding times`, this.xleftlabels, this.transformYLocation(legendAlt-6));
+            ctx.fillText(`Numbers below curve`, this.xleftlabels, this.transformYLocation(legendAlt));
+            ctx.fillText(`are Moon distance (☽︎)`, this.xleftlabels, this.transformYLocation(legendAlt-2));
+            ctx.fillText(`and P.A. (∡) at the`, this.xleftlabels, this.transformYLocation(legendAlt-4));
+            ctx.fillText(`corresponding times`, this.xleftlabels, this.transformYLocation(legendAlt-6));
         }
-        this.ctx.restore();
+        ctx.restore();
     } catch (ex) {
         helper.LogException(ex);
     }
@@ -427,15 +416,15 @@ Graph.prototype.highlightTarget = function (target) {
 /**
  * @memberof Graph
  */
-Graph.prototype.drawTargets = function (Targets, grayedOut = false) {
+Graph.prototype.drawTargets = function (ctx, Targets, grayedOut = false) {
     try {
-        this.ctx.save();
-        this.ctx.strokeStyle = "black";
-        this.ctx.beginPath();
-        this.ctx.lineWidth = 0;
-        this.ctx.rect(this.xstart, this.ystart, this.width, this.height);
-        this.ctx.clip();
-        this.ctx.setLineDash([]);
+        ctx.save();
+        ctx.strokeStyle = "black";
+        ctx.beginPath();
+        ctx.lineWidth = 0;
+        ctx.rect(this.xstart, this.ystart, this.width, this.height);
+        ctx.clip();
+        ctx.setLineDash([]);
         const strokes = [], dashes = [], lws = [];
         if (grayedOut) {
             strokes[0] = "rgba(170, 170, 170, 0.3)";
@@ -460,40 +449,40 @@ Graph.prototype.drawTargets = function (Targets, grayedOut = false) {
         for (let i = 0; i < Targets.length; i += 1) {
             const obj = Targets[i];
             let obs = obj.observable[0];
-            this.ctx.strokeStyle = strokes[obs];
-            this.ctx.setLineDash(dashes[obs]);
-            this.ctx.lineWidth = lws[obs];
-            this.ctx.beginPath();
-            this.ctx.moveTo(this.xaxis[0], this.transformYLocation(obj.Graph[0]));
+            ctx.strokeStyle = strokes[obs];
+            ctx.setLineDash(dashes[obs]);
+            ctx.lineWidth = lws[obs];
+            ctx.beginPath();
+            ctx.moveTo(this.xaxis[0], this.transformYLocation(obj.Graph[0]));
             for (let j = 1; j < obj.Graph.length; j += 1) {
                 if (obs !== obj.observable[j]) {
-                    this.ctx.lineTo(this.xaxis[j], this.transformYLocation(obj.Graph[j]));
-                    this.ctx.stroke();
+                    ctx.lineTo(this.xaxis[j], this.transformYLocation(obj.Graph[j]));
+                    ctx.stroke();
                     obs = obj.observable[j];
-                    this.ctx.strokeStyle = strokes[obs];
-                    this.ctx.setLineDash(dashes[obs]);
-                    this.ctx.lineWidth = lws[obs];
-                    this.ctx.beginPath();
-                    this.ctx.moveTo(this.xaxis[j], this.transformYLocation(obj.Graph[j]));
+                    ctx.strokeStyle = strokes[obs];
+                    ctx.setLineDash(dashes[obs]);
+                    ctx.lineWidth = lws[obs];
+                    ctx.beginPath();
+                    ctx.moveTo(this.xaxis[j], this.transformYLocation(obj.Graph[j]));
                 } else {
-                    this.ctx.lineTo(this.xaxis[j], this.transformYLocation(obj.Graph[j]));
+                    ctx.lineTo(this.xaxis[j], this.transformYLocation(obj.Graph[j]));
                 }
             }
-            this.ctx.stroke();
+            ctx.stroke();
             if ($("#opt_show_lastobstime").is(":checked")) {
                 if (obj.ObservableTonight !== false) {
-                    this.ctx.beginPath();
-                    this.ctx.arc(this.transformXLocation(obj.LastPossibleTime), this.transformYLocation(obj.Graph[obj.iLastPossibleTime]), 5, 0, sla.d2pi, false);
-                    this.ctx.fillStyle = "red";
-                    this.ctx.fill();
-                    this.ctx.fillStyle = "black";
+                    ctx.beginPath();
+                    ctx.arc(this.transformXLocation(obj.LastPossibleTime), this.transformYLocation(obj.Graph[obj.iLastPossibleTime]), 5, 0, sla.d2pi, false);
+                    ctx.fillStyle = "red";
+                    ctx.fill();
+                    ctx.fillStyle = "black";
                 }
             }
         }
 
         /* If over-the-axis observations are possible, show a legend */
         if (Targets.length > 0 && Driver.telescopeName === "HJST" && $("#opt_allow_over_axis").is(":checked")) {
-            this.ctx.restore();
+            ctx.restore();
             const legtext = {
                 1: "tube-east only",
                 2: "tube-west only",
@@ -508,20 +497,20 @@ Graph.prototype.drawTargets = function (Targets, grayedOut = false) {
             let y = yleg;
 
             for (let ii = 1; ii <= 3; ii += 1) {
-                this.ctx.strokeStyle = strokes[ii];
-                this.ctx.setLineDash(dashes[ii]);
-                this.ctx.lineWidth = lws[ii];
-                this.ctx.beginPath();
-                this.ctx.moveTo(x, y);
-                this.ctx.lineTo(x + 30, y);
-                this.ctx.stroke();
-                this.plotText(legtext[ii], "8pt", "black", x + 35, y, "left", "middle");
+                ctx.strokeStyle = strokes[ii];
+                ctx.setLineDash(dashes[ii]);
+                ctx.lineWidth = lws[ii];
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + 30, y);
+                ctx.stroke();
+                this.plotText(ctx, legtext[ii], "8pt", "black", x + 35, y, "left", "middle");
 
                 x += dxleg;
                 y += dyleg;
             }
         }
-        this.ctx.restore();
+        ctx.restore();
     } catch (ex) {
         helper.LogException(ex);
     }
@@ -530,48 +519,44 @@ Graph.prototype.drawTargets = function (Targets, grayedOut = false) {
 /**
  * @memberof Graph
  */
-Graph.prototype.drawTargetNames = function (Targets) {
+Graph.prototype.drawTargetNames = function (ctx, Targets) {
     try {
-        this.ctx.setLineDash([]);
-        this.ctx.save();
-        this.ctx.strokeStyle = "black";
-        this.ctx.beginPath();
-        this.ctx.lineWidth = 0;
-        this.ctx.rect(this.xstart, this.ystart, this.width, this.height);
-        this.ctx.clip();
+        ctx.setLineDash([]);
+        ctx.save();
+        ctx.strokeStyle = "black";
+        ctx.beginPath();
+        ctx.lineWidth = 1;
+        ctx.rect(this.xstart, this.ystart, this.width, this.height);
+        ctx.clip();
         for (let i = 0; i < Targets.length; i += 1) {
             const obj = Targets[i];
-            this.ctx.strokeStyle = "black";
-            this.ctx.fillStyle = "white";
-            this.ctx.beginPath();
-            this.ctx.arc(obj.xlab, obj.ylab, this.CircleSize, 0, sla.d2pi, false);
-            this.ctx.fill();
-            this.ctx.stroke();
-            this.plotText((i + 1), "8pt", "black", obj.xlab, obj.ylab, "center", "middle");
+            ctx.strokeStyle = "black";
+            ctx.fillStyle = "white";
+            ctx.beginPath();
+            ctx.arc(obj.xlab, obj.ylab, this.CircleSize, 0, sla.d2pi, false);
+            ctx.fill();
+            ctx.stroke();
+            this.plotText(ctx, String(i+1), "8pt", "black", obj.xlab, obj.ylab, "center", "middle");
         }
-        this.ctx.restore();
+        ctx.restore();
         let y = this.targetsy;
         for (let i = 0; i < Targets.length; i += 1) {
             const obj = Targets[i];
             obj.rxmid = this.targetsx;
             obj.rymid = y - 6.5;
-            this.plotText(`${obj.Name} (${obj.ProjectNumber})`,
-                "8pt", "black", this.targetsx + 15, y, "left", "bottom");
-            this.ctx.strokeStyle = "black";
-            this.ctx.fillStyle = "white";
-            this.ctx.beginPath();
-            this.ctx.arc(this.targetsx, y - 6.5, this.CircleSize, 0, sla.d2pi, false);
-            this.ctx.fill();
-            this.ctx.stroke();
-            this.plotText((i + 1), "8pt", "black", this.targetsx, y, "center", "bottom");
-            y += this.targetsyskip;
+            this.plotText(ctx, `${obj.Name} (${obj.ProjectNumber})`, "8pt", "black", obj.rxmid + 15, obj.rymid - 1, "left", "middle");
+            ctx.strokeStyle = "black";
+            ctx.fillStyle = "white";
+            ctx.beginPath();
+            ctx.arc(obj.rxmid, obj.rymid, this.CircleSize, 0, sla.d2pi, false);
+            ctx.fill();
+            ctx.stroke();
+            this.plotText(ctx, String(i+1), "8pt", "black", obj.rxmid, obj.rymid, "center", "middle");
             if (this.doubleTargets) {
-                this.plotText(`${obj.shortRA} ${obj.shortDec}`,
-                    this.legendSize, "black", this.targetsx + 15, y, "left", "bottom");
-                y += this.targetsyskip + 2;
-            } else {
-                y += 2;
+                this.plotText(ctx, `${obj.shortRA} ${obj.shortDec}`, this.legendSize, "black", obj.rxmid + 15, obj.rymid + this.targetsyskip - 1, "left", "middle");
+                y += this.targetsyskip;
             }
+            y += this.targetsyskip + 2;
         }
     } catch (ex) {
         helper.LogException(ex);
@@ -581,7 +566,7 @@ Graph.prototype.drawTargetNames = function (Targets) {
 /**
  * @memberof Graph
  */
-Graph.prototype.drawEphemerides = function () {
+Graph.prototype.drawEphemerides = function (ctx) {
     try {
         /*
         Convert the night.xaxis array (which is in MJD) to a graph.axis array
@@ -591,33 +576,32 @@ Graph.prototype.drawEphemerides = function () {
         for (let i = 0; i < driver.night.Nx; i += 1) {
             this.xaxis.push(this.xstart + this.width * (driver.night.xaxis[i] - driver.night.Sunset) / driver.night.wnight);
         }
-        this.ctx.strokeStyle = "black";
-        this.ctx.fillStyle = "black";
+        ctx.strokeStyle = "black";
+        ctx.fillStyle = "black";
         // Plot the full hour UTC and ST labels (8 UTC, 9 UTC, etc) below and above the plot, respectively
-        this.ctx.textAlign = "center";
-        this.ctx.textBaseline = "middle";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
         const integerOffset = parseFloat(Driver.obs_timezone) === parseInt(Driver.obs_timezone);
         for (let i = 0; i < driver.night.UTCtimes.length; i += 1) {
             const xnight = driver.night.UTCtimes[i];
             const xplot = this.transformXLocation(xnight);
             if (integerOffset) {
-                if ((Driver.obs_timezone === 0 && driver.night.UTClabels[i] === "24") ||
-                    (Driver.obs_timezone !== 0 && driver.night.LocalTimelabels[i] === "24")) {
-                    this.plotVerticalLine(this.ystart, this.yend, xplot, [], 1.6);
+                if ((Driver.obs_timezone === 0 && driver.night.UTClabels[i] === "24") || (Driver.obs_timezone !== 0 && driver.night.LocalTimelabels[i] === "24")) {
+                    this.plotVerticalLine(ctx, this.ystart, this.yend, xplot, [], 1.6);
                 } else {
-                    this.plotVerticalLine(this.ystart, this.yend, xplot, [1, 2], 1);
+                    this.plotVerticalLine(ctx, this.ystart, this.yend, xplot, [1, 2], 1);
                 }
             } else {
-                this.ctx.strokeStyle = "#aaaaaa";
-                this.plotVerticalLine(this.ystart, this.yend, xplot, [1, 3], 1);
-                this.ctx.strokeStyle = "black";
+                ctx.strokeStyle = "#aaaaaa";
+                this.plotVerticalLine(ctx, this.ystart, this.yend, xplot, [1, 3], 1);
+                ctx.strokeStyle = "black";
             }
             if (Driver.obs_timezone === 0) {
-                this.ctx.font = `${this.pt(11)} ${this.fontFamily}`;
-                this.ctx.fillText(driver.night.UTClabels[i], xplot, this.yend + 15);
+                ctx.font = `${this.pt(11)} ${this.fontFamily}`;
+                ctx.fillText(driver.night.UTClabels[i], xplot, this.yend + 15);
             } else {
-                this.ctx.font = `${this.pt(8)} ${this.fontFamily}`;
-                this.ctx.fillText(driver.night.UTClabels[i], xplot, this.yend + 12);
+                ctx.font = `${this.pt(8)} ${this.fontFamily}`;
+                ctx.fillText(driver.night.UTClabels[i], xplot, this.yend + 12);
             }
         }
         for (let i = 0; i < driver.night.LocalTimetimes.length; i += 1) {
@@ -625,141 +609,135 @@ Graph.prototype.drawEphemerides = function () {
             const xplot = this.transformXLocation(xnight);
             if (!integerOffset) {
                 if (driver.night.LocalTimelabels[i] === "24") {
-                    this.plotVerticalLine(this.ystart, this.yend, xplot, [], 1.6);
+                    this.plotVerticalLine(ctx, this.ystart, this.yend, xplot, [], 1.6);
                 } else {
-                    this.plotVerticalLine(this.ystart, this.yend, xplot, [1, 2], 1);
+                    this.plotVerticalLine(ctx, this.ystart, this.yend, xplot, [1, 2], 1);
                 }
             }
             if (Driver.obs_timezone !== 0) {
-                this.ctx.font = `${this.pt(11)} ${this.fontFamily}`;
-                this.ctx.fillText(driver.night.LocalTimelabels[i], xplot, this.yend + 26);
+                ctx.font = `${this.pt(11)} ${this.fontFamily}`;
+                ctx.fillText(driver.night.LocalTimelabels[i], xplot, this.yend + 26);
             }
-            this.ctx.font = `${this.pt(8)} ${this.fontFamily}`;
-            this.ctx.fillText(driver.night.LSTlabels[i], xplot, this.ystart - 35);
+            ctx.font = `${this.pt(8)} ${this.fontFamily}`;
+            ctx.fillText(driver.night.LSTlabels[i], xplot, this.ystart - 35);
         }
         // Print the LST, S.set and S.rise labels
-        this.ctx.font = `${this.pt(8)} ${this.fontFamily}`;
-        this.ctx.textAlign = "right";
-        this.ctx.fillText("LST   ⟶", this.xstart - 25, this.ystart - 35);
+        ctx.font = `${this.pt(8)} ${this.fontFamily}`;
+        ctx.textAlign = "right";
+        ctx.fillText("LST   ⟶", this.xstart - 25, this.ystart - 35);
         if (Driver.obs_timezone !== 0) {
-            this.ctx.fillText(`${Driver.obs_timezone_abbr}   ⟶`, this.xstart - 25, this.ystart - 10);
-            this.ctx.textAlign = "left";
-            this.ctx.fillText("UTC   ⟶", this.xstart - 60, this.yend + 10);
+            ctx.fillText(`${Driver.obs_timezone_abbr}   ⟶`, this.xstart - 25, this.ystart - 10);
+            ctx.textAlign = "left";
+            ctx.fillText("UTC   ⟶", this.xstart - 60, this.yend + 10);
         }
-        this.ctx.textAlign = "center";
-        this.ctx.fillText("S.set", this.xstart, this.ystart - 22);
-        this.ctx.fillText("S.rise", this.xend, this.ystart - 22);
+        ctx.textAlign = "center";
+        ctx.fillText("S.set", this.xstart, this.ystart - 22);
+        ctx.fillText("S.rise", this.xend, this.ystart - 22);
         // Plot the sunset and sunrise times
-        this.ctx.fillText(helper.MJDToHMLocal(driver.night.Sunset, Driver.obs_timezone), this.xstart, this.ystart - 10);
-        this.ctx.fillText(helper.MJDToHMLocal(driver.night.Sunrise, Driver.obs_timezone), this.xend, this.ystart - 10);
+        ctx.fillText(helper.MJDToHMLocal(driver.night.Sunset, Driver.obs_timezone), this.xstart, this.ystart - 10);
+        ctx.fillText(helper.MJDToHMLocal(driver.night.Sunrise, Driver.obs_timezone), this.xend, this.ystart - 10);
         // Plot the twilights labels and corresponding dashed vertical lines
         const twiStyle = [6, 5];
         let xtemp;
         xtemp = this.transformXLocation(driver.night.ENauTwilight);
-        this.ctx.fillText("Nau", xtemp, this.ystart - 22);
-        this.ctx.fillText(helper.MJDToHMLocal(driver.night.ENauTwilight, Driver.obs_timezone), xtemp - 3.5, this.ystart - 10);
-        this.plotVerticalLine(this.ystart, this.yend, xtemp, twiStyle, 1.2);
+        ctx.fillText("Nau", xtemp, this.ystart - 22);
+        ctx.fillText(helper.MJDToHMLocal(driver.night.ENauTwilight, Driver.obs_timezone), xtemp - 3.5, this.ystart - 10);
+        this.plotVerticalLine(ctx, this.ystart, this.yend, xtemp, twiStyle, 1.2);
         xtemp = this.transformXLocation(driver.night.MNauTwilight);
-        this.ctx.fillText("Nau", xtemp, this.ystart - 22);
-        this.ctx.fillText(helper.MJDToHMLocal(driver.night.MNauTwilight, Driver.obs_timezone), xtemp + 1, this.ystart - 10);
-        this.plotVerticalLine(this.ystart, this.yend, xtemp, twiStyle, 1.2);
+        ctx.fillText("Nau", xtemp, this.ystart - 22);
+        ctx.fillText(helper.MJDToHMLocal(driver.night.MNauTwilight, Driver.obs_timezone), xtemp + 1, this.ystart - 10);
+        this.plotVerticalLine(ctx, this.ystart, this.yend, xtemp, twiStyle, 1.2);
         xtemp = this.transformXLocation(driver.night.EAstTwilight);
-        this.ctx.fillText("Ast", xtemp, this.ystart - 22);
-        this.ctx.fillText(helper.MJDToHMLocal(driver.night.EAstTwilight, Driver.obs_timezone), xtemp + 4, this.ystart - 10);
-        this.plotVerticalLine(this.ystart, this.yend, xtemp, twiStyle, 1.2);
+        ctx.fillText("Ast", xtemp, this.ystart - 22);
+        ctx.fillText(helper.MJDToHMLocal(driver.night.EAstTwilight, Driver.obs_timezone), xtemp + 4, this.ystart - 10);
+        this.plotVerticalLine(ctx, this.ystart, this.yend, xtemp, twiStyle, 1.2);
         xtemp = this.transformXLocation(driver.night.MAstTwilight);
-        this.ctx.fillText("Ast", xtemp, this.ystart - 22);
-        this.ctx.fillText(helper.MJDToHMLocal(driver.night.MAstTwilight, Driver.obs_timezone), xtemp - 1, this.ystart - 10);
-        this.plotVerticalLine(this.ystart, this.yend, xtemp, twiStyle, 1.2);
-        this.ctx.textAlign = "center";
+        ctx.fillText("Ast", xtemp, this.ystart - 22);
+        ctx.fillText(helper.MJDToHMLocal(driver.night.MAstTwilight, Driver.obs_timezone), xtemp - 1, this.ystart - 10);
+        this.plotVerticalLine(ctx, this.ystart, this.yend, xtemp, twiStyle, 1.2);
+        ctx.textAlign = "center";
 
         // Plot the gray-shaded rectangles corresponding to the twilights (vertical) and to airmass=2 (horizontal)
-        this.ctx.save();
-        this.ctx.beginPath();
-        this.ctx.globalAlpha = 0.2;
-        this.ctx.fillStyle = "gray";
+        ctx.save();
+        ctx.beginPath();
+        ctx.globalAlpha = 0.2;
+        ctx.fillStyle = "gray";
         const wENT = this.transformXWidth(driver.night.ENauTwilight - driver.night.Sunset);
         const wMNT = this.transformXWidth(driver.night.Sunrise - driver.night.MNauTwilight);
-        this.ctx.rect(this.xstart, this.ystart, this.transformXWidth(driver.night.EAstTwilight - driver.night.Sunset), this.height);
-        this.ctx.rect(this.xend, this.ystart, -this.transformXWidth(driver.night.Sunrise - driver.night.MAstTwilight), this.height);
-        this.ctx.fill();
-        this.ctx.beginPath();
-        this.ctx.globalAlpha = 0.25;
-        this.ctx.rect(this.xstart, this.ystart, wENT, this.height);
-        this.ctx.rect(this.xend, this.ystart, -wMNT, this.height);
-        this.ctx.fill();
-        this.ctx.beginPath();
-        this.ctx.globalAlpha = 0.3;
-        this.ctx.rect(this.xstart, this.yend, this.width, -this.degree * 30);
-        this.ctx.fill();
+        ctx.rect(this.xstart, this.ystart, this.transformXWidth(driver.night.EAstTwilight - driver.night.Sunset), this.height);
+        ctx.rect(this.xend, this.ystart, -this.transformXWidth(driver.night.Sunrise - driver.night.MAstTwilight), this.height);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.globalAlpha = 0.25;
+        ctx.rect(this.xstart, this.ystart, wENT, this.height);
+        ctx.rect(this.xend, this.ystart, -wMNT, this.height);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.globalAlpha = 0.3;
+        ctx.rect(this.xstart, this.yend, this.width, -this.degree * 30);
+        ctx.fill();
         // ... and to offline time
         for (let i = 0; i < driver.targets.BadWolfStart.length; i += 1) {
-            this.ctx.beginPath();
-            this.ctx.globalAlpha = 0.3;
-            this.ctx.rect(this.transformXLocation(driver.targets.BadWolfStart[i]), this.ystart, this.transformXLocation(driver.targets.BadWolfEnd[i]) - this.transformXLocation(driver.targets.BadWolfStart[i]), this.degree * 60);
-            this.ctx.fill();
+            ctx.beginPath();
+            ctx.globalAlpha = 0.3;
+            ctx.rect(this.transformXLocation(driver.targets.BadWolfStart[i]), this.ystart, this.transformXLocation(driver.targets.BadWolfEnd[i]) - this.transformXLocation(driver.targets.BadWolfStart[i]), this.degree * 60);
+            ctx.fill();
         }
 
-        this.ctx.restore();
+        ctx.restore();
 
         // Render the moon altitude plot
-        this.ctx.save();
-        this.ctx.beginPath();
-        this.ctx.rect(this.xstart, this.ystart, this.width, this.height);
-        this.ctx.clip();
-        this.ctx.beginPath();
-        this.ctx.lineWidth = 1.2;
-        this.ctx.moveTo(this.xaxis[0], this.transformYLocation(driver.night.ymoon[0]));
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(this.xstart, this.ystart, this.width, this.height);
+        ctx.clip();
+        ctx.beginPath();
+        ctx.lineWidth = 1.2;
+        ctx.moveTo(this.xaxis[0], this.transformYLocation(driver.night.ymoon[0]));
         for (let i = 1; i < driver.night.ymoon.length; i += 1) {
-            this.ctx.lineTo(this.xaxis[i], this.transformYLocation(driver.night.ymoon[i]));
+            ctx.lineTo(this.xaxis[i], this.transformYLocation(driver.night.ymoon[i]));
         }
-        this.ctx.stroke();
-        this.ctx.restore();
+        ctx.stroke();
+        ctx.restore();
 
-        this.ctx.fillStyle = "black";
+        ctx.fillStyle = "black";
         // Plot the x-axis label
-        this.ctx.font = `${this.pt(11)} ${this.fontFamily}`;
+        ctx.font = `${this.pt(11)} ${this.fontFamily}`;
         if (Driver.obs_timezone === 0) {
-            this.ctx.fillText(
-                `Coordinated Universal Time (UTC), starting night ${driver.night.year}-` +
-                `${helper.padTwoDigits(driver.night.month)}-${helper.padTwoDigits(driver.night.day)}`,
-                this.xmid, this.yend + 40);
+            ctx.fillText(`Coordinated Universal Time (UTC), starting night ${driver.night.year}-` + `${helper.padTwoDigits(driver.night.month)}-${helper.padTwoDigits(driver.night.day)}`, this.xmid, this.yend + 40);
         } else {
-            this.ctx.fillText(
-                `Local Time (${Driver.obs_timezone_description}), starting night ${driver.night.year}-` +
-                `${helper.padTwoDigits(driver.night.month)}-${helper.padTwoDigits(driver.night.day)}`,
-                this.xmid, this.yend + 46);
+            ctx.fillText(`Local Time (${Driver.obs_timezone_description}), starting night ${driver.night.year}-` + `${helper.padTwoDigits(driver.night.month)}-${helper.padTwoDigits(driver.night.day)}`, this.xmid, this.yend + 46);
         }
 
         // Moon illumination text
-        this.ctx.font = `${this.pt(8)} ${this.fontFamily}`;
-        this.ctx.textAlign = "left";
-        this.ctx.textBaseline = "middle";
+        ctx.font = `${this.pt(8)} ${this.fontFamily}`;
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
         if ((driver.night.MoonIllStart === 0 && driver.night.MoonIllEnd === 0) ||
             driver.night.Moonset < driver.night.Sunset ||
             driver.night.Moonrise > driver.night.Sunrise) {
-            this.ctx.fillText("Moonless night.", this.xleftlabels, this.transformYLocation(77));
+            ctx.fillText("Moonless night.", this.xleftlabels, this.transformYLocation(77));
         } else {
-            this.ctx.fillText("Moon illumination:", this.xleftlabels, this.transformYLocation(77));
-            this.ctx.fillText(driver.night.MoonIlluminationString, this.xleftlabels, this.transformYLocation(75));
+            ctx.fillText("Moon illumination:", this.xleftlabels, this.transformYLocation(77));
+            ctx.fillText(driver.night.MoonIlluminationString, this.xleftlabels, this.transformYLocation(75));
             if ((driver.night.Moonrise >= driver.night.Sunset) && (driver.night.Moonrise <= driver.night.Sunrise)) {
-                this.ctx.fillText("Moon rises:", this.xleftlabels, this.transformYLocation(71));
+                ctx.fillText("Moon rises:", this.xleftlabels, this.transformYLocation(71));
                 if (driver.obs_timezone === 0) {
-                    this.ctx.fillText(`${helper.MJDToHM(driver.night.Moonrise)} UTC`, this.xleftlabels, this.transformYLocation(69));
+                    ctx.fillText(`${helper.MJDToHM(driver.night.Moonrise)} UTC`, this.xleftlabels, this.transformYLocation(69));
                 } else {
-                    this.ctx.fillText(`${helper.MJDToHMLocal(driver.night.Moonrise, Driver.obs_timezone)} ${Driver.obs_timezone_abbr}`, this.xleftlabels, this.transformYLocation(69));
+                    ctx.fillText(`${helper.MJDToHMLocal(driver.night.Moonrise, Driver.obs_timezone)} ${Driver.obs_timezone_abbr}`, this.xleftlabels, this.transformYLocation(69));
                 }
             } else if ((driver.night.Moonset >= driver.night.Sunset) && (driver.night.Moonset <= driver.night.Sunrise)) {
-                this.ctx.fillText("Moon sets:", this.xleftlabels, this.transformYLocation(71));
+                ctx.fillText("Moon sets:", this.xleftlabels, this.transformYLocation(71));
                 if (driver.obs_timezone === 0) {
-                    this.ctx.fillText(`${helper.MJDToHM(driver.night.Moonset)} UTC`, this.xleftlabels, this.transformYLocation(69));
+                    ctx.fillText(`${helper.MJDToHM(driver.night.Moonset)} UTC`, this.xleftlabels, this.transformYLocation(69));
                 } else {
-                    this.ctx.fillText(`${helper.MJDToHMLocal(driver.night.Moonset, Driver.obs_timezone)} ${Driver.obs_timezone_abbr}`, this.xleftlabels, this.transformYLocation(69));
+                    ctx.fillText(`${helper.MJDToHMLocal(driver.night.Moonset, Driver.obs_timezone)} ${Driver.obs_timezone_abbr}`, this.xleftlabels, this.transformYLocation(69));
                 }
             }
         }
 
-        this.drawCurrentTime(new Date());
+        this.drawCurrentTime(ctx, new Date());
     } catch (ex) {
         helper.LogException(ex);
     }
@@ -768,7 +746,7 @@ Graph.prototype.drawEphemerides = function () {
 /**
  * @memberof Graph
  */
-Graph.prototype.drawCurrentTime = function (now) {
+Graph.prototype.drawCurrentTime = function (ctx, now) {
     try {
         if (now < driver.night.DateSunset || now > driver.night.DateSunrise) {
             return false;
@@ -776,15 +754,15 @@ Graph.prototype.drawCurrentTime = function (now) {
         // Current time marker
         const xnow = this.transformXLocation(driver.night.Sunset + (now - driver.night.DateSunset) / 8.64e7);
         const klen = 5;
-        this.ctx.beginPath();
-        this.ctx.moveTo(xnow, this.ystart);
-        this.ctx.lineTo(xnow - 0.6 * klen, this.ystart - klen);
-        this.ctx.lineTo(xnow + 0.6 * klen, this.ystart - klen);
-        this.ctx.closePath();
-        this.ctx.fillStyle = "red";
-        this.ctx.fill();
-        this.ctx.strokeStyle = "red";
-        this.plotVerticalLine(this.ystart, this.yend, xnow, [], 1);
+        ctx.beginPath();
+        ctx.moveTo(xnow, this.ystart);
+        ctx.lineTo(xnow - 0.6 * klen, this.ystart - klen);
+        ctx.lineTo(xnow + 0.6 * klen, this.ystart - klen);
+        ctx.closePath();
+        ctx.fillStyle = "red";
+        ctx.fill();
+        ctx.strokeStyle = "red";
+        this.plotVerticalLine(ctx, this.ystart, this.yend, xnow, [], 1);
     } catch (ex) {
         helper.LogException(ex);
     }
@@ -793,19 +771,24 @@ Graph.prototype.drawCurrentTime = function (now) {
 /**
  * @memberof Graph
  */
-Graph.prototype.drawBackground = function () {
+Graph.prototype.drawBackground = function (ctx, rectangleLast = false) {
     try {
-        // Draw main rectangle that contains the visibility plot
-        this.ctx.save();
-        this.ctx.beginPath();
-        this.ctx.setLineDash([]);
-        this.ctx.strokeStyle = "black";
-        this.ctx.lineWidth = 1.2;
-        this.ctx.rect(this.xstart, this.ystart, this.width, this.height);
-        this.ctx.stroke();
+        ctx.save();
+        if (!rectangleLast) {
+            // Draw main rectangle that contains the visibility plot
+            ctx.beginPath();
+            ctx.setLineDash([]);
+            ctx.strokeStyle = "black";
+            ctx.lineWidth = 1.2;
+            ctx.rect(this.xstart, this.ystart, this.width, this.height);
+            ctx.stroke();
+        } else {
+            ctx.strokeStyle = "black";
+        }
 
         // Everything we draw for a while (e.g., tick marks, etc) should be clipped to the plot limits
-        this.ctx.clip();
+        ctx.rect(this.xstart, this.ystart, this.width, this.height);
+        ctx.clip();
 
         // Draw dotted horizontal lines and tick marks every 10 degrees
         for (let i = 10; i < 90; i += 10) {
@@ -813,103 +796,106 @@ Graph.prototype.drawBackground = function () {
             /* Dotted horizontal lines; the INT has its limit at 20 deg, so do not
             * draw the usual horizontal lines there. */
             if (i !== 20 || Driver.telescopeName !== "INT") {
-                this.plotHorizontalLine(this.xstart, this.xend, y, [1, 2], 1);
+                this.plotHorizontalLine(ctx, this.xstart, this.xend, y, [1, 2], 1);
             }
             // Tick marks
-            this.plotHorizontalLine(this.xstart, this.xstart + this.tickLength, y, [], 1.2);
+            this.plotHorizontalLine(ctx, this.xstart, this.xstart + this.tickLength, y, [], 1.2);
         }
         // Draw tick marks on the right-hand side (airmass ticks)
-        for (let i = 10; i <= 80; i += 5) {
-            this.plotHorizontalLine(this.xend - this.tickLength, this.xend, this.transformYLocation(i), [], 1.2);
+        for (let i = 10; i <= 85; i += 5) {
+            this.plotHorizontalLine(ctx, this.xend - this.tickLength, this.xend, this.transformYLocation(i), [], 1.2);
         }
 
         // Now draw outside the plot; first, altitude tick labels
-        this.ctx.restore();
-        this.ctx.fillStyle = "black";
+        ctx.restore();
+        ctx.fillStyle = "black";
         for (let i = 0; i < 90; i += 10) {
-            this.ctx.font = `${this.pt(11)} ${this.fontFamily}`;
-            this.ctx.textAlign = "right";
-            this.ctx.textBaseline = (i > 0 || Driver.obs_timezone === 0) ? "middle" : "bottom";
-            this.ctx.fillText(`${i}°`, this.xstart - this.tickLength, this.transformYLocation(i));
+            ctx.font = `${this.pt(11)} ${this.fontFamily}`;
+            ctx.textAlign = "right";
+            ctx.textBaseline = (i > 0 || Driver.obs_timezone === 0) ? "middle" : "bottom";
+            ctx.fillText(`${i}°`, this.xstart - this.tickLength, this.transformYLocation(i));
         }
         /*
         The 90° tick label should be drawn separately, a little lower than usual,
         so as to leave enough space for the sunset time label
         */
-        this.ctx.fillText("90°", this.xstart - this.tickLength, this.transformYLocation(89));
+        ctx.fillText("90°", this.xstart - this.tickLength, this.transformYLocation(89));
         // Tick labels on the right-hand side (corresponding to the airmass ticks)
-        for (let i = 10; i <= 80; i += 5) {
-            this.plotRotatedText(helper.AltitudeToAirmass(i).toFixed(2),
-                this.pt(8), this.xend + 1.3 * this.tickLength, this.transformYLocation(i), "center", "middle");
+        for (let i = 10; i <= 85; i += 5) {
+            this.plotRotatedText(ctx, helper.AltitudeToAirmass(i).toFixed(2), this.pt(8), this.xend + 1.3 * this.tickLength, this.transformYLocation(i), "center", "middle");
         }
         // Airmass and altitude text
-        this.plotRotatedText("Airmass", this.pt(8), this.xend + 1.3 * this.tickLength, this.yend - 3, "left", "middle");
-        this.plotRotatedText("Altitude", this.pt(11), this.xleftarrows + 10, 0.5 * (this.ystart + this.yend), "center", "middle");
+        this.plotRotatedText(ctx, "Airmass", this.pt(8), this.xend + 1.3 * this.tickLength, this.yend - 3, "left", "middle");
+        this.plotRotatedText(ctx, "Altitude", this.pt(11), this.xleftarrows + 10, 0.5 * (this.ystart + this.yend), "center", "middle");
 
         // Warning, if applicable
         if (Driver.obs_lowestLimit === null && Driver.obs_highestLimit === null && Driver.obs_lowerHatch === null && Driver.obs_declinationLimit === null) {
-            this.ctx.fillStyle = "red";
-            this.plotRotatedText("No telescope-specific altitude or collision limits are defined.", this.pt(10), this.xleftlabels + 10, this.transformYLocation(0), "left", "middle");
-            this.plotRotatedText("Schedule may include unsafe pointings. Use with caution!", this.pt(10), this.xleftlabels + 32, this.transformYLocation(0), "left", "middle");
-            this.ctx.fillStyle = "black";
+            ctx.fillStyle = "red";
+            this.plotRotatedText(ctx, "No telescope-specific altitude or collision limits are defined.", this.pt(10), this.xleftlabels + 10, this.transformYLocation(0), "left", "middle");
+            this.plotRotatedText(ctx, "Schedule may include unsafe pointings. Use with caution!", this.pt(10), this.xleftlabels + 32, this.transformYLocation(0), "left", "middle");
+            ctx.fillStyle = "black";
         }
 
         // Lower hatch and opening limits text
-        this.ctx.font = `${this.pt(8)} ${this.fontFamily}`;
-        this.ctx.textAlign = "left";
-        this.ctx.textBaseline = "middle";
-        this.ctx.strokeStyle = "black";
+        ctx.font = `${this.pt(8)} ${this.fontFamily}`;
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        ctx.strokeStyle = "black";
         // Closed lower hatch, 0% vignetting
         if (Driver.obs_lowerHatch !== null) {
-            this.ctx.fillText("Closed lower hatch", this.xleftlabels, this.transformYLocation(Driver.obs_lowerHatch + 2));
-            this.ctx.fillText("0% vignetting", this.xleftlabels, this.transformYLocation(Driver.obs_lowerHatch));
-            this.ctx.fillText("⟶", this.xleftarrows, this.transformYLocation(Driver.obs_lowerHatch));
-            this.plotHorizontalLine(this.xstart, this.xend, this.transformYLocation(Driver.obs_lowerHatch), [1, 2, 3, 2], 1);
+            ctx.fillText("Closed lower hatch", this.xleftlabels, this.transformYLocation(Driver.obs_lowerHatch + 2));
+            ctx.fillText("0% vignetting", this.xleftlabels, this.transformYLocation(Driver.obs_lowerHatch));
+            ctx.fillText("⟶", this.xleftarrows, this.transformYLocation(Driver.obs_lowerHatch));
+            this.plotHorizontalLine(ctx, this.xstart, this.xend, this.transformYLocation(Driver.obs_lowerHatch), [1, 2, 3, 2], 1);
         }
         // Closed lower hatch, 50% vignetting (only for NOT)
         if (Driver.telescopeName === "NOT") {
-            this.ctx.fillText("Closed lower hatch", this.xleftlabels, this.transformYLocation(22));
-            this.ctx.fillText("50% vignetting", this.xleftlabels, this.transformYLocation(20));
-            this.ctx.fillText("⟶", this.xleftarrows, this.transformYLocation(20));
+            ctx.fillText("Closed lower hatch", this.xleftlabels, this.transformYLocation(22));
+            ctx.fillText("50% vignetting", this.xleftlabels, this.transformYLocation(20));
+            ctx.fillText("⟶", this.xleftarrows, this.transformYLocation(20));
         }
         // Lowest observing altitude
         if (Driver.obs_lowestLimit !== null) {
-            this.ctx.fillText(`${Driver.telescopeName} lowest limit`,
-                this.xleftlabels, this.transformYLocation(Driver.obs_lowestLimit + 2));
-            this.ctx.fillText(`(${Driver.obs_lowestLimit.toFixed(Driver.telescopeName === "HET" ? 1 : 0)}°)`,
-                this.xleftlabels, this.transformYLocation(Driver.obs_lowestLimit));
-            this.ctx.fillText("⟶", this.xleftarrows + (Driver.telescopeName === "HET" ? 23 : 0), this.transformYLocation(Driver.obs_lowestLimit));
-            this.plotHorizontalLine(this.xstart, this.xend, this.transformYLocation(Driver.obs_lowestLimit), [1, 2, 3, 2], 1);
+            ctx.fillText(`${Driver.telescopeName} lowest limit`, this.xleftlabels, this.transformYLocation(Driver.obs_lowestLimit + 2));
+            ctx.fillText(`(${Driver.obs_lowestLimit.toFixed(Driver.telescopeName === "HET" ? 1 : 0)}°)`, this.xleftlabels, this.transformYLocation(Driver.obs_lowestLimit));
+            ctx.fillText("⟶", this.xleftarrows + (Driver.telescopeName === "HET" ? 23 : 0), this.transformYLocation(Driver.obs_lowestLimit));
+            this.plotHorizontalLine(ctx, this.xstart, this.xend, this.transformYLocation(Driver.obs_lowestLimit), [1, 2, 3, 2], 1);
         }
         // Highest observing altitude
         if (Driver.obs_highestLimit !== null) {
-            this.ctx.fillText(`${Driver.telescopeName} highest limit`,
-                this.xleftlabels, this.transformYLocation(Driver.obs_highestLimit + 2));
-            this.ctx.fillText(`(${Driver.obs_highestLimit.toFixed(Driver.telescopeName === "HET" || Driver.telescopeName === "WHT" ? 1 : 0)}°)`,
-                this.xleftlabels, this.transformYLocation(Driver.obs_highestLimit));
-            this.ctx.fillText("⟶", this.xleftarrows, this.transformYLocation(Driver.obs_highestLimit));
-            this.plotHorizontalLine(this.xstart, this.xend, this.transformYLocation(Driver.obs_highestLimit), [1, 2, 3, 2], 1);
+            ctx.fillText(`${Driver.telescopeName} highest limit`, this.xleftlabels, this.transformYLocation(Driver.obs_highestLimit + 2));
+            ctx.fillText(`(${Driver.obs_highestLimit.toFixed(Driver.telescopeName === "HET" || Driver.telescopeName === "WHT" ? 1 : 0)}°)`, this.xleftlabels, this.transformYLocation(Driver.obs_highestLimit));
+            ctx.fillText("⟶", this.xleftarrows, this.transformYLocation(Driver.obs_highestLimit));
+            this.plotHorizontalLine(ctx, this.xstart, this.xend, this.transformYLocation(Driver.obs_highestLimit), [1, 2, 3, 2], 1);
         }
         // Constant altitude for HET
         if (Driver.telescopeName === "HET") {
             const HETalt = 55;
-            this.ctx.fillText(`${Driver.telescopeName} altitude`,
-                this.xleftlabels, this.transformYLocation(HETalt + 2));
-            this.ctx.fillText(`(${HETalt.toFixed(0)}°)`,
-                this.xleftlabels, this.transformYLocation(HETalt));
-            this.ctx.fillText("⟶", this.xleftarrows, this.transformYLocation(HETalt));
-            this.plotHorizontalLine(this.xstart, this.xend, this.transformYLocation(HETalt), [5, 0, 0], 1);
+            ctx.fillText(`${Driver.telescopeName} altitude`, this.xleftlabels, this.transformYLocation(HETalt + 2));
+            ctx.fillText(`(${HETalt.toFixed(0)}°)`, this.xleftlabels, this.transformYLocation(HETalt));
+            ctx.fillText("⟶", this.xleftarrows, this.transformYLocation(HETalt));
+            this.plotHorizontalLine(ctx, this.xstart, this.xend, this.transformYLocation(HETalt), [5, 0, 0], 1);
         }
 
         // Title of the plot
-        this.ctx.font = `${this.pt(13)} ${this.fontFamily}`;
-        this.ctx.textAlign = "center";
-        this.ctx.fillText(Driver.plotTitle, this.xmid, 27);
+        ctx.font = `${this.pt(13)} ${this.fontFamily}`;
+        ctx.textAlign = "center";
+        ctx.fillText(Driver.plotTitle, this.xmid, 27);
 
         // Copyright notice
-        this.ctx.font = `${this.pt(7)} ${this.fontFamily}`;
-        this.ctx.textAlign = "left";
-        this.ctx.fillText(config.graphCopyright, this.xleftlabels, this.canvasHeight - 18);
+        ctx.font = `${this.pt(7)} ${this.fontFamily}`;
+        ctx.textAlign = "left";
+        ctx.fillText(config.graphCopyright, this.xleftlabels, this.canvasHeight - 18);
+
+        if (rectangleLast) {
+            // Draw main rectangle that contains the visibility plot
+            ctx.beginPath();
+            ctx.setLineDash([]);
+            ctx.strokeStyle = "black";
+            ctx.lineWidth = 1.2;
+            ctx.rect(this.xstart, this.ystart, this.width, this.height);
+            ctx.stroke();
+        }
     } catch (ex) {
         helper.LogException(ex);
     }

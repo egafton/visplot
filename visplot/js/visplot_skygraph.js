@@ -27,8 +27,15 @@ function SkyGraph(_canvas, _context) {
         this.timer = null;
         this.tcsPointing = null;
         this.skyImg = new Image();
-        this.skyImg.onload = () => { this.redraw(); };
-        this.skyImg.onerror = () => { helper.LogError("Sky image failed to load"); };
+        this.skyImgOK = false;
+        this.skyImg.onload = () => {
+            this.skyImgOK = true;
+            this.redraw();
+        };
+        this.skyImg.onerror = () => {
+            this.skyImgOK = false;
+            helper.LogError("Sky image failed to load");
+        };
         this.refreshRemote();
         $("#canvasSkycam").on("mousemove", function (e) {
             driver.skyGraph.EvtMouseMove(e);
@@ -103,7 +110,9 @@ SkyGraph.prototype.redraw = function () {
             this.ctx.fillText("No sky camera configured for the selected telescope", config.skycamImageSizeX/2, config.skycamImageSizeY/2);
             return;
         }
-        this.ctx.drawImage(this.skyImg, 0, 0, config.skycamImageSizeX, config.skycamImageSizeY);
+        if (this.skyImgOK) {
+            this.ctx.drawImage(this.skyImg, 0, 0, config.skycamImageSizeX, config.skycamImageSizeY);
+        }
         this.drawAxes();
         this.drawTicks();
         this.drawPointing();
