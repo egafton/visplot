@@ -25,10 +25,6 @@ serializer.BindEvents = function () {
         serializer.loadDocument(e);
     });
 
-    $("#pngExport").click(function () {
-        serializer.exportPNG();
-    });
-
     $("#pdfExport").click(function () {
         serializer.exportPDF();
     });
@@ -230,40 +226,6 @@ serializer.loadDocument = function (e) {
     }).catch(function (ex) {
         helper.LogException(ex);
     });
-};
-
-/**
- * Export the canvas as a png file.
- */
-serializer.exportPNG = function () {
-    try {
-        /* By default, HTML5 canvases are exported with a transparent background
-        (which might be rendered improperly, i.e. with a black background, in some viewers).
-        This function automatically adds a white background to the image and opens
-        the resulting, composited png file in a new tab/window.
-        */
-        helper.LogEntry("Trying to export png file...");
-        // Save context state
-        const w = driver.canvas.width;
-        const h = driver.canvas.height;
-        const data = driver.context.getImageData(0, 0, w, h);
-        const compositeOperation = driver.context.globalCompositeOperation;
-        // Add a white background behind everything else that is already drawn
-        driver.context.globalCompositeOperation = "destination-over";
-        driver.context.fillStyle = "#fff";
-        driver.context.fillRect(0, 0, w, h);
-        // Save image
-        const imageData = driver.canvas.toDataURL("image/png");
-        // Restore context state
-        driver.context.clearRect(0, 0, w, h);
-        driver.context.putImageData(data, 0, 0);
-        driver.context.globalCompositeOperation = compositeOperation;
-        helper.LogSuccess("Done! The png file has been opened in a new tab.");
-        // Open image in a new tab
-        window.open(imageData, "_blank");
-    } catch (ex) {
-        helper.LogException(ex);
-    }
 };
 
 /**

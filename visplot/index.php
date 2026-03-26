@@ -249,7 +249,6 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
                 <div id="left_lower">
                     <div id="buttons">
                         <div id="lb_skycm"><input type="button" value="Show SkyCam" id="showSkyCam" /></div>
-                        <div id="lb_exprt"><input type="button" value="Export PNG" id="pngExport" /></div>
                         <div id="lb_exprt"><input type="button" value="Export PDF" id="pdfExport" /></div>
                         <div id="lb_tcsex"><input type="button" value="TCS format" id="tcsExport" /></div>
                         <div id="lb_svdoc"><input type="button" value="Save" id="saveDoc" /></div>
