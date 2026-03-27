@@ -6,6 +6,13 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. See LICENSE.md.
  */
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET");
+header("Access-Control-Allow-Headers: Content-Type");
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+
 $arrContextOptions=array(
     "ssl"=>array(
         "verify_peer"=>false,
@@ -18,14 +25,44 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     die("Method Not Allowed");
 }
 
-// Validation loop
+// Check that a URL has been passed
 if (!isset($_GET['url']) || $_GET['url'] === '') {
     die("URL not provided");
 }
 
-header("Content-type: image");
-header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
-header("Cache-Control: post-check=0, pre-check=0", false);
-header("Pragma: no-cache");
-ini_set("default_socket_timeout", 5); // in seconds
-echo file_get_contents($_GET['url'] . "?t=" . time(), false, stream_context_create($arrContextOptions));
+$url = $_GET['url'] . "?t=" . time();
+$data = @file_get_contents($url, false, stream_context_create($arrContextOptions));
+
+if ($data === false) {
+    http_response_code(502);
+    exit("Failed to fetch image");
+}
+
+// Try to decode image (this "repairs" partials)
+$img = @imagecreatefromstring($data);
+
+if ($img !== false) {
+    // Successfully decoded → re-encode cleanly
+    header("Content-Type: image/jpeg");
+
+    imagejpeg($img, null, 90); // output directly
+    imagedestroy($img);
+    exit;
+}
+
+// Fallback: sniff content type if still unknown
+if (!$contentType) {
+    $finfo = new finfo(FILEINFO_MIME_TYPE);
+    $detected = $finfo->buffer($data);
+
+    if ($detected && strpos($detected, "image/") === 0) {
+        $contentType = $detected;
+    }
+}
+// Last resort
+if (!$contentType) {
+    $contentType = "application/octet-stream";
+}
+
+header("Content-type: $contentType");
+echo $data;

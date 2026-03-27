@@ -70,8 +70,8 @@ serializer.saveSkyGraph = async function () {
     const img = new Image();
     img.src = dataURL;
     await new Promise(r => (img.onload = r));
-    const w = graph.canvasWidth / window.devicePixelRatio;
-    const h = graph.canvasHeight / window.devicePixelRatio;
+    const w = graph.canvas.width / window.devicePixelRatio;
+    const h = graph.canvas.height / window.devicePixelRatio;
     const ctx = new C2S(w, h);
     graph.redraw(ctx, img);
     serializer.exportPDF(ctx, w, h);
