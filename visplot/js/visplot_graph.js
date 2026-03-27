@@ -690,7 +690,7 @@ Graph.prototype.drawEphemerides = function (ctx) {
         ctx.fillText(helper.MJDToHMLocal(driver.night.MAstTwilight), xtemp - 1, this.ystart - 10);
         if (Driver.hasDST) {
             ctx.fillStyle = "black";
-        }   
+        }
         this.plotVerticalLine(ctx, this.ystart, this.yend, xtemp, twiStyle, 1.2);
         ctx.textAlign = "center";
 

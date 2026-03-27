@@ -1128,3 +1128,20 @@ helper.tzDescription = function(abbr, offset) {
         desc: `${abbr}, UTC${offset < 0 ? '-' : '+'}${Math.abs(offset)}`
     };
 };
+
+helper.findTransit = function(utcguess, dut, obj, eqeqx) {
+    let t = utcguess;
+    let ret;
+    const dLSTdUT = 1.0027379; // d(LST)/d(UT)
+    for (let i = 0; i < 3; i += 1) {
+        let stl = helper.stl(t, eqeqx);
+        ret = sla.rdplan(t + dut, obj, Driver.obsLonRad, Driver.obsLatRad);
+        let H = sla.drange(stl - ret.ra); // radians
+        let dt = -sla.rtoh * H / dLSTdUT; // hours;
+        t += dt / 24; // update in days
+    }
+    return {
+        tsouth: (t - Math.floor(t)) * 24,
+        ret: ret
+    };
+};
