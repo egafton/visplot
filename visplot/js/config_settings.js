@@ -18,8 +18,8 @@ const config = {
     graphCurrentTimeRefreshInterval: 5000, // ms
     graphCopyright: `© 2016-${new Date().getFullYear()} ega, irl`,
     offlineStrings: [
-        "Offline",
-        "BadWolf"
+        "offline",
+        "badwolf"
     ],
     skycamTimeRefreshInterval: 500, // ms
     skycamImageRefreshInterval: 30000, // ms

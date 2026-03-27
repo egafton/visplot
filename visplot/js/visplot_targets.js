@@ -1144,7 +1144,7 @@ TargetList.prototype.processTargetListAfterSIMBAD = function(lines) {
                 continue;
             }
             const words = this.FormattedLines[i];
-            const badwolf = config.offlineStrings.includes(words[0]);
+            const badwolf = config.offlineStrings.includes(words[0].toLowerCase());
             const padded = [
                 helper.pad(words[0], this.MaxLen.Name, false, " "),
                 helper.pad(words[1], 2, true, badwolf ? " " : "0"),
@@ -1435,7 +1435,7 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
     if (words.length <= 1) {
         throw new Error("For each object you must provide at least the Name, RA and Dec");
     }
-    if (config.offlineStrings.includes(words[0])) {
+    if (config.offlineStrings.includes(words[0].toLowerCase())) {
         if (words.length < 2 || words.length > 3) {
             throw new Error("For offline time you must provide a valid UTC or LST range");
         }

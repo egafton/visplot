@@ -152,6 +152,7 @@ $version = "5.0k";
 *      - Driver attributes now use camelCase.
 *
 * 5.0k - SkyCam image and overlays can now be saved to pdf ('s' key).
+*      - Improved serialization and parsing routines.
 */
 session_start();
 if (isset($_SESSION["obinfo"])) {

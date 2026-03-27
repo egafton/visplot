@@ -730,7 +730,7 @@ helper.ExtractMoonRange = function (str) {
  */
 helper.ExtractLSTRange = function (str) {
     try {
-        if (!str.startsWith("LST[")) {
+        if (!str.toLowerCase().startsWith("lst[")) {
             return null;
         }
         if (str.slice(-1) !== "]" || str.indexOf("-") === -1) {
@@ -753,7 +753,7 @@ helper.ExtractLSTRange = function (str) {
  */
 helper.ExtractHARange = function (str, ra) {
     try {
-        if (!str.startsWith("HA[")) {
+        if (!str.toLowerCase().startsWith("ha[")) {
             return null;
         }
         if (str.slice(-1) !== "]" || str.indexOf("-") === -1) {
@@ -778,11 +778,12 @@ helper.ExtractHARange = function (str, ra) {
  */
 helper.ExtractUTRange = function (str, ra = null) {
     try {
-        if (!str.startsWith("UTC[")) {
-            if (str.startsWith("LST[")) {
+        const strLower = str.toLowerCase();
+        if (!strLower.startsWith("utc[")) {
+            if (strLower.startsWith("lst[")) {
                 return helper.ExtractLSTRange(str);
             }
-            if (str.startsWith("HA[")) {
+            if (strLower.startsWith("ha[")) {
                 return helper.ExtractHARange(str, ra || 0);
             }
             return null;
@@ -1120,7 +1121,7 @@ helper.asIdentifier = function(words) {
     } else if (words.length > 2) {
         return null;
     } else if (helper.notFloat(words[0]) || helper.notFloat(words[1])) {
-        if (config.offlineStrings.includes(words[0])) {
+        if (config.offlineStrings.includes(words[0].toLowerCase())) {
             return null;
         }
         return words.join(" ");
