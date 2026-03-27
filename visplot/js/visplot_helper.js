@@ -316,6 +316,15 @@ helper.getMJD = function (now)
     }
 };
 
+helper.getTimestampFromMJD = function (mjd)
+{
+    try {
+        return (mjd - 40587) * sla.d2s * 1000;
+    } catch (ex) {
+        helper.LogException(ex);
+    }
+};
+
 /**
  * Convert a fractional timestamp (in hours) to a formatted HH:MM:SS string.
  * Allows custom separators between hours, minutes, and seconds.
@@ -385,23 +394,14 @@ helper.MJDToHM = function (d, padHours=false) {
 /**
  * Convert MJD to H:MM format in the local time at the telescope.
  */
-helper.MJDToHMLocal = function (d, utcOffset, padHours=false) {
+helper.MJDToHMLocal = function (d, withAbbr) {
     try {
-        const t = new Date(driver.night.DateSunset);
-        t.setUTCSeconds(t.getUTCSeconds() + (d - driver.night.Sunset) * sla.d2s + utcOffset * 3600);
-        const ss = t.getUTCSeconds();
-        let mm = t.getUTCMinutes();
-        let hh = t.getUTCHours();
-        // Round up if necessary
-        if (ss > 30) {
-            mm += 1;
+        const timestamp = helper.getTimestampFromMJD(d);
+        const l = moment.tz(timestamp, Driver.timezoneName);
+        if (withAbbr) {
+            return `${l.format("H:mm")} ${l.zoneAbbr()}`;
         }
-        if (mm === 60) {
-            hh += 1;
-            mm = 0;
-        }
-        hh = (hh % 24 + 24) % 24;
-        return `${padHours ? helper.padTwoDigits(hh) : hh}:${helper.padTwoDigits(mm)}`;
+        return l.format("H:mm");
     } catch (ex) {
         helper.LogException(ex);
     }
@@ -877,20 +877,6 @@ helper.validColour = function(stringToTest) {
 };
 
 /**
- * Format a timezone offset as a signed integer string.
- * Positive values are prefixed with '+', negative values keep the '-' sign.
- *
- * @param {Number} value - Timezone offset (e.g., hours from UTC).
- * @returns {String} Formatted timezone string, e.g., "+3" or "-5".
- */
-helper.timezone = function(value) {
-    if (value >= 0) {
-        return `+${value.toFixed(0)}`;
-    }
-    return value.toFixed(0);
-};
-
-/**
  * Create a multi-dimensional array filled with zeros.
  * Supports arbitrary dimensions by recursively nesting arrays.
  *
@@ -1127,4 +1113,18 @@ helper.asIdentifier = function(words) {
         return words.join(" ");
     }
     return null;
+};
+
+helper.tzDescription = function(abbr, offset) {
+    if (abbr[0] === "+" || abbr[0] === "-") {
+        const ret = `UTC${offset < 0 ? '-' : '+'}${Math.abs(offset)}`;
+        return {
+            abbr: ret,
+            desc: ret
+        };
+    }
+    return {
+        abbr: abbr,
+        desc: `${abbr}, UTC${offset < 0 ? '-' : '+'}${Math.abs(offset)}`
+    };
 };

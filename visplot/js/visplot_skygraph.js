@@ -382,7 +382,7 @@ SkyGraph.prototype.displayCoords = function (ctx) {
 SkyGraph.prototype.displayTime = function (ctx) {
     try {
         ctx.save();
-        const lt = moment.tz(telescopes[Driver.telescopeName].timezoneName);
+        const lt = moment.tz(Driver.timezoneName);
         const utc = lt.clone().tz("UTC");
         const mjd = helper.getMJD(lt);
         this.lst = sla.dranrm(sla.gmst(mjd) + Driver.obsLonRad + sla.eqeqx(mjd));

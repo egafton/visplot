@@ -52,7 +52,7 @@ Night.prototype.setEphemerides = function () {
         // the night (equation of equinoxes, TT-UTC, etc.), precompute them.
 
         // Midnight tonight at the telescope
-        const telMidnight = moment.tz(`${this.year}-${helper.padTwoDigits(this.month)}-${helper.padTwoDigits(this.day)}`, telescopes[Driver.telescopeName].timezoneName).add(1, "days");
+        const telMidnight = moment.tz(`${this.year}-${helper.padTwoDigits(this.month)}-${helper.padTwoDigits(this.day)}`, Driver.timezoneName).add(1, "days");
         // Convert it to UTC
         const utcMidnight = telMidnight.clone().tz("UTC");
         // Convert it to MJD (include the fractional day)
@@ -85,7 +85,7 @@ Night.prototype.setEphemerides = function () {
         // Previous noon; sunset; evening twilights
         let stl = helper.stl(this.utcMidnight-0.5, this.eqeqx);
         let ret = sla.rdplan(this.ttMidnight-0.5, "Sun", Driver.obsLonRad, Driver.obsLatRad);
-        let tsouth = ((12 - Driver.obsTimezone) - sla.rtoh * sla.drange(stl - ret.ra)) % 24;
+        let tsouth = ((12 - Driver.obsTimezoneE) - sla.rtoh * sla.drange(stl - ret.ra)) % 24;
         let ut1 = helper.utarc(-0.5*ret.diam - this.RefractionAtHorizon - this.HorizonDip, tsouth, ret.dec, "+");
         let ut2 = helper.utarc(-12*sla.d2r, tsouth, ret.dec, "+");
         let ut3 = helper.utarc(-18*sla.d2r, tsouth, ret.dec, "+");
@@ -113,7 +113,7 @@ Night.prototype.setEphemerides = function () {
         // Next noon; sunrise; morning twilight
         stl = helper.stl(this.utcMidnight+0.5, this.eqeqx);
         ret = sla.rdplan(this.ttMidnight+0.5, "Sun", Driver.obsLonRad, Driver.obsLatRad);
-        tsouth = ((12 - Driver.obsTimezone) - sla.rtoh * sla.drange(stl - ret.ra)) % 24;
+        tsouth = ((12 - Driver.obsTimezoneE) - sla.rtoh * sla.drange(stl - ret.ra)) % 24;
         ut1 = helper.utarc(-0.5*ret.diam - this.RefractionAtHorizon - this.HorizonDip, tsouth, ret.dec, "-");
         ut2 = helper.utarc(-12*sla.d2r, tsouth, ret.dec, "-");
         ut3 = helper.utarc(-18*sla.d2r, tsouth, ret.dec, "-");
@@ -209,37 +209,22 @@ Night.prototype.setEphemerides = function () {
         // Calculate LST labels
         this.LocalTimetimes = [];
         this.LocalTimelabels = [];
-        const tz = parseFloat(Driver.obsTimezone);
-        const tzDays = tz / 24;
-        // Find the Sunset in LOCAL time (MJD)
-        const sunsetLocalMJD = this.Sunset + tzDays;
-        // Find the first integer local hour after sunset
-        // We take the fractional part of the local MJD and scale to 24 hours
-        const sunsetLocalHour = (sunsetLocalMJD % 1) * 24;
-        const firstLocalHour = Math.ceil(sunsetLocalHour);
-        // Get the "floor" of the local MJD day to use as a base
-        const localDayBase = Math.floor(sunsetLocalMJD);
-        for (let h = 0; h < 48; h += 1) {
-            // Current local time in MJD
-            const currentLocalMJD = localDayBase + (firstLocalHour + h) / 24;
-            // Convert back to UTC MJD
-            const djutc = currentLocalMJD - tzDays;
-            // Safety: ensure we haven't looped before the actual sunset
-            // (can happen if Math.ceil pushes us back depending on floating point)
-            if (djutc < this.Sunset - 0.0001) {
-                continue;
-            }
-            // Stop if we hit sunrise
-            if (djutc >= this.Sunrise) {
-                break;
-            }
+        const ltSunset = moment.tz(this.DateSunset, Driver.timezoneName);
+        let ltStart = ltSunset.clone().set("minutes", 0).set("seconds", 0).set("milliseconds", 0);
+        if (ltStart.unix() !== ltSunset.unix()) {
+            ltStart.add(1, "hours");
+        }
+        while (ltStart < this.DateSunrise) {
             // Calculate Labels
-            const localHour = (firstLocalHour + h) % 24;
+            const djutc = helper.getMJD(ltStart);
+            const localHour = ltStart.hour();
             // LST calculation
             stl = sla.dr2tf(1, sla.dranrm(sla.gmst(djutc) + Driver.obsLonRad) + this.eqeqx);
             this.LSTlabels.push(`${stl.ihmsf[0]}:${stl.ihmsf[1] < 10 ? "0" : ""}${stl.ihmsf[1].toFixed(0)}`);
             this.LocalTimetimes.push(djutc);
             this.LocalTimelabels.push(localHour === 0 ? "24" : localHour.toString());
+            // Advance
+            ltStart.add(1, "hours");
         }
         // Moon stuff
         this.MoonIllMin = Math.max(Math.floor(Math.min(this.MoonIllStart, this.MoonIllEnd)), 0);

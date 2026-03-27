@@ -100,9 +100,12 @@ serializer.saveDocument = function () {
                 defaultAM: Driver.defaultAM,
                 defaultObstime: Driver.defaultObstime,
                 defaultInstrument: Driver.defaultInstrument,
-                obsTimezone: Driver.obsTimezone,
-                obsTimezoneAbbr: Driver.obsTimezoneAbbr,
-                obsTimezoneDescription: Driver.obsTimezoneDescription,
+                obsTimezoneE: Driver.obsTimezoneE,
+                obsTimezoneAbbrE: Driver.obsTimezoneAbbrE,
+                obsTimezoneDescriptionE: Driver.obsTimezoneDescriptionE,
+                obsTimezoneM: Driver.obsTimezoneM,
+                obsTimezoneAbbrM: Driver.obsTimezoneAbbrM,
+                obsTimezoneDescriptionM: Driver.obsTimezoneDescriptionM,
                 wPriority: Driver.wPriority,
                 wUrgency: Driver.wUrgency,
                 wAltitude: Driver.wAltitude,
@@ -256,14 +259,26 @@ serializer.loadDocument = function (e) {
                 $("#dateD").val(helper.padTwoDigits(driver.night.day));
                 driver.CMeditor.setValue(obj.tgts);
                 driver.nightInitialized = true;
-                if (typeof obj.driver.obsTimezone !== "undefined") {
-                    Driver.obsTimezone = obj.driver.obsTimezone;
+                if (typeof obj.driver.obsTimezoneE !== "undefined") {
+                    Driver.obsTimezoneE = obj.driver.obsTimezoneE;
+                    Driver.obsTimezoneM = obj.driver.obsTimezoneM;
+                } else if (typeof obj.driver.obsTimezone !== "undefined") { // legacy
+                    Driver.obsTimezoneE = obj.driver.obsTimezone;
+                    Driver.obsTimezoneM = obj.driver.obsTimezone;
                 }
-                if (typeof obj.driver.obsTimezoneAbbr !== "undefined") {
-                    Driver.obsTimezoneAbbr = obj.driver.obsTimezoneAbbr;
+                if (typeof obj.driver.obsTimezoneAbbrE !== "undefined") {
+                    Driver.obsTimezoneAbbrE = obj.driver.obsTimezoneAbbrE;
+                    Driver.obsTimezoneAbbrM = obj.driver.obsTimezoneAbbrM;
+                } else if (typeof obj.driver.obsTimezoneAbbr !== "undefined") { // legacy
+                    Driver.obsTimezoneAbbrE = obj.driver.obsTimezoneAbbr;
+                    Driver.obsTimezoneAbbrM = obj.driver.obsTimezoneAbbr;
                 }
-                if (typeof obj.driver.obsTimezoneDescription !== "undefined") {
-                    Driver.obsTimezoneDescription = obj.driver.obsTimezoneDescription;
+                if (typeof obj.driver.obsTimezoneDescriptionE !== "undefined") {
+                    Driver.obsTimezoneDescriptionE = obj.driver.obsTimezoneDescriptionE;
+                    Driver.obsTimezoneDescriptionM = obj.driver.obsTimezoneDescriptionM;
+                } else if (typeof obj.driver.obsTimezoneDescription !== "undefined") { // legacy
+                    Driver.obsTimezoneDescriptionE = obj.driver.obsTimezoneDescription;
+                    Driver.obsTimezoneDescriptionM = obj.driver.obsTimezoneDescription;
                 }
                 driver.Refresh();
                 if (driver.scheduleMode) {

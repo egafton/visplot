@@ -6,7 +6,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. See LICENSE.md.
  */
-$version = "5.0k";
+$version = "5.0l";
 /*
 * Version history (with brief changelog):
 *
@@ -153,6 +153,8 @@ $version = "5.0k";
 *
 * 5.0k - SkyCam image and overlays can now be saved to pdf ('s' key).
 *      - Improved serialization and parsing routines.
+*
+* 5.0l - Improved handling of local times during DST changes.
 */
 session_start();
 if (isset($_SESSION["obinfo"])) {
