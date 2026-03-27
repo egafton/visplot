@@ -128,6 +128,8 @@ const config = {
         return `${window.baseurl}horizons_proxy.php?${query.toString()}`;
     },
     horizonsTimeout: 5000, // ms
+    mbCacheKey: "majorBodiesCache",
+    mbCacheTTL: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
     mapAPIKey: "def7cfdebee03cd500fbdbcfc8c48e90",
     mapTileSource: "https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
     mapTileSettings: {

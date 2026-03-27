@@ -41,14 +41,7 @@ function Driver() {
         this.obprocessed = false; // OB info is processed automatically only once, upon page load
 
         /* Retrieve list major bodies from JPL Horizons */
-        this.majorBodies = {};
-        $.get({
-            url: config.horizonsURL({'COMMAND': `'MB'`}), // you define this
-            timeout: 20000
-        }).then(function(data) {
-            driver.majorBodies = data;
-            helper.LogEntry(`Retrieved a list of ${Object.keys(data).length} major bodies from JPL Horizons.`);
-        });
+        this.getMajorBodies();
 
         // Night, targets, planning
         this.nightInitialized = false;
@@ -113,6 +106,54 @@ function Driver() {
         helper.LogException(ex);
     }
 }
+
+Driver.prototype.getCachedMajorBodies = function() {
+    try {
+        const cached = JSON.parse(localStorage.getItem(config.mbCacheKey));
+        if (!cached) {
+            return null;
+        }
+        const isExpired = (Date.now() - cached.timestamp) > config.mbCacheTTL;
+        if (isExpired) {
+            return null;
+        }
+        return cached.data;
+    } catch (ex) {
+        console.warn('Cache parse failed, ignoring cache.', ex);
+        return null;
+    }
+};
+
+Driver.prototype.setCachedMajorBodies = function(data) {
+    try {
+        localStorage.setItem(config.mbCacheKey, JSON.stringify({
+            data: data,
+            timestamp: Date.now()
+        }));
+    } catch (ex) {
+        console.warn('Failed to write cache.', ex);
+    }
+};
+
+Driver.prototype.getMajorBodies = function() {
+    const cachedData = this.getCachedMajorBodies();
+    if (cachedData) {
+        this.majorBodies = cachedData;
+        helper.LogEntry(`Loaded ${Object.keys(cachedData).length} major bodies from cache.`);
+        return;
+    }
+    $.get({
+        url: config.horizonsURL({ 'COMMAND': `'MB'` }),
+        timeout: 20000
+    }).then(function(data) {
+        driver.majorBodies = data;
+        driver.setCachedMajorBodies(data);
+        helper.LogEntry(`Retrieved ${Object.keys(data).length} major bodies from JPL Horizons.`);
+    }).catch(function(ex) {
+        helper.LogEntry('Failed to fetch major bodies from JPL Horizons (check the console).');
+        console.error(ex);
+    });
+};
 
 Driver.prototype.SetupMap = function() {
     try {
