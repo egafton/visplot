@@ -50,23 +50,18 @@ serializer.saveGraph = function () {
     serializer.exportPDF(ctx, w, h);
 };
 
-serializer.loadImageAsDataURL = async function (url) {
-    const res = await window.fetch(url);
-    const blob = await res.blob();
-
-    return await new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result);
-        reader.readAsDataURL(blob);
-    });
-};
-
 serializer.saveSkyGraph = async function () {
     const graph = driver.skyGraph;
-    if (graph.params === null) {
+    if (graph.params === null || !graph.skyImgOK) {
         return;
     }
-    const dataURL = await serializer.loadImageAsDataURL(`${config.skycamProxy(graph.params.url)}`);
+    // Draw the image to a canvas first - in case it is corrupted
+    const imgCanvas = document.createElement("canvas");
+    imgCanvas.width = config.skycamImageSizeX;
+    imgCanvas.height = config.skycamImageSizeY;
+    const imgContext = imgCanvas.getContext("2d");
+    imgContext.drawImage(graph.skyImg, 0, 0, config.skycamImageSizeX, config.skycamImageSizeY);
+    const dataURL = imgCanvas.toDataURL("image/jpeg", 0.9);
     const img = new Image();
     img.src = dataURL;
     await new Promise(r => (img.onload = r));

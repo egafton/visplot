@@ -38,29 +38,13 @@ if ($data === false) {
     exit("Failed to fetch image");
 }
 
-// Try to decode image (this "repairs" partials)
-$img = @imagecreatefromstring($data);
-
-if ($img !== false) {
-    // Successfully decoded → re-encode cleanly
-    header("Content-Type: image/jpeg");
-
-    imagejpeg($img, null, 90); // output directly
-    imagedestroy($img);
-    exit;
-}
-
 // Fallback: sniff content type if still unknown
-if (!$contentType) {
-    $finfo = new finfo(FILEINFO_MIME_TYPE);
-    $detected = $finfo->buffer($data);
+$finfo = new finfo(FILEINFO_MIME_TYPE);
+$detected = $finfo->buffer($data);
 
-    if ($detected && strpos($detected, "image/") === 0) {
-        $contentType = $detected;
-    }
-}
-// Last resort
-if (!$contentType) {
+if ($detected && strpos($detected, "image/") === 0) {
+    $contentType = $detected;
+} else {
     $contentType = "application/octet-stream";
 }
 

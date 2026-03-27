@@ -1,8 +1,4 @@
 FROM php:8.1-apache
-RUN apt-get update -y && apt-get install -y zlib1g-dev libpng-dev libjpeg-dev libfreetype-dev
-RUN set -eux; \
-    docker-php-ext-configure gd --with-freetype --with-jpeg; \
-    docker-php-ext-install exif gd
 RUN a2enmod rewrite
 RUN a2enmod expires
 RUN a2enmod headers
