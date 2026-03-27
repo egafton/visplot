@@ -31,6 +31,7 @@ function get_WHT_pointing() {
             'header'  => "Content-type: application/json\r\n",
             'method'  => 'POST',
             'content' => json_encode($data),
+            'timeout' => 2.5 // timeout in seconds
         )
     );
     $context  = stream_context_create($options);

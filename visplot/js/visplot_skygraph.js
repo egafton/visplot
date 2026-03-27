@@ -164,9 +164,6 @@ SkyGraph.prototype.refreshRemote = function () {
                 } else {
                     driver.skyGraph.tcsPointing = driver.skyGraph.altaz2px(sla.d2r * obj.alt, sla.d2r * obj.az);
                 }
-            },
-            error: function (msg) {
-                helper.LogError(msg);
             }
         });
     } catch (ex) {
