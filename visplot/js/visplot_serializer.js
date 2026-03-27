@@ -191,16 +191,6 @@ serializer.loadDocument = function (e) {
             driver.obprocessed = obj.driver.obprocessed;
             driver.nightInitialized = obj.driver.nightInitialized;
             driver.scheduleMode = obj.driver.scheduleMode;
-            if (typeof obj.driver.resolvedEphemerides !== "undefined") {
-                driver.resolvedEphemerides = obj.driver.resolvedEphemerides;
-            } else {
-                driver.resolvedEphemerides = {};
-            }
-            if (typeof obj.driver.resolvedIdentifiers !== "undefined") {
-                driver.resolvedIdentifiers = obj.driver.resolvedIdentifiers;
-            } else {
-                driver.resolvedIdentifiers = {};
-            }
             driver.setTelescopeName(obj.driver.telescopeName).then(function() {
                 Driver.defaultEpoch = obj.driver.defaultEpoch;
                 Driver.defaultProject = obj.driver.defaultProject;
@@ -241,6 +231,16 @@ serializer.loadDocument = function (e) {
                 }
                 if (typeof obj.driver.opt_show_lastobstime !== "undefined") {
                     $("#opt_show_lastobstime").prop("checked", obj.driver.opt_show_lastobstime === true);
+                }
+                if (typeof obj.driver.resolvedEphemerides !== "undefined") {
+                    driver.resolvedEphemerides = obj.driver.resolvedEphemerides;
+                } else {
+                    driver.resolvedEphemerides = {};
+                }
+                if (typeof obj.driver.resolvedIdentifiers !== "undefined") {
+                    driver.resolvedIdentifiers = obj.driver.resolvedIdentifiers;
+                } else {
+                    driver.resolvedIdentifiers = {};
                 }
                 Object.setPrototypeOf = Object.setPrototypeOf || function (object, proto) {
                     object.__proto__ = proto;
