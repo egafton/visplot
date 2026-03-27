@@ -41,6 +41,7 @@ export default [
         CodeMirror: "readonly",
         C2S: "readonly",
         URLSearchParams: "readonly",
+        FileReader: "readonly",
         PDFDocument: "readonly",
         blobStream: "readonly",
         SVGtoPDF: "readonly"

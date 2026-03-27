@@ -49,7 +49,7 @@ telescopes["NOT"] = {
 
     // Parameters for performing astrometry on the skycam image
     skycamParams: {
-        url: "http://www.gtc.iac.es/multimedia/netcam/camaraAllSky.jpg",
+        url: "https://www.gtc.iac.es/multimedia/netcam/camaraAllSky.jpg",
         zenithX: 326,
         zenithY: 250,
         radius: 320,

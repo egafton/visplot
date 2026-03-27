@@ -28,6 +28,9 @@ const config = {
     skycamTcsCrosshairColor: "#9f3",
     skycamImageSizeX: 640, // px
     skycamImageSizeY: 480, // px
+    skycamProxy: function(url) {
+        return `${window.baseurl}skycam_proxy.php?url=${encodeURIComponent(url)}`;
+    },
     stdPressure: 1013.25, // hPa
     stdTemperature: 298.15, // K, 15 deg
     gravAcceleration: 9.80665, // m/s^2

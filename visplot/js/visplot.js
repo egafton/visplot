@@ -181,7 +181,7 @@ function postInitialization() {
     try {
         /* Now that the driver is created, do some stuff that require it*/
         setInterval(function () {
-            driver.skyGraph.displayTime();
+            driver.skyGraph.displayTime(driver.skyContext);
         }, config.skycamTimeRefreshInterval);
 
         helper.LogDebug("Drawing plot background...");

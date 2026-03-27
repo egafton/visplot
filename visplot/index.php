@@ -6,7 +6,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. See LICENSE.md.
  */
-$version = "5.0j";
+$version = "5.0k";
 /*
 * Version history (with brief changelog):
 *
@@ -150,6 +150,8 @@ $version = "5.0j";
 *
 * 5.0j - Fixed timezone bug during serialization.
 *      - Driver attributes now use camelCase.
+*
+* 5.0k - SkyCam image and overlays can now be saved to pdf ('s' key).
 */
 session_start();
 if (isset($_SESSION["obinfo"])) {
@@ -285,7 +287,7 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
             <div id="details_map"><span id="details_map_hang"></span></div>
         </div> <!-- #details -->
         <div id="skycamblock">
-            <canvas id="canvasSkycam" width="640" height="515"></canvas>
+            <canvas id="canvasSkycam" width="640" height="525"></canvas>
         </div> <!-- #skycamblock -->
         <div id="tcscat">
             <h2 class="fancyhead">Targets in TCS catalogue format</h2>

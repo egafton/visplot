@@ -30,7 +30,7 @@ function SkyGraph(_canvas, _context) {
         this.skyImgOK = false;
         this.skyImg.onload = () => {
             this.skyImgOK = true;
-            this.redraw();
+            this.redraw(this.ctx);
         };
         this.skyImg.onerror = () => {
             this.skyImgOK = false;
@@ -93,50 +93,53 @@ SkyGraph.prototype.stopTimer = function () {
 /**
  * @memberof SkyGraph
  */
-SkyGraph.prototype.redraw = function () {
+SkyGraph.prototype.redraw = function (ctx, img=null) {
     try {
-        this.ctx.save();
-        this.ctx.clearRect(0, 0, config.skycamImageSizeX, config.skycamImageSizeY);
+        ctx.save();
+        ctx.clearRect(0, 0, config.skycamImageSizeX, config.skycamImageSizeY);
         if (this.params === null) {
             // Background: neutral light gray
-            this.ctx.fillStyle = "#f0f0f0";
-            this.ctx.fillRect(0, 0, config.skycamImageSizeX, config.skycamImageSizeY);
-            this.ctx.fillStyle = "#e57373"; // soft red
-            this.ctx.fillRect(0, 0, config.skycamImageSizeX, 6);
-            this.ctx.textBaseline = "middle";
-            this.ctx.textAlign = "center";
-            this.ctx.font = `bold 14pt ${this.fontFamily}`;
-            this.ctx.fillStyle = "#c62828";
-            this.ctx.fillText("No sky camera configured for the selected telescope", config.skycamImageSizeX/2, config.skycamImageSizeY/2);
+            ctx.fillStyle = "#f0f0f0";
+            ctx.fillRect(0, 0, config.skycamImageSizeX, config.skycamImageSizeY);
+            ctx.fillStyle = "#e57373"; // soft red
+            ctx.fillRect(0, 0, config.skycamImageSizeX, 6);
+            ctx.textBaseline = "middle";
+            ctx.textAlign = "center";
+            ctx.font = `bold 14pt ${this.fontFamily}`;
+            ctx.fillStyle = "#c62828";
+            ctx.fillText("No sky camera configured for the selected telescope", config.skycamImageSizeX/2, config.skycamImageSizeY/2);
             return;
         }
-        if (this.skyImgOK) {
-            this.ctx.drawImage(this.skyImg, 0, 0, config.skycamImageSizeX, config.skycamImageSizeY);
+        if (img === null) {
+            if (this.skyImgOK) {
+                ctx.drawImage(this.skyImg, 0, 0, config.skycamImageSizeX, config.skycamImageSizeY);
+            }
+        } else {
+            ctx.drawImage(img, 0, 0, config.skycamImageSizeX, config.skycamImageSizeY);
         }
-        this.drawAxes();
-        this.drawTicks();
-        this.drawPointing();
-        this.drawCursor();
+        this.drawAxes(ctx);
+        this.drawTicks(ctx);
+        this.drawPointing(ctx);
+        this.drawCursor(ctx);
         if (driver.nightInitialized) {
-            this.drawStars();
+            this.drawStars(ctx);
         }
-        this.displayCoords();
-        this.displayTime();
+        this.displayTime(ctx);
     } catch (ex) {
         helper.LogException(ex);
     } finally {
-        this.ctx.restore();
+        ctx.restore();
     }
 };
 
 /**
  * Draw user cursor marker (red crosshair)
  */
-SkyGraph.prototype.drawCursor = function () {
+SkyGraph.prototype.drawCursor = function (ctx) {
     if (this.params === null || this.cursorPx === null) {
         return;
     }
-    this.xhair(this.cursorPx.x, this.cursorPx.y, "", "red");
+    this.xhair(ctx, this.cursorPx.x, this.cursorPx.y, "", "red");
 };
 
 /**
@@ -147,13 +150,12 @@ SkyGraph.prototype.refreshRemote = function () {
         return;
     }
     try {
-        const t = new Date().getTime();
-        this.skyImg.src = `${this.params.url}?t=${t}`;
+        this.skyImg.src = `${config.skycamProxy(this.params.url)}`;
         $.get({
             url: `${window.baseurl}pointing.php`,
             data: {
                 telescope: Driver.telescopeName,
-                t: t
+                t: new Date().getTime()
             },
             timeout: config.skycamTcsTimeout,
             success: function (obj) {
@@ -175,75 +177,79 @@ SkyGraph.prototype.refreshRemote = function () {
 /**
  * @memberof SkyGraph
  */
-SkyGraph.prototype.xhair = function (x, y, name, color) {
+SkyGraph.prototype.xhair = function (ctx, x, y, name, color) {
     try {
-        this.ctx.save();
-        this.ctx.strokeStyle = color;
-        this.ctx.lineWidth = 1;
-        this.ctx.beginPath();
-        this.ctx.moveTo(x - 8, y);
-        this.ctx.lineTo(x - 3, y);
-        this.ctx.moveTo(x + 8, y);
-        this.ctx.lineTo(x + 3, y);
-        this.ctx.moveTo(x, y - 8);
-        this.ctx.lineTo(x, y - 3);
-        this.ctx.moveTo(x, y + 8);
-        this.ctx.lineTo(x, y + 3);
-        this.ctx.stroke();
-        this.ctx.font = "8pt " + this.fontFamily;
-        this.ctx.fillStyle = color;
-        this.ctx.fillText(name, x + 5, y - 5);
+        ctx.save();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(x - 8, y);
+        ctx.lineTo(x - 3, y);
+        ctx.moveTo(x + 8, y);
+        ctx.lineTo(x + 3, y);
+        ctx.moveTo(x, y - 8);
+        ctx.lineTo(x, y - 3);
+        ctx.moveTo(x, y + 8);
+        ctx.lineTo(x, y + 3);
+        ctx.stroke();
+        ctx.font = "8pt " + this.fontFamily;
+        ctx.fillStyle = color;
+        ctx.fillText(name, x + 5, y - 5);
     } catch (ex) {
         helper.LogException(ex);
     } finally {
-        this.ctx.restore();
+        ctx.restore();
     }
 };
 
 /**
  * @memberof SkyGraph
  */
-SkyGraph.prototype.drawAxes = function () {
+SkyGraph.prototype.drawAxes = function (ctx) {
     if (this.params === null) {
         return;
     }
     try {
-        this.ctx.save();
-        this.ctx.strokeStyle = "gray";
+        ctx.save();
+        ctx.rect(0, 0, config.skycamImageSizeX, config.skycamImageSizeY);
+        ctx.clip();
+        ctx.strokeStyle = "gray";
         for (let i = 90; i >= 0; i -= 30) {
             const r = this.params.radius * Math.pow(1 - i / 90, this.params.distortPower);
-            this.ctx.beginPath();
-            this.ctx.arc(this.params.zenithX, this.params.zenithY, r, 0, sla.d2pi, false);
-            this.ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(this.params.zenithX, this.params.zenithY, r, 0, sla.d2pi, false);
+            ctx.stroke();
         }
-        this.ctx.beginPath();
+        ctx.beginPath();
         const nspokes = 24;
         const dr = 360 / nspokes;
         for (let i = 0; i < nspokes; i += 1) {
             const az = sla.d2r * (-90 - this.params.rotation - i * dr);
-            this.ctx.moveTo(this.params.zenithX, this.params.zenithY);
-            this.ctx.lineTo(this.params.zenithX + this.params.radius * Math.cos(az), this.params.zenithY + this.params.radius * Math.sin(az));
+            ctx.moveTo(this.params.zenithX, this.params.zenithY);
+            ctx.lineTo(this.params.zenithX + this.params.radius * Math.cos(az), this.params.zenithY + this.params.radius * Math.sin(az));
         }
-        this.ctx.stroke();
+        ctx.stroke();
     } catch (ex) {
         helper.LogException(ex);
     } finally {
-        this.ctx.restore();
+        ctx.restore();
     }
 };
 
 /**
  * @memberof SkyGraph
  */
-SkyGraph.prototype.drawTicks = function () {
+SkyGraph.prototype.drawTicks = function (ctx) {
     if (this.params === null) {
         return;
     }
     try {
-        this.ctx.save();
-        this.ctx.textBaseline = "middle";
-        this.ctx.textAlign = "center";
-        this.ctx.font = `13pt ${this.fontFamily}`;
+        ctx.save();
+        ctx.rect(0, 0, config.skycamImageSizeX, config.skycamImageSizeY);
+        ctx.clip();
+        ctx.textBaseline = "middle";
+        ctx.textAlign = "center";
+        ctx.font = `13pt ${this.fontFamily}`;
         const rcard = 15;
         for (let i = 0; i < 4; i += 1) {
             const az = sla.d2r * (-90 - this.params.rotation - i * 90);
@@ -258,59 +264,59 @@ SkyGraph.prototype.drawTicks = function () {
                 }
                 r -= 1;
             }
-            this.ctx.beginPath();
-            this.ctx.arc(x, y, rcard, 0, sla.d2pi, false);
-            this.ctx.lineTo(x, y);
-            this.ctx.closePath();
-            this.ctx.fillStyle = "blue";
-            this.ctx.fill();
-            this.ctx.fillStyle = "white";
-            this.ctx.fillText(this.cardinalLabels[i], x, y);
+            ctx.beginPath();
+            ctx.arc(x, y, rcard, 0, sla.d2pi, false);
+            ctx.lineTo(x, y);
+            ctx.closePath();
+            ctx.fillStyle = "blue";
+            ctx.fill();
+            ctx.fillStyle = "white";
+            ctx.fillText(this.cardinalLabels[i], x, y);
         }
     } catch (ex) {
         helper.LogException(ex);
     } finally {
-        this.ctx.restore();
+        ctx.restore();
     }
 };
 
 /**
  * @memberof SkyGraph
  */
-SkyGraph.prototype.drawPointing = function () {
+SkyGraph.prototype.drawPointing = function (ctx) {
     if (this.params === null || this.tcsPointing === null) {
         return;
     }
     try {
-        this.ctx.save();
+        ctx.save();
         const x = this.tcsPointing.x;
         const y = this.tcsPointing.y;
-        this.ctx.strokeStyle = config.skycamTcsCrosshairColor;
-        this.ctx.lineWidth = 1;
-        this.ctx.beginPath();
-        this.ctx.moveTo(x - 6, y - 6);
-        this.ctx.lineTo(x - 2, y - 2);
-        this.ctx.moveTo(x + 6, y + 6);
-        this.ctx.lineTo(x + 2, y + 2);
-        this.ctx.moveTo(x - 6, y + 6);
-        this.ctx.lineTo(x - 2, y + 2);
-        this.ctx.moveTo(x + 6, y - 6);
-        this.ctx.lineTo(x + 2, y - 2);
-        this.ctx.stroke();
-        this.ctx.beginPath();
-        this.ctx.arc(x, y, 3.5, 0, sla.d2pi, false);
-        this.ctx.stroke();
+        ctx.strokeStyle = config.skycamTcsCrosshairColor;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(x - 6, y - 6);
+        ctx.lineTo(x - 2, y - 2);
+        ctx.moveTo(x + 6, y + 6);
+        ctx.lineTo(x + 2, y + 2);
+        ctx.moveTo(x - 6, y + 6);
+        ctx.lineTo(x - 2, y + 2);
+        ctx.moveTo(x + 6, y - 6);
+        ctx.lineTo(x + 2, y - 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(x, y, 3.5, 0, sla.d2pi, false);
+        ctx.stroke();
     } catch (ex) {
         helper.LogException(ex);
     } finally {
-        this.ctx.restore();
+        ctx.restore();
     }
 };
 
 /**
  * @memberof SkyGraph
  */
-SkyGraph.prototype.drawStars = function () {
+SkyGraph.prototype.drawStars = function (ctx) {
     if (this.params === null) {
         return;
     }
@@ -327,12 +333,12 @@ SkyGraph.prototype.drawStars = function () {
                 if (this.tcsPointing !== null && Math.abs(this.tcsPointing.x - px.x) <= 2 && Math.abs(this.tcsPointing.y - px.y) <= 2) {
                     last = [px.x, px.y, obj.Name, config.skycamTcsCrosshairColor];
                 } else {
-                    this.xhair(px.x, px.y, obj.Name, obj.LabelFillColor);
+                    this.xhair(ctx, px.x, px.y, obj.Name, obj.LabelFillColor);
                 }
             }
         }
         if (last !== null) {
-            this.xhair(last[0], last[1], last[2], last[3]);
+            this.xhair(ctx, last[0], last[1], last[2], last[3]);
         }
     } catch (ex) {
         helper.LogException(ex);
@@ -342,43 +348,43 @@ SkyGraph.prototype.drawStars = function () {
 /**
  * @memberof SkyGraph
  */
-SkyGraph.prototype.displayCoords = function () {
+SkyGraph.prototype.displayCoords = function (ctx) {
     if (this.params === null) {
         return;
     }
     try {
-        this.ctx.save();
-        this.ctx.clearRect(0, config.skycamImageSizeY, this.canvasWidth / 2, this.canvasHeight - config.skycamImageSizeY);
+        ctx.save();
+        ctx.clearRect(0, config.skycamImageSizeY, this.canvasWidth / 2, this.canvasHeight - config.skycamImageSizeY);
         if (this.lastAltaz !== null) {
-            this.ctx.fillStyle = "black";
-            this.ctx.textBaseline = "top";
-            this.ctx.textAlign = "left";
-            this.ctx.font = `10pt ${this.fontFamily}`;
-            this.ctx.fillText("Az:", 0, config.skycamImageSizeY + 6);
-            this.ctx.fillText("Alt:", 51, config.skycamImageSizeY + 6);
-            this.ctx.fillText("RA", 100, config.skycamImageSizeY + 6);
-            this.ctx.fillText("Dec", 208, config.skycamImageSizeY + 6);
-            this.ctx.fillStyle = "blue";
-            this.ctx.fillText(Math.round(sla.r2d*this.lastAltaz.az), 20, config.skycamImageSizeY + 6);
+            ctx.fillStyle = "black";
+            ctx.textBaseline = "top";
+            ctx.textAlign = "left";
+            ctx.font = `10pt ${this.fontFamily}`;
+            ctx.fillText("Az:", 0, config.skycamImageSizeY + 6);
+            ctx.fillText("Alt:", 51, config.skycamImageSizeY + 6);
+            ctx.fillText("RA", 100, config.skycamImageSizeY + 6);
+            ctx.fillText("Dec", 208, config.skycamImageSizeY + 6);
+            ctx.fillStyle = "blue";
+            ctx.fillText(Math.round(sla.r2d*this.lastAltaz.az), 20, config.skycamImageSizeY + 6);
             const altDeg = Math.round(sla.r2d*this.lastAltaz.alt);
-            this.ctx.fillText(altDeg > 10 ? altDeg : "low", 74, config.skycamImageSizeY + 6);
+            ctx.fillText(altDeg > 10 ? altDeg : "low", 74, config.skycamImageSizeY + 6);
             const hadec = sla.dh2e(this.lastAltaz.az, this.lastAltaz.alt, Driver.obsLatRad);
-            this.ctx.fillText(helper.HMS(sla.rtoh * sla.dranrm(this.lst-hadec.ha), "h", "m", "s"), 121, config.skycamImageSizeY + 6);
-            this.ctx.fillText(helper.HMS(sla.r2d * hadec.dec, "°", "'", '"'), 235, config.skycamImageSizeY + 6);
+            ctx.fillText(helper.HMS(sla.rtoh * sla.dranrm(this.lst-hadec.ha), "h", "m", "s"), 121, config.skycamImageSizeY + 6);
+            ctx.fillText(helper.HMS(sla.r2d * hadec.dec, "°", "'", '"'), 235, config.skycamImageSizeY + 6);
         }
     } catch (ex) {
         helper.LogException(ex);
     } finally {
-        this.ctx.restore();
+        ctx.restore();
     }
 };
 
 /**
  * @memberof SkyGraph
  */
-SkyGraph.prototype.displayTime = function () {
+SkyGraph.prototype.displayTime = function (ctx) {
     try {
-        this.ctx.save();
+        ctx.save();
         const lt = moment.tz(telescopes[Driver.telescopeName].timezoneName);
         const utc = lt.clone().tz("UTC");
         const mjd = helper.getMJD(lt);
@@ -387,23 +393,23 @@ SkyGraph.prototype.displayTime = function () {
         const LTtext = `LT ${lt.format("YYYY-MM-DD HH:mm:ss")}`;
         const MJDtext = `MJD ${mjd.toFixed(5)}`;
         const STtext = `LST ${helper.HMS(sla.rtoh * this.lst, ":", ":", "")}`;
-        this.ctx.clearRect(this.canvasWidth / 2, config.skycamImageSizeY, this.canvasWidth / 2, this.canvasHeight - config.skycamImageSizeY);
-        this.ctx.font = `10pt ${this.fontFamily}`;
-        this.ctx.fillStyle = "gray";
-        this.ctx.textBaseline = "top";
-        this.ctx.textAlign = "left";
-        this.ctx.fillText(UTtext, config.skycamImageSizeX / 2 + 40, config.skycamImageSizeY + 6);
-        this.ctx.fillText(LTtext, config.skycamImageSizeX / 2 + 40, config.skycamImageSizeY + 24);
-        this.ctx.textAlign = "right";
-        this.ctx.fillText(MJDtext, config.skycamImageSizeX, config.skycamImageSizeY + 6);
-        this.ctx.fillText(STtext, config.skycamImageSizeX, config.skycamImageSizeY + 24);
+        ctx.clearRect(this.canvasWidth / 2, config.skycamImageSizeY, this.canvasWidth / 2, this.canvasHeight - config.skycamImageSizeY);
+        ctx.font = `10pt ${this.fontFamily}`;
+        ctx.fillStyle = "gray";
+        ctx.textBaseline = "top";
+        ctx.textAlign = "left";
+        ctx.fillText(UTtext, config.skycamImageSizeX / 2 + 40, config.skycamImageSizeY + 6);
+        ctx.fillText(LTtext, config.skycamImageSizeX / 2 + 40, config.skycamImageSizeY + 24);
+        ctx.textAlign = "right";
+        ctx.fillText(MJDtext, config.skycamImageSizeX, config.skycamImageSizeY + 6);
+        ctx.fillText(STtext, config.skycamImageSizeX, config.skycamImageSizeY + 24);
         if (this.lastAltaz !== null) {
-            this.displayCoords();
+            this.displayCoords(ctx);
         }
     } catch (ex) {
         helper.LogException(ex);
     } finally {
-        this.ctx.restore();
+        ctx.restore();
     }
 };
 
@@ -464,21 +470,33 @@ SkyGraph.prototype.EvtKeyDown = function (e) {
     }
 
     const step = 2; // pixels per keypress
-
-    switch (e.which) {
-    case 37: // left
+    let mustRedraw = false;
+    switch (e.key) {
+    case "ArrowLeft":
         this.cursorPx.x -= step;
+        mustRedraw = true;
         break;
-    case 38: // up
+    case "ArrowUp":
         this.cursorPx.y -= step;
+        mustRedraw = true;
         break;
-    case 39: // right
+    case "ArrowRight":
         this.cursorPx.x += step;
+        mustRedraw = true;
         break;
-    case 40: // down
+    case "ArrowDown":
         this.cursorPx.y += step;
+        mustRedraw = true;
+        break;
+    case "s":
+        // Save as pdf
+        serializer.saveSkyGraph();
         break;
     default:
+        return;
+    }
+
+    if (!mustRedraw) {
         return;
     }
 
@@ -488,7 +506,7 @@ SkyGraph.prototype.EvtKeyDown = function (e) {
 
     // Update derived alt/az
     this.lastAltaz = this.px2altaz(this.cursorPx.x, this.cursorPx.y);
-    this.redraw();
+    this.redraw(this.ctx);
 };
 
 /**
@@ -512,7 +530,7 @@ SkyGraph.prototype.EvtMouseMove = function (e) {
             this.lastAltaz = this.px2altaz(posX, posY);
             this.cursorPx = { x: posX, y: posY };
         }
-        this.redraw();
+        this.redraw(this.ctx);
     } catch (ex) {
         helper.LogException(ex);
     }
@@ -528,7 +546,7 @@ SkyGraph.prototype.EvtMouseOut = function () {
     try {
         this.lastAltaz = null;
         this.cursorPx = null;
-        this.redraw();
+        this.redraw(this.ctx);
     } catch (ex) {
         helper.LogException(ex);
     }

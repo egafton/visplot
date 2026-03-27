@@ -18,7 +18,7 @@ function Driver() {
         /* HTML5 canvas, context and Graph class - related variables */
         this.canvas = document.getElementById("canvasFrame");
         this.context = this.canvas.getContext("2d");
-        this.graph = new Graph(this.canvas, this.context);
+        this.graph = new Graph();
         this.rescaleCanvas(this.canvas, this.context);
         this.graph.Resize(this.canvas);
 
@@ -1012,7 +1012,7 @@ Driver.prototype.BtnEvtSkycamClick = function () {
                 driver.skyGraph.stopTimer();
             }
         });
-        this.skyGraph.redraw();
+        this.skyGraph.redraw(this.skyContext);
     } catch (ex) {
         helper.LogException(ex);
     }
@@ -1040,52 +1040,52 @@ Driver.prototype.UpdateInstrumentList = function () {
 Driver.prototype.BindEvents = function () {
     // Allow the current date to be changed with a simple Enter key
     $("#dateD").keydown(function (e) {
-        if (e.which === 13) {
+        if (e.key === "Enter") {
             $("#dateSet").trigger("click");
         }
     });
     $("#dateM").keydown(function (e) {
-        if (e.which === 13) {
+        if (e.key === "Enter") {
             $("#dateSet").trigger("click");
         }
     });
     $("#dateY").keydown(function (e) {
-        if (e.which === 13) {
+        if (e.key === "Enter") {
             $("#dateSet").trigger("click");
         }
     });
     $("#def_epoch").keydown(function (e) {
-        if (e.which === 13) {
+        if (e.key === "Enter") {
             $("#configsubmit").val("true");
             $.fancybox.close();
         }
     });
     $("#def_project").keydown(function (e) {
-        if (e.which === 13) {
+        if (e.key === "Enter") {
             $("#configsubmit").val("true");
             $.fancybox.close();
         }
     });
     $("#def_type").keydown(function (e) {
-        if (e.which === 13) {
+        if (e.key === "Enter") {
             $("#configsubmit").val("true");
             $.fancybox.close();
         }
     });
     $("#def_maxam").keydown(function (e) {
-        if (e.which === 13) {
+        if (e.key === "Enter") {
             $("#configsubmit").val("true");
             $.fancybox.close();
         }
     });
     $("#def_obstime").keydown(function (e) {
-        if (e.which === 13) {
+        if (e.key === "Enter") {
             $("#configsubmit").val("true");
             $.fancybox.close();
         }
     });
     $("#def_instrument").keydown(function (e) {
-        if (e.which === 13) {
+        if (e.key === "Enter") {
             $("#configsubmit").val("true");
             $.fancybox.close();
         }
@@ -1193,13 +1193,13 @@ Driver.prototype.BindEvents = function () {
         $(`#def_col_${k.replace("-", "_")}`).addClass("inpshort");
         $(`#def_tcol_${k.replace("-", "_")}`).addClass("inpshort");
         $(`#def_col_${k.replace("-", "_")}`).keydown(function (e) {
-            if (e.which === 13) {
+            if (e.key === "Enter") {
                 $("#configsubmit").val("true");
                 $.fancybox.close();
             }
         });
         $(`#def_tcol_${k.replace("-", "_")}`).keydown(function (e) {
-            if (e.which === 13) {
+            if (e.key === "Enter") {
                 $("#configsubmit").val("true");
                 $.fancybox.close();
             }

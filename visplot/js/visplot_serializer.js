@@ -26,12 +26,55 @@ serializer.BindEvents = function () {
     });
 
     $("#pdfExport").click(function () {
-        serializer.exportPDF();
+        serializer.saveGraph();
     });
 
     $("#tcsSave").click(function () {
         serializer.saveTCS();
     });
+};
+
+serializer.saveGraph = function () {
+    const w = driver.canvas.width / window.devicePixelRatio;
+    const h = driver.canvas.height / window.devicePixelRatio;
+    const ctx = new C2S(w, h);
+    const graph = driver.graph;
+    graph.drawTargets(ctx, driver.targets.Targets, false);
+    graph.drawEphemerides(ctx);
+    graph.drawBackground(ctx, true);
+    if (driver.scheduleMode) {
+        graph.drawSchedule(ctx);
+    } else {
+        graph.drawTargetNames(ctx, driver.targets.Targets);
+    }
+    serializer.exportPDF(ctx, w, h);
+};
+
+serializer.loadImageAsDataURL = async function (url) {
+    const res = await window.fetch(url);
+    const blob = await res.blob();
+
+    return await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(blob);
+    });
+};
+
+serializer.saveSkyGraph = async function () {
+    const graph = driver.skyGraph;
+    if (graph.params === null) {
+        return;
+    }
+    const dataURL = await serializer.loadImageAsDataURL(`${config.skycamProxy(graph.params.url)}`);
+    const img = new Image();
+    img.src = dataURL;
+    await new Promise(r => (img.onload = r));
+    const w = graph.canvasWidth / window.devicePixelRatio;
+    const h = graph.canvasHeight / window.devicePixelRatio;
+    const ctx = new C2S(w, h);
+    graph.redraw(ctx, img);
+    serializer.exportPDF(ctx, w, h);
 };
 
 /**
@@ -243,22 +286,9 @@ serializer.loadDocument = function (e) {
 /**
  * Export the canvas as a pdf file.
  */
-serializer.exportPDF = async function () {
+serializer.exportPDF = async function (ctx, w, h) {
     try {
-        helper.LogEntry("Trying to export svg file...");
-        // Save context state
-        const w = driver.canvas.width / window.devicePixelRatio;
-        const h = driver.canvas.height / window.devicePixelRatio;
-        const ctx = new C2S(w, h);
-        const graph = driver.graph;
-        graph.drawTargets(ctx, driver.targets.Targets, false);
-        graph.drawEphemerides(ctx);
-        graph.drawBackground(ctx, true);
-        if (driver.scheduleMode) {
-            graph.drawSchedule(ctx);
-        } else {
-            graph.drawTargetNames(ctx, driver.targets.Targets);
-        }
+        helper.LogEntry("Exporting pdf...");
         const svgString = ctx.getSerializedSvg(true);
         const res = await window.fetch(`${window.baseurl}assets/Ubuntu-Regular.ttf`);
         const fontData = await res.arrayBuffer();
