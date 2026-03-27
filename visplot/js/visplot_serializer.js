@@ -247,6 +247,8 @@ serializer.loadDocument = function (e) {
                     return object;
                 };
                 driver.night = Object.setPrototypeOf(obj.night, Night.prototype);
+                driver.night.DateSunset = new Date(obj.night.DateSunset);
+                driver.night.DateSunrise = new Date(obj.night.DateSunrise);
                 driver.graph = Object.setPrototypeOf(obj.graph, Graph.prototype);
                 driver.targets = Object.setPrototypeOf(obj.targets, TargetList.prototype);
                 for (let i = 0; i < obj.targets.nTargets; i += 1) {
