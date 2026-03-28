@@ -399,7 +399,8 @@ helper.MJDToHMLocal = function (d, withAbbr) {
         const timestamp = helper.getTimestampFromMJD(d);
         const l = moment.tz(timestamp, Driver.timezoneName);
         if (withAbbr) {
-            return `${l.format("H:mm")} ${l.zoneAbbr()}`;
+            const ad = helper.tzDescription(l.zoneAbbr(), l.utcOffset() / 60);
+            return `${l.format("H:mm")} ${ad.abbr}`;
         }
         return l.format("H:mm");
     } catch (ex) {
@@ -812,13 +813,12 @@ helper.ExtractUTRange = function (str, ra = null) {
 
 /**
  * Calculate the Local Sidereal Time corresponding to a given UTC time.
- * @param {Number} utc - UTC in MJD format
+ * @param {Number} mjd - UTC in MJD format
  * @param {Number} eqeqx - Equation of the equinoxes
  */
-helper.stl = function(utc, eqeqx) {
-    return sla.dranrm(sla.gmst(utc + Driver.currentDut) +
-                      Driver.obsLonRad +
-                      eqeqx);
+helper.stl = function(mjd, eqeqx = null) {
+    const _eqeqx = eqeqx === null ? sla.eqeqx(mjd) : eqeqx;
+    return sla.dranrm(sla.gmst(mjd + Driver.currentDut) + Driver.obsLonRad + _eqeqx);
 };
 
 /**

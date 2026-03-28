@@ -180,7 +180,7 @@ Night.prototype.setEphemerides = function () {
             this.ymoon.push(sla.r2d * ell);
             this.rmoon.push(0.5*diam);
             // LST angles
-            const lstangle = sla.dranrm(sla.gmst(ut) + Driver.obsLonRad) + this.eqeqx;
+            const lstangle = helper.stl(ut, this.eqeqx);
             this.LSTangles.push(lstangle);
         }
         this.DateSunset = new Date(Date.UTC(this.tSunset[0], this.tSunset[1]-1, this.tSunset[2], this.tSunset[3], this.tSunset[4], this.tSunset[5], 0));
@@ -215,7 +215,7 @@ Night.prototype.setEphemerides = function () {
             const djutc = helper.getMJD(ltStart);
             const localHour = ltStart.hour();
             // LST calculation
-            const stl = sla.dr2tf(1, sla.dranrm(sla.gmst(djutc) + Driver.obsLonRad) + this.eqeqx);
+            const stl = sla.dr2tf(1, helper.stl(djutc, this.eqeqx));
             this.LSTlabels.push(`${stl.ihmsf[0]}:${stl.ihmsf[1] < 10 ? "0" : ""}${stl.ihmsf[1].toFixed(0)}`);
             this.LocalTimetimes.push(djutc);
             this.LocalTimelabels.push(localHour === 0 ? "24" : localHour.toString());
