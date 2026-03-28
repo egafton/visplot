@@ -6,7 +6,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. See LICENSE.md.
  */
-$version = "5.0m";
+$version = "5.0n";
 /*
 * Version history (with brief changelog):
 *
@@ -158,6 +158,8 @@ $version = "5.0m";
 *      - Proposal id is now free-form and allows spaces.
 *
 * 5.0m - Simplified some time and timezone calculations.
+*
+* 5.0n - Added autosave feature for target list.
 */
 session_start();
 if (isset($_SESSION["obinfo"])) {

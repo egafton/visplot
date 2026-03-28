@@ -60,6 +60,14 @@ $(document).ready(function () {
             });
         $("#num_telescopes").html(Object.keys(telescopes).length);
 
+        // Restore autosaved content, if any
+        if ("autosaved" in localStorage && localStorage.autosaved !== null) {
+            driver.CMeditor.setValue(localStorage.autosaved);
+        }
+        window.addEventListener("beforeunload", () => {
+            driver.autosave();
+        });
+
         /*
         * If there is a configuration saved in localStorage, retrieve it.
         */

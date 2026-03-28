@@ -13,6 +13,7 @@
  */
 /* eslint no-unused-vars: "off" */
 const config = {
+    autosaveDebounceTime: 5000, // ms
     graphFont: "Ubuntu, sans-serif",
     graphResolutionTimeAxis: 1000, // number of points on the x-axis
     graphCurrentTimeRefreshInterval: 5000, // ms

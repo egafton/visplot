@@ -80,6 +80,14 @@ function Driver() {
             }
         });
 
+        // Create debounced function once
+        this.debouncedAutosave = this.debounce(
+            () => this.autosave(),
+            config.autosaveDebounceTime
+        );
+
+        this.CMeditor.on("change", this.debouncedAutosave);
+
         // "global" variables to track various browser events
         this.reObj = null; // Object that is being moved/rescheduled on the RHS
         this.reY = null; // Tracking of mouse y-position during said rescheduling
@@ -106,6 +114,18 @@ function Driver() {
         helper.LogException(ex);
     }
 }
+
+Driver.prototype.debounce = function(fn, delay) {
+    let timer = null;
+    return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn(...args), delay);
+    };
+};
+
+Driver.prototype.autosave = function() {
+    localStorage.setItem("autosaved", driver.CMeditor.getValue());
+};
 
 Driver.prototype.getCachedMajorBodies = function() {
     try {

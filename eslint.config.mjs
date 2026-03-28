@@ -31,6 +31,7 @@ export default [
         setInterval: "readonly",
         clearInterval: "readonly",
         setTimeout: "readonly",
+        clearTimeout: "readonly",
         localStorage: "readonly",
         console: "readonly",
         document: "readonly",
