@@ -29,8 +29,14 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 if (!isset($_GET['url']) || $_GET['url'] === '') {
     die("URL not provided");
 }
+$t = null;
+if (!isset($_GET['t']) || $_GET['t'] === '') {
+    $t = time();
+} else {
+    $t = $_GET['t'];
+}
 
-$url = $_GET['url'] . "?t=" . time();
+$url = $_GET['url'] . "?t=" . $t;
 $data = @file_get_contents($url, false, stream_context_create($arrContextOptions));
 
 if ($data === false) {

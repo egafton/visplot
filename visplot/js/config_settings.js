@@ -23,14 +23,14 @@ const config = {
         "badwolf"
     ],
     skycamTimeRefreshInterval: 500, // ms
-    skycamImageRefreshInterval: 30000, // ms
+    skycamImageRefreshInterval: 15000, // ms
     skycamRequestTimeout: 3000, // ms
     skycamTcsTimeout: 3000, // ms
     skycamTcsCrosshairColor: "#9f3",
     skycamImageSizeX: 640, // px
     skycamImageSizeY: 480, // px
-    skycamProxy: function(url) {
-        return `${window.baseurl}skycam_proxy.php?url=${encodeURIComponent(url)}`;
+    skycamProxy: function(url, t) {
+        return `${window.baseurl}skycam_proxy.php?url=${encodeURIComponent(url)}&t=${t}`;
     },
     stdPressure: 1013.25, // hPa
     stdTemperature: 298.15, // K, 15 deg

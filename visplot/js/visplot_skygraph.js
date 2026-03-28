@@ -149,12 +149,13 @@ SkyGraph.prototype.refreshRemote = function () {
         return;
     }
     try {
-        this.skyImg.src = `${config.skycamProxy(this.params.url)}`;
+        const t = new Date().getTime();
+        this.skyImg.src = config.skycamProxy(this.params.url, t);
         $.get({
             url: `${window.baseurl}pointing.php`,
             data: {
                 telescope: Driver.telescopeName,
-                t: new Date().getTime()
+                t: t
             },
             timeout: config.skycamTcsTimeout,
             success: function (obj) {
