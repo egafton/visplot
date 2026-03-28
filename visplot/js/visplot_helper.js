@@ -365,44 +365,21 @@ helper.HMS = function (time, sep1, sep2, sep3, precision=0) {
 };
 
 /**
- * Convert MJD to H:MM format
+ * Convert MJD to H:MM format (UTC)
  */
-helper.MJDToHM = function (d, padHours=false) {
+helper.MJDToHM = function (d, tz="UTC", withAbbr=false) {
     try {
-        const t = new Date(driver.night.DateSunset);
-        t.setUTCSeconds(t.getUTCSeconds() + (d - driver.night.Sunset) * sla.d2s);
-        const ss = t.getUTCSeconds();
-        let mm = t.getUTCMinutes();
-        let hh = t.getUTCHours();
-        // Round up if necessary
-        if (ss > 30) {
-            mm += 1;
+        const utc = Driver.isUTC || tz === "UTC";
+        if (tz !== "UTC" && tz !== "local") {
+            throw new Error(`Unknown timezone specification: ${tz}`);
         }
-        if (mm === 60) {
-            hh += 1;
-            mm = 0;
-        }
-        if (hh === 24) {
-            hh = 0;
-        }
-        return `${padHours ? helper.padTwoDigits(hh) : hh}:${helper.padTwoDigits(mm)}`;
-    } catch (ex) {
-        helper.LogException(ex);
-    }
-};
-
-/**
- * Convert MJD to H:MM format in the local time at the telescope.
- */
-helper.MJDToHMLocal = function (d, withAbbr) {
-    try {
         const timestamp = helper.getTimestampFromMJD(d);
-        const l = moment.tz(timestamp, Driver.timezoneName);
+        const l = moment.tz(timestamp, utc ? "UTC" : Driver.timezoneName);
         if (withAbbr) {
-            const ad = helper.tzDescription(l.zoneAbbr(), l.utcOffset() / 60);
-            return `${l.format("H:mm")} ${ad.abbr}`;
+            const abbr = utc ? "UTC" : helper.tzDescription(l.zoneAbbr(), l.utcOffset() / 60).abbr;
+            return `${l.round(1, "minutes").format("H:mm")} ${abbr}`;
         }
-        return l.format("H:mm");
+        return l.round(1, "minutes").format("H:mm");
     } catch (ex) {
         helper.LogException(ex);
     }

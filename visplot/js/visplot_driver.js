@@ -882,7 +882,7 @@ Driver.prototype.EvtFrameClick = function (e) {
                     `<p class="pp">Dec: <b>${obj.Dec.replace("-", "–")}</b></p>` +
                     `<p class="pp">Epoch: <b>${obj.Epoch === "1950" ? "B1950" : "J2000"}</b></p>` +
                     `<p class="pp">Moon Distance: <span title="${helper.LunarPhaseExplanation(LunarPhase)}"><b>${obj.MinMoonDistance}°</b> (${LunarPhase})</span></p>` +
-                    `<p class="pp">Moon Closest At: <b>${helper.MJDToHM(obj.MinMoonDistanceTime, true)} UTC</b></p>` +
+                    `<p class="pp">Moon Closest At: <b>${helper.MJDToHM(obj.MinMoonDistanceTime, "UTC", true)}</b></p>` +
                     `<p class="pp">Obstime: <b>${obj.ExptimeSeconds.toFixed(0)} s</b> (${obj.ExptimeHM})</p>` +
                     "$INSTRUMENT" +
                     "$MODE" +

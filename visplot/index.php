@@ -6,7 +6,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. See LICENSE.md.
  */
-$version = "5.0l";
+$version = "5.0m";
 /*
 * Version history (with brief changelog):
 *
@@ -156,6 +156,8 @@ $version = "5.0l";
 *
 * 5.0l - Improved handling of local times during DST changes.
 *      - Proposal id is now free-form and allows spaces.
+*
+* 5.0m - Simplified some time and timezone calculations.
 */
 session_start();
 if (isset($_SESSION["obinfo"])) {
@@ -483,6 +485,7 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
     <script src="<?php echo($baseurl);?>js/jsplitter.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
     <script src="<?php echo($baseurl);?>js/canvas2svg.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
     <script src="<?php echo($baseurl);?>js/moment-timezone-with-data.min.js?v=<?php echo($version);?>"></script>
+    <script src="<?php echo($baseurl);?>js/moment-round.min.js?v=<?php echo($version);?>"></script>
     <script src="<?php echo($baseurl);?>js/leaflet-openweathermap.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
     <!-- Configuration files -->
     <script src="<?php echo($baseurl);?>js/config_settings.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>

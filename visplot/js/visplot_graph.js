@@ -184,7 +184,7 @@ Graph.prototype.drawRHSofSchedule = function (ctx) {
                 if (this.doubleTargets) {
                     this.plotText(ctx, `${obj.Name.substr(0, this.maxLenTgtName)} (${obj.ProjectNumber})`, "8pt", (driver.reObj === i && driver.rescheduling) ? "blue" : "black", obj.rxmid + 15, obj.rymid - 1, "left", "middle");
                 } else {
-                    this.plotText(ctx, `${obj.Name.substr(0, this.maxLenTgtName)} (${obj.ProjectNumber}; UTC ${helper.MJDToHM(obj.ScheduledStartTime)})`, "8pt", (driver.reObj === i && driver.rescheduling) ? "blue" : "black", obj.rxmid + 15, obj.rymid - 1, "left", "middle");
+                    this.plotText(ctx, `${obj.Name.substr(0, this.maxLenTgtName)} (${obj.ProjectNumber}; ${helper.MJDToHM(obj.ScheduledStartTime, "UTC", true)})`, "8pt", (driver.reObj === i && driver.rescheduling) ? "blue" : "black", obj.rxmid + 15, obj.rymid - 1, "left", "middle");
                 }
                 ctx.strokeStyle = obj.LabelStrokeColor;
                 ctx.fillStyle = obj.LabelFillColor;
@@ -204,7 +204,7 @@ Graph.prototype.drawRHSofSchedule = function (ctx) {
             }
             if (this.doubleTargets) {
                 if (obj.Scheduled) {
-                    this.plotText(ctx, `${obj.shortRA} ${obj.shortDec} (UTC ${helper.MJDToHM(obj.ScheduledStartTime)})`, this.legendSize, (driver.reObj === i && driver.rescheduling) ? "blue" : "black", obj.rxmid + 15, obj.rymid + this.targetsyskip - 1, "left", "middle");
+                    this.plotText(ctx, `${obj.shortRA} ${obj.shortDec} (${helper.MJDToHM(obj.ScheduledStartTime, "UTC", true)})`, this.legendSize, (driver.reObj === i && driver.rescheduling) ? "blue" : "black", obj.rxmid + 15, obj.rymid + this.targetsyskip - 1, "left", "middle");
                 } else {
                     this.plotText(ctx, `${obj.shortRA} ${obj.shortDec}`, this.legendSize, (driver.reObj === i && driver.rescheduling) ? "blue" : "black", obj.rxmid + 15, obj.rymid + this.targetsyskip - 1, "left", "middle");
                 }
@@ -653,11 +653,11 @@ Graph.prototype.drawEphemerides = function (ctx) {
         ctx.fillText("S.set", this.xstart, this.ystart - 22);
         ctx.fillText("S.rise", this.xend, this.ystart - 22);
         // Plot the sunset and sunrise times
-        ctx.fillText(helper.MJDToHMLocal(driver.night.Sunset), this.xstart, this.ystart - 10);
+        ctx.fillText(helper.MJDToHM(driver.night.Sunset, "local"), this.xstart, this.ystart - 10);
         if (Driver.hasDST) {
             ctx.fillStyle = "red";
         }
-        ctx.fillText(helper.MJDToHMLocal(driver.night.Sunrise), this.xend, this.ystart - 10);
+        ctx.fillText(helper.MJDToHM(driver.night.Sunrise, "local"), this.xend, this.ystart - 10);
         if (Driver.hasDST) {
             ctx.fillStyle = "black";
         }
@@ -666,28 +666,28 @@ Graph.prototype.drawEphemerides = function (ctx) {
         let xtemp;
         xtemp = this.transformXLocation(driver.night.ENauTwilight);
         ctx.fillText("Nau", xtemp, this.ystart - 22);
-        ctx.fillText(helper.MJDToHMLocal(driver.night.ENauTwilight), xtemp - 3.5, this.ystart - 10);
+        ctx.fillText(helper.MJDToHM(driver.night.ENauTwilight, "local"), xtemp - 3.5, this.ystart - 10);
         this.plotVerticalLine(ctx, this.ystart, this.yend, xtemp, twiStyle, 1.2);
         xtemp = this.transformXLocation(driver.night.MNauTwilight);
         ctx.fillText("Nau", xtemp, this.ystart - 22);
         if (Driver.hasDST) {
             ctx.fillStyle = "red";
         }
-        ctx.fillText(helper.MJDToHMLocal(driver.night.MNauTwilight), xtemp + 1, this.ystart - 10);
+        ctx.fillText(helper.MJDToHM(driver.night.MNauTwilight, "local"), xtemp + 1, this.ystart - 10);
         if (Driver.hasDST) {
             ctx.fillStyle = "black";
         }
         this.plotVerticalLine(ctx, this.ystart, this.yend, xtemp, twiStyle, 1.2);
         xtemp = this.transformXLocation(driver.night.EAstTwilight);
         ctx.fillText("Ast", xtemp, this.ystart - 22);
-        ctx.fillText(helper.MJDToHMLocal(driver.night.EAstTwilight), xtemp + 4, this.ystart - 10);
+        ctx.fillText(helper.MJDToHM(driver.night.EAstTwilight, "local"), xtemp + 4, this.ystart - 10);
         this.plotVerticalLine(ctx, this.ystart, this.yend, xtemp, twiStyle, 1.2);
         xtemp = this.transformXLocation(driver.night.MAstTwilight);
         ctx.fillText("Ast", xtemp, this.ystart - 22);
         if (Driver.hasDST) {
             ctx.fillStyle = "red";
         }
-        ctx.fillText(helper.MJDToHMLocal(driver.night.MAstTwilight), xtemp - 1, this.ystart - 10);
+        ctx.fillText(helper.MJDToHM(driver.night.MAstTwilight, "local"), xtemp - 1, this.ystart - 10);
         if (Driver.hasDST) {
             ctx.fillStyle = "black";
         }
@@ -761,18 +761,10 @@ Graph.prototype.drawEphemerides = function (ctx) {
             ctx.fillText(driver.night.MoonIlluminationString, this.xleftlabels, this.transformYLocation(75));
             if ((driver.night.Moonrise >= driver.night.Sunset) && (driver.night.Moonrise <= driver.night.Sunrise)) {
                 ctx.fillText("Moon rises:", this.xleftlabels, this.transformYLocation(71));
-                if (driver.isUTC) {
-                    ctx.fillText(`${helper.MJDToHM(driver.night.Moonrise)} UTC`, this.xleftlabels, this.transformYLocation(69));
-                } else {
-                    ctx.fillText(helper.MJDToHMLocal(driver.night.Moonrise, true), this.xleftlabels, this.transformYLocation(69));
-                }
+                ctx.fillText(helper.MJDToHM(driver.night.Moonrise, "local", true), this.xleftlabels, this.transformYLocation(69));
             } else if ((driver.night.Moonset >= driver.night.Sunset) && (driver.night.Moonset <= driver.night.Sunrise)) {
                 ctx.fillText("Moon sets:", this.xleftlabels, this.transformYLocation(71));
-                if (driver.isUTC) {
-                    ctx.fillText(`${helper.MJDToHM(driver.night.Moonset)} UTC`, this.xleftlabels, this.transformYLocation(69));
-                } else {
-                    ctx.fillText(helper.MJDToHMLocal(driver.night.Moonset, true), this.xleftlabels, this.transformYLocation(69));
-                }
+                ctx.fillText(helper.MJDToHM(driver.night.Moonset, "local", true), this.xleftlabels, this.transformYLocation(69));
             }
         }
 
