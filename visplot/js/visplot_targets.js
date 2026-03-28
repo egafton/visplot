@@ -667,6 +667,7 @@ TargetList.prototype.displayScheduleStatistics = function () {
         let timeNight = driver.night.NightLength * sla.d2s;
         let timeSched = 0;
         let i, obj, j, k, inserted, minproj, minloc, exch;
+        let maxlen = 0;
         for (i = 0; i < this.nTargets; i += 1) {
             obj = this.Targets[i];
             if (obj.Scheduled) {
@@ -681,6 +682,9 @@ TargetList.prototype.displayScheduleStatistics = function () {
                 }
                 if (inserted === false) {
                     projtime.push({"pid": obj.ProjectNumber, "exp": obj.ExptimeSeconds});
+                    if (obj.ProjectNumber.length > maxlen) {
+                        maxlen = obj.ProjectNumber.length;
+                    }
                 }
             }
         }
@@ -743,7 +747,7 @@ TargetList.prototype.displayScheduleStatistics = function () {
         if (timeSched > 0) {
             helper.LogSuccess("Breakdown of observing time per proposal:");
             for (j = 0; j < projtime.length; j += 1) {
-                helper.LogSuccess(`    ${projtime[j].pid}:  ${helper.ReportSHM(projtime[j].exp)}`);
+                helper.LogSuccess(`    ${(projtime[j].pid + ':').padEnd(maxlen + 1)}  ${helper.ReportSHM(projtime[j].exp)}`);
             }
         }
     } catch (ex) {
@@ -1101,6 +1105,7 @@ TargetList.prototype.processTargetListAfterSIMBAD = function(lines) {
             if (words[8].length > this.MaxLen.Exp) {
                 this.MaxLen.Exp = words[8].length;
             }
+            words[9] = helper.quoteIfNeeded(words[9]);
             if (words[9].length > this.MaxLen.ProposalId) {
                 this.MaxLen.ProposalId = words[9].length;
             }
@@ -1594,17 +1599,6 @@ TargetList.prototype.extractLineInfo = function (linenumber, linetext) {
     /* Validate exptime */
     if (helper.notInt(words[8]) && words[8] !== "*") {
         throw new Error("Non-integer value detected in [OBSTIME]");
-    }
-    /* Validate the proposal id; different telescopes use different formats */
-    const valid = driver.validateProjectNumber(words[9]);
-    const form = valid[0];
-    const reqlen = valid[1];
-    const reok = valid[2];
-    if (words[9].length !== reqlen) {
-        throw new Error(`[PROJECT] (${words[9]}, ${words[9].length}, ${reqlen}) does not have the same length as ${form}`);
-    }
-    if (!reok) {
-        throw new Error(`[PROJECT] (${words[9]}) does not respect the ${form} syntax`);
     }
     /* Validate constraints */
     if (helper.notFloat(words[10])) {

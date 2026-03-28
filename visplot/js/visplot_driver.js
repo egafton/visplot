@@ -536,7 +536,7 @@ Driver.prototype.CallbackSetDate = function (obj) {
                 } else {
                     constraint = obj.Constraint;
                 }
-                const line = obj.Name + " " + obj.RA + (parseFloat(obj.PM.RA) === 0.0 ? "" : "/" + parseFloat(obj.PM.RA)) + " " + obj.Dec + (parseFloat(obj.PM.Dec) === 0.0 ? "" : "/" + parseFloat(obj.PM.Dec)) + " " + parseInt(obj.Epoch) + " " + obj.ObsTime + " " + obj.Proposal + " " + constraint + " " + obj.Type + " " + `${obj.Instrument}:${obj.Mode}:${obj.GroupID}:${obj.BlockID}`;
+                const line = helper.quoteIfNeeded(obj.Name) + " " + obj.RA + (parseFloat(obj.PM.RA) === 0.0 ? "" : "/" + parseFloat(obj.PM.RA)) + " " + obj.Dec + (parseFloat(obj.PM.Dec) === 0.0 ? "" : "/" + parseFloat(obj.PM.Dec)) + " " + parseInt(obj.Epoch) + " " + obj.ObsTime + " " + helper.quoteIfNeeded(obj.Proposal) + " " + constraint + " " + obj.Type + " " + `${obj.Instrument}:${obj.Mode}:${obj.GroupID}:${obj.BlockID}`;
                 lines.push(line);
             }
             this.obprocessed = true;
@@ -1124,14 +1124,7 @@ Driver.prototype.BindEvents = function () {
         // Set instrument name to default
         $("#def_instrument").val(telescopes[tel].defaultInstrument || "default");
         // Set project number to default if not compatible with telescope
-        driver.setTelescopeName(tel).then(function () {
-            const valid = driver.validateProjectNumber(Driver.defaultProject);
-            if (!valid[2]) {
-                Driver._defaultProject = false;
-                Driver._defaultProject = Driver.defaultProject;
-                $("#def_project").val(Driver.defaultProject);
-            }
-        });
+        driver.setTelescopeName(tel);
     });
 
     // Help button
@@ -1324,15 +1317,8 @@ Driver.prototype.CallbackUpdateDefaultsAfterTelUpdate = function (resetTel) {
         }
         re = $("#def_project").val().trim();
         if (re !== Driver.defaultProject) {
-            const valid = driver.validateProjectNumber(re);
-            const form = valid[0];
-            const reok = valid[2];
-            if (!reok) {
-                helper.LogError(`Default <i>Proposal ID</i> was not updated since the input <i>${re}</i> is invalid (must have the form ${form}).`);
-            } else {
-                Driver.defaultProject = re;
-                helper.LogSuccess(`Default <i>Proposal ID</i> set to <i>${re}</i>.`);
-            }
+            Driver.defaultProject = re;
+            helper.LogSuccess(`Default <i>Proposal ID</i> set to <i>${re}</i>.`);
         }
         re = $("#def_type").val().trim();
         if (re !== Driver.defaultType) {
@@ -1650,35 +1636,6 @@ Driver.prototype.rescaleCanvas = function (cnv, ctx) {
 
         // Save for later
         window.ratio = ratio;
-    } catch (ex) {
-        helper.LogException(ex);
-    }
-};
-
-/**
- * @memberof Driver
- */
-Driver.prototype.validateProjectNumber = function (project) {
-    try {
-        let form, reqlen, reok;
-        if (Driver.telescopeName === "HJST") {
-            reqlen = 8;
-            form = "NNN-27NN";
-            reok = !(helper.notInt(project.substr(0, 3)) || helper.notInt(project.substr(6, 2)) || project.substr(4, 2) !== "27" || project.substr(3, 1) !== "-");
-        } else if (Driver.telescopeName === "OST") {
-            reqlen = 8;
-            form = "NNN-21NN";
-            reok = !(helper.notInt(project.substr(0, 3)) || helper.notInt(project.substr(6, 2)) || project.substr(4, 2) !== "21" || project.substr(3, 1) !== "-");
-        } else if (Driver.telescopeName === "HET") {
-            reqlen = 9;
-            form = "UTNNN-NNN";
-            reok = !(helper.notInt(project.substr(2, 3)) || helper.notInt(project.substr(6, 3)) || project.substr(0, 2) !== "UT" || project.substr(5, 1) !== "-");
-        } else {
-            reqlen = 6;
-            form = "NN-NNN";
-            reok = !(helper.notInt(project.substr(0, 2)) || helper.notInt(project.substr(3, 3)) || project.substr(2, 1) !== "-");
-        }
-        return [form, reqlen, reok];
     } catch (ex) {
         helper.LogException(ex);
     }

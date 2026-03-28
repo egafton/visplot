@@ -90,9 +90,7 @@ const config = {
         }
     },
     defaultInstrument: "default",
-    defaultProject: function(tel) {
-        return tel === "HJST" ? "223-2701" : (tel === "OST" ? "223-2101" : ( tel === "HET" ? "UT223-001" : "65-199"));
-    },
+    defaultProject: "default",
     defaultWPriority: 2,
     defaultWUrgency: 1,
     defaultWAltitude: 1,

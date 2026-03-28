@@ -155,6 +155,7 @@ $version = "5.0l";
 *      - Improved serialization and parsing routines.
 *
 * 5.0l - Improved handling of local times during DST changes.
+*      - Proposal id is now free-form and allows spaces.
 */
 session_start();
 if (isset($_SESSION["obinfo"])) {
@@ -319,7 +320,7 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
                 <span class="defdetails">Must be an integer.</span>
 
                 <span class="middle"><span class="llbl">Proposal ID:</span><input type="text" id="def_project"/></span><br/>
-                <span class="defdetails">Must have the form <code>NN-NNN</code> (for NOT), <code>NNN-27NN</code> (for HJST), <code>NNN-21NN</code> (for OST), <code>UTNNN-NNN</code> (for HET).</span>
+                <span class="defdetails"></span>
 
                 <span class="middle"><span class="llbl">Maximum airmass:</span><input type="text" id="def_maxam"/></span><br/>
                 <span class="defdetails">Must be a float.</span>
@@ -394,7 +395,7 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
                 • <code>[EPOCH]</code> is the epoch of the coordinates; the only valid options are <code>2000</code> (corresponding to J2000) and <code>1950</code> (corresponding to B1950);<br/>
                 • <code>[OBSTIME]</code>  is the total observing time (<b>including overheads</b>) in seconds;<br/>
                   Alternatively, <code>[OBSTIME]</code> can be <code>*</code> , in which case the object will be scheduled with absolute priority for the entire time interval (useful for, e.g., time-critical monitoring);<br/>
-                • <code>[PROJECT]</code> is the project number (used for accounting purposes, but also for priority-based scheduling);<br/>
+                • <code>[PROJECT]</code> is a project/proposal identifier associated with the target;<br/>
                 • <code>[CONSTRAINTS]</code>  are the observing constraints, either airmass (e.g., <code>2.0</code>, <code>AM1.5</code>, <code>AM[1.2-1.4]</code>),
                   moon distance in degrees (e.g., <code>MOON40</code>, <code>MOON[40-180]</code>), an hour angle range (<code>HA[0-3]</code>, <code>HA[-2-2]</code>),
                   a UTC range (<code>UTC[20:00-23:30]</code>), an LST range (<code>LST[2-4:30]</code>), <b>or</b> a combination of any of the above separated by commas
@@ -411,16 +412,19 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
             <div id="help-right">
                 <span class="sh1"><b>Note:</b> The fields <code>[EPOCH]</code>, <code>[OBSTIME]</code>, <code>[PROJECT]</code>, <code>[CONSTRAINTS]</code>,
                     <code>[TYPE]</code>, <code>[OBINFO]</code>, <code>[SKYPA]</code> and <code>[PRIORITY]</code> are optional, and will be filled with
-                    default values (i.e., <code>2000 600 54-199 2.0 Staff default 0 1</code>) if missing.</span><br/>
+                    default values (i.e., <code>2000 600 default 2.0 Staff default 0 1</code>) if missing.</span><br/>
+
+                <span class="sh1"><b>Note:</b> The fields <code>[NAME]</code> and <code>[PROJECT]</code> may contain spaces, in which case they must be quoted: <code>"Object 5"</code>.</span>
+                <br/>
 
                 <span class="sh1"><b>Examples of valid input formats:</b></span>
                 • <code>EQPsc 23 34 34 -01 19 36</code><br/>
                   This will fill the extra fields with the default values.<br/>
 
-                • <code>EQPsc 23 34 34.70 -01 19 36.01 2000 2600 54-321 2.0 Monitor default</code><br/>
+                • <code>EQPsc 23 34 34.70 -01 19 36.01 2000 2600 54-321 2.0 Monitor default 0 1</code><br/>
                   This is the most frequent way of filling the input field, and is also used by the OB generator.<br/>
 
-                • <code>EQPsc 23:34:34.70 -01:19:36.01 2000 2600 54-321 2.0 Monitor default</code><br/>
+                • <code>EQPsc 23:34:34.70 -01:19:36.01 2000 2600 54-321 2.0 Monitor default 0 1</code><br/>
                   Sometimes, observers prefer to use colon-separated RA and Dec, which is fine.<br/>
 
                 • <code>HD84937 09 46 12.06/0.373 13 59 17.44/-0.774 1950 414 54-501 1.5 ToO</code><br/>
