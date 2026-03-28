@@ -190,27 +190,36 @@ Night.prototype.setEphemerides = function () {
         // Calculate UTC labels
         this.UTCtimes = [];
         this.UTClabels = [];
-        const startUTC = helper.mjdToUTCHours(this.Sunset);
-        const firstUTC = Math.ceil(startUTC);
-        for (let h = 0; h < 48; h += 1) {
-            const hour = (firstUTC + h) % 24;
-            const dayOffset = Math.floor((firstUTC + h) / 24);
-            const djutc = Math.floor(this.Sunset) + dayOffset + hour / 24;
-            if (djutc >= this.Sunrise) {
-                break;
-            }
+        const utcSunset = moment.tz(this.DateSunset, "UTC");
+        let utcSunrise = moment.tz(this.DateSunrise, "UTC");
+        if (utcSunrise.minute() === 59) { // 1-min tolerance for plotting
+            utcSunrise.add(1, "hours");
+        }
+        let utcStart = utcSunset.clone().startOf("hour");
+        if (utcSunset.minute() > 0) { // 1-min tolerance for plotting
+            utcStart.add(1, "hours");
+        }
+        while (utcStart < utcSunrise) {
+            const djutc = helper.getMJD(utcStart);
+            const utcHour = utcStart.hour();
             this.UTCtimes.push(djutc);
-            this.UTClabels.push(hour === 0 ? "24" : hour.toString());
+            this.UTClabels.push(utcHour === 0 ? "24" : utcHour.toString());
+            // Advance
+            utcStart.add(1, "hours");
         }
         // Calculate LST labels
         this.LocalTimetimes = [];
         this.LocalTimelabels = [];
         const ltSunset = moment.tz(this.DateSunset, Driver.timezoneName);
-        let ltStart = ltSunset.clone().set("minutes", 0).set("seconds", 0).set("milliseconds", 0);
-        if (ltStart.unix() !== ltSunset.unix()) {
+        let ltSunrise = moment.tz(this.DateSunrise, Driver.timezoneName);
+        if (ltSunrise.minute() === 59) { // 1-min tolerance for plotting
+            ltSunrise.add(1, "hours");
+        }
+        let ltStart = ltSunset.clone().startOf("hour");
+        if (ltSunset.minute() > 0) { // 1-min tolerance for plotting
             ltStart.add(1, "hours");
         }
-        while (ltStart < this.DateSunrise) {
+        while (ltStart < ltSunrise) {
             // Calculate Labels
             const djutc = helper.getMJD(ltStart);
             const localHour = ltStart.hour();
