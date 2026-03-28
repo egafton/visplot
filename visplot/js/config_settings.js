@@ -59,26 +59,26 @@ const config = {
     defaultType: "Staff",
     allowedTypes: ["Monitor", "ToO", "SoftToO", "Payback", "Fast-Track", "Service", "CATService", "Visitor", "Staff"],
     defaultFillColors: {
-        "Monitor": "orange",
-        "ToO": "#FF9900",
-        "SoftToO": "#FFFF99",
-        "Payback": "blue",
-        "Fast-Track": "blue",
+        "Monitor": "turquoise",
+        "ToO": "orangered",
+        "SoftToO": "GoldenRod",
+        "Payback": "DarkMagenta",
+        "Fast-Track": "Green",
         "Service": "blue",
-        "CATService": "blue",
-        "Visitor": "blue",
-        "Staff": "blue"
+        "CATService": "plum",
+        "Visitor": "violet",
+        "Staff": "springGreen"
     },
     defaultTextColors: {
         "Monitor": "black",
-        "ToO": "black",
+        "ToO": "white",
         "SoftToO": "black",
         "Payback": "white",
         "Fast-Track": "white",
         "Service": "white",
-        "CATService": "white",
-        "Visitor": "white",
-        "Staff": "white"
+        "CATService": "black",
+        "Visitor": "black",
+        "Staff": "black"
     },
     defaultSkyPA: 0, // deg
     defaultPriority: 1,
