@@ -21,7 +21,7 @@ telescopes["NOT"] = {
     site: "Roque de Los Muchachos",
 
     // Full name of the telescope
-    name: "Nordic Optical Telescope 2.5m",
+    name: "Nordic Optical Telescope (NOT) 2.5m",
 
     // Location (island, country)
     location: "La Palma, Spain",
@@ -101,7 +101,7 @@ telescopes["WHT"] = {
     site: "Roque de Los Muchachos",
 
     // Full name of the telescope
-    name: "William Herschel Telescope 4.2m",
+    name: "William Herschel Telescope (WHT) 4.2m",
 
     // Location (island, country)
     location: "La Palma, Spain",
@@ -169,7 +169,7 @@ telescopes["INT"] = {
     site: "Roque de Los Muchachos",
 
     // Full name of the telescope
-    name: "Isaac Newton Telescope 2.5m",
+    name: "Isaac Newton Telescope (INT) 2.5m",
 
     // Location (island, country)
     location: "La Palma, Spain",
@@ -239,7 +239,7 @@ telescopes["CSS 60in"] = {
     site: "Mt. Lemmon",
 
     // Full name of the telescope
-    name: "Catalina Sky Survey 60in Survey Telescope",
+    name: "Catalina Sky Survey (CSS) 60in Survey Telescope",
 
     // Location (state, country)
     location: "Arizona, United States",
@@ -280,7 +280,7 @@ telescopes["WIRO"] = {
     site: "Jelm Mt.",
 
     // Full name of the telescope
-    name: "Wyoming Infrared Observatory 2.3m",
+    name: "Wyoming Infrared Observatory (WIRO) 2.3m",
 
     // Location (state, country)
     location: "Wyoming, United States",
@@ -493,7 +493,7 @@ telescopes["HJST"] = {
     site: "Mt. Locke, McDonald Observatory",
 
     // Full name of the telescope
-    name: "Harlan J. Smith Telescope 2.7m",
+    name: "Harlan J. Smith Telescope (HJST) 2.7m",
 
     // Location (state, country)
     location: "Texas, United States",
@@ -594,7 +594,7 @@ telescopes["OST"] = {
     site: "Mt. Locke, McDonald Observatory",
 
     // Full name of the telescope
-    name: "Otto Struve Telescope 2.1m",
+    name: "Otto Struve Telescope (OST) 2.1m",
 
     // Location (state, country)
     location: "Texas, United States",
@@ -647,7 +647,7 @@ telescopes["HET"] = {
     site: "Mt. Fowlkes, McDonald Observatory",
 
     // Full name of the telescope
-    name: "Hobby-Eberly Telescope 10m",
+    name: "Hobby-Eberly Telescope (HET) 10m",
 
     // Location (state, country)
     location: "Texas, United States",
@@ -697,7 +697,7 @@ telescopes["CDK"] = {
     site: "Kennon Observatory",
 
     // Full name of the telescope
-    name: "Kennon Observatory CDK 17in",
+    name: "CDK 17in",
 
     // Location (state, country)
     location: "Mississippi, United States",
@@ -738,7 +738,7 @@ telescopes["DSO"] = {
     site: "Appalachian State University",
 
     // Full name of the telescope
-    name: "Dark Sky Observatory 32in",
+    name: "Dark Sky Observatory (DSO) 32in",
 
     // Location (state, country)
     location: "North Carolina, United States",
@@ -789,7 +789,7 @@ telescopes["CTJO"] = {
     site: "University of Tennessee at Chattanooga",
 
     // Full name of the telescope
-    name: "Clarence T. Jones Observatory 20.5in",
+    name: "Clarence T. Jones Observatory (CTJO) 20.5in",
 
     // Location (state, country)
     location: "Tennessee, United States",
@@ -830,7 +830,7 @@ telescopes["VLT"] = {
     site: "Cerro Paranal",
 
     // Full name of the telescope
-    name: "Very Large Telescope 4×8.2m",
+    name: "Very Large Telescope (VLT) 4×8.2m",
 
     // Country
     location: "Chile",
@@ -874,7 +874,7 @@ telescopes["VLT"] = {
  */
 telescopes["TNG"] = {
     site: "Roque de Los Muchachos",
-    name: "Telescopio Nazionale Galileo 3.6m",
+    name: "Telescopio Nazionale Galileo (TNG) 3.6m",
     location: "La Palma, Spain",
     latitude: 28.75411,
     longitude: -17.88910,
@@ -892,7 +892,7 @@ telescopes["Mercator Telescope"] = {
 };
 telescopes["GTC"] = {
     site: "Roque de Los Muchachos",
-    name: "Gran Telescopio Canarias 10.4m",
+    name: "Gran Telescopio Canarias (GTC) 10.4m",
     location: "La Palma, Spain",
     latitude: 28.75666,
     longitude: -17.89200,
@@ -901,7 +901,7 @@ telescopes["GTC"] = {
 };
 telescopes["LBT"] = {
     site: "Mt. Graham",
-    name: "Large Binocular Telescope 2×8.4m",
+    name: "Large Binocular Telescope (LBT) 2×8.4m",
     location: "Arizona, United States",
     latitude: 32.70144,
     longitude: -109.88933,
@@ -910,7 +910,7 @@ telescopes["LBT"] = {
 };
 telescopes["VATT"] = {
     site: "Mt. Graham",
-    name: "Vatican Advanced Technology Telescope 72in",
+    name: "Vatican Advanced Technology Telescope (VATT) 72in",
     location: "Arizona, United States",
     latitude: 32.70126,
     longitude: -109.89207,
@@ -981,7 +981,7 @@ telescopes["ESO"] = {
 };
 telescopes["NTT"] = {
     site: "La Silla Observatory",
-    name: "New Technology Telescope 3.58m",
+    name: "New Technology Telescope (NTT) 3.58m",
     location: "Chile",
     latitude: -29.25892,
     longitude: -70.73374,
@@ -1008,7 +1008,7 @@ telescopes["Gemini North"] = {
 };
 telescopes["CFHT"] = {
     site: "Mauna Kea",
-    name: "Canada–France–Hawaii Telescope 3.58m",
+    name: "Canada–France–Hawaii Telescope (CFHT) 3.58m",
     location: "Hawaii, United States",
     latitude: 19.82523,
     longitude: -155.46892,
@@ -1017,7 +1017,7 @@ telescopes["CFHT"] = {
 };
 telescopes["UKIRT"] = {
     site: "Mauna Kea",
-    name: "United Kingdom Infra-Red Telescope 3.8m",
+    name: "United Kingdom Infra-Red Telescope (UKIRT) 3.8m",
     location: "Hawaii, United States",
     latitude: 19.82244,
     longitude: -155.47037,
@@ -1035,7 +1035,7 @@ telescopes["Gemini South"] = {
 };
 telescopes["TAO"] = {
     site: "Cerro Chajnantor",
-    name: "Tokyo Atacama Observatory 6.5m",
+    name: "Tokyo Atacama Observatory (TAO) 6.5m",
     location: "Chile",
     latitude: -22.98607,
     longitude: -67.74214,
@@ -1044,7 +1044,7 @@ telescopes["TAO"] = {
 };
 telescopes["LSST"] = {
     site: "Cerro Pachón",
-    name: "Vera C. Rubin Observatory 8.4m",
+    name: "Vera C. Rubin Observatory (LSST) 8.4m",
     location: "Chile",
     latitude: -30.24464,
     longitude: -70.74933,
@@ -1089,7 +1089,7 @@ telescopes["Shane Telescope"] = {
 };
 telescopes["SALT"] = {
     site: "South African Astronomical Observatory",
-    name: "Southern African Large Telescope 9.2m",
+    name: "Southern African Large Telescope (SALT) 9.2m",
     location: "Sutherland, South Africa",
     latitude: -32.37588,
     longitude: 20.81083,
@@ -1116,7 +1116,7 @@ telescopes["Carlos Sánchez Telescope"] = {
 };
 telescopes["ESA OGS"] = {
     site: "Teide Observatory",
-    name: "ESA Optical Ground Station 1m",
+    name: "ESA Optical Ground Station (OGS) 1m",
     location: "Tenerife, Spain",
     latitude: 28.30097,
     longitude: -16.51180,
@@ -1158,7 +1158,7 @@ telescopes["Tautenburg Observatory"] = {
 };
 telescopes["AAT"] = {
     site: "Siding Spring Observatory",
-    name: "Anglo-Australian Telescope 3.9m",
+    name: "Anglo-Australian Telescope (AAT) 3.9m",
     location: "New South Wales, Australia",
     latitude: -31.27539,
     longitude: 149.06721,
@@ -1458,7 +1458,7 @@ telescopes["Mt. Stromlo Observatory"] = {
 };
 telescopes["CSS 0.7m"] = {
     site: "Mt. Bigelow",
-    name: "Catalina Sky Survey 0.7m Schmidt",
+    name: "Catalina Sky Survey (CSS) 0.7m Schmidt",
     location: "Arizona, United States",
     latitude: 32.41675,
     longitude: -110.73253,
@@ -1467,7 +1467,7 @@ telescopes["CSS 0.7m"] = {
 };
 telescopes["CSS 40in"] = {
     site: "Mt. Lemmon",
-    name: "Catalina Sky Survey 40in Follow-up Telescope",
+    name: "Catalina Sky Survey (CSS) 40in Follow-up Telescope",
     location: "Arizona, United States",
     latitude: 32.44257,
     longitude: -110.78889,
@@ -1485,7 +1485,7 @@ telescopes["Kuiper Telescope"] = {
 };
 telescopes["TNT"] = {
     site: "Thai National Observatory",
-    name: "Thai National Telescope 2.4m",
+    name: "Thai National Telescope (TNT) 2.4m",
     location: "Thailand",
     latitude: 18.57370,
     longitude: 98.48225,
@@ -1494,7 +1494,7 @@ telescopes["TNT"] = {
 };
 telescopes["HCT"] = {
     site: "Indian Astronomical Observatory",
-    name: "Himalayan Chandra Telescope 2m",
+    name: "Himalayan Chandra Telescope (HCT) 2m",
     location: "India",
     latitude: 32.77962,
     longitude: 78.96384,
@@ -1545,7 +1545,7 @@ telescopes["Aristarchos Telescope"] = {
 };
 telescopes["TJO"] = {
     site: "Montsec Observatory",
-    name: "Joan Oró Telescope 0.8m",
+    name: "Joan Oró Telescope (TJO) 0.8m",
     location: "Lleida, Spain",
     latitude: 42.05164,
     longitude: 0.72966,
@@ -1619,7 +1619,7 @@ telescopes["Haute-Provence Observatory"] = {
     timezoneName: "Europe/Paris"
 };
 telescopes["US Naval Observatory"] = {
-    name: "US Naval Observatory 26in",
+    name: "US Naval Observatory (USNO) 26in",
     location: "Washington, D.C., United States",
     latitude: 38.92096,
     longitude: -77.06704,
@@ -1627,7 +1627,7 @@ telescopes["US Naval Observatory"] = {
     timezoneName: "America/New_York"
 };
 telescopes["KST"] = {
-    site: "US Naval Observatory Flagstaff Station",
+    site: "US Naval Observatory (USNO) Flagstaff Station",
     name: "Kaj Strand Telescope 61in",
     location: "Arizona, United States",
     latitude: 35.18404,
@@ -1637,7 +1637,7 @@ telescopes["KST"] = {
 };
 telescopes["LDT"] = {
     site: "Lowell Observatory",
-    name: "Lowell Discovery Telescope 4.3m",
+    name: "Lowell Discovery Telescope (LDT) 4.3m",
     location: "Arizona, United States",
     latitude: 34.74437,
     longitude: -111.42234,
@@ -1664,7 +1664,7 @@ telescopes["Hall Telescope"] = {
 };
 telescopes["GOTO North"] = {
     site: "Roque de Los Muchachos",
-    name: "Gravitational-wave Optical Transient Observer 4×0.4m",
+    name: "Gravitational-wave Optical Transient Observer (GOTO) 4×0.4m",
     location: "La Palma, Spain",
     latitude: 28.76007,
     longitude: -17.87929,
@@ -1673,7 +1673,7 @@ telescopes["GOTO North"] = {
 };
 telescopes["GOTO South"] = {
     site: "Siding Spring Observatory",
-    name: "Gravitational-wave Optical Transient Observer 4×0.4m",
+    name: "Gravitational-wave Optical Transient Observer (GOTO) 4×0.4m",
     location: "New South Wales, Australia",
     latitude: -31.27345,
     longitude: 149.06417,
