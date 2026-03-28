@@ -1848,7 +1848,7 @@ Object.defineProperties(Driver, {
     },
     defaultProject: {
         get: function () {
-            return this._defaultProject || config.defaultProject(Driver.telescopeName);
+            return this._defaultProject || config.defaultProject;
         }, set: function (val) {
             this._defaultProject = val;
         }
