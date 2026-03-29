@@ -6,7 +6,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. See LICENSE.md.
  */
-$version = "5.0n";
+$version = "5.0o";
 /*
 * Version history (with brief changelog):
 *
@@ -160,6 +160,10 @@ $version = "5.0n";
 * 5.0m - Simplified some time and timezone calculations.
 *
 * 5.0n - Added autosave feature for target list.
+*
+* 5.0o - Added button to clear the target list.
+*      - Improved handling of empty target list.
+*      - Added more telescopes.
 */
 session_start();
 if (isset($_SESSION["obinfo"])) {
@@ -259,7 +263,8 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
                     <textarea id="targets"></textarea><br/>
                     <input type="hidden" id="targets_actual" /><input type="hidden" id="added_targets" />
                     <input type="button" value="Plot targets" id="plotTargets" />
-                    <input type="button" value="Schedule observations" id="planNight" /><br/><br/>
+                    <input type="button" value="Schedule observations" id="planNight" />
+                    <input type="button" value="Clear all" id="clearAll" /><br/>
                 </div> <!-- #left_upper -->
                 <div id="left_lower">
                     <div id="buttons">

@@ -1253,23 +1253,20 @@ TargetList.prototype.processTargetListAfterSIMBAD = function(lines) {
  *     by adding spaces so that the various columns fall nicely under each
  *     other.
  */
-TargetList.prototype.validateAndFormatTargets = async function (force = false) {
+TargetList.prototype.validateAndFormatTargets = async function () {
     const thisList = this;
     // Retrieve content of #targets textarea
     const tgts = driver.CMeditor.getValue();
-    if (!thisList.inputHasChanged(tgts, thisList.InputText) && thisList.InputValid && !force) {
+    if (!thisList.inputHasChanged(tgts, thisList.InputText) && thisList.InputValid) {
         helper.LogEntry("Target input list has not changed, no need to revalidate.");
-        return;
+        return true;
     }
     helper.LogEntry("Validating and formatting target input list...");
     $("#tcsExport").prop("disabled", true);
     thisList.InputValid = false;
     if (tgts.length === 0) {
-        if (force) {
-            return;
-        }
-        helper.LogError("Please fill in the <i>Targets</i> field.");
-        throw new Error("Empty target list");
+        helper.LogDebug("No targets provided.");
+        return false;
     }
     // Split it into lines
     const lines = helper.extractLines(tgts);
@@ -1390,6 +1387,7 @@ TargetList.prototype.validateAndFormatTargets = async function (force = false) {
     if (!thisList.processTargetListAfterSIMBAD(lines)) {
         throw new Error("Post-processing failure");
     }
+    return true;
 };
 
 /**

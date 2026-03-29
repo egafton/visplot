@@ -73,7 +73,7 @@ function Driver() {
             styleActiveLine: { nonEmpty: false },
             extraKeys: {
                 Tab: function () {
-                    driver.targets.validateAndFormatTargets().then(function () {
+                    driver.targets.validateAndFormatTargets().then(() => {
                         $("#plotTargets").focus();
                     }).catch(ex => { helper.LogException(ex); });
                 }
@@ -87,6 +87,25 @@ function Driver() {
         );
 
         this.CMeditor.on("change", this.debouncedAutosave);
+
+        // Clear all button
+        $("#clearAll").click(function() {
+            if (driver.CMeditor.getValue() !== "") {
+                const extraInfo = driver.scheduleMode ? " The current schedule WILL BE LOST!" : "";
+                if (!window.confirm(`Are you sure you want to clear all targets?${extraInfo}`)) {
+                    return;
+                }
+            }
+            driver.CMeditor.setValue("");
+            driver.targets = new TargetList();
+            driver.scheduleMode = false;
+            driver.rescheduling = false;
+            driver.RequestedScheduleType = 0;
+            driver.targets.validateAndFormatTargets();
+            $("#planNight").val("Schedule observations");
+            $("#planNight").prop("disabled", true);
+            driver.Refresh();
+        });
 
         // "global" variables to track various browser events
         this.reObj = null; // Object that is being moved/rescheduled on the RHS
@@ -561,7 +580,7 @@ Driver.prototype.CallbackSetDate = function (obj) {
             }
             this.obprocessed = true;
             this.CMeditor.setValue(lines.join("\n"));
-            this.targets.validateAndFormatTargets().then(function () {
+            this.targets.validateAndFormatTargets().then(() => {
                 $("#plotTargets").trigger("click");
             }).catch(ex => { helper.LogException(ex); });
         }
@@ -672,7 +691,10 @@ Driver.prototype.BtnEvtPlotTargets = function () {
             helper.LogError("Night not initialized. Click on [Set] first!");
             return;
         }
-        this.targets.validateAndFormatTargets().then(function () {
+        this.targets.validateAndFormatTargets().then(val => {
+            if (!val) {
+                return;
+            }
             if (driver.RequestedScheduleType !== 1 && driver.scheduleMode) {
                 if (!window.confirm("Are you sure you want to replot the targets?\nThe current schedule WILL BE LOST!")) {
                     return;
@@ -1166,7 +1188,6 @@ Driver.prototype.BindEvents = function () {
             driver.CMeditor.setValue(`${val}\n\n${text}`);
         }
         driver.targets.validateAndFormatTargets()
-            .then(function () { })
             .catch(ex => { helper.LogException(ex); });
     };
 
@@ -1185,7 +1206,6 @@ Driver.prototype.BindEvents = function () {
     });
     $("#targets").blur(function () {
         driver.targets.validateAndFormatTargets()
-            .then(function () { })
             .catch(ex => { helper.LogException(ex); });
     });
     $("#tcsExport").click(function () {
@@ -1674,7 +1694,7 @@ Driver.prototype.setTelescopeName = function (val) {
                 // Recalculate Skycam properties
                 driver.skyGraph.updateTelescope();
                 // Revalidate targets to recompute TCS lines
-                driver.targets.validateAndFormatTargets(true).then(function () {
+                driver.targets.validateAndFormatTargets().then(() => {
                     // Replot targets
                     $("#dateSet").trigger("click");
                     $("#plotTargets").trigger("click");
