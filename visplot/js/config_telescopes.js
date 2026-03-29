@@ -890,6 +890,42 @@ telescopes["Mercator Telescope"] = {
     altitude: 2331,
     timezoneName: "Atlantic/Canary"
 };
+telescopes["LT"] = {
+    site: "Roque de Los Muchachos",
+    name: "Liverpool Telescope (LT) 2m",
+    location: "La Palma, Spain",
+    latitude: 28.76239,
+    longitude: -17.87914,
+    altitude: 2363,
+    timezoneName: "Atlantic/Canary"
+};
+telescopes["SARA-RM"] = {
+    site: "Roque de Los Muchachos",
+    name: "SARA-RM (Jacobus Kapteyn Telescope, JKT) 1m",
+    location: "La Palma, Spain",
+    latitude: 28.76121,
+    longitude: -17.87810,
+    altitude: 2369,
+    timezoneName: "Atlantic/Canary"
+};
+telescopes["SARA-CT"] = {
+    site: "Cerro Tololo",
+    name: "SARA-CT 0.6m",
+    location: "Chile",
+    latitude: -30.17212,
+    longitude: -70.79921,
+    altitude: 2012,
+    timezoneName: "America/Santiago"
+};
+telescopes["SARA-KP"] = {
+    site: "Kitt Peak",
+    name: "SARA-KP 0.96m",
+    location: "Arizona, United States",
+    latitude: 31.96064,
+    longitude: -111.59961,
+    altitude: 2073,
+    timezoneName: "America/Phoenix"
+};
 telescopes["GTC"] = {
     site: "Roque de Los Muchachos",
     name: "Gran Telescopio Canarias (GTC) 10.4m",
@@ -952,14 +988,6 @@ telescopes["Du Pont Telescope"] = {
     longitude: -70.70396,
     altitude: 2380,
     timezoneName: "America/Santiago"
-};
-telescopes["Haleakala Observatory"] = {
-    name: "Haleakala Observatory",
-    location: "Hawaii, United States",
-    latitude: 20.70799,
-    longitude: -156.25680,
-    altitude: 3052,
-    timezoneName: "US/Hawaii"
 };
 telescopes["MPG/ESO"] = {
     site: "La Silla Observatory",
@@ -1679,4 +1707,76 @@ telescopes["GOTO South"] = {
     longitude: 149.06417,
     altitude: 1164,
     timezoneName: "Australia/Sydney"
+};
+telescopes["ATLAS-HKO"] = {
+    site: "Haleakala Observatory",
+    name: "ATLAS-HKO 0.5m",
+    location: "Hawaii, United States",
+    latitude: 20.70757,
+    longitude: -156.25706,
+    altitude: 3041,
+    timezoneName: "US/Hawaii"
+};
+telescopes["ATLAS-MLO"] = {
+    site: "Mauna Loa",
+    name: "ATLAS-MLO 0.5m",
+    location: "Hawaii, United States",
+    latitude: 19.53615,
+    longitude: -155.57609,
+    altitude: 3429,
+    timezoneName: "US/Hawaii"
+};
+telescopes["ATLAS-STH"] = {
+    site: "South African Astronomical Observatory",
+    name: "ATLAS-STH 0.5m",
+    location: "Sutherland, South Africa",
+    latitude: -32.38048,
+    longitude: 20.81035,
+    altitude: 1764,
+    timezoneName: "Africa/Johannesburg"
+};
+telescopes["ATLAS-CHL"] = {
+    site: "El Sauce Observatory",
+    name: "ATLAS-CHL 0.5m",
+    location: "Rio Hurtado Valley, Chile",
+    latitude: -30.47059,
+    longitude: -70.76498,
+    altitude: 1609,
+    timezoneName: "America/Santiago"
+};
+telescopes["ATLAS-TDO"] = {
+    site: "Teide Observatory",
+    name: "ATLAS-TDO",
+    location: "Tenerife, Spain",
+    latitude: 28.29874,
+    longitude: -16.5103,
+    altitude: 2415,
+    timezoneName: "Atlantic/Canary"
+};
+telescopes["LCO #01"] = {
+    site: "Haleakala Observatory",
+    name: "Faulkes Telescope North (FTN) 2m, Las Cumbres Observatory (LCO #01)",
+    location: "Hawaii, United States",
+    latitude: 20.70701,
+    longitude: -156.25751,
+    altitude: 3055,
+    timezoneName: "US/Hawaii"
+};
+telescopes["LCO #02"] = {
+    site: "Siding Spring Observatory",
+    name: "Faulkes Telescope South (FTS) 2m, Las Cumbre Observatory (LCO #02)",
+    location: "New South Wales, Australia",
+    latitude: -31.27284,
+    longitude: 149.07079,
+    altitude: 1146,
+    timezoneName: "Australia/Sydney"
+};
+telescopes["LCO #04/#05/#09"] = {
+    site: "Cerro Tololo",
+    name: "Las Cumbre Observatory (LCO #04,#05,#09) 3×1m",
+    location: "Chile",
+    latitude: -30.16738,
+    longitude: -70.80474,
+    altitude: 2163,
+    timezoneName: "America/Santiago"
 };
