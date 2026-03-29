@@ -647,6 +647,19 @@ Driver.prototype.BtnEvtSetDate = function () {
             helper.LogError(`Invalid date (${year}-${month}-${day}).`);
             return;
         }
+        if (year < 1988 || year > 2100) {
+            helper.LogError(`Invalid year (${year}). Please enter a number between 1988 and 2100.`);
+            return;
+        }
+        if (month < 1 || month > 12) {
+            helper.LogError(`Invalid month (${month}). Please enter a number between 1 and 12.`);
+            return;
+        }
+        const dmax = helper.numberOfDays(year, month);
+        if (day < 1 || day > dmax) {
+            helper.LogError(`Invalid day (${day}) for ${year}-${helper.padTwoDigits(month)}. Please enter a number between 1 and ${dmax}.`);
+            return;
+        }
         const evening = moment.tz(`${year}-${helper.padTwoDigits(month)}-${helper.padTwoDigits(day)} 20:00`, Driver.timezoneName);
         if (!evening.isValid) {
             helper.LogError(`Invalid date (${year}-${month}-${day}).`);

@@ -768,7 +768,7 @@ Graph.prototype.drawEphemerides = function (ctx) {
             }
         }
 
-        this.drawCurrentTime(ctx, new Date());
+        this.drawCurrentTime(ctx);
     } catch (ex) {
         helper.LogException(ex);
     }
@@ -777,8 +777,9 @@ Graph.prototype.drawEphemerides = function (ctx) {
 /**
  * @memberof Graph
  */
-Graph.prototype.drawCurrentTime = function (ctx, now) {
+Graph.prototype.drawCurrentTime = function (ctx) {
     try {
+        const now = new Date();
         if (now < driver.night.DateSunset || now > driver.night.DateSunrise) {
             return false;
         }

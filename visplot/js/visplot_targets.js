@@ -289,16 +289,17 @@ Target.prototype.SetExptime = function (exptime) {
  */
 TargetList.prototype.setTargetsSize = function () {
     try {
+        const graph = driver.graph;
         for (const [i, tgt] of this.Targets.entries()) {
-            tgt.xlab = driver.graph.transformXLocation(tgt.LabelX);
-            tgt.ylab = driver.graph.transformYLocation(tgt.LabelY);
-            tgt.rxmid = driver.graph.targetsx;
-            tgt.rymid = driver.graph.targetsy + i * (driver.graph.targetsyskip * (driver.graph.doubleTargets ? 2 : 1) + 2) - 6.5;
+            tgt.xlab = graph.transformXLocation(tgt.LabelX);
+            tgt.ylab = graph.transformYLocation(tgt.LabelY);
+            tgt.rxmid = graph.targetsx;
+            tgt.rymid = graph.targetsy + i * (graph.targetsyskip * (graph.doubleTargets ? 2 : 1) + 2) - 6.5;
             if (tgt.Scheduled) {
                 tgt.ComputePositionSchedLabel();
             }
         }
-        driver.graph.setTargetsSize(this.nTargets);
+        graph.setTargetsSize(this.nTargets);
         this.removeClusters();
     } catch (ex) {
         helper.LogException(ex);
@@ -368,11 +369,12 @@ TargetList.prototype.processTarget = function (i, line) {
  */
 Target.prototype.intersectingChain = function (Targets, checked) {
     try {
+        const graph = driver.graph;
         let len, iIntersect = [], i, j, chain = [this.Index];
         if (checked.indexOf(this.Index) > -1) {
             return [];
         }
-        if (this.xlab < driver.graph.xstart || this.xlab > driver.graph.xstart + driver.graph.width || this.ylab > driver.graph.yend) {
+        if (this.xlab < graph.xstart || this.xlab > graph.xstart + graph.width || this.ylab > graph.yend) {
             return [];
         }
         checked.push(this.Index);
@@ -380,7 +382,7 @@ Target.prototype.intersectingChain = function (Targets, checked) {
             if (j === this.Index || checked.indexOf(j) > -1) {
                 continue;
             }
-            if (helper.TwoCirclesIntersect(this.xlab, this.ylab, driver.graph.CircleSize + 0.5, Targets[j].xlab, Targets[j].ylab, driver.graph.CircleSize + 0.5)) {
+            if (helper.TwoCirclesIntersect(this.xlab, this.ylab, graph.CircleSize + 0.5, Targets[j].xlab, Targets[j].ylab, graph.CircleSize + 0.5)) {
                 iIntersect.push(j);
             }
         }
@@ -421,6 +423,7 @@ TargetList.prototype.removeClusters = function () {
  */
 TargetList.prototype.spaceOutCluster = function (cluster) {
     try {
+        const graph = driver.graph;
         let i, obj, prev;
         for (i = 1; i < cluster.length; i += 1) {
             prev = this.Targets[cluster[i - 1]];
@@ -428,10 +431,10 @@ TargetList.prototype.spaceOutCluster = function (cluster) {
             obj.xlab = Math.max(prev.xlab, obj.xlab);
             do {
                 obj.xlab += 1;
-                obj.LabelX = driver.graph.reverseTransformXLocation(obj.xlab);
+                obj.LabelX = graph.reverseTransformXLocation(obj.xlab);
                 obj.LabelY = obj.getAltitude(obj.LabelX);
-                obj.ylab = driver.graph.transformYLocation(obj.LabelY);
-            } while (helper.TwoCirclesIntersect(obj.xlab, obj.ylab, driver.graph.CircleSize + 0.5, prev.xlab, prev.ylab, driver.graph.CircleSize + 0.5));
+                obj.ylab = graph.transformYLocation(obj.LabelY);
+            } while (helper.TwoCirclesIntersect(obj.xlab, obj.ylab, graph.CircleSize + 0.5, prev.xlab, prev.ylab, graph.CircleSize + 0.5));
         }
     } catch (ex) {
         helper.LogException(ex);
@@ -476,7 +479,7 @@ TargetList.prototype.warnUnobservable = function () {
 /**
  * @memberof TargetList
  */
-TargetList.prototype.canSchedule = function (obj, start) {
+TargetList.prototype.canSchedule = function (obj, start, ignoreOverlaps = false) {
     try {
         let end = start + obj.Exptime;
         let overlaps = false;
@@ -493,7 +496,7 @@ TargetList.prototype.canSchedule = function (obj, start) {
             overlaps = true;
             break;
         }
-        if (overlaps) {
+        if (overlaps && !ignoreOverlaps) {
             return false;
         }
 
@@ -513,35 +516,47 @@ TargetList.prototype.canSchedule = function (obj, start) {
  */
 TargetList.prototype.optimizeInterchangeNeighbours = function (scheduleorder) {
     try {
-        let i, obj1, obj2, am1now, am2now, am1if, am2if, exchange, t1, c;
-        for (i = 0; i < scheduleorder.length - 1; i += 1) {
-            obj1 = this.Targets[scheduleorder[i]];
-            obj2 = this.Targets[scheduleorder[i + 1]];
+        for (let i = 0; i < scheduleorder.length - 1; i += 1) {
+            const obj1 = this.Targets[scheduleorder[i]];
+            const obj2 = this.Targets[scheduleorder[i + 1]];
             if (obj1.Observed || obj2.Observed) {
                 continue;
             }
             if (obj1.FillSlot || obj2.FillSlot) {
                 continue;
             }
-            if (this.canSchedule(obj2, obj1.ScheduledStartTime) === false) {
+            if (obj1.Priority !== obj2.Priority) {
                 continue;
             }
-            if (this.canSchedule(obj1, obj1.ScheduledStartTime + obj2.Exptime) === false) {
+            if (this.canSchedule(obj2, obj1.ScheduledStartTime, true) === false) {
                 continue;
             }
-            am1now = (obj1.AltStartTime + obj1.AltMidTime + obj1.AltEndTime) / 3;
-            am2now = (obj2.AltStartTime + obj2.AltMidTime + obj2.AltEndTime) / 3;
-            am1if = obj1.getAltitude(obj1.ScheduledStartTime + obj2.Exptime + 0.5 * obj1.Exptime);
-            am2if = obj2.getAltitude(obj1.ScheduledStartTime + 0.5 * obj2.Exptime);
-            exchange = false;
-            if (((am1now < am2now) && (am2if > am1now) && (am1if > am1now)) || ((am2now < am1now) && (am1if > am2now) && (am2if > am2now))) {
+            if (this.canSchedule(obj1, obj1.ScheduledStartTime + obj2.Exptime, true) === false) {
+                continue;
+            }
+            const alt1now = (obj1.AltStartTime + obj1.AltMidTime + obj1.AltEndTime) / 3;
+            const alt2now = (obj2.AltStartTime + obj2.AltMidTime + obj2.AltEndTime) / 3;
+            const alt1if = obj1.getAltitude(obj1.ScheduledStartTime + obj2.Exptime + 0.5 * obj1.Exptime);
+            const alt2if = obj2.getAltitude(obj1.ScheduledStartTime + 0.5 * obj2.Exptime);
+            const gain1 = alt1if - alt1now;
+            const gain2 = alt2if - alt2now;
+            const ratio = 1.1; // see below
+            let exchange = false;
+            if (gain1 > 0 && gain2 >= 0) {
+                exchange = true;
+                // If both objects get better, swap
+            } else if ((gain1 > 0 && alt2if > alt1now) || (gain2 > 0 && alt1if > alt2now)) {
+                // Object A gets better, and object B will not be worse than object A is now, swap
+                exchange = true;
+            } else if ((gain1 > 0 && Math.abs(gain1 / gain2) > ratio) || (gain2 > 0 && Math.abs(gain2 / gain1) > ratio)) {
+                // If an object gets a better altitude than the other one is losing, swap
                 exchange = true;
             }
-            t1 = obj1.ScheduledStartTime;
+            const t1 = obj1.ScheduledStartTime;
             if (exchange) {
                 obj2.Schedule(t1);
                 obj1.Schedule(t1 + obj2.Exptime);
-                c = scheduleorder[i];
+                const c = scheduleorder[i];
                 scheduleorder[i] = scheduleorder[i + 1];
                 scheduleorder[i + 1] = c;
             }
@@ -616,6 +631,7 @@ TargetList.prototype.optimizeMoveToLaterTimesIfRising = function (scheduleorder)
  */
 TargetList.prototype.reorderAccordingToScheduling = function (scheduleorder) {
     try {
+        const graph = driver.graph;
         let newtargets = [], i, j, k, imin, tmin, tj;
         for (i = 0; i < scheduleorder.length - 1; i += 1) {
             imin = i;
@@ -636,16 +652,16 @@ TargetList.prototype.reorderAccordingToScheduling = function (scheduleorder) {
         let running = 0;
         for (i = 0; i < scheduleorder.length; i += 1) {
             k = scheduleorder[i];
-            this.Targets[k].rxmid = driver.graph.targetsx;
-            this.Targets[k].rymid = driver.graph.targetsy + running * (driver.graph.targetsyskip * (driver.graph.doubleTargets ? 2 : 1) + 2) - 6.5;
+            this.Targets[k].rxmid = graph.targetsx;
+            this.Targets[k].rymid = graph.targetsy + running * (graph.targetsyskip * (graph.doubleTargets ? 2 : 1) + 2) - 6.5;
             this.Targets[k].Index = running;
             running += 1;
             newtargets.push(this.Targets[scheduleorder[i]]);
         }
         for (i = 0; i < this.nTargets; i += 1) {
             if (this.Targets[i].Scheduled === false) {
-                this.Targets[i].rxmid = driver.graph.targetsx;
-                this.Targets[i].rymid = driver.graph.targetsy + running * (driver.graph.targetsyskip * (driver.graph.doubleTargets ? 2 : 1) + 2) - 6.5;
+                this.Targets[i].rxmid = graph.targetsx;
+                this.Targets[i].rymid = graph.targetsy + running * (graph.targetsyskip * (graph.doubleTargets ? 2 : 1) + 2) - 6.5;
                 this.Targets[i].Index = running;
                 running += 1;
                 newtargets.push(this.Targets[i]);
@@ -819,7 +835,10 @@ TargetList.prototype.scheduleWithWeights = function (startingAt) {
             lastra = obj.raRad;
             lastdec = obj.decRad;
         }
-        return scheduleorder;
+        const targets = this.Targets;
+        return scheduleorder.sort(function(a, b) {
+            return targets[a].ScheduledStartTime < targets[b].ScheduledStartTime ? -1 : 1;
+        });
     } catch (ex) {
         helper.LogException(ex);
     }
@@ -997,6 +1016,7 @@ TargetList.prototype.doSchedule = function (start, reorder) {
         const scheduleorder = this.scheduleWithWeights(0);
         if (reorder) {
             this.optimizeMoveToLaterTimesIfRising(scheduleorder);
+            this.optimizeInterchangeNeighbours(scheduleorder);
             if ($("#opt_reorder_targets").is(":checked")) {
                 this.reorderAccordingToScheduling(scheduleorder);
             }
@@ -1903,13 +1923,20 @@ Target.prototype.resetColours = function () {
  */
 Target.prototype.ComputePositionSchedLabel = function () {
     try {
-        const slope = driver.graph.degree * (this.AltEndTime - this.AltStartTime) / driver.graph.transformXWidth(this.Exptime);
+        const graph = driver.graph;
+        const slope = graph.degree * (this.AltEndTime - this.AltStartTime) / graph.transformXWidth(this.Exptime);
         const angle = Math.atan(slope);
-        const dist = driver.graph.CircleSize * 1.2;
+        const dist = graph.CircleSize * 1.2;
         const xshift = dist * Math.sin(angle);
         const yshift = dist * Math.cos(angle);
-        this.xmid = driver.graph.xaxis[helper.MJDToIndex(this.ScheduledMidTime)] - xshift;
-        this.ymid = driver.graph.yend - driver.graph.degree * this.Graph[helper.MJDToIndex(this.ScheduledMidTime)] - yshift;
+        let x = graph.xaxis[helper.MJDToIndex(this.ScheduledMidTime)] - xshift;
+        let y = graph.yend - graph.degree * this.Graph[helper.MJDToIndex(this.ScheduledMidTime)] - yshift;
+        if (graph.xstart + graph.CircleSize > x || x > graph.xend - graph.CircleSize) {
+            x = graph.xaxis[helper.MJDToIndex(this.ScheduledMidTime)] + xshift;
+            y = graph.yend - graph.degree * this.Graph[helper.MJDToIndex(this.ScheduledMidTime)] + yshift;
+        }
+        this.xmid = x;
+        this.ymid = y;
     } catch (ex) {
         helper.LogException(ex);
     }
