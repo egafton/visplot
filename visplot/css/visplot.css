@@ -425,6 +425,10 @@ pre#logger span.loggerDebug {
     margin: 8px 0;
 }
 
+#clearAll {
+    float: right;
+}
+
 #lb_plot,
 #lb_sched,
 #lb_skycm,
