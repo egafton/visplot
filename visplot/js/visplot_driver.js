@@ -1694,7 +1694,7 @@ Driver.prototype.rescaleCanvas = function (cnv, ctx) {
     }
 };
 
-Driver.prototype.setTelescopeName = function (val) {
+Driver.prototype.setTelescopeName = function (val, initial=false) {
     try {
         return new Promise(function (resolve) {
             if (Object.keys(telescopes).includes(val) && Driver._telescopeName !== val) {
@@ -1706,13 +1706,17 @@ Driver.prototype.setTelescopeName = function (val) {
                 $("#canvasFrame").css("background-image", 'url(' + window.baseurl + (telescopes[val].background || config.defaultTelescopeImage) + ')');
                 // Recalculate Skycam properties
                 driver.skyGraph.updateTelescope();
-                // Revalidate targets to recompute TCS lines
-                driver.targets.validateAndFormatTargets().then(() => {
-                    // Replot targets
-                    $("#dateSet").trigger("click");
-                    $("#plotTargets").trigger("click");
+                if (!initial) {
+                    // Revalidate targets to recompute TCS lines
+                    driver.targets.validateAndFormatTargets().then(() => {
+                        // Replot targets
+                        $("#dateSet").trigger("click");
+                        $("#plotTargets").trigger("click");
+                        resolve();
+                    }).catch(ex => { helper.LogException(ex); resolve(); });
+                } else {
                     resolve();
-                }).catch(ex => { helper.LogException(ex); resolve(); });
+                }
             } else {
                 return resolve();
             }

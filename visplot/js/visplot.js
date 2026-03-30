@@ -82,7 +82,7 @@ $(document).ready(function () {
             if ("telescopeName" in localStorage) {
                 if (forcetel === null || localStorage.telescopeName === forcetel) {
                     helper.LogEntry(`Restoring telescope name to <i>${localStorage.telescopeName}</i>`);
-                    driver.setTelescopeName(localStorage.telescopeName).then(function() {
+                    driver.setTelescopeName(localStorage.telescopeName, true).then(function() {
                         driver.UpdateInstrumentList();
 
                         if ("defaultEpoch" in localStorage) {
@@ -163,7 +163,7 @@ $(document).ready(function () {
                     });
                 } else {
                     helper.LogEntry(`Saved telescope (${localStorage.telescopeName}) differs from telescope specified with GET (${forcetel}). Overriding browser settings`);
-                    driver.setTelescopeName(forcetel).then(function() {
+                    driver.setTelescopeName(forcetel, true).then(function() {
                         driver.UpdateInstrumentList();
                         postInitialization();
                     });
@@ -175,7 +175,7 @@ $(document).ready(function () {
             }
             /* Set default telescope telescope */
             helper.LogEntry(`Default telescope is <i>${forcetel}</i>`);
-            driver.setTelescopeName(forcetel).then(function() {
+            driver.setTelescopeName(forcetel, true).then(function() {
                 driver.UpdateInstrumentList();
                 postInitialization();
             });

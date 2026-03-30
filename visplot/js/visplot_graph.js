@@ -26,6 +26,11 @@ function Graph() {
         this.ratio = 1.4;
         this.minheight = 400;
         this.minwidth = this.minheight * this.ratio;
+        this.badWolfColor = "red";
+        this.markDSTColor = "red";
+        this.currentTimeColor = "red";
+        this.lastStartColor = "red";
+        this.noLimitsColor = "red";
     } catch (ex) {
         helper.LogException(ex);
     }
@@ -48,7 +53,7 @@ Graph.prototype.Resize = function (_canvas) {
 
 Graph.prototype.pt = function (_pt) {
     try {
-        return `${Math.max(8, _pt * (1 + ((this.canvasWidth - 975) / 975) * 0.7)).toFixed(1)}pt`;
+        return `${(1+Math.max(8, _pt * (1 + ((this.canvasWidth - 975) / 975) * 0.7))).toFixed(1)}pt`;
     } catch (ex) {
         helper.LogException(ex);
     }
@@ -232,17 +237,18 @@ Graph.prototype.drawRHSofSchedule = function (ctx) {
  */
 Graph.prototype.drawSchedule = function (ctx) {
     try {
+        const targets = driver.targets;
         ctx.setLineDash([]);
         ctx.save();
         ctx.rect(this.xstart, this.ystart, this.width, this.height);
         ctx.clip();
         ctx.lineWidth = 5;
         ctx.strokeStyle = "black";
-        for (let i = 0; i < driver.targets.nTargets; i += 1) {
-            if (driver.targets.Targets[i].Scheduled === false) {
+        for (let i = 0; i < targets.nTargets; i += 1) {
+            if (targets.Targets[i].Scheduled === false) {
                 continue;
             }
-            const obj = driver.targets.Targets[i];
+            const obj = targets.Targets[i];
             const iScheduledStartTime = helper.MJDToIndex(obj.ScheduledStartTime);
             const iScheduledEndTime = helper.MJDToIndex(obj.ScheduledEndTime);
 
@@ -255,8 +261,8 @@ Graph.prototype.drawSchedule = function (ctx) {
             ctx.stroke();
         }
         ctx.lineWidth = 1.2;
-        for (let i = 0; i < driver.targets.nTargets; i += 1) {
-            const obj = driver.targets.Targets[i];
+        for (let i = 0; i < targets.nTargets; i += 1) {
+            const obj = targets.Targets[i];
             if (obj.Scheduled) {
                 ctx.strokeStyle = obj.LabelStrokeColor;
                 ctx.fillStyle = obj.LabelFillColor;
@@ -277,11 +283,11 @@ Graph.prototype.drawSchedule = function (ctx) {
         ctx.restore();
 
         ctx.lineWidth = 4;
-        for (let i = 0; i < driver.targets.nTargets; i += 1) {
-            if (driver.targets.Targets[i].Scheduled === false) {
+        for (let i = 0; i < targets.nTargets; i += 1) {
+            if (targets.Targets[i].Scheduled === false) {
                 continue;
             }
-            const obj = driver.targets.Targets[i];
+            const obj = targets.Targets[i];
             const iScheduledStartTime = helper.MJDToIndex(obj.ScheduledStartTime);
             const iScheduledEndTime = helper.MJDToIndex(obj.ScheduledEndTime);
             ctx.strokeStyle = obj.LabelStrokeColor;
@@ -290,11 +296,11 @@ Graph.prototype.drawSchedule = function (ctx) {
             ctx.lineTo(this.xaxis[iScheduledEndTime], this.yend + 2.6);
             ctx.stroke();
         }
-        for (let i = 0; i < driver.targets.BadWolfStart.length; i += 1) {
-            ctx.strokeStyle = "red";
+        for (let i = 0; i < targets.BadWolfStart.length; i += 1) {
+            ctx.strokeStyle = this.badWolfColor;
             ctx.beginPath();
-            ctx.moveTo(this.transformXLocation(driver.targets.BadWolfStart[i]), this.yend + 2.6);
-            ctx.lineTo(this.transformXLocation(driver.targets.BadWolfEnd[i]), this.yend + 2.6);
+            ctx.moveTo(this.transformXLocation(targets.BadWolfStart[i]), this.yend + 2.6);
+            ctx.lineTo(this.transformXLocation(targets.BadWolfEnd[i]), this.yend + 2.6);
             ctx.stroke();
         }
 
@@ -369,7 +375,7 @@ Graph.prototype.highlightTarget = function (ctx, target) {
             if (target.ObservableTonight !== false) {
                 ctx.beginPath();
                 ctx.arc(this.transformXLocation(target.LastPossibleTime), this.transformYLocation(target.Graph[target.iLastPossibleTime]), 5, 0, sla.d2pi, false);
-                ctx.fillStyle = "red";
+                ctx.fillStyle = this.lastStartColor;
                 ctx.fill();
                 ctx.fillStyle = "black";
             }
@@ -380,8 +386,8 @@ Graph.prototype.highlightTarget = function (ctx, target) {
             if (target.Graph[j] < 10) {
                 continue;
             }
-            const x = driver.graph.xaxis[j];
-            const y = driver.graph.yend - driver.graph.degree * target.Graph[j];
+            const x = this.xaxis[j];
+            const y = this.yend - this.degree * target.Graph[j];
             if (typeof target.MoonDistance !== "undefined") { // for older versions
                 this.plotText(ctx, `☽︎ ${Math.round(target.MoonDistance[j])}°`, "10pt", target.LabelStrokeColor, x, y + 20, "center", "top");
             }
@@ -473,7 +479,7 @@ Graph.prototype.drawTargets = function (ctx, Targets, grayedOut = false) {
                 if (obj.ObservableTonight !== false) {
                     ctx.beginPath();
                     ctx.arc(this.transformXLocation(obj.LastPossibleTime), this.transformYLocation(obj.Graph[obj.iLastPossibleTime]), 5, 0, sla.d2pi, false);
-                    ctx.fillStyle = "red";
+                    ctx.fillStyle = this.lastStartColor;
                     ctx.fill();
                     ctx.fillStyle = "black";
                 }
@@ -572,9 +578,10 @@ Graph.prototype.drawEphemerides = function (ctx) {
         Convert the night.xaxis array (which is in MJD) to a graph.axis array
         (containing the corresponding HTML5 canvas positions, in (sub)pixels
         */
+        const night = driver.night;
         this.xaxis = [];
-        for (let i = 0; i < driver.night.Nx; i += 1) {
-            this.xaxis.push(this.xstart + this.width * (driver.night.xaxis[i] - driver.night.Sunset) / driver.night.wnight);
+        for (let i = 0; i < night.Nx; i += 1) {
+            this.xaxis.push(this.xstart + this.width * (night.xaxis[i] - night.Sunset) / night.wnight);
         }
         ctx.strokeStyle = "black";
         ctx.fillStyle = "black";
@@ -582,11 +589,11 @@ Graph.prototype.drawEphemerides = function (ctx) {
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         const integerOffset = parseFloat(Driver.obsTimezoneE) === parseInt(Driver.obsTimezoneE);
-        for (let i = 0; i < driver.night.UTCtimes.length; i += 1) {
-            const xnight = driver.night.UTCtimes[i];
+        for (let i = 0; i < night.UTCtimes.length; i += 1) {
+            const xnight = night.UTCtimes[i];
             const xplot = this.transformXLocation(xnight);
             if (integerOffset) {
-                if ((Driver.isUTC && driver.night.UTClabels[i] === "24") || (!Driver.isUTC && driver.night.LocalTimelabels[i] === "24")) {
+                if ((Driver.isUTC && night.UTClabels[i] === "24") || (!Driver.isUTC && night.LocalTimelabels[i] === "24")) {
                     this.plotVerticalLine(ctx, this.ystart, this.yend, xplot, [], 1.6);
                 } else {
                     this.plotVerticalLine(ctx, this.ystart, this.yend, xplot, [1, 2], 1);
@@ -598,25 +605,25 @@ Graph.prototype.drawEphemerides = function (ctx) {
             }
             if (Driver.isUTC) {
                 ctx.font = `${this.pt(11)} ${this.fontFamily}`;
-                ctx.fillText(driver.night.UTClabels[i], xplot, this.yend + 15);
+                ctx.fillText(night.UTClabels[i], xplot, this.yend + 15);
             } else {
                 ctx.font = `${this.pt(8)} ${this.fontFamily}`;
-                ctx.fillText(driver.night.UTClabels[i], xplot, this.yend + 12);
+                ctx.fillText(night.UTClabels[i], xplot, this.yend + 12);
             }
         }
         let lastLabel = null;
         let jumped = false;
-        for (let i = 0; i < driver.night.LocalTimetimes.length; i += 1) {
-            const xnight = driver.night.LocalTimetimes[i];
+        for (let i = 0; i < night.LocalTimetimes.length; i += 1) {
+            const xnight = night.LocalTimetimes[i];
             const xplot = this.transformXLocation(xnight);
             if (!integerOffset) {
-                if (driver.night.LocalTimelabels[i] === "24") {
+                if (night.LocalTimelabels[i] === "24") {
                     this.plotVerticalLine(ctx, this.ystart, this.yend, xplot, [], 1.6);
                 } else {
                     this.plotVerticalLine(ctx, this.ystart, this.yend, xplot, [1, 2], 1);
                 }
             }
-            const label = parseInt(driver.night.LocalTimelabels[i]);
+            const label = parseInt(night.LocalTimelabels[i]);
             if (!Driver.isUTC) {
                 ctx.font = `${this.pt(11)} ${this.fontFamily}`;
                 const ok = lastLabel === null || (lastLabel === 24 && label === 1) || label === lastLabel + 1;
@@ -625,15 +632,15 @@ Graph.prototype.drawEphemerides = function (ctx) {
                     jumped = true;
                 }
                 if (jumped) {
-                    ctx.fillStyle = "red";
+                    ctx.fillStyle = this.markDSTColor;
                 }
-                ctx.fillText(driver.night.LocalTimelabels[i], xplot, this.yend + 26);
+                ctx.fillText(night.LocalTimelabels[i], xplot, this.yend + 26);
                 if (jumped) {
                     ctx.fillStyle = "black";
                 }
             }
             ctx.font = `${this.pt(8)} ${this.fontFamily}`;
-            ctx.fillText(driver.night.LSTlabels[i], xplot, this.ystart - 35);
+            ctx.fillText(night.LSTlabels[i], xplot, this.ystart - 35);
         }
         // Print the LST, S.set and S.rise labels
         ctx.font = `${this.pt(8)} ${this.fontFamily}`;
@@ -642,8 +649,8 @@ Graph.prototype.drawEphemerides = function (ctx) {
         if (!Driver.isUTC) {
             ctx.fillText(`${Driver.obsTimezoneAbbrE}   –›`, this.xstart - 25, this.ystart - 10);
             if (Driver.hasDST) {
-                ctx.fillStyle = "red";
-                ctx.fillText(`${Driver.obsTimezoneAbbrM}   –›`, this.transformXLocation(driver.night.MAstTwilight) - 25, this.ystart - 10);
+                ctx.fillStyle = this.markDSTColor;
+                ctx.fillText(`${Driver.obsTimezoneAbbrM}   –›`, this.transformXLocation(night.MAstTwilight) - 25, this.ystart - 10);
                 ctx.fillStyle = "black";
             }
             ctx.textAlign = "left";
@@ -653,41 +660,41 @@ Graph.prototype.drawEphemerides = function (ctx) {
         ctx.fillText("S.set", this.xstart, this.ystart - 22);
         ctx.fillText("S.rise", this.xend, this.ystart - 22);
         // Plot the sunset and sunrise times
-        ctx.fillText(helper.MJDToHM(driver.night.Sunset, "local"), this.xstart, this.ystart - 10);
+        ctx.fillText(helper.MJDToHM(night.Sunset, "local"), this.xstart, this.ystart - 10);
         if (Driver.hasDST) {
-            ctx.fillStyle = "red";
+            ctx.fillStyle = this.markDSTColor;
         }
-        ctx.fillText(helper.MJDToHM(driver.night.Sunrise, "local"), this.xend, this.ystart - 10);
+        ctx.fillText(helper.MJDToHM(night.Sunrise, "local"), this.xend, this.ystart - 10);
         if (Driver.hasDST) {
             ctx.fillStyle = "black";
         }
         // Plot the twilights labels and corresponding dashed vertical lines
         const twiStyle = [6, 5];
         let xtemp;
-        xtemp = this.transformXLocation(driver.night.ENauTwilight);
+        xtemp = this.transformXLocation(night.ENauTwilight);
         ctx.fillText("Nau", xtemp, this.ystart - 22);
-        ctx.fillText(helper.MJDToHM(driver.night.ENauTwilight, "local"), xtemp - 3.5, this.ystart - 10);
+        ctx.fillText(helper.MJDToHM(night.ENauTwilight, "local"), xtemp - 3.5, this.ystart - 10);
         this.plotVerticalLine(ctx, this.ystart, this.yend, xtemp, twiStyle, 1.2);
-        xtemp = this.transformXLocation(driver.night.MNauTwilight);
+        xtemp = this.transformXLocation(night.MNauTwilight);
         ctx.fillText("Nau", xtemp, this.ystart - 22);
         if (Driver.hasDST) {
-            ctx.fillStyle = "red";
+            ctx.fillStyle = this.markDSTColor;
         }
-        ctx.fillText(helper.MJDToHM(driver.night.MNauTwilight, "local"), xtemp + 1, this.ystart - 10);
+        ctx.fillText(helper.MJDToHM(night.MNauTwilight, "local"), xtemp + 1, this.ystart - 10);
         if (Driver.hasDST) {
             ctx.fillStyle = "black";
         }
         this.plotVerticalLine(ctx, this.ystart, this.yend, xtemp, twiStyle, 1.2);
-        xtemp = this.transformXLocation(driver.night.EAstTwilight);
+        xtemp = this.transformXLocation(night.EAstTwilight);
         ctx.fillText("Ast", xtemp, this.ystart - 22);
-        ctx.fillText(helper.MJDToHM(driver.night.EAstTwilight, "local"), xtemp + 4, this.ystart - 10);
+        ctx.fillText(helper.MJDToHM(night.EAstTwilight, "local"), xtemp + 4, this.ystart - 10);
         this.plotVerticalLine(ctx, this.ystart, this.yend, xtemp, twiStyle, 1.2);
-        xtemp = this.transformXLocation(driver.night.MAstTwilight);
+        xtemp = this.transformXLocation(night.MAstTwilight);
         ctx.fillText("Ast", xtemp, this.ystart - 22);
         if (Driver.hasDST) {
-            ctx.fillStyle = "red";
+            ctx.fillStyle = this.markDSTColor;
         }
-        ctx.fillText(helper.MJDToHM(driver.night.MAstTwilight, "local"), xtemp - 1, this.ystart - 10);
+        ctx.fillText(helper.MJDToHM(night.MAstTwilight, "local"), xtemp - 1, this.ystart - 10);
         if (Driver.hasDST) {
             ctx.fillStyle = "black";
         }
@@ -699,10 +706,10 @@ Graph.prototype.drawEphemerides = function (ctx) {
         ctx.beginPath();
         ctx.globalAlpha = 0.2;
         ctx.fillStyle = "gray";
-        const wENT = this.transformXWidth(driver.night.ENauTwilight - driver.night.Sunset);
-        const wMNT = this.transformXWidth(driver.night.Sunrise - driver.night.MNauTwilight);
-        ctx.rect(this.xstart, this.ystart, this.transformXWidth(driver.night.EAstTwilight - driver.night.Sunset), this.height);
-        ctx.rect(this.xend, this.ystart, -this.transformXWidth(driver.night.Sunrise - driver.night.MAstTwilight), this.height);
+        const wENT = this.transformXWidth(night.ENauTwilight - night.Sunset);
+        const wMNT = this.transformXWidth(night.Sunrise - night.MNauTwilight);
+        ctx.rect(this.xstart, this.ystart, this.transformXWidth(night.EAstTwilight - night.Sunset), this.height);
+        ctx.rect(this.xend, this.ystart, -this.transformXWidth(night.Sunrise - night.MAstTwilight), this.height);
         ctx.fill();
         ctx.beginPath();
         ctx.globalAlpha = 0.25;
@@ -730,9 +737,9 @@ Graph.prototype.drawEphemerides = function (ctx) {
         ctx.clip();
         ctx.beginPath();
         ctx.lineWidth = 1.2;
-        ctx.moveTo(this.xaxis[0], this.transformYLocation(driver.night.ymoon[0]));
-        for (let i = 1; i < driver.night.ymoon.length; i += 1) {
-            ctx.lineTo(this.xaxis[i], this.transformYLocation(driver.night.ymoon[i]));
+        ctx.moveTo(this.xaxis[0], this.transformYLocation(night.ymoon[0]));
+        for (let i = 1; i < night.ymoon.length; i += 1) {
+            ctx.lineTo(this.xaxis[i], this.transformYLocation(night.ymoon[i]));
         }
         ctx.stroke();
         ctx.restore();
@@ -741,30 +748,30 @@ Graph.prototype.drawEphemerides = function (ctx) {
         // Plot the x-axis label
         ctx.font = `${this.pt(11)} ${this.fontFamily}`;
         if (Driver.isUTC) {
-            ctx.fillText(`Coordinated Universal Time (UTC), starting night ${driver.night.year}-` + `${helper.padTwoDigits(driver.night.month)}-${helper.padTwoDigits(driver.night.day)}`, this.xmid, this.yend + 40);
+            ctx.fillText(`Coordinated Universal Time (UTC), starting night ${night.year}-` + `${helper.padTwoDigits(night.month)}-${helper.padTwoDigits(night.day)}`, this.xmid, this.yend + 40);
         } else if (Driver.hasDST) {
-            ctx.fillText(`Local Time (${Driver.obsTimezoneDescriptionE} / ${Driver.obsTimezoneDescriptionM}), starting night ${driver.night.year}-` + `${helper.padTwoDigits(driver.night.month)}-${helper.padTwoDigits(driver.night.day)}`, this.xmid, this.yend + 46);
+            ctx.fillText(`Local Time (${Driver.obsTimezoneDescriptionE} / ${Driver.obsTimezoneDescriptionM}), starting night ${night.year}-` + `${helper.padTwoDigits(night.month)}-${helper.padTwoDigits(night.day)}`, this.xmid, this.yend + 46);
         } else {
-            ctx.fillText(`Local Time (${Driver.obsTimezoneDescriptionE}), starting night ${driver.night.year}-` + `${helper.padTwoDigits(driver.night.month)}-${helper.padTwoDigits(driver.night.day)}`, this.xmid, this.yend + 46);
+            ctx.fillText(`Local Time (${Driver.obsTimezoneDescriptionE}), starting night ${night.year}-` + `${helper.padTwoDigits(night.month)}-${helper.padTwoDigits(night.day)}`, this.xmid, this.yend + 46);
         }
 
         // Moon illumination text
         ctx.font = `${this.pt(8)} ${this.fontFamily}`;
         ctx.textAlign = "left";
         ctx.textBaseline = "middle";
-        if ((driver.night.MoonIllStart === 0 && driver.night.MoonIllEnd === 0) ||
-            driver.night.Moonset < driver.night.Sunset ||
-            driver.night.Moonrise > driver.night.Sunrise) {
+        if ((night.MoonIllStart === 0 && night.MoonIllEnd === 0) ||
+            night.Moonset < night.Sunset ||
+            night.Moonrise > night.Sunrise) {
             ctx.fillText("Moonless night.", this.xleftlabels, this.transformYLocation(77));
         } else {
             ctx.fillText("Moon illumination:", this.xleftlabels, this.transformYLocation(77));
-            ctx.fillText(driver.night.MoonIlluminationString, this.xleftlabels, this.transformYLocation(75));
-            if ((driver.night.Moonrise >= driver.night.Sunset) && (driver.night.Moonrise <= driver.night.Sunrise)) {
+            ctx.fillText(night.MoonIlluminationString, this.xleftlabels, this.transformYLocation(75));
+            if ((night.Moonrise >= night.Sunset) && (night.Moonrise <= night.Sunrise)) {
                 ctx.fillText("Moon rises:", this.xleftlabels, this.transformYLocation(71));
-                ctx.fillText(helper.MJDToHM(driver.night.Moonrise, "local", true), this.xleftlabels, this.transformYLocation(69));
-            } else if ((driver.night.Moonset >= driver.night.Sunset) && (driver.night.Moonset <= driver.night.Sunrise)) {
+                ctx.fillText(helper.MJDToHM(night.Moonrise, "local", true), this.xleftlabels, this.transformYLocation(69));
+            } else if ((night.Moonset >= night.Sunset) && (night.Moonset <= night.Sunrise)) {
                 ctx.fillText("Moon sets:", this.xleftlabels, this.transformYLocation(71));
-                ctx.fillText(helper.MJDToHM(driver.night.Moonset, "local", true), this.xleftlabels, this.transformYLocation(69));
+                ctx.fillText(helper.MJDToHM(night.Moonset, "local", true), this.xleftlabels, this.transformYLocation(69));
             }
         }
 
@@ -791,9 +798,9 @@ Graph.prototype.drawCurrentTime = function (ctx) {
         ctx.lineTo(xnow - 0.6 * klen, this.ystart - klen);
         ctx.lineTo(xnow + 0.6 * klen, this.ystart - klen);
         ctx.closePath();
-        ctx.fillStyle = "red";
+        ctx.fillStyle = this.currentTimeColor;
         ctx.fill();
-        ctx.strokeStyle = "red";
+        ctx.strokeStyle = this.currentTimeColor;
         this.plotVerticalLine(ctx, this.ystart, this.yend, xnow, [], 1);
     } catch (ex) {
         helper.LogException(ex);
@@ -862,7 +869,7 @@ Graph.prototype.drawBackground = function (ctx, rectangleLast = false) {
 
         // Warning, if applicable
         if (Driver.obsLowestLimit === null && Driver.obsHighestLimit === null && Driver.obsLowerHatch === null && Driver.obsDeclinationLimit === null) {
-            ctx.fillStyle = "red";
+            ctx.fillStyle = this.noLimitsColor;
             this.plotRotatedText(ctx, "No telescope-specific altitude or collision limits are defined.", this.pt(10), this.xleftlabels + 10, this.transformYLocation(0), "left", "middle");
             this.plotRotatedText(ctx, "Schedule may include unsafe pointings. Use with caution!", this.pt(10), this.xleftlabels + 32, this.transformYLocation(0), "left", "middle");
             ctx.fillStyle = "black";
