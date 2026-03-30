@@ -79,6 +79,40 @@ function Driver() {
                 }
             }
         });
+        const editor = this.CMeditor;
+        this.visibleLineMap = [];
+        this.isVisibleLine = function(content) {
+            if (!content) {
+                return false;
+            }
+            const t = content.trim().toLowerCase();
+            const words = helper.splitQuoted(t);
+            return t !== "" && !t.startsWith("#") && !config.offlineStrings.includes(words[0]);
+        };
+        this.rebuildVisibleLineMap = function() {
+            const lineCount = editor.lineCount();
+            driver.visibleLineMap = new Array(lineCount);
+            let visibleIndex = 0;
+            for (let i = 0; i < lineCount; i += 1) {
+                const line = editor.getLine(i);
+                if (driver.isVisibleLine(line)) {
+                    visibleIndex += 1;
+                    driver.visibleLineMap[i] = visibleIndex;
+                } else {
+                    driver.visibleLineMap[i] = null;
+                }
+            }
+        };
+        editor.on("changes", function() {
+            driver.rebuildVisibleLineMap();
+            editor.clearGutter("CodeMirror-linenumbers");
+            editor.refresh();
+        });
+        editor.setOption("lineNumberFormatter", function (line) {
+            const val = driver.visibleLineMap[line-1];
+            return val === null ? "" : val;
+        });
+        driver.rebuildVisibleLineMap();
 
         // Create debounced function once
         this.debouncedAutosave = this.debounce(
