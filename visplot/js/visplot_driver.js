@@ -112,7 +112,7 @@ function Driver() {
             const val = driver.visibleLineMap[line-1];
             return val === null ? "" : val;
         });
-        driver.rebuildVisibleLineMap();
+        this.rebuildVisibleLineMap();
 
         // Create debounced function once
         this.debouncedAutosave = this.debounce(
