@@ -789,10 +789,24 @@ Driver.prototype.EvtFrameMouseMove = function (e) {
         const y = e.offsetY || e.layerY;
         if (this.rescheduling) {
             if (x > this.graph.targetsx) {
+                this.reY = null;
                 for (let i = 0; i < this.targets.nTargets; i += 1) {
                     const obj = this.targets.Targets[i];
                     if (y >= obj.ystart && y <= obj.yend) {
-                        this.reY = (y <= 0.5 * (obj.ystart + obj.yend) ? obj.ystart : obj.yend);
+                        if (this.reObj === obj) {
+                            break;
+                        }
+                        if (y <= 0.5 * (obj.ystart + obj.yend)) {
+                            if (i > 0 && this.targets.Targets[i-1] === this.reObj) {
+                                break;
+                            }
+                            this.reY = obj.ystart;
+                        } else {
+                            if (i < this.targets.nTargets-1 && this.targets.Targets[i+1] === this.reObj) {
+                                break;
+                            }
+                            this.reY = obj.yend;
+                        }
                         break;
                     }
                 }
@@ -860,9 +874,9 @@ Driver.prototype.EvtFrameMouseDown = function (e) {
         const x = e.offsetX || e.layerX;
         const y = e.offsetY || e.layerY;
         if (x > this.graph.targetsx) {
-            for (let i = 0; i < this.targets.nTargets; i += 1) {
-                if (y >= this.targets.Targets[i].ystart && y <= this.targets.Targets[i].yend) {
-                    this.reObj = i;
+            for (const obj of this.targets.Targets) {
+                if (y >= obj.ystart && y <= obj.yend) {
+                    this.reObj = obj;
                     this.rescheduling = true;
                     this.graph.drawRHSofSchedule(this.context);
                 }
@@ -887,50 +901,42 @@ Driver.prototype.EvtFrameMouseUp = function (e) {
             if (!this.rescheduling) {
                 return;
             }
-            this.rescheduling = false;
-            this.reY = null;
-            let dropped = false;
-            let le, ri;
+            const targets = this.targets.Targets;
+            const movedIndex = targets.indexOf(this.reObj);
+            let scheduleorder = null;
             for (let i = 0; i < this.targets.nTargets; i += 1) {
-                let llim = this.targets.Targets[i].ystart;
-                let rlim = this.targets.Targets[i].yend;
-                if (i === 0) {
-                    llim -= 20;
-                }
-                if (i === this.targets.nTargets - 1) {
-                    rlim += 50;
-                }
-                if (y >= llim && y <= rlim) {
-                    if (y <= 0.5 * (this.targets.Targets[i].ystart + this.targets.Targets[i].yend)) {
-                        le = i - 1;
-                        ri = i;
-                    } else {
-                        le = i;
-                        ri = i + 1;
+                const obj = targets[i];
+                if (y >= obj.ystart && y <= obj.yend) {
+                    if (this.reObj === obj) {
+                        break;
                     }
-                    if (le !== this.reObj && ri !== this.reObj) {
-                        dropped = true;
+                    if (y <= 0.5 * (obj.ystart + obj.yend)) {
+                        if (i > 0 && targets[i-1] === this.reObj) {
+                            break;
+                        }
+                        // Schedule before obj
+                        helper.LogDebug(`Moving ${targets[movedIndex].Name} before ${obj.Name}.`);
+                        scheduleorder = [...Array(this.targets.nTargets).keys()];
+                        scheduleorder.splice(movedIndex, 1);
+                        scheduleorder.splice(i-(movedIndex < i ? 1 : 0), 0, movedIndex);
+                    } else {
+                        if (i < this.targets.nTargets-1 && this.targets.Targets[i+1] === this.reObj) {
+                            break;
+                        }
+                        // Schedule after obj
+                        helper.LogDebug(`Moving ${targets[movedIndex].Name} after ${obj.Name}.`);
+                        scheduleorder = [...Array(this.targets.nTargets).keys()];
+                        scheduleorder.splice(movedIndex, 1);
+                        scheduleorder.splice(i-(movedIndex < i ? 1 : 0)+1, 0, movedIndex);
                     }
                     break;
                 }
             }
-            if (dropped) {
-                // reObj must come between le and ri
-                const newscheduleorder = [];
-                for (let i = 0; i < this.targets.nTargets; i += 1) {
-                    if (i === this.reObj) {
-                        continue;
-                    }
-                    if (ri === i) {
-                        newscheduleorder.push(this.reObj);
-                    }
-                    newscheduleorder.push(i);
-                    if (i === this.targets.nTargets - 1 && le === i) {
-                        newscheduleorder.push(this.reObj);
-                    }
-                }
+            this.rescheduling = false;
+            this.reY = null;
+            if (scheduleorder !== null) {
                 helper.LogEntry("Rescheduling the observing night. Please wait...");
-                this.targets.scheduleAndOptimizeGivenOrder(newscheduleorder);
+                this.targets.scheduleAndOptimizeGivenOrder(scheduleorder);
                 helper.LogEntry("Done.");
                 this.scheduleMode = true;
                 this.Refresh();

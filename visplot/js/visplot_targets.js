@@ -38,7 +38,7 @@ function TargetList() {
  */
 function Target(k, line) {
     try {
-        this.Index = k;
+        this.Label = k+1;
         this.ParseFrom(line);
         this.SetExptime(this.Exptime);
         this.Scheduled = false;
@@ -369,26 +369,26 @@ TargetList.prototype.processTarget = function (i, line) {
  */
 Target.prototype.intersectingChain = function (Targets, checked) {
     try {
+        if (checked.includes(this.Label)) {
+            return [];
+        }
         const graph = driver.graph;
-        let len, iIntersect = [], i, j, chain = [this.Index];
-        if (checked.indexOf(this.Index) > -1) {
+        if (this.xlab < graph.xstart || this.xlab > graph.xend || this.ylab > graph.yend) {
             return [];
         }
-        if (this.xlab < graph.xstart || this.xlab > graph.xstart + graph.width || this.ylab > graph.yend) {
-            return [];
-        }
-        checked.push(this.Index);
-        for (j = 0, len = Targets.length; j < len; j += 1) {
-            if (j === this.Index || checked.indexOf(j) > -1) {
+        checked.push(this.Label);
+        const iIntersect = [];
+        for (const obj of Targets) {
+            if (obj === this || checked.includes(obj.Label)) {
                 continue;
             }
-            if (helper.TwoCirclesIntersect(this.xlab, this.ylab, graph.CircleSize + 0.5, Targets[j].xlab, Targets[j].ylab, graph.CircleSize + 0.5)) {
-                iIntersect.push(j);
+            if (helper.TwoCirclesIntersect(this.xlab, this.ylab, graph.CircleSize + 0.5, obj.xlab, obj.ylab, graph.CircleSize + 0.5)) {
+                iIntersect.push(obj);
             }
         }
-        for (i in iIntersect) {
-            j = iIntersect[i];
-            chain = chain.concat(Targets[j].intersectingChain(Targets, checked));
+        let chain = [this.Label];
+        for (const obj of iIntersect) {
+            chain = chain.concat(obj.intersectingChain(Targets, checked));
         }
         return chain;
     } catch (ex) {
@@ -483,11 +483,8 @@ TargetList.prototype.canSchedule = function (obj, start, ignoreOverlaps = false)
     try {
         let end = start + obj.Exptime;
         let overlaps = false;
-        for (const [i, other] of this.Targets.entries()) {
-            if (i === this.Index) {
-                continue;
-            }
-            if (!other.Scheduled) {
+        for (const other of this.Targets) {
+            if (other === obj || !other.Scheduled) {
                 continue;
             }
             if (end <= other.ScheduledStartTime || start >= other.ScheduledEndTime) {
@@ -519,6 +516,7 @@ TargetList.prototype.optimizeInterchangeNeighbours = function (scheduleorder) {
         for (let i = 0; i < scheduleorder.length - 1; i += 1) {
             const obj1 = this.Targets[scheduleorder[i]];
             const obj2 = this.Targets[scheduleorder[i + 1]];
+            console.log(obj1.Name, obj2.Name);
             if (obj1.Observed || obj2.Observed) {
                 continue;
             }
@@ -540,7 +538,7 @@ TargetList.prototype.optimizeInterchangeNeighbours = function (scheduleorder) {
             const alt2if = obj2.getAltitude(obj1.ScheduledStartTime + 0.5 * obj2.Exptime);
             const gain1 = alt1if - alt1now;
             const gain2 = alt2if - alt2now;
-            const ratio = 1.1; // see below
+            const ratio = 1; // see below
             let exchange = false;
             if (gain1 > 0 && gain2 >= 0) {
                 exchange = true;
@@ -569,38 +567,38 @@ TargetList.prototype.optimizeInterchangeNeighbours = function (scheduleorder) {
 /**
  * @memberof TargetList
  */
-TargetList.prototype.optimizeMoveToLaterTimesIfRising = function (scheduleorder) {
+TargetList.prototype.optimizeMoveToLaterTimesIfRising = function () {
     try {
-        let i, obj, j, kj, curtime, overlaps, amif;
-        for (i = scheduleorder.length - 1; i >= 0; i -= 1) {
-            obj = this.Targets[scheduleorder[i]];
-            if (obj.Observed) {
-                continue;
-            }
-            if (obj.FillSlot) {
+        let i, obj, curtime, overlaps, amif;
+        for (i = this.nTargets - 1; i >= 0; i -= 1) {
+            obj = this.Targets[i];
+            if (obj.Observed || obj.FillSlot || !obj.Scheduled) {
                 continue;
             }
             if (obj.ZenithTime <= obj.ScheduledStartTime) {
                 continue;
             }
+            // First scheduled object after [i] - prevent crossing
+            let k = i+1;
+            while (k < this.nTargets && !this.Targets[k].Scheduled) {
+                k += 1;
+            }
+            let starttime = k === this.nTargets ? driver.night.Sunrise : this.Targets[k].ScheduledStartTime;
             let bestalt = obj.AltMidTime;
             let besttime = obj.ScheduledStartTime;
             // Move to the right as much as possible
             for (
-                curtime = Math.min(driver.night.Sunrise, obj.LastPossibleTime, driver.night.Sunset + Math.floor((2 * obj.ZenithTime - obj.ScheduledMidTime - driver.night.Sunset) / driver.night.xstep) * driver.night.xstep);
+                curtime = Math.min(starttime, obj.LastPossibleTime, driver.night.Sunset + Math.floor((obj.ZenithTime - 0.5 * obj.Exptime - driver.night.Sunset) / driver.night.xstep) * driver.night.xstep);
                 curtime > obj.ScheduledStartTime;
                 curtime -= driver.night.xstep
             ) {
                 overlaps = false;
-                for (j = 0; j < scheduleorder.length; j += 1) {
-                    if (j === i) {
+                for (let j = 0; j < this.nTargets; j += 1) {
+                    const other = this.Targets[j];
+                    if (j === i || !other.Scheduled) {
                         continue;
                     }
-                    kj = scheduleorder[j];
-                    if (this.Targets[kj].Scheduled === false) {
-                        continue;
-                    }
-                    if (curtime + obj.Exptime <= this.Targets[kj].ScheduledStartTime || curtime >= this.Targets[kj].ScheduledEndTime) {
+                    if (curtime + obj.Exptime <= other.ScheduledStartTime || curtime >= other.ScheduledEndTime) {
                         continue;
                     }
                     overlaps = true;
@@ -632,18 +630,20 @@ TargetList.prototype.optimizeMoveToLaterTimesIfRising = function (scheduleorder)
 TargetList.prototype.reorderAccordingToScheduling = function (scheduleorder) {
     try {
         const newtargets = [];
+        const neworder = [];
         const graph = driver.graph;
         const relabel = $("#opt_reorder_targets").is(":checked");
-        let running = 0;
+        let running = 1;
         for (let i = 0; i < scheduleorder.length; i += 1) {
             const tgt = this.Targets[scheduleorder[i]];
             if (tgt.Scheduled) {
                 tgt.rxmid = graph.targetsx;
                 tgt.rymid = graph.targetsy + running * (graph.targetsyskip * (graph.doubleTargets ? 2 : 1) + 2) - 6.5;
                 if (relabel) {
-                    tgt.Index = running;
+                    tgt.Label = running;
                 }
                 newtargets.push(tgt);
+                neworder.push(i);
                 running += 1;
             }
         }
@@ -652,13 +652,14 @@ TargetList.prototype.reorderAccordingToScheduling = function (scheduleorder) {
                 tgt.rxmid = graph.targetsx;
                 tgt.rymid = graph.targetsy + running * (graph.targetsyskip * (graph.doubleTargets ? 2 : 1) + 2) - 6.5;
                 if (relabel) {
-                    tgt.Index = running;
+                    tgt.Label = running;
                 }
                 newtargets.push(tgt);
                 running += 1;
             }
         }
         this.Targets = newtargets;
+        return neworder;
     } catch (ex) {
         helper.LogException(ex);
     }
@@ -866,7 +867,7 @@ TargetList.prototype.scheduleAndOptimizeGivenOrder = function (newscheduleorder)
         while (k < nmax && curidx < driver.night.Nx) {
             const j = newscheduleorder[k];
             // Find the first target that needs to be scheduled
-            const tgt = targets[j];
+            let tgt = targets[j];
             // Already handled?
             if (tgt.Observed || tgt.FillSlot) {
                 k += 1;
@@ -887,8 +888,8 @@ TargetList.prototype.scheduleAndOptimizeGivenOrder = function (newscheduleorder)
         scheduleorder = scheduleorder.sort(function(a, b) {
             return targets[a].ScheduledStartTime < targets[b].ScheduledStartTime ? -1 : 1;
         });
-        this.optimizeMoveToLaterTimesIfRising(scheduleorder);
         this.reorderAccordingToScheduling(scheduleorder);
+        this.optimizeMoveToLaterTimesIfRising();
         this.displayScheduleStatistics();
     } catch (ex) {
         helper.LogException(ex);
@@ -1017,9 +1018,12 @@ TargetList.prototype.doSchedule = function (start, reorder) {
     try {
         const scheduleorder = this.scheduleWithWeights(0);
         if (reorder) {
-            this.optimizeMoveToLaterTimesIfRising(scheduleorder);
-            this.optimizeInterchangeNeighbours(scheduleorder);
-            this.reorderAccordingToScheduling(scheduleorder);
+            const neworder = this.reorderAccordingToScheduling(scheduleorder);
+            this.optimizeMoveToLaterTimesIfRising();
+
+            this.optimizeInterchangeNeighbours(neworder);
+            this.reorderAccordingToScheduling(neworder);
+            this.optimizeMoveToLaterTimesIfRising();
             this.displayScheduleStatistics();
         } else {
             this.scheduleAndOptimizeGivenOrder(scheduleorder);
