@@ -6,7 +6,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. See LICENSE.md.
  */
-$version = "5.0o";
+$version = "5.0p";
 /*
 * Version history (with brief changelog):
 *
@@ -164,6 +164,8 @@ $version = "5.0o";
 * 5.0o - Added button to clear the target list.
 *      - Improved handling of empty target list.
 *      - Added more telescopes.
+*
+* 5.0p - Manual reordering of the suggested schedule works again.
 */
 session_start();
 if (isset($_SESSION["obinfo"])) {

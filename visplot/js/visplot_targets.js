@@ -773,23 +773,24 @@ TargetList.prototype.displayScheduleStatistics = function () {
 
 TargetList.prototype.scheduleWithWeights = function (startingAt) {
     try {
-        let curidx = startingAt;
+        const targets = this.Targets;
         const wp = Driver.wPriority;
         const wu = Driver.wUrgency;
         const wa = Driver.wAltitude;
         const ws = Driver.wSlewing;
-        const maxpriority = Math.max.apply(Math, this.Targets.map(function (o) { return o.Priority; }));
+        const maxpriority = Math.max.apply(Math, targets.map(function (o) { return o.Priority; }));
         let lastra = null, lastdec = null;
         // Start scheduling
         let scheduleorder = [];
         // However, before anything else we schedule the programmes that MUST fill their entire time slot
         for (let i = 0; i < this.nTargets; i += 1) {
-            const tgt = this.Targets[i];
+            const tgt = targets[i];
             if (tgt.FillSlot && tgt.nAllowed > 0) {
                 tgt.Schedule(tgt.beginAllowed[0]); // Attention, this might lead to overlaps! But the user decided so!
                 scheduleorder.push(i);
             }
         }
+        let curidx = startingAt;
         while (true) {
             if (curidx >= driver.night.Nx) {
                 break;
@@ -798,7 +799,7 @@ TargetList.prototype.scheduleWithWeights = function (startingAt) {
             const weights = [];
             // Get a list of all targets that can be scheduled at this time, together with their weighted priority
             for (let i = 0; i < this.nTargets; i += 1) {
-                const tgt = this.Targets[i];
+                const tgt = targets[i];
                 if (tgt.Observed) {
                     continue;
                 }
@@ -829,13 +830,12 @@ TargetList.prototype.scheduleWithWeights = function (startingAt) {
                 continue;
             }
             scheduleorder.push(maxKey);
-            const obj = this.Targets[maxKey];
+            const obj = targets[maxKey];
             obj.Schedule(curtime);
             curidx += Math.ceil(obj.Exptime / driver.night.xstep);
             lastra = obj.raRad;
             lastdec = obj.decRad;
         }
-        const targets = this.Targets;
         return scheduleorder.sort(function(a, b) {
             return targets[a].ScheduledStartTime < targets[b].ScheduledStartTime ? -1 : 1;
         });
@@ -849,40 +849,53 @@ TargetList.prototype.scheduleWithWeights = function (startingAt) {
  */
 TargetList.prototype.scheduleAndOptimizeGivenOrder = function (newscheduleorder) {
     try {
-        let scheduleorder = [], i, k, obj;
-        for (const target of this.Targets) {
-            if (target.Observed) {
+        const targets = this.Targets;
+        // Start scheduling
+        let scheduleorder = [];
+        for (let i = 0; i < this.nTargets; i += 1) {
+            const tgt = targets[i];
+            // Leave observed targets alone
+            if (tgt.Observed) {
+                scheduleorder.push(i);
                 continue;
             }
-            target.Scheduled = false;
-            if (target.FillSlot === true) {
-                target.Schedule(obj.RestrictionMinUTC);
+            // Before anything else we schedule the programmes that MUST fill their entire time slot
+            if (tgt.FillSlot && tgt.nAllowed > 0) {
+                tgt.Schedule(tgt.beginAllowed[0]); // Attention, this might lead to overlaps! But the user decided so!
+                scheduleorder.push(i);
+                continue;
             }
+            // The rest of them must be processed
+            tgt.Scheduled = false;
         }
-        let curtime = driver.night.Sunset;
-        i = 0;
-        while (i < this.nTargets && curtime <= driver.night.Sunrise) {
-            k = newscheduleorder[i];
-            obj = this.Targets[k];
-            if (obj.FillSlot === true) {
-                scheduleorder.push(k);
-                i += 1;
+        // Now schedule in the given order
+        let curidx = 0;
+        let k = 0;
+        let nmax = newscheduleorder.length;
+        while (k < nmax && curidx < driver.night.Nx) {
+            const j = newscheduleorder[k];
+            // Find the first target that needs to be scheduled
+            const tgt = targets[j];
+            // Already handled?
+            if (tgt.Observed || tgt.FillSlot) {
+                k += 1;
                 continue;
             }
-            if (curtime > obj.LastPossibleTime) {
-                i += 1;
+            // Can we schedule it?
+            const curtime = driver.night.xaxis[curidx];
+            if (!this.canSchedule(tgt, curtime)) {
+                curidx += 1;
                 continue;
             }
-            if (this.canSchedule(obj, curtime)) {
-                obj.Schedule(curtime);
-                scheduleorder.push(k);
-                curtime += obj.Exptime;
-                i += 1;
-            } else {
-                curtime += driver.night.xstep;
-            }
+            // Schedule it
+            scheduleorder.push(j);
+            tgt.Schedule(curtime);
+            curidx += Math.ceil(tgt.Exptime / driver.night.xstep);
+            k += 1;
         }
-
+        scheduleorder = scheduleorder.sort(function(a, b) {
+            return targets[a].ScheduledStartTime < targets[b].ScheduledStartTime ? -1 : 1;
+        });
         this.optimizeMoveToLaterTimesIfRising(scheduleorder);
         if ($("#opt_reorder_targets").is(":checked")) {
             this.reorderAccordingToScheduling(scheduleorder);
