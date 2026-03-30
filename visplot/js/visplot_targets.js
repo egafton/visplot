@@ -631,40 +631,31 @@ TargetList.prototype.optimizeMoveToLaterTimesIfRising = function (scheduleorder)
  */
 TargetList.prototype.reorderAccordingToScheduling = function (scheduleorder) {
     try {
+        const newtargets = [];
         const graph = driver.graph;
-        let newtargets = [], i, j, k, imin, tmin, tj;
-        for (i = 0; i < scheduleorder.length - 1; i += 1) {
-            imin = i;
-            tmin = this.Targets[scheduleorder[i]].ScheduledStartTime;
-            for (j = i + 1; j < scheduleorder.length; j += 1) {
-                tj = this.Targets[scheduleorder[j]].ScheduledStartTime;
-                if (tj < tmin) {
-                    imin = j;
-                    tmin = tj;
-                }
-            }
-            if (imin > i) {
-                k = scheduleorder[i];
-                scheduleorder[i] = scheduleorder[imin];
-                scheduleorder[imin] = k;
-            }
-        }
+        const relabel = $("#opt_reorder_targets").is(":checked");
         let running = 0;
-        for (i = 0; i < scheduleorder.length; i += 1) {
-            k = scheduleorder[i];
-            this.Targets[k].rxmid = graph.targetsx;
-            this.Targets[k].rymid = graph.targetsy + running * (graph.targetsyskip * (graph.doubleTargets ? 2 : 1) + 2) - 6.5;
-            this.Targets[k].Index = running;
-            running += 1;
-            newtargets.push(this.Targets[scheduleorder[i]]);
-        }
-        for (i = 0; i < this.nTargets; i += 1) {
-            if (this.Targets[i].Scheduled === false) {
-                this.Targets[i].rxmid = graph.targetsx;
-                this.Targets[i].rymid = graph.targetsy + running * (graph.targetsyskip * (graph.doubleTargets ? 2 : 1) + 2) - 6.5;
-                this.Targets[i].Index = running;
+        for (let i = 0; i < scheduleorder.length; i += 1) {
+            const tgt = this.Targets[scheduleorder[i]];
+            if (tgt.Scheduled) {
+                tgt.rxmid = graph.targetsx;
+                tgt.rymid = graph.targetsy + running * (graph.targetsyskip * (graph.doubleTargets ? 2 : 1) + 2) - 6.5;
+                if (relabel) {
+                    tgt.Index = running;
+                }
+                newtargets.push(tgt);
                 running += 1;
-                newtargets.push(this.Targets[i]);
+            }
+        }
+        for (const tgt of this.Targets) {
+            if (!tgt.Scheduled) {
+                tgt.rxmid = graph.targetsx;
+                tgt.rymid = graph.targetsy + running * (graph.targetsyskip * (graph.doubleTargets ? 2 : 1) + 2) - 6.5;
+                if (relabel) {
+                    tgt.Index = running;
+                }
+                newtargets.push(tgt);
+                running += 1;
             }
         }
         this.Targets = newtargets;
@@ -897,9 +888,7 @@ TargetList.prototype.scheduleAndOptimizeGivenOrder = function (newscheduleorder)
             return targets[a].ScheduledStartTime < targets[b].ScheduledStartTime ? -1 : 1;
         });
         this.optimizeMoveToLaterTimesIfRising(scheduleorder);
-        if ($("#opt_reorder_targets").is(":checked")) {
-            this.reorderAccordingToScheduling(scheduleorder);
-        }
+        this.reorderAccordingToScheduling(scheduleorder);
         this.displayScheduleStatistics();
     } catch (ex) {
         helper.LogException(ex);
@@ -1030,9 +1019,7 @@ TargetList.prototype.doSchedule = function (start, reorder) {
         if (reorder) {
             this.optimizeMoveToLaterTimesIfRising(scheduleorder);
             this.optimizeInterchangeNeighbours(scheduleorder);
-            if ($("#opt_reorder_targets").is(":checked")) {
-                this.reorderAccordingToScheduling(scheduleorder);
-            }
+            this.reorderAccordingToScheduling(scheduleorder);
             this.displayScheduleStatistics();
         } else {
             this.scheduleAndOptimizeGivenOrder(scheduleorder);

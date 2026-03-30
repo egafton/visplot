@@ -196,7 +196,7 @@ Graph.prototype.drawRHSofSchedule = function (ctx) {
                 ctx.beginPath();
                 ctx.arc(obj.rxmid, obj.rymid, this.CircleSize, 0, sla.d2pi, false);
                 ctx.fill();
-                this.plotText(ctx, String(i+1), "8pt", obj.LabelTextColor, obj.rxmid, obj.rymid, "center", "middle");
+                this.plotText(ctx, String(obj.Index+1), "8pt", obj.LabelTextColor, obj.rxmid, obj.rymid, "center", "middle");
             } else {
                 this.plotText(ctx, `${obj.Name} (${obj.ProjectNumber})`, "8pt", (driver.reObj === i && driver.rescheduling) ? "blue" : "black", obj.rxmid + 15, obj.rymid - 1, "left", "middle");
                 ctx.strokeStyle = "black";
@@ -205,7 +205,7 @@ Graph.prototype.drawRHSofSchedule = function (ctx) {
                 ctx.arc(obj.rxmid, obj.rymid, this.CircleSize, 0, sla.d2pi, false);
                 ctx.fill();
                 ctx.stroke();
-                this.plotText(ctx, String(i+1), "8pt", "black", obj.rxmid, obj.rymid, "center", "middle");
+                this.plotText(ctx, String(obj.Index+1), "8pt", "black", obj.rxmid, obj.rymid, "center", "middle");
             }
             if (this.doubleTargets) {
                 if (obj.Scheduled) {
@@ -269,7 +269,7 @@ Graph.prototype.drawSchedule = function (ctx) {
                 ctx.beginPath();
                 ctx.arc(obj.xmid, obj.ymid, this.CircleSize, 0, sla.d2pi, false);
                 ctx.fill();
-                this.plotText(ctx, String(i+1), "8pt", obj.LabelTextColor, obj.xmid, obj.ymid, "center", "middle");
+                this.plotText(ctx, String(obj.Index+1), "8pt", obj.LabelTextColor, obj.xmid, obj.ymid, "center", "middle");
             } else {
                 ctx.strokeStyle = "black";
                 ctx.fillStyle = "white";
@@ -277,7 +277,7 @@ Graph.prototype.drawSchedule = function (ctx) {
                 ctx.arc(obj.xlab, obj.ylab, this.CircleSize, 0, sla.d2pi, false);
                 ctx.fill();
                 ctx.stroke();
-                this.plotText(ctx, String(i+1), "8pt", "black", obj.xlab, obj.ylab, "center", "middle");
+                this.plotText(ctx, String(obj.Index+1), "8pt", "black", obj.xlab, obj.ylab, "center", "middle");
             }
         }
         ctx.restore();
@@ -542,7 +542,7 @@ Graph.prototype.drawTargetNames = function (ctx, Targets) {
             ctx.arc(obj.xlab, obj.ylab, this.CircleSize, 0, sla.d2pi, false);
             ctx.fill();
             ctx.stroke();
-            this.plotText(ctx, String(i+1), "8pt", "black", obj.xlab, obj.ylab, "center", "middle");
+            this.plotText(ctx, String(obj.Index+1), "8pt", "black", obj.xlab, obj.ylab, "center", "middle");
         }
         ctx.restore();
         let y = this.targetsy;
