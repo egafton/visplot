@@ -1938,6 +1938,9 @@ Target.prototype.ComputePositionSchedLabel = function () {
         if (graph.xstart + graph.CircleSize > x || x > graph.xend - graph.CircleSize) {
             x = graph.xaxis[helper.MJDToIndex(this.ScheduledMidTime)] + xshift;
             y = graph.yend - graph.degree * this.Graph[helper.MJDToIndex(this.ScheduledMidTime)] + yshift;
+        } else if (graph.ystart + graph.CircleSize > y && this.ScheduledStartTime < this.ZenithTime && this.ScheduledEndTime > this.ZenithTime) {
+            x = graph.xaxis[helper.MJDToIndex(this.ZenithTime)];
+            y = graph.yend - graph.degree * this.Graph[helper.MJDToIndex(this.ZenithTime)] + yshift + 5;
         }
         this.xmid = x;
         this.ymid = y;
