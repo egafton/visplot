@@ -101,10 +101,10 @@ SkyGraph.prototype.redraw = function (ctx, img=null) {
             ctx.fillStyle = "#f0f0f0";
             ctx.fillRect(0, 0, config.skycamImageSizeX, config.skycamImageSizeY);
             ctx.fillStyle = "#e57373"; // soft red
-            ctx.fillRect(0, 0, config.skycamImageSizeX, 6);
+            ctx.fillRect(0, 0, config.skycamImageSizeX, 12);
             ctx.textBaseline = "middle";
             ctx.textAlign = "center";
-            ctx.font = `bold 14pt ${this.fontFamily}`;
+            ctx.font = `bold 24pt ${this.fontFamily}`;
             ctx.fillStyle = "#c62828";
             ctx.fillText("No sky camera configured for the selected telescope", config.skycamImageSizeX/2, config.skycamImageSizeY/2);
             return;
@@ -178,20 +178,20 @@ SkyGraph.prototype.xhair = function (ctx, x, y, name, color) {
     try {
         ctx.save();
         ctx.strokeStyle = color;
-        ctx.lineWidth = 1;
+        ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(x - 8, y);
-        ctx.lineTo(x - 3, y);
-        ctx.moveTo(x + 8, y);
-        ctx.lineTo(x + 3, y);
-        ctx.moveTo(x, y - 8);
-        ctx.lineTo(x, y - 3);
-        ctx.moveTo(x, y + 8);
-        ctx.lineTo(x, y + 3);
+        ctx.moveTo(x - 16, y);
+        ctx.lineTo(x - 5, y);
+        ctx.moveTo(x + 16, y);
+        ctx.lineTo(x + 5, y);
+        ctx.moveTo(x, y - 16);
+        ctx.lineTo(x, y - 5);
+        ctx.moveTo(x, y + 16);
+        ctx.lineTo(x, y + 5);
         ctx.stroke();
-        ctx.font = "8pt " + this.fontFamily;
+        ctx.font = "16pt " + this.fontFamily;
         ctx.fillStyle = color;
-        ctx.fillText(name, x + 5, y - 5);
+        ctx.fillText(name, x + 8, y - 8);
     } catch (ex) {
         helper.LogException(ex);
     } finally {
@@ -211,6 +211,7 @@ SkyGraph.prototype.drawAxes = function (ctx) {
         ctx.rect(0, 0, config.skycamImageSizeX, config.skycamImageSizeY);
         ctx.clip();
         ctx.strokeStyle = "gray";
+        ctx.lineWidth = 1;
         for (let i = 90; i >= 0; i -= 30) {
             const r = this.params.radius * Math.pow(1 - i / 90, this.params.distortPower);
             ctx.beginPath();
@@ -246,8 +247,8 @@ SkyGraph.prototype.drawTicks = function (ctx) {
         ctx.clip();
         ctx.textBaseline = "middle";
         ctx.textAlign = "center";
-        ctx.font = `13pt ${this.fontFamily}`;
-        const rcard = 15;
+        ctx.font = `24pt ${this.fontFamily}`;
+        const rcard = 25;
         for (let i = 0; i < 4; i += 1) {
             const az = sla.d2r * (-90 - this.params.rotation - i * 90);
             // Find first radius inside the image
@@ -289,19 +290,19 @@ SkyGraph.prototype.drawPointing = function (ctx) {
         const x = this.tcsPointing.x;
         const y = this.tcsPointing.y;
         ctx.strokeStyle = config.skycamTcsCrosshairColor;
-        ctx.lineWidth = 1;
+        ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(x - 6, y - 6);
-        ctx.lineTo(x - 2, y - 2);
-        ctx.moveTo(x + 6, y + 6);
-        ctx.lineTo(x + 2, y + 2);
-        ctx.moveTo(x - 6, y + 6);
-        ctx.lineTo(x - 2, y + 2);
-        ctx.moveTo(x + 6, y - 6);
-        ctx.lineTo(x + 2, y - 2);
+        ctx.moveTo(x - 12, y - 12);
+        ctx.lineTo(x - 4, y - 4);
+        ctx.moveTo(x + 12, y + 12);
+        ctx.lineTo(x + 4, y + 4);
+        ctx.moveTo(x - 12, y + 12);
+        ctx.lineTo(x - 4, y + 4);
+        ctx.moveTo(x + 12, y - 12);
+        ctx.lineTo(x + 4, y - 4);
         ctx.stroke();
         ctx.beginPath();
-        ctx.arc(x, y, 3.5, 0, sla.d2pi, false);
+        ctx.arc(x, y, 7, 0, sla.d2pi, false);
         ctx.stroke();
     } catch (ex) {
         helper.LogException(ex);
@@ -356,18 +357,18 @@ SkyGraph.prototype.displayCoords = function (ctx) {
             ctx.fillStyle = "black";
             ctx.textBaseline = "top";
             ctx.textAlign = "left";
-            ctx.font = `10pt ${this.fontFamily}`;
-            ctx.fillText("Az:", 0, config.skycamImageSizeY + 6);
-            ctx.fillText("Alt:", 51, config.skycamImageSizeY + 6);
-            ctx.fillText("RA", 100, config.skycamImageSizeY + 6);
-            ctx.fillText("Dec", 208, config.skycamImageSizeY + 6);
+            ctx.font = `18pt ${this.fontFamily}`;
+            ctx.fillText("Az:", 0, config.skycamImageSizeY + 12);
+            ctx.fillText("Alt:", 102, config.skycamImageSizeY + 12);
+            ctx.fillText("RA:", 205, config.skycamImageSizeY + 12);
+            ctx.fillText("Dec:", 416, config.skycamImageSizeY + 12);
             ctx.fillStyle = "blue";
-            ctx.fillText(Math.round(sla.r2d*this.lastAltaz.az), 20, config.skycamImageSizeY + 6);
+            ctx.fillText(`${Math.round(sla.r2d*this.lastAltaz.az)}°`, 40, config.skycamImageSizeY + 12);
             const altDeg = Math.round(sla.r2d*this.lastAltaz.alt);
-            ctx.fillText(altDeg > 10 ? altDeg : "low", 74, config.skycamImageSizeY + 6);
+            ctx.fillText(altDeg > 10 ? `${altDeg}°` : "low", 148, config.skycamImageSizeY + 12);
             const hadec = sla.dh2e(this.lastAltaz.az, this.lastAltaz.alt, Driver.obsLatRad);
-            ctx.fillText(helper.HMS(sla.rtoh * sla.dranrm(this.lst-hadec.ha), "h", "m", "s"), 121, config.skycamImageSizeY + 6);
-            ctx.fillText(helper.HMS(sla.r2d * hadec.dec, "°", "'", '"'), 235, config.skycamImageSizeY + 6);
+            ctx.fillText(helper.HMS(sla.rtoh * sla.dranrm(this.lst-hadec.ha), "h", "m", "s"), 250, config.skycamImageSizeY + 12);
+            ctx.fillText(helper.HMS(sla.r2d * hadec.dec, "°", "'", '"'), 472, config.skycamImageSizeY + 12);
         }
     } catch (ex) {
         helper.LogException(ex);
@@ -386,20 +387,21 @@ SkyGraph.prototype.displayTime = function (ctx) {
         const utc = lt.clone().tz("UTC");
         const mjd = helper.getMJD(lt);
         this.lst = helper.stl(mjd);
-        const UTtext = `UTC ${utc.format("YYYY-MM-DD HH:mm:ss")}`;
-        const LTtext = `LT ${lt.format("YYYY-MM-DD HH:mm:ss")}`;
-        const MJDtext = `MJD ${mjd.toFixed(5)}`;
-        const STtext = `LST ${helper.HMS(sla.rtoh * this.lst, ":", ":", "")}`;
         ctx.clearRect(this.canvasWidth / 2, config.skycamImageSizeY, this.canvasWidth / 2, this.canvasHeight - config.skycamImageSizeY);
-        ctx.font = `10pt ${this.fontFamily}`;
-        ctx.fillStyle = "gray";
+        ctx.font = `18pt ${this.fontFamily}`;
+        ctx.fillStyle = "black";
         ctx.textBaseline = "top";
         ctx.textAlign = "left";
-        ctx.fillText(UTtext, config.skycamImageSizeX / 2 + 40, config.skycamImageSizeY + 6);
-        ctx.fillText(LTtext, config.skycamImageSizeX / 2 + 40, config.skycamImageSizeY + 24);
+        ctx.fillText("UTC:", 680, config.skycamImageSizeY + 12);
+        ctx.fillText("LT:", 680, config.skycamImageSizeY + 46);
+        ctx.fillText("MJD:", 1075, config.skycamImageSizeY + 12);
+        ctx.fillText("LST:", 1135, config.skycamImageSizeY + 46);
+        ctx.fillStyle = "blue";
+        ctx.fillText(utc.format("YYYY-MM-DD HH:mm:ss"), 740, config.skycamImageSizeY + 12);
+        ctx.fillText(lt.format("YYYY-MM-DD HH:mm:ss"), 720, config.skycamImageSizeY + 46);
         ctx.textAlign = "right";
-        ctx.fillText(MJDtext, config.skycamImageSizeX, config.skycamImageSizeY + 6);
-        ctx.fillText(STtext, config.skycamImageSizeX, config.skycamImageSizeY + 24);
+        ctx.fillText(mjd.toFixed(5), config.skycamImageSizeX, config.skycamImageSizeY + 12);
+        ctx.fillText(helper.HMS(sla.rtoh * this.lst, ":", ":", ""), config.skycamImageSizeX, config.skycamImageSizeY + 46);
         if (this.lastAltaz !== null) {
             this.displayCoords(ctx);
         }

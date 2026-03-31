@@ -23,34 +23,15 @@ $(document).ready(function () {
         /* Catch resize events */
         window.addEventListener("resize", driver.Refresh);
 
-        /* Sidebar toggle button */
-        $("#toggle-sidebar").click(function() {
-            $("#sidebar").toggle();
-            $("#divider").toggle();
-            const visible = $("#sidebar").is(":visible");
-            if (visible) {
-                /* Create the panel divider */
-                $("#divider").jSplitter({
-                    "leftdiv": "sidebar",
-                    "rightdiv": "canvasFrame",
-                    "flex": true,
-                    "persist": true,
-                    "cookie": "jSplitter",
-                    "minleftwidth": 250
-                });
-            }
-            localStorage.visplotSidebarVisible = visible;
-            if (driver.night !== null) {
-                driver.Refresh();
-            }
+        /* Create the panel divider */
+        $("#divider").jSplitter({
+            "leftdiv": "sidebar",
+            "rightdiv": "canvasFrame",
+            "flex": true,
+            "persist": true,
+            "cookie": "jSplitter",
+            "minleftwidth": 400
         });
-
-        /* Show the sidebar if the user had it open */
-        if ("visplotSidebarVisible" in localStorage) {
-            if (localStorage.visplotSidebarVisible === "true") {
-                $("#toggle-sidebar").trigger("click");
-            }
-        }
 
         // Populate the telescope select input
         Object.entries(telescopes)

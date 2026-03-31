@@ -19,8 +19,9 @@ function Driver() {
         this.canvas = document.getElementById("canvasFrame");
         this.context = this.canvas.getContext("2d");
         this.graph = new Graph();
-        this.rescaleCanvas(this.canvas, this.context);
-        this.graph.Resize(this.canvas);
+        window.requestAnimationFrame(() => {
+            driver.Refresh();
+        });
 
         this.skyCanvas = document.getElementById("canvasSkycam");
         this.skyContext = this.skyCanvas.getContext("2d");
@@ -110,7 +111,7 @@ function Driver() {
         });
         editor.setOption("lineNumberFormatter", function (line) {
             const val = driver.visibleLineMap[line-1];
-            return val === null ? "" : val;
+            return (val === null || typeof val === "undefined") ? "" : val;
         });
 
         // Create debounced function once
@@ -161,7 +162,7 @@ function Driver() {
                         .catch(ex => { helper.LogException(ex); });
                 }
             }))
-            .catch(ex => { helper.LogException(ex); });
+            .catch(ex => { console.warn(ex); });
     } catch (ex) {
         helper.LogException(ex);
     }
@@ -257,7 +258,7 @@ Driver.prototype.SetupMap = function() {
         L.polyline([[config.axialTilt, -180], [config.axialTilt, 180]], config.mapTropicsStyle).addTo(this.map);
         L.polyline([[-config.axialTilt, -180], [-config.axialTilt, 180]], config.mapTropicsStyle).addTo(this.map);
         function addLineLabel(lat, text, map) {
-            return L.marker([lat, -165], {
+            return L.marker([lat + 2, -178], {
                 icon: L.divIcon({
                     className: 'map-label',
                     html: text,
@@ -1074,7 +1075,7 @@ Driver.prototype.EvtFrameDrop = function (e) {
             $("#plotTargets").trigger("click");
         }
     } catch (ex) {
-        helper.LogException(ex);
+        console.warn(ex);
     }
 };
 
@@ -1376,7 +1377,7 @@ Driver.prototype.BtnEvtConfig = function () {
                         $('#def_telescope').select2({
                             placeholder: "Start typing or select on the map",
                             minimumResultsForSearch: 0, // always show search input
-                            width: '600px',
+                            width: '750px',
                             dropdownParent: $('.fancybox-content'),
                             dropdownCssClass: 'select2-dropdown-below',
                             matcher: driver.perWordMatcher
@@ -1609,29 +1610,28 @@ Driver.prototype.Refresh = function () {
         const night = driver.night;
         const targets = driver.targets;
         const minwidth = driver.graph.minwidth;
-        const minheight = driver.graph.minheight;
         const ratio = driver.graph.ratio;
         const winheight = parseInt(window.innerHeight) - 4;
-        let winwidth = parseInt(window.innerWidth);
-        if (window.jsplitterSettings) {
-            window.jsplitterSettings.maxleftwidth = winwidth - driver.graph.minwidth - 10;
-        }
-        if ($("#sidebar").is(":visible")) {
+        let winwidth = parseInt(window.innerWidth) - 4;
+        let cw, ch;
+        if (winwidth <= 1600) {
+            cw = Math.max(minwidth, window.innerWidth);
+            ch = Math.floor(cw / ratio);
+        } else {
+            if (window.jsplitterSettings) {
+                window.jsplitterSettings.maxleftwidth = winwidth - driver.graph.minwidth - 10;
+            }
             winwidth -= $("#sidebar").innerWidth() + 10;
-        }
-
-        // Try to fill the window vertically (normally, the aspect ratio is > 1.4)
-        let ch = winheight;
-        let cw = parseInt(ch * ratio);
-        // If we overflow the width, then fill the window horizontally and adjust the height
-        if (cw > winwidth) {
-            ch = parseInt(winwidth / ratio);
+            // Try to fill the window vertically (normally, the aspect ratio is > 1.4)
+            ch = winheight;
             cw = parseInt(ch * ratio);
-        }
-        // If we end up too small, set the size to the minimum width and height
-        if (cw < minwidth || ch < minheight) {
-            cw = minwidth;
-            ch = minheight;
+            // If we overflow the width, then fill the window horizontally and adjust the height
+            if (cw > winwidth) {
+                ch = Math.floor(winwidth / ratio);
+                cw = Math.floor(ch * ratio);
+            } else {
+                cw = winwidth;
+            }
         }
         // Resize the canvas to fit the window
         $("#canvasFrame").height(`${ch}px`);
@@ -1641,15 +1641,7 @@ Driver.prototype.Refresh = function () {
         driver.rescaleCanvas(canvas, context);
 
         // Measure text to figure out margins
-        graph.canvasWidth = cw;
-        context.font = `${graph.pt(11)} ${graph.fontFamily}`;
-        const w1 = context.measureText("30°").width;
-        context.font = `${graph.pt(8)} ${graph.fontFamily}`;
-        const w2 = context.measureText("Closed lower hatch").width;
-        graph.xstart = graph.xleftlabels + w1 + w2 + graph.tickLength + 15;
-        const w3 = context.measureText("–›").width;
-        graph.xleftarrows = graph.xstart - w1 - w3 - 10;
-        graph.Resize(canvas);
+        graph.Resize(canvas, context);
 
         document.title = `${Driver.telescopeName}/Visplot`;
         context.clearRect(0, 0, canvas.width, canvas.height);

@@ -27,8 +27,8 @@ const config = {
     skycamRequestTimeout: 3000, // ms
     skycamTcsTimeout: 3000, // ms
     skycamTcsCrosshairColor: "#9f3",
-    skycamImageSizeX: 640, // px
-    skycamImageSizeY: 480, // px
+    skycamImageSizeX: 1280, // px
+    skycamImageSizeY: 960, // px
     skycamProxy: function(url, t) {
         return `${window.baseurl}skycam_proxy.php?url=${encodeURIComponent(url)}&t=${t}`;
     },

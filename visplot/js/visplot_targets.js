@@ -386,7 +386,7 @@ Target.prototype.intersectingChain = function (Targets, checked) {
                 iIntersect.push(obj);
             }
         }
-        let chain = [this.Label];
+        let chain = [this];
         for (const obj of iIntersect) {
             chain = chain.concat(obj.intersectingChain(Targets, checked));
         }
@@ -426,8 +426,8 @@ TargetList.prototype.spaceOutCluster = function (cluster) {
         const graph = driver.graph;
         let i, obj, prev;
         for (i = 1; i < cluster.length; i += 1) {
-            prev = this.Targets[cluster[i - 1]];
-            obj = this.Targets[cluster[i]];
+            prev = cluster[i - 1];
+            obj = cluster[i];
             obj.xlab = Math.max(prev.xlab, obj.xlab);
             do {
                 obj.xlab += 1;
@@ -516,7 +516,6 @@ TargetList.prototype.optimizeInterchangeNeighbours = function (scheduleorder) {
         for (let i = 0; i < scheduleorder.length - 1; i += 1) {
             const obj1 = this.Targets[scheduleorder[i]];
             const obj2 = this.Targets[scheduleorder[i + 1]];
-            console.log(obj1.Name, obj2.Name);
             if (obj1.Observed || obj2.Observed) {
                 continue;
             }

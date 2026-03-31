@@ -18,27 +18,38 @@ body {
     min-height: 100vh;
     text-align: center;
     font-family: Ubuntu, sans-serif;
-    font-size: 11.5px;
-    line-height: 16px;
+    font-size: 1rem;
+    line-height: 1.2rem;
     display: none;
 }
 
+input {
+    font-size: 1rem;
+}
+#mainflex {
+    display: flex;
+    flex-direction: row;
+    height: 100vh;
+}
 #sidebar {
-    width: 700px;
-    min-width: 250px;
+    width: 800px;
+    min-width: 400px;
+    height: 100vh;
     box-sizing: border-box;
     top: 0;
     left: 0;
     text-align: left;
     overflow: hidden;
-    display: none;
+    display: flex;
+    flex-direction: column;
 }
 
 #sidebarpad {
+    flex: 1;
     padding: 12px;
     padding-top: 40px;
-    height: 100vh;
     width: 100%;
+    height: 100%;
     background-color: #eaeaef;
     background-image: url("../img/white-carbon.png");
     border: 1px solid #777;
@@ -48,49 +59,32 @@ body {
     flex-direction: column;
 }
 
-#vpname {
+#vplogo {
     position: relative;
     top: -36px;
-    margin-left: -4px;
     height: 0;
     text-align: center;
     width: 100%;
 }
 
-#vpname img {
+#vplogo img {
     width: 110px;
     height: 32px;
 }
 
 #divider {
-    display: none;
     height: 100vh;
     flex: 0 0 10px;
     background: url("data:image/gif;base64,R0lGODlhBQAXAIABAHNxbf///yH5BAEAAAEALAAAAAAFABcAAAIUDBypeJvXHHQP0Xmt1Avv2HHKVAAAOw==") no-repeat scroll center center;
 }
 
 #canvas-wrapper {
+    min-width: 1200px;
     width: 100%;
     height: 100vh;
     margin: 0;
     border: 0;
     padding: 0;
-}
-
-#toggle-sidebar {
-    height: 32px;
-    width: 32px;
-    position: fixed;
-    z-index: 2;
-    top: 5px;
-    left: 5px;
-    overflow: hidden;
-    cursor: pointer;
-}
-
-#toggle-sidebar img {
-    width: 32px;
-    height: 32px;
 }
 
 #canvasFrame {
@@ -113,7 +107,7 @@ body {
     color: #777;
     flex-shrink: 0;
     text-align: center;
-    font-size: 12px;
+    font-size: 0.9rem;
     background-image: url("../img/white-carbon.png");
 }
 
@@ -135,15 +129,17 @@ body {
 }
 
 #dateY {
-    width: 35px;
+    width: 45px;
     text-align: center;
     margin-left: 2px;
+    font-size: 1rem;
 }
 
 #dateM,
 #dateD {
-    width: 20px;
+    width: 30px;
     text-align: center;
+    font-size: 1rem;
 }
 
 #dateSet {
@@ -152,10 +148,9 @@ body {
 
 #targets {
     width: 100%;
-    resize: vertical;
-    height: 296px;
+    height: 28rem;
     font-family: monospace;
-    font-size: 7.5pt;
+    font-size: 1rem;
 }
 
 #targetBlanksNorth,
@@ -169,13 +164,16 @@ body {
 }
 
 .CodeMirror {
-    height: 296px !important;
+    height: 36rem;
+    min-height: 10rem;
+    max-height: 60vh;
+    resize: vertical;
 }
 
 .CodeMirror-lines {
     font-family: monospace !important;
-    font-size: 7.5pt !important;
-    line-height: 9pt !important;
+    font-size: 1rem !important;
+    line-height: 1.2rem !important;
 }
 
 .CodeMirror-activeline-background {
@@ -205,7 +203,7 @@ body {
 }
 
 .fancyhead {
-    font-size: 19px;
+    font-size: 1.5rem;
     font-weight: bold;
     width: 100%;
     text-align: center;
@@ -222,7 +220,6 @@ body {
     padding: 0;
     margin: 0;
     width: 180px;
-    font-size: 13.5px;
     padding-right: 0px;
 }
 
@@ -247,9 +244,32 @@ body {
     padding: 3px;
 }
 
+#applydiv {
+    text-align: center;
+    margin: 20px 0 10px 0;
+}
+#applydiv input {
+    font-size: 1prem;
+}
+
 .middle,
 .middlesep {
     vertical-align: middle;
+}
+
+#config-right .middle input {
+    margin-bottom: 15px;
+}
+#config-right .schedulespan,
+#config-right .middle b {
+    display: inline-block;
+    margin-top: 10px;
+    margin-bottom: 7px;
+}
+
+input[name='opt_schedule_between'] {
+    margin-top: 5px;
+    margin-bottom: 7px;
 }
 
 span.middlesep {
@@ -268,7 +288,6 @@ span.middlesep {
 
 span.sh0 {
     display: block;
-    font-size: 13.5px;
     font-weight: bold;
 }
 
@@ -283,12 +302,12 @@ div#telselect {
 
 span.llbl {
     display: inline-block;
-    width: 120px;
+    width: 160px;
 }
 
 span.eqs {
     display: inline-block;
-    width: 160px;
+    width: 200px;
 }
 
 span.lpad {
@@ -297,18 +316,21 @@ span.lpad {
 
 span.rlbl {
     display: inline-block;
-    width: 65px;
+    width: 100px;
     padding-left: 3px;
+    margin-right: 10px;
 }
 
 .inpshort {
-    width: 70px;
-    margin-right: 10px;
+    width: 120px;
+    margin-right: 15px;
+    margin-bottom: 5px;
 }
 
 #help-container {
     width: 95%;
-    max-width: 1300px;
+    max-width: 2000px;
+    line-height: 1.3rem;
 }
 
 #help {
@@ -329,17 +351,17 @@ span.rlbl {
 
 #config-container {
     width: 95%;
-    max-width: 1000px;
+    max-width: 1250px;
 }
 
 #config {
-    margin-top: 20px;
+    margin-top: 25px;
     display: flex;
     flex-direction: row;
 }
 
 #config-left {
-    flex: 0 0 480px;
+    flex: 1;
     padding-right: 10px;
     border-right: 3px solid #ccc;
 }
@@ -354,16 +376,18 @@ span.rlbl {
 }
 
 .defdetails {
-    padding-left: 123px;
+    padding-left: 160px;
     margin-bottom: 5px;
     display: block;
-    font-size: 10px;
+    font-size: 0.9rem;
 }
 
 #def_telescope {
-    font-size: 10px;
     margin-left: -3px;
     margin-bottom: 3px;
+}
+#def_instrument {
+    width: 200px;
 }
 
 code,
@@ -376,13 +400,20 @@ span#sc_Dec {
 
 #skycamblock {
     display: none;
+    width: 100%;
+    max-width: 1310px;
+}
+#canvasSkycam {
+    width: 100%;
+    height: auto;
+    display: block;
 }
 
 pre#logger {
     background-color: #eee;
     height: 260px;
-    font-size: 9.5px;
-    line-height: 11px;
+    font-size: 0.8rem;
+    line-height: 1rem;
     overflow-y: auto;
     display: block;
     border-radius: 4px;
@@ -460,16 +491,12 @@ a:hover {
 }
 
 p.pp {
-    font-size: 14px;
-    line-height: 15px;
     margin-top: 0;
     margin-bottom: 8px;
     vertical-align: middle;
 }
 
 p.pp2 {
-    font-size: 14px;
-    line-height: 15px;
     margin-top: 0;
     margin-bottom: 2px;
     vertical-align: middle;
@@ -478,7 +505,6 @@ p.pp2 {
 #popcomm {
     width: 100%;
     height: 45px;
-    font-size: 11px;
     resize: none;
     padding: 0;
 }
@@ -488,40 +514,18 @@ p.pp2 {
     padding-top: 0;
     margin-bottom: 0.3em;
     border-bottom: 1px solid #E5E5E5;
-    font-size: 14px;
-    line-height: 20px;
     padding-bottom: 0.25em;
     text-transform: uppercase;
     color: #8c7c76;
+    font-size: 1.3rem;
     font-weight: bold;
 }
 
-@media print {
-    body {
-        padding: 0;
-        margin: 0;
-        width: 0;
-        height: 0;
-    }
-
-    #sidebar,
-    #divider,
-    #toggle-sidebar {
-        display: none !important;
-    }
-
-    #canvasFrame {
-        padding: 0;
-        margin: 0 auto;
-        background: rgba(255, 255, 255, 0);
-        box-shadow: 2px 2px 8px rgba(255, 255, 255, 0);
-        border-radius: 16px;
-    }
-}
-
 #map {
-    width: 970px;
-    height: 450px;
+    width: 1020px;
+    height: 480px;
+    font-size: 1rem;
+    margin: 0 auto;
 }
 .blue-cluster {
     background-color: rgba(140, 190, 230, 1);
@@ -532,7 +536,7 @@ p.pp2 {
 .blue-cluster div,
 .red-cluster div {
     text-align: center;
-    font-size: 15px;
+    font-size: 1rem;
     background-color: rgba(50, 141, 221, 1);
 }
 #viewall {
@@ -542,6 +546,7 @@ p.pp2 {
     padding: 3px;
     z-index: 999;
     display: none;
+    font-size: 1rem;
 }
 .select2-dropdown-below {
     top: auto !important;
@@ -553,11 +558,91 @@ p.pp2 {
 }
 #zoom_to_telescope {
     float: right;
+    font-size: 1rem;
 }
 .map-label {
     color: #ffffcc;
-    font-size: 11px;
+    font-size: 0.9rem;
     font-style: italic;
     white-space: nowrap;
     pointer-events: none;
+}
+
+@media (max-width:1900px) {
+    #sidebar {
+        width: 700px;
+    }
+}
+@media (max-width:1600px) {
+    body {
+        height: auto;
+    }
+    #help,
+    #config {
+        flex-direction: column;
+    }
+    #help-container,
+    #config-container {
+        width: 100%;
+    }
+    #help-left,
+    #help-right,
+    #config-left,
+    #config-right {
+        padding: 0;
+        border: 0;
+    }
+    #config-right .h2-instr {
+        margin-top: 25px;
+    }
+    #mainflex {
+        flex-direction: column-reverse;
+        height: auto;
+    }
+    #canvas-wrapper,
+    #sidebarpad {
+        height: auto;
+    }
+    #sidebar {
+        margin-top: 15px;
+        width: 100%;
+        flex: 1 !important;
+        display: block !important;
+    }
+    #canvasFrame {
+        width: 100%;
+    }
+    #divider {
+        display: none !important;
+    }
+    #buttons input {
+        margin-bottom: 10px;
+    }
+}
+
+@media print {
+    @page {
+        size: landscape;
+    }
+
+    body {
+        padding: 0;
+        margin: 0;
+        width: 0;
+        height: 0;
+    }
+
+    #sidebar,
+    #divider {
+        display: none !important;
+    }
+
+    #canvasFrame {
+        padding: 0;
+        margin: 0 auto;
+        background: rgba(255, 255, 255, 0);
+        box-shadow: 2px 2px 8px rgba(255, 255, 255, 0);
+        border-radius: 16px;
+        background-image: none !important;
+    }
 }

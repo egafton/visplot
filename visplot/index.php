@@ -6,7 +6,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. See LICENSE.md.
  */
-$version = "5.0p";
+$version = "5.0q";
 /*
 * Version history (with brief changelog):
 *
@@ -166,6 +166,8 @@ $version = "5.0p";
 *      - Added more telescopes.
 *
 * 5.0p - Manual reordering of the suggested schedule works again.
+*
+* 5.0q - CSS, GUI and responsive design improvements.
 */
 session_start();
 if (isset($_SESSION["obinfo"])) {
@@ -238,13 +240,10 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
 </head>
 
 <body class="fixed-left">
-    <div id="toggle-sidebar">
-        <img src="<?php echo($baseurl);?>img/sidebar.png" />
-    </div>
-    <div style="display:flex">
+    <div id="mainflex">
         <div id="sidebar">
             <div id="sidebarpad">
-                <div id="vpname"><img src="<?php echo($baseurl);?>img/visplot.png" /></div>
+                <div id="vplogo"><img src="<?php echo($baseurl);?>img/visplot.png" /></div>
                 <div id="left_upper">
                     <div id="upperBtnDiv">
                         <input type="button" value="Configuration" id="configBtn" />
@@ -302,7 +301,7 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
             <div id="details_map"><span id="details_map_hang"></span></div>
         </div> <!-- #details -->
         <div id="skycamblock">
-            <canvas id="canvasSkycam" width="640" height="525"></canvas>
+            <canvas id="canvasSkycam" width="1280" height="1040"></canvas>
         </div> <!-- #skycamblock -->
         <div id="tcscat">
             <h2 class="fancyhead">Targets in TCS catalogue format</h2>
@@ -321,9 +320,11 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
             <div id="telselect"><span class="llbl">Telescope:</span>
                 <select id="def_telescope" name="def_telescope"></select> <span class="lpad">(<span id="num_telescopes"></span> entries)</span>
                 <button id="zoom_to_telescope">Zoom to telescope</button>
+            </div><div id="applydiv">
+                <input type="hidden" id="configsubmit"/><input type="button" value="Apply settings" id="configapply" />
             </div><div id="config">
             <div id="config-left">
-                <h2 class="h2-instr">Default values</h2><br/>
+                <h2 class="h2-instr">Default values</h2>
                 <span class="middle"><span class="llbl">Epoch:</span><input type="text" id="def_epoch"/></span><br/>
                 <span class="defdetails">Must be <code>1950</code> or <code>2000</code>.</span>
 
@@ -356,11 +357,11 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
                 <span class="defdetails">First column: fill colour; second column: text colour. Input accepts any valid CSS colour specification (e.g., <code>blue</code>, <code>rgb(0, 0, 255)</code>, <code>#0000ff</code>, or <code>#00f</code>).</span>
             </div> <!-- #config-left -->
             <div id="config-right">
-                <h2 class="h2-instr">Scheduling algorithm</h2><br/>
+                <h2 class="h2-instr">Scheduling algorithm</h2>
                 <span class="middle"><label for="opt_reschedule_later"><input type="checkbox" name="opt_reschedule_later" id="opt_reschedule_later" checked="checked" /> Do not schedule in the past during an observing night</label></span><br/>
                 <span class="middle"><label for="opt_reorder_targets"><input type="checkbox" name="opt_reorder_targets" id="opt_reorder_targets" checked="checked" /> Relabel targets according to the schedule order</label></span><br/>
                 <span class="middle"><label for="opt_allow_over_axis"><input type="checkbox" name="opt_allow_over_axis" id="opt_allow_over_axis" /> Allow observations over-the-axis (equatorial mounts only)</label></span><br/>
-                <span class="middle">Schedule observations between:</label></span><br/>
+                <span class="middle schedulespan">Schedule observations between:</label></span><br/>
                     <input type="radio" id="sunset-sunrise" name="opt_schedule_between" value="sunset-sunrise"><label for="sunset-sunrise">Sunset / Sunrise</label><br/>
                     <input type="radio" id="nautical" name="opt_schedule_between" value="nautical" checked="checked"><label for="nautical">Nautical twilights</label><br/>
                     <input type="radio" id="astronomical" name="opt_schedule_between" value="astronomical"><label for="astronomical">Astronomical twilights</label><br/>
@@ -371,12 +372,9 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
                 <span class="middle"><span class="rlbl">Altitude</span><span class="eqs">$W_a \times \sin a_i(\tau)$</span><input type="text" id="w_altitude" class="inpshort" /></span><br/>
                 <span class="middle"><span class="rlbl">Slewing</span><span class="eqs">$W_s \times (1-\Delta\theta_{i,j}/\pi)$</span><input type="text" id="w_slewing" class="inpshort" /></span><br/>
                 <br/>
-                <h2 class="h2-instr">Display settings</h2><br/>
+                <h2 class="h2-instr">Display settings</h2>
                 <span class="middle"><label for="opt_show_lastobstime"><input type="checkbox" name="opt_show_lastobstime" id="opt_show_lastobstime" /> Mark last possible starting time</label></span><br/>
             </div></div> <!-- #config-right, #config -->
-            <span style="text-align: right; width: 100%; display: block">
-                <input type="hidden" id="configsubmit"/><input type="button" value="Apply settings" id="configapply" />
-            </span>
         </div> <!-- #config-container -->
         <div id="help-container"><div id="help">
             <div id="help-left">
