@@ -6,7 +6,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. See LICENSE.md.
  */
-$version = "5.0q";
+$version = "5.0";
 /*
 * Version history (with brief changelog):
 *
@@ -109,7 +109,7 @@ $version = "5.0q";
 * 4.3  - Added sla.pa function.
 *      - Default telescope can now be specified via a GET parameter.
 *
-* 5.0a - Added more user constraints in addition to UTC and LST:
+* 5.0  - Added more user constraints in addition to UTC and LST:
 *        HA, MOON and AM.
 *      - Blanks and standards are now appended to the list of targets, they no
 *        longer overwrite it.
@@ -118,56 +118,38 @@ $version = "5.0q";
 *      - Added support for target priorities during scheduling.
 *      - Implemented weight-based scheduling (taking into account priorities,
 *        setting time, altitudes and slewing time).
-*
-* 5.0b - Added a few more telescopes.
 *      - Loading MathJax for displaying equations.
 *      - Scheduling weights are now configurable by the user.
-*
-* 5.0c - Added locations (region/province/island and country) to list of telescopes.
-*      - Added more telescopes.
+*      - Added locations (region/province/island and country) to list of telescopes.
 *      - Added UTC offset to plot x-axis label.
 *      - Highlighting the current telescope on the map.
 *      - Telescope list now supports incremental search.
 *      - Improved handling of fractional UTC offsets.
 *      - Added night/twilight, clouds and precipitation overlays on map.
-*
-* 5.0d - Major refactoring of the all-sky camera code, including the equations.
+*      - Major refactoring of the all-sky camera code, including the equations.
 *      - Refactored pointing.php.
-*
-* 5.0e - Ran eslint on all JavaScript files and fixed all warnings/errors.
-*
-* 5.0f - Removed duplicated code during Target creation (going back to the
+*      - Ran eslint on all JavaScript files and fixed all warnings/errors.
+*      - Removed duplicated code during Target creation (going back to the
 *        client-server model).
 *      - Improved serialization routines.
-*
-* 5.0g - Refactored config files.
-*
-* 5.0h - Improvements to all-sky camera and throughout the code.
+*      - Refactored config files.
+*      - Improvements to all-sky camera and throughout the code.
 *      - Now correctly retrieving multiple targets from SIMBAD (again).
 *      - Visplot can now resolve and plot non-sidereal targets using JPL Horizons.
-*
-* 5.0i - Now exporting pdf instead of png images.
-*
-* 5.0j - Fixed timezone bug during serialization.
+*      - Now exporting pdf instead of png images.
+*      - Fixed timezone bug during serialization.
 *      - Driver attributes now use camelCase.
-*
-* 5.0k - SkyCam image and overlays can now be saved to pdf ('s' key).
+*      - SkyCam image and overlays can now be saved to pdf ('s' key).
 *      - Improved serialization and parsing routines.
-*
-* 5.0l - Improved handling of local times during DST changes.
+*      - Improved handling of local times during DST changes.
 *      - Proposal id is now free-form and allows spaces.
-*
-* 5.0m - Simplified some time and timezone calculations.
-*
-* 5.0n - Added autosave feature for target list.
-*
-* 5.0o - Added button to clear the target list.
+*      - Simplified some time and timezone calculations.
+*      - Added autosave feature for target list.
+*      - Added button to clear the target list.
 *      - Improved handling of empty target list.
 *      - Added more telescopes.
-*
-* 5.0p - Manual reordering of the suggested schedule works again.
-*
-* 5.0q - CSS, GUI and responsive design improvements.
+*      - Manual reordering of the suggested schedule works again.
+*      - CSS, GUI and responsive design improvements.
 */
 session_start();
 if (isset($_SESSION["obinfo"])) {

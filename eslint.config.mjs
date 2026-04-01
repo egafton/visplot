@@ -4,8 +4,10 @@ export default [
   {
     ignores: [
       "visplot/js/aladin.min.js",
+      "visplot/js/canvas2svg.js",
       "visplot/js/leaflet-openweathermap.js",
       "visplot/js/moment-timezone-with-data.min.js",
+      "visplot/js/moment-round.min.js",
       "visplot/js/jsplitter.js"
     ],
     files: ["visplot/js/*.js"],
