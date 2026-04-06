@@ -212,7 +212,7 @@ Graph.prototype.drawRHSofSchedule = function (ctx) {
             }
             if (obj.Scheduled) {
                 if (this.doubleTargets) {
-                    this.plotText(ctx, `${obj.Name.substr(0, this.maxLenTgtName)} (${obj.ProjectNumber})`, fontSize, beingMoved ? "blue" : "black", obj.rxmid + this.scale(15), obj.rymid - 1, "left", "middle");
+                    this.plotText(ctx, obj.Name.substr(0, this.maxLenTgtName), fontSize, beingMoved ? "blue" : "black", obj.rxmid + this.scale(15), obj.rymid - 1, "left", "middle");
                 } else {
                     this.plotText(ctx, `${obj.Name.substr(0, this.maxLenTgtName)} (${obj.ProjectNumber}; ${helper.MJDToHM(obj.ScheduledStartTime, "UTC", true)})`, fontSize, beingMoved ? "blue" : "black", obj.rxmid + this.scale(15), obj.rymid - 1, "left", "middle");
                 }
@@ -223,7 +223,7 @@ Graph.prototype.drawRHSofSchedule = function (ctx) {
                 ctx.fill();
                 this.plotText(ctx, obj.Label, fontSize, obj.LabelTextColor, obj.rxmid, obj.rymid, "center", "middle");
             } else {
-                this.plotText(ctx, `${obj.Name} (${obj.ProjectNumber})`, fontSize, beingMoved ? "blue" : "black", obj.rxmid + this.scale(15), obj.rymid - 1, "left", "middle");
+                this.plotText(ctx, obj.Name, fontSize, beingMoved ? "blue" : "black", obj.rxmid + this.scale(15), obj.rymid - 1, "left", "middle");
                 ctx.strokeStyle = "black";
                 ctx.fillStyle = "white";
                 ctx.beginPath();
@@ -234,9 +234,9 @@ Graph.prototype.drawRHSofSchedule = function (ctx) {
             }
             if (this.doubleTargets) {
                 if (obj.Scheduled) {
-                    this.plotText(ctx, `${obj.shortRA} ${obj.shortDec} (${helper.MJDToHM(obj.ScheduledStartTime, "UTC", true)})`, this.pt(8), beingMoved ? "blue" : "black", obj.rxmid + this.scale(15), obj.rymid + this.targetsyskip - 1, "left", "middle");
+                    this.plotText(ctx, `(${obj.ProjectNumber}; ${helper.MJDToHM(obj.ScheduledStartTime, "UTC", false)}–${helper.MJDToHM(obj.ScheduledEndTime, "UTC", true)})`, this.pt(8), beingMoved ? "blue" : "black", obj.rxmid + this.scale(15), obj.rymid + this.targetsyskip - 1, "left", "middle");
                 } else {
-                    this.plotText(ctx, `${obj.shortRA} ${obj.shortDec}`, this.pt(8), beingMoved ? "blue" : "black", obj.rxmid + this.scale(15), obj.rymid + this.targetsyskip - 1, "left", "middle");
+                    this.plotText(ctx, `(${obj.ProjectNumber})`, this.pt(8), beingMoved ? "blue" : "black", obj.rxmid + this.scale(15), obj.rymid + this.targetsyskip - 1, "left", "middle");
                 }
                 y += this.targetsyskip;
                 obj.yend = obj.rymid + this.targetsyskip + this.scale(8);
@@ -560,7 +560,7 @@ Graph.prototype.drawTargetNames = function (ctx, Targets) {
         for (const obj of Targets) {
             obj.rxmid = this.targetsx;
             obj.rymid = y - 6.5;
-            this.plotText(ctx, `${obj.Name} (${obj.ProjectNumber})`, this.pt(8), "black", obj.rxmid + this.scale(15), obj.rymid - 1, "left", "middle");
+            this.plotText(ctx, obj.Name, this.pt(8), "black", obj.rxmid + this.scale(15), obj.rymid - 1, "left", "middle");
             ctx.strokeStyle = "black";
             ctx.fillStyle = "white";
             ctx.beginPath();
@@ -569,7 +569,7 @@ Graph.prototype.drawTargetNames = function (ctx, Targets) {
             ctx.stroke();
             this.plotText(ctx, obj.Label, this.pt(8), "black", obj.rxmid, obj.rymid, "center", "middle");
             if (this.doubleTargets) {
-                this.plotText(ctx, `${obj.shortRA} ${obj.shortDec}`, this.pt(8), "black", obj.rxmid + this.scale(15), obj.rymid + this.targetsyskip - 1, "left", "middle");
+                this.plotText(ctx, `(${obj.ProjectNumber})`, this.pt(8), "black", obj.rxmid + this.scale(15), obj.rymid + this.targetsyskip - 1, "left", "middle");
                 y += this.targetsyskip;
             }
             y += this.targetsyskip + 2;
@@ -828,7 +828,7 @@ Graph.prototype.drawBackground = function (ctx, rectangleLast = false) {
             ctx.beginPath();
             ctx.setLineDash([]);
             ctx.strokeStyle = "black";
-            ctx.lineWidth = 1.2;
+            ctx.lineWidth = 2;
             ctx.rect(this.xstart, this.ystart, this.width, this.height);
             ctx.stroke();
         } else {
@@ -942,7 +942,7 @@ Graph.prototype.drawBackground = function (ctx, rectangleLast = false) {
             ctx.beginPath();
             ctx.setLineDash([]);
             ctx.strokeStyle = "black";
-            ctx.lineWidth = 1.2;
+            ctx.lineWidth = 2;
             ctx.rect(this.xstart, this.ystart, this.width, this.height);
             ctx.stroke();
         }
