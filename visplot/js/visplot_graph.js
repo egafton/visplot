@@ -680,17 +680,19 @@ Graph.prototype.drawEphemerides = function (ctx) {
         }
         // Plot the twilights labels and corresponding dashed vertical lines
         const twiStyle = [6, 5];
-        let xtemp;
+        let xtemp, textxtemp;
         xtemp = this.transformXLocation(night.ENauTwilight);
-        ctx.fillText("Nau", xtemp, this.scale(51));
-        ctx.fillText(helper.MJDToHM(night.ENauTwilight, "local"), xtemp - 3.5, this.scale(62));
+        textxtemp = this.transformXLocation(0.5*(night.Sunset + night.EAstTwilight)); // make a bit of room
+        ctx.fillText("Nau", textxtemp, this.scale(51));
+        ctx.fillText(helper.MJDToHM(night.ENauTwilight, "local"), textxtemp, this.scale(62));
         this.plotVerticalLine(ctx, this.ystart, this.yend, xtemp, twiStyle, 1.2);
         xtemp = this.transformXLocation(night.MNauTwilight);
-        ctx.fillText("Nau", xtemp, this.scale(51));
+        textxtemp = this.transformXLocation(0.5*(night.MAstTwilight + night.Sunrise)); // make a bit of room
+        ctx.fillText("Nau", textxtemp, this.scale(51));
         if (Driver.hasDST) {
             ctx.fillStyle = this.markDSTColor;
         }
-        ctx.fillText(helper.MJDToHM(night.MNauTwilight, "local"), xtemp + 1, this.scale(62));
+        ctx.fillText(helper.MJDToHM(night.MNauTwilight, "local"), textxtemp, this.scale(62));
         if (Driver.hasDST) {
             ctx.fillStyle = "black";
         }
