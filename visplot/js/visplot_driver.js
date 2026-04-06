@@ -856,9 +856,8 @@ Driver.prototype.insideObject = function (x, y, obj) {
             return false;
         }
         // xlab, ylab: where the objid is in the plot when it is not scheduled (at highest altitude)
-        // xmid, ymid: where the objid is when it is scheduled (above the scheduled time)
         // rxmid, rymid: where the objid is on the right in schedulemode
-        return (this.scheduleMode && obj.Scheduled && helper.PointInsideCircle(x, y, obj.xmid, obj.ymid, this.graph.CircleSizeSq)) || ((!this.scheduleMode || (this.scheduleMode && !obj.Scheduled)) && helper.PointInsideCircle(x, y, obj.xlab, obj.ylab, this.graph.CircleSizeSq)) || (helper.PointInsideCircle(x, y, obj.rxmid, obj.rymid, this.graph.CircleSizeSq));
+        return (helper.PointInsideCircle(x, y, obj.xlab, obj.ylab, this.graph.CircleSizeSq)) || (helper.PointInsideCircle(x, y, obj.rxmid, obj.rymid, this.graph.CircleSizeSq));
     } catch (ex) {
         helper.LogException(ex);
     }
@@ -1542,6 +1541,7 @@ Driver.prototype.CallbackUpdateDefaultsAfterTelUpdate = function (resetTel) {
         localStorage.setItem("opt_reschedule_later", $("#opt_reschedule_later").is(":checked"));
         localStorage.setItem("opt_reorder_targets", $("#opt_reorder_targets").is(":checked"));
         localStorage.setItem("opt_allow_over_axis", $("#opt_allow_over_axis").is(":checked"));
+        localStorage.setItem("opt_algorithm", $('input[type="radio"][name="opt_algorithm"]:checked').val());
         localStorage.setItem("opt_schedule_between", $('input[type="radio"][name="opt_schedule_between"]:checked').val());
         localStorage.setItem("opt_show_lastobstime", $("#opt_show_lastobstime").is(":checked"));
         helper.LogEntry("Done.");

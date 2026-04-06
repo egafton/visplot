@@ -267,7 +267,8 @@ input {
     margin-bottom: 7px;
 }
 
-input[name='opt_schedule_between'] {
+input[name='opt_schedule_between'],
+input[name='opt_algorithm'] {
     margin-top: 5px;
     margin-bottom: 7px;
 }

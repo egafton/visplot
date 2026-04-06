@@ -6,7 +6,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. See LICENSE.md.
  */
-$version = "5.0";
+$version = "5.1";
 /*
 * Version history (with brief changelog):
 *
@@ -150,6 +150,9 @@ $version = "5.0";
 *      - Added more telescopes.
 *      - Manual reordering of the suggested schedule works again.
 *      - CSS, GUI and responsive design improvements.
+*
+* 5.1  - Added a new scheduling algorithm (flexible-placement beam search).
+*      - Fixed some issues with label de-clustering algorithm.
 */
 session_start();
 if (isset($_SESSION["obinfo"])) {
@@ -339,10 +342,14 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
                 <span class="defdetails">First column: fill colour; second column: text colour. Input accepts any valid CSS colour specification (e.g., <code>blue</code>, <code>rgb(0, 0, 255)</code>, <code>#0000ff</code>, or <code>#00f</code>).</span>
             </div> <!-- #config-left -->
             <div id="config-right">
-                <h2 class="h2-instr">Scheduling algorithm</h2>
+                <h2 class="h2-instr">Scheduler options</h2>
                 <span class="middle"><label for="opt_reschedule_later"><input type="checkbox" name="opt_reschedule_later" id="opt_reschedule_later" checked="checked" /> Do not schedule in the past during an observing night</label></span><br/>
                 <span class="middle"><label for="opt_reorder_targets"><input type="checkbox" name="opt_reorder_targets" id="opt_reorder_targets" checked="checked" /> Relabel targets according to the schedule order</label></span><br/>
                 <span class="middle"><label for="opt_allow_over_axis"><input type="checkbox" name="opt_allow_over_axis" id="opt_allow_over_axis" /> Allow observations over-the-axis (equatorial mounts only)</label></span><br/>
+                <span class="middle schedulespan">Algorithm:</label></span><br/>
+                    <input type="radio" id="greedy-heuristic" name="opt_algorithm" value="greedy-heuristic" checked="checked"><label for="greedy-heuristic">Greedy heuristic</label><br/>
+                    <input type="radio" id="flexible-beam" name="opt_algorithm" value="flexible-beam"><label for="flexible-beam">Flexible-placement beam search</label><br/>
+                <br/>
                 <span class="middle schedulespan">Schedule observations between:</label></span><br/>
                     <input type="radio" id="sunset-sunrise" name="opt_schedule_between" value="sunset-sunrise"><label for="sunset-sunrise">Sunset / Sunrise</label><br/>
                     <input type="radio" id="nautical" name="opt_schedule_between" value="nautical" checked="checked"><label for="nautical">Nautical twilights</label><br/>

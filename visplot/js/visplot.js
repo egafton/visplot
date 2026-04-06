@@ -132,6 +132,10 @@ $(document).ready(function () {
                             helper.LogEntry(`Restoring <i>opt_allow_over_axis</i> to <i>${localStorage.opt_allow_over_axis}</i>`);
                             $("#opt_allow_over_axis").prop("checked", localStorage.opt_allow_over_axis === "true");
                         }
+                        if ("opt_algorithm" in localStorage) {
+                            helper.LogEntry(`Restoring <i>opt_algorithm</i> to <i>${localStorage.opt_algorithm}</i>`);
+                            $(`#${localStorage.opt_algorithm}`).prop("checked", true);
+                        }
                         if ("opt_schedule_between" in localStorage) {
                             helper.LogEntry(`Restoring <i>opt_schedule_between</i> to <i>${localStorage.opt_schedule_between}</i>`);
                             $(`#${localStorage.opt_schedule_between}`).prop("checked", true);

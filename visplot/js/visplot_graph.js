@@ -295,9 +295,9 @@ Graph.prototype.drawSchedule = function (ctx) {
                 ctx.strokeStyle = obj.LabelStrokeColor;
                 ctx.fillStyle = obj.LabelFillColor;
                 ctx.beginPath();
-                ctx.arc(obj.xmid, obj.ymid, this.CircleSize, 0, sla.d2pi, false);
+                ctx.arc(obj.xlab, obj.ylab, this.CircleSize, 0, sla.d2pi, false);
                 ctx.fill();
-                this.plotText(ctx, obj.Label, this.pt(8), obj.LabelTextColor, obj.xmid, obj.ymid, "center", "middle");
+                this.plotText(ctx, obj.Label, this.pt(8), obj.LabelTextColor, obj.xlab, obj.ylab, "center", "middle");
             } else {
                 ctx.strokeStyle = "black";
                 ctx.fillStyle = "white";

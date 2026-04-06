@@ -8,3 +8,4 @@ __init__.py
 *.pyc
 docs/_build
 .vscode/
+tests/

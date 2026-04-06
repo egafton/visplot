@@ -367,19 +367,19 @@ TargetList.prototype.processTarget = function (i, line) {
 /**
  * @memberof Target
  */
-Target.prototype.intersectingChain = function (Targets, checked) {
+Target.prototype.intersectingChain = function (Targets, checkedSet) {
     try {
-        if (checked.includes(this.Label)) {
+        if (checkedSet.has(this.Label)) {
             return [];
         }
         const graph = driver.graph;
-        if (this.xlab < graph.xstart || this.xlab > graph.xend || this.ylab > graph.yend) {
+        if (this.xlab < graph.xstart || this.xlab > graph.xend || this.ylab < graph.ystart || this.ylab > graph.yend) {
             return [];
         }
-        checked.push(this.Label);
+        checkedSet.add(this.Label);
         const iIntersect = [];
         for (const obj of Targets) {
-            if (obj === this || checked.includes(obj.Label)) {
+            if (obj === this || checkedSet.has(obj.Label)) {
                 continue;
             }
             if (helper.TwoCirclesIntersect(this.xlab, this.ylab, graph.CircleSize + 0.5, obj.xlab, obj.ylab, graph.CircleSize + 0.5)) {
@@ -388,7 +388,7 @@ Target.prototype.intersectingChain = function (Targets, checked) {
         }
         let chain = [this];
         for (const obj of iIntersect) {
-            chain = chain.concat(obj.intersectingChain(Targets, checked));
+            chain = chain.concat(obj.intersectingChain(Targets, checkedSet));
         }
         return chain;
     } catch (ex) {
@@ -401,18 +401,21 @@ Target.prototype.intersectingChain = function (Targets, checked) {
  */
 TargetList.prototype.removeClusters = function () {
     try {
-        let checked = [], cluster, hasclusters, nIter = 0;
+        let nIter = 0;
+        let hasclusters;
         do {
             hasclusters = false;
             for (const target of this.Targets) {
-                cluster = target.intersectingChain(this.Targets, checked);
+                const checkedSet = new Set();
+                const cluster = target.intersectingChain(this.Targets, checkedSet);
                 if (cluster.length > 1) {
                     hasclusters = true;
+                    cluster.sort((a, b) => a.xlab - b.xlab);
                     this.spaceOutCluster(cluster);
                 }
             }
             nIter += 1;
-        } while (hasclusters || nIter < 10);
+        } while (hasclusters && nIter < 10);
     } catch (ex) {
         helper.LogException(ex);
     }
@@ -424,17 +427,22 @@ TargetList.prototype.removeClusters = function () {
 TargetList.prototype.spaceOutCluster = function (cluster) {
     try {
         const graph = driver.graph;
-        let i, obj, prev;
-        for (i = 1; i < cluster.length; i += 1) {
-            prev = cluster[i - 1];
-            obj = cluster[i];
-            obj.xlab = Math.max(prev.xlab, obj.xlab);
+        for (let i = 1; i < cluster.length; i += 1) {
+            const obj = cluster[i];
+            let moved;
             do {
-                obj.xlab += 1;
-                obj.LabelX = graph.reverseTransformXLocation(obj.xlab);
-                obj.LabelY = obj.getAltitude(obj.LabelX);
-                obj.ylab = graph.transformYLocation(obj.LabelY);
-            } while (helper.TwoCirclesIntersect(obj.xlab, obj.ylab, graph.CircleSize + 0.5, prev.xlab, prev.ylab, graph.CircleSize + 0.5));
+                moved = false;
+                for (let j = 0; j < i; j += 1) {
+                    const prev = cluster[j];
+                    while (helper.TwoCirclesIntersect(obj.xlab, obj.ylab, graph.CircleSize + 0.5, prev.xlab, prev.ylab, graph.CircleSize + 0.5)) {
+                        obj.xlab += 1;
+                        obj.LabelX = graph.reverseTransformXLocation(obj.xlab);
+                        obj.LabelY = obj.getAltitude(obj.LabelX);
+                        obj.ylab = graph.transformYLocation(obj.LabelY) - graph.CircleSize * 1.2;
+                        moved = true;
+                    }
+                }
+            } while (moved);
         }
     } catch (ex) {
         helper.LogException(ex);
@@ -446,9 +454,8 @@ TargetList.prototype.spaceOutCluster = function (cluster) {
  */
 TargetList.prototype.processOfflineTime = function () {
     try {
-        let i, len = this.BadWolfStart.length;
         this.Offline = [];
-        for (i = 0; i < len; i += 1) {
+        for (let i = 0; i < this.BadWolfStart.length; i += 1) {
             this.Offline.push({Start: this.BadWolfStart[i], End: this.BadWolfEnd[i]});
         }
     } catch (ex) {
@@ -762,7 +769,7 @@ TargetList.prototype.displayScheduleStatistics = function () {
     }
 };
 
-TargetList.prototype.scheduleWithWeights = function (startingAt) {
+TargetList.prototype.scheduleWithWeights = function () {
     try {
         const targets = this.Targets;
         const wp = Driver.wPriority;
@@ -781,7 +788,7 @@ TargetList.prototype.scheduleWithWeights = function (startingAt) {
                 scheduleorder.push(i);
             }
         }
-        let curidx = startingAt;
+        let curidx = 0;
         while (true) {
             if (curidx >= driver.night.Nx) {
                 break;
@@ -828,7 +835,224 @@ TargetList.prototype.scheduleWithWeights = function (startingAt) {
             lastdec = obj.decRad;
         }
         return scheduleorder.sort(function(a, b) {
-            return targets[a].ScheduledStartTime < targets[b].ScheduledStartTime ? -1 : 1;
+            return targets[a].ScheduledStartTime - targets[b].ScheduledStartTime;
+        });
+    } catch (ex) {
+        helper.LogException(ex);
+    }
+};
+
+/**
+ * Beam-search-based scheduler utilizing flexible time constraints.
+ * @param {number} [beamWidth=10] - The number of parallel schedules to maintain.
+ * @returns {number[]} - Array of scheduled target indices ordered by start time.
+ */
+TargetList.prototype.scheduleWithBeamSearch = function (beamWidth = 10) {
+    try {
+        const targets = this.Targets;
+        const wp = Driver.wPriority;
+        const wu = Driver.wUrgency;
+        const wa = Driver.wAltitude;
+        const ws = Driver.wSlewing;
+        const maxpriority = Math.max.apply(Math, targets.map(function (o) { return o.Priority; }));
+        let solution = null;
+
+        let scheduleorder = [];
+        const unscheduledIndices = [];
+
+        // Pre-process mandatory "FillSlot" programs exactly like the original heuristic
+        for (let i = 0; i < this.nTargets; i += 1) {
+            const tgt = targets[i];
+            if (tgt.Observed) {
+                scheduleorder.push(i);
+                continue;
+            }
+            if (tgt.FillSlot && tgt.nAllowed > 0) {
+                tgt.Schedule(tgt.beginAllowed[0]);
+                scheduleorder.push(i);
+                continue;
+            }
+            tgt.Scheduled = false;
+            if (tgt.nAllowed > 0) {
+                unscheduledIndices.push(i);
+            }
+        }
+        scheduleorder = scheduleorder.sort(function(a, b) {
+            return targets[a].ScheduledStartTime - targets[b].ScheduledStartTime;
+        });
+
+        // Sort unscheduled targets by criticality/priority
+        unscheduledIndices.sort(function(a, b) {
+            return targets[a].Criticality === targets[b].Criticality ? targets[b].Priority - targets[a].Priority : targets[b].Criticality - targets[a].Criticality;
+        });
+
+        let beam = [{
+            sequence: scheduleorder.slice(),
+            est: scheduleorder.length === 0 ? [] : scheduleorder.map(i => targets[i].ScheduledStartTime),
+            lst: scheduleorder.length === 0 ? [] : scheduleorder.map(i => targets[i].ScheduledStartTime), // yes, really
+            unscheduled: new Set(unscheduledIndices),
+            score: 0
+        }];
+        const maxdepth = unscheduledIndices.length;
+
+        function propagate(state) {
+            let unchanged = false;
+            // Nothing to propagate
+            if (state.sequence.length <= 1) {
+                return true;
+            }
+
+            while (!unchanged) {
+                unchanged = true;
+                for (let i = 0; i < state.sequence.length-1; i += 1) {
+                    const a = i;
+                    const b = i+1;
+                    const targA = targets[state.sequence[a]];
+                    const Aexp = targA.Exptime;
+                    const targB = targets[state.sequence[b]];
+                    if (!targA.FillSlot && !targA.Observed && !targB.FillSlot && !targB.Observed) {
+                        const oldAlst = state.lst[a];
+                        state.lst[a] = Math.min(state.lst[a], state.lst[b] - Aexp);
+                        if (oldAlst !== state.lst[a]) {
+                            unchanged = false;
+                        }
+                        const oldBest = state.est[b];
+                        state.est[b] = Math.max(state.est[b], state.est[a] + Aexp);
+                        if (oldBest !== state.est[b]) {
+                            unchanged = false;
+                        }
+                    } else if ((targA.FillSlot || targA.Observed) && (targB.FillSlot || targB.Observed)) {
+                        continue;
+                    } else if (targA.FillSlot || targA.Observed) {
+                        const oldBest = state.est[b];
+                        state.est[b] = Math.max(state.est[b], state.est[a] + Aexp);
+                        if (oldBest !== state.est[b]) {
+                            unchanged = false;
+                        }
+                    } else if (targB.FillSlot || targB.Observed) {
+                        const oldAlst = state.lst[a];
+                        state.lst[a] = Math.min(state.lst[a], state.lst[b] - Aexp);
+                        if (oldAlst !== state.lst[a]) {
+                            unchanged = false;
+                        }
+                    }
+                    if (state.est[a] > state.lst[a]) {
+                        return false;
+                    }
+                    if (state.est[b] > state.lst[b]) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        function evaluateScore(state) {
+            let score = 0;
+            for (let i = 0; i < state.sequence.length; i += 1) {
+                const item = state.sequence[i];
+                const tgt = targets[item];
+                // Priority
+                score += wp * (tgt.Priority / maxpriority);
+                // Midpoint time - approximation
+                const when = 0.5 * (state.est[i] + state.lst[i]);
+                const curidx = helper.MJDToIndex(when);
+                // Urgency
+                score += wu * 1 / (tgt.LastPossibleTime - when + 1);
+                // Altitude (placeholder like your Python)
+                score += wa * Math.sin(sla.d2r * tgt.Graph[curidx]);
+                // Slewing (placeholder)
+                score += ws * (i === 0 ? 1 : 1-sla.dsep(targets[state.sequence[i-1]].raRad, targets[state.sequence[i-1]].decRad, tgt.raRad, tgt.decRad) / Math.PI);
+            }
+            return score;
+        }
+
+        function insertInterval(state, targid, interval) {
+            // Find the insertion point that maximizes the objective score
+            let bestState = null;
+            let bestScore = 0;
+            for (let i = 0; i <= state.sequence.length; i += 1) {
+                // Deep-ish copy
+                let newstate = {
+                    sequence: state.sequence.slice(),
+                    est: state.est.slice(),
+                    lst: state.lst.slice(),
+                    unscheduled: new Set(state.unscheduled),
+                    score: state.score
+                };
+                // Insert at position i
+                newstate.sequence.splice(i, 0, targid);
+                newstate.est.splice(i, 0, interval[0]);
+                newstate.lst.splice(i, 0, interval[1]);
+                newstate.unscheduled.delete(targid);
+                // Propagate constraints
+                if (propagate(newstate)) {
+                    const score = evaluateScore(newstate);
+                    // Evaluate score
+                    newstate.score = score;
+                    if (score > bestScore) {
+                        // We found a better solution? Store it
+                        bestState = newstate;
+                        bestScore = score;
+                    }
+                }
+            }
+            return bestState;
+        }
+
+        for (let depth = 0; depth < maxdepth; depth += 1) {
+            const targid = unscheduledIndices[depth];
+            const target = targets[targid];
+            if (target.Scheduled) {
+                console.error("why is this scheduled?", target);
+                continue;
+            }
+
+            const newbeam = [];
+            for (const state of beam) {
+                if (state.unscheduled.size === 0) {
+                    solution = state;
+                    break;
+                }
+                if (!state.unscheduled.has(targid)) {
+                    console.error("why are we looking for this", targid, target);
+                    continue;
+                }
+                for (let j = 0; j < target.nAllowed; j += 1) {
+                    if (target.beginAllowed[j] + target.Exptime > target.endAllowed[j]) {
+                        continue;
+                    }
+                    const interval = [target.beginAllowed[j], target.endAllowed[j] - target.Exptime];
+                    const newstate = insertInterval(state, targid, interval);
+                    if (newstate !== null) {
+                        newbeam.push(newstate);
+                    }
+                }
+            }
+            if (solution !== null) {
+                break;
+            }
+            if (newbeam.length > 0) {
+                beam = newbeam.sort((a, b) => b.score - a.score).slice(0, beamWidth);
+            }
+        }
+        if (solution === null) {
+            solution = beam[0];
+        }
+
+        scheduleorder = [];
+        for (let i = 0; i < solution.sequence.length; i += 1) {
+            const targid = solution.sequence[i];
+            const target = targets[targid];
+            if (target.Observed || target.FillSlot) {
+                scheduleorder.push(targid);
+                continue;
+            }
+            target.Schedule(solution.est[i]);
+            scheduleorder.push(targid);
+        }
+        return scheduleorder.sort(function(a, b) {
+            return targets[a].ScheduledStartTime - targets[b].ScheduledStartTime;
         });
     } catch (ex) {
         helper.LogException(ex);
@@ -1015,7 +1239,15 @@ TargetList.prototype.prepareScheduleForUpdate = function () {
  */
 TargetList.prototype.doSchedule = function (start, reorder) {
     try {
-        const scheduleorder = this.scheduleWithWeights(0);
+        let scheduleorder;
+        switch ($('input[type="radio"][name="opt_algorithm"]:checked').val()) {
+        case "greedy-heuristic":
+            scheduleorder = this.scheduleWithWeights();
+            break;
+        case "flexible-beam":
+            scheduleorder = this.scheduleWithBeamSearch();
+            break;
+        }
         if (reorder) {
             const neworder = this.reorderAccordingToScheduling(scheduleorder);
             this.optimizeMoveToLaterTimesIfRising();
@@ -1864,6 +2096,7 @@ Target.prototype.preCompute = function () {
             this.ObservableTonight = false;
             this.iLastPossibleTime = 0;
             this.LastPossibleTime = driver.night.Sunset;
+            this.Criticality = 0;
             driver.targets.Warning1.push(this.Name);
             return;
         }
@@ -1872,8 +2105,16 @@ Target.prototype.preCompute = function () {
             this.iLastPossibleTime = helper.MJDToIndex(this.beginAllowed[0]);
             this.LastPossibleTime = driver.night.xaxis[this.iLastPossibleTime];
             this.ObservableTonight = true;
+            this.Criticality = 1;
             return;
         }
+        let totalWindow = 0;
+        for (let i = 0; i < this.nAllowed; i += 1) {
+            if (this.beginAllowed[i] + this.Exptime <= this.endAllowed[i]) {
+                totalWindow += this.endAllowed[i] - this.beginAllowed[i];
+            }
+        }
+        this.Criticality = this.Exptime / totalWindow;
         this.FirstPossibleTime = this.beginAllowed[0];
         for (let i = this.nAllowed; i >= 0; i -= 1) {
             if (this.beginAllowed[i] + this.Exptime <= this.endAllowed[i]) {
@@ -1941,8 +2182,8 @@ Target.prototype.ComputePositionSchedLabel = function () {
             x = graph.xaxis[helper.MJDToIndex(this.ZenithTime)];
             y = graph.yend - graph.degree * this.Graph[helper.MJDToIndex(this.ZenithTime)] + yshift + 5;
         }
-        this.xmid = x;
-        this.ymid = y;
+        this.xlab = x;
+        this.ylab = y;
     } catch (ex) {
         helper.LogException(ex);
     }
@@ -1961,6 +2202,7 @@ Target.prototype.Schedule = function (start) {
         this.AltEndTime = this.Graph[helper.MJDToIndex(this.ScheduledEndTime)];
         this.AltMidTime = this.Graph[helper.MJDToIndex(this.ScheduledMidTime)];
         this.ComputePositionSchedLabel();
+        driver.targets.removeClusters();
     } catch (ex) {
         helper.LogException(ex);
     }

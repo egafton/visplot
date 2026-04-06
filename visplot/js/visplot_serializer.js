@@ -115,6 +115,7 @@ serializer.saveDocument = function () {
                 "opt_reschedule_later": $("#opt_reschedule_later").is(":checked"),
                 "opt_reorder_targets": $("#opt_reorder_targets").is(":checked"),
                 "opt_allow_over_axis": $("#opt_allow_over_axis").is(":checked"),
+                "opt_algorithm": $('input[type="radio"][name="opt_algorithm"]:checked').val(),
                 "opt_schedule_between": $('input[type="radio"][name="opt_schedule_between"]:checked').val(),
                 "opt_show_lastobstime": $("#opt_show_lastobstime").is(":checked")
             },
@@ -223,6 +224,9 @@ serializer.loadDocument = function (e) {
                 }
                 if (typeof obj.driver.opt_allow_over_axis !== "undefined") {
                     $("#opt_allow_over_axis").prop("checked", obj.driver.opt_allow_over_axis === true);
+                }
+                if (typeof obj.driver.opt_algorithm !== "undefined") {
+                    $(`#${obj.driver.opt_algorithm}`).prop("checked", true);
                 }
                 if (typeof obj.driver.opt_schedule_between !== "undefined") {
                     $(`#${obj.driver.opt_schedule_between}`).prop("checked", true);
