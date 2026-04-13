@@ -149,14 +149,14 @@ Where:
 - ``[RA]``: Right ascension (e.g., ``23 34 34.7`` or ``23:34:34.7``), optionally with proper motion ``[pmRA]`` in arcsec/year
 - ``[DEC]``: Declination, same format as RA, optionally with ``[pmDEC]``
 - ``[EPOCH]``: Coordinate epoch (``1950`` or ``2000``)
-- ``[OBSTIME]``: Observing time in seconds (or ``*`` for priority scheduling)
+- ``[OBSTIME]``: Observing time in seconds, including overheads. Alternatively, it can be ``*``, if [CONSTRAINTS] is a UTC/LST range, and the object will be scheduled with absolute priority for the entire interval. 
 - ``[PROJECT]``: Project ID (e.g., ``54-199``)
-- ``[CONSTRAINTS]``: Airmass (float), UTC range (``UTC[20:00-23:30]``), or LST range (``LST[2-4:30]``)
-- ``[TYPE]``: Observation type (``Monitor``, ``ToO``, ``Staff``, etc.)
-- ``[OBINFO]``: Additional info (usually ``default``)
-- ``[SKYPA]``: Sky Position Angle in degrees
+- ``[CONSTRAINTS]``: Airmass (float), UTC range (``UTC[20:00-23:30]``), or LST range (``LST[2-4:30]``). Integers, floats, HH:MM syntax, or a mix of them are all allowed for the range components.
+- ``[TYPE]``: Observation type. Currently there are 9 availabe types, that can be set to different colors in the :guilabel:`Configuration`: ``Monitor`` ``ToO``, ``SoftToO``, ``Payback``, ``Fast-Track``, ``Service``, ``CATService``, ``Visitor``, and ``Staff``. 
+- ``[OBINFO]``: Information passed automatically when the page is loaded from an OB queue; it allows Visplot to generate backlinks to the OB queue, as well as show additional information about each target. At the moment the system is only integrated with the NOT OB queue. Alternatively, one can pass an instrument name in this field (e.g., ``GCMS``). In all other cases, the value should be ``default``.
+- ``[SKYPA]``: Sky Position Angle in degrees, with 0=North up, 90=East up, etc. Used for the orientation of the finding chart only.
 
-Most fields are optional and default to sensible values.
+Most fields are optional and default to the default values set in :guilabel:`Configuration`.
 
 Examples
 --------
@@ -215,7 +215,8 @@ Click :guilabel:`Configuration` to adjust default settings:
 - Telescope selection: dropbox or interactive selection on the map.
 - Default epoch, observing time, and project ID
 - Maximum airmass
-- Observation types and colors
+- Default observation type
+- Type Color:
 - Default Instrument (it can influence the observing constraints)
 - Scheduling options (e.g., reschedule in past, zenith limits)
 
