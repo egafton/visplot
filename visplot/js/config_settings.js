@@ -60,10 +60,10 @@ const config = {
     defaultType: "Staff",
     allowedTypes: ["Monitor", "ToO", "SoftToO", "Payback", "Fast-Track", "Service", "CATService", "Visitor", "Staff"],
     defaultFillColors: {
-        "Monitor": "turquoise",
-        "ToO": "orangered",
+        "Monitor": "orange",
+        "ToO": "magenta",
         "SoftToO": "GoldenRod",
-        "Payback": "magenta",
+        "Payback": "DarkMagenta",
         "Fast-Track": "salmon",
         "Service": "dodgerblue",
         "CATService": "plum",

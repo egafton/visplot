@@ -351,8 +351,8 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
                     <input type="radio" id="flexible-beam" name="opt_algorithm" value="flexible-beam"><label for="flexible-beam">Flexible-placement beam search</label><br/>
                 <br/>
                 <span class="middle schedulespan">Schedule observations between:</label></span><br/>
-                    <input type="radio" id="sunset-sunrise" name="opt_schedule_between" value="sunset-sunrise"><label for="sunset-sunrise">Sunset / Sunrise</label><br/>
-                    <input type="radio" id="nautical" name="opt_schedule_between" value="nautical" checked="checked"><label for="nautical">Nautical twilights</label><br/>
+                    <input type="radio" id="sunset-sunrise" name="opt_schedule_between" value="sunset-sunrise" checked="checked"><label for="sunset-sunrise">Sunset / Sunrise</label><br/>
+                    <input type="radio" id="nautical" name="opt_schedule_between" value="nautical"><label for="nautical">Nautical twilights</label><br/>
                     <input type="radio" id="astronomical" name="opt_schedule_between" value="astronomical"><label for="astronomical">Astronomical twilights</label><br/>
                 <br/>
                 <span class="middle"><b>Scheduling weights $W_k$:</b><br/>
