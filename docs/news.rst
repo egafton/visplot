@@ -8,6 +8,41 @@ This page contains the latest updates, announcements, and assorted good news
 from Visplot development. Check back here to see what is new, what is coming,
 and what we have quietly fixed while no one was looking.
 
+April 2026
+==========
+
+
+* Upcoming talk: Join us for a short online presentation about Visplot!
+
+  On April 21 at 12:30 EST, I'll be giving a talk (in Spanish) as part of the RIA Tostes de Café series. For more details check out https://riastronomia.es/riatosdecafe/. Whether you're a seasoned observer or just curious about astronomical planning tools, this is a great chance to learn more about Visplot in a casual, coffee-fueled setting. ¡Nos vemos allí!
+
+* New scheduling algorithm unleashed!
+
+  Visplot now includes a sophisticated new scheduling option: the flexible-placement beam search algorithm. This powerhouse is designed for those tricky observing nights with tightly constrained targets or overlapping visibility windows. While the original greedy heuristic remains the go-to for most scenarios, the beam search can find better solutions when things get complicated. It's like having a backup plan that actually works—because sometimes, the stars don't align (literally).
+
+* Tutorial gets a glow-up!
+
+  The Visplot tutorial has been thoroughly refreshed with more detailed explanations of scheduling algorithms, added humor to keep things engaging (because who says astronomy can't be fun?), and seamless cross-references to other documentation pages. We've also included tips on telescope-specific pages and a new "Wrapping up" section to send you off with clear skies and good observing vibes.
+
+* Telescope collection expands!
+
+  We've been busy adding more telescopes to the roster, pushing Visplot's support to over 100 facilities worldwide. From the latest additions to fine-tuning existing ones, the interactive map just keeps getting more useful. And for those with dedicated pages (like www.visplot.com/not), we've made it easier to find and reference them in the docs.
+
+* Under-the-hood improvements:
+
+  - Autosave feature: Never lose your work again—Visplot now automatically saves your session as you go.
+  - SkyCam enhancements: Better handling of corrupt images and improved reliability for supported telescopes.
+  - Manual reordering tweaks: Scheduling adjustments are now smoother and more intuitive.
+  - Minor bug fixes and performance boosts: Because even the best tools can use a little polish.
+
+
+March 2026
+==========
+
+* Visplot v5.1 released!
+
+  A new version is out, bringing the flexible-placement beam search algorithm to the scheduling options. This advanced algorithm helps with complex, tightly-constrained observing nights where the greedy heuristic might struggle. Also included are UI tweaks like improved label positioning for zenith observations, better responsiveness, and enhanced manual reordering of schedules. Plus, more telescopes added to the ever-growing list—because the more, the merrier (or at least, the more options).
+
 February 2026
 ==============
 

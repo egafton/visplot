@@ -32,6 +32,8 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 autosectionlabel_prefix_document = True
 autosectionlabel_maxdepth = 4
 
+# Numering figures:
+numfig = True
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
