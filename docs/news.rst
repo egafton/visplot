@@ -16,6 +16,18 @@ April 2026
 
   On April 21 at 12:30 EST, I'll be giving a talk (in Spanish) as part of the RIA Tostes de Café series. For more details check out https://riastronomia.es/riatosdecafe/. Whether you're a seasoned observer or just curious about astronomical planning tools, this is a great chance to learn more about Visplot in a casual, coffee-fueled setting. ¡Nos vemos allí!
 
+* Paper submitted to A&A!
+
+  We've officially submitted our paper on Visplot to Astronomy & Astrophysics. 
+
+  If you use Visplot in your work, please cite: 
+
+  *E. Gafton, I. R. Losada*, **Visplot: A visibility plot and observation scheduling tool for astronomical observatories**, 2026, submitted to A\&A, `arXiv:2604.14151 <https://arxiv.org/abs/2604.14151>`__, `ADS <https://ui.adsabs.harvard.edu/abs/2026arXiv260414151G/abstract>`__
+  
+  The preprint is available on arXiv for those eager to dive in.
+
+  We also found a nice description of the paper `here <https://gist.science/paper/2604.14151>`__.
+
 * New scheduling algorithm unleashed!
 
   Visplot now includes a sophisticated new scheduling option: the flexible-placement beam search algorithm. This powerhouse is designed for those tricky observing nights with tightly constrained targets or overlapping visibility windows. While the original greedy heuristic remains the go-to for most scenarios, the beam search can find better solutions when things get complicated. It's like having a backup plan that actually works—because sometimes, the stars don't align (literally).

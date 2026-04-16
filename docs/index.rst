@@ -12,9 +12,13 @@ Visplot is a visibility plot and observation scheduling tool for telescopes. It 
 Whether you are using the `Web interface <https://www.visplot.com/>`__ or a :doc:`custom installation </custom_install>`,  this documentation will guide you
 through the common usage of Visplot, from first steps to more advanced options.
 
+.. important::
+
+   If you use Visplot in your work, please cite our paper: *E. Gafton & I.R. Losada*, 2026, submitted to A&A, `arXiv:2604.14151 <https://arxiv.org/abs/2604.14151>`__.
+
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Contents:
 
    about
@@ -31,6 +35,8 @@ through the common usage of Visplot, from first steps to more advanced options.
 Attribution
 ============
 
-If you use Visplot in your work, please cite our webinterface:
+If you use Visplot in your work, please cite our paper:
 
-https://www.visplot.com/
+*E. Gafton, I. R. Losada*, **Visplot: A visibility plot and observation scheduling tool for astronomical observatories**, 2026, submitted to A\&A, `arXiv:2604.14151 <https://arxiv.org/abs/2604.14151>`__, `ADS <https://ui.adsabs.harvard.edu/abs/2026arXiv260414151G/abstract>`__
+
+You can also cite the web interface at https://www.visplot.com/.
