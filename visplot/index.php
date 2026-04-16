@@ -276,6 +276,7 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
         <div id="divider"></div>
         <div id="canvas-wrapper">
             <canvas id="canvasFrame"></canvas>
+            <a href="https://arxiv.org/abs/2604.14151" class="canvas-link" target="_blank">arXiv:2604.14151</a>
         </div> <!-- #canvas-wrapper -->
     </div> <!-- div style="display:flex" -->
     <a id="inline" href="#details" style="display:none"></a>
