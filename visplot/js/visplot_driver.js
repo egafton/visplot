@@ -1664,6 +1664,8 @@ Driver.prototype.Refresh = function () {
                 driver.graph.highlightTarget(context, targets.Targets[driver.mouseInsideObject]);
             }
         }
+
+        $(".canvas-link").css("bottom", `${$("#canvas-wrapper").height() - ch + 8}px`);
     } catch (ex) {
         helper.LogException(ex);
     }

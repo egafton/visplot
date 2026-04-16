@@ -85,9 +85,12 @@ input {
     margin: 0;
     border: 0;
     padding: 0;
+    position: relative;
+    display: inline-block;
 }
 
 #canvasFrame {
+    display: block;
     margin: 0 auto;
     background: rgba(255, 255, 255, 0);
     background-repeat: no-repeat;
@@ -96,6 +99,13 @@ input {
     background-size: cover;
     box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
     border-radius: 16px;
+}
+
+.canvas-link {
+  position: absolute;
+  bottom: 8px;
+  right: 10px;
+  z-index: 10;
 }
 
 #footer {
