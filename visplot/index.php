@@ -6,7 +6,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. See LICENSE.md.
  */
-$version = "5.1";
+$version = "5.2";
 /*
 * Version history (with brief changelog):
 *
@@ -153,6 +153,9 @@ $version = "5.1";
 *
 * 5.1  - Added a new scheduling algorithm (flexible-placement beam search).
 *      - Fixed some issues with label de-clustering algorithm.
+*
+* 5.2  - Fixed some bugs when changing date (and Offline time would disappear).
+*      - Added option to colour targets even when not in schedule mode.
 */
 session_start();
 if (isset($_SESSION["obinfo"])) {
@@ -364,6 +367,7 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
                 <br/>
                 <h2 class="h2-instr">Display settings</h2>
                 <span class="middle"><label for="opt_show_lastobstime"><input type="checkbox" name="opt_show_lastobstime" id="opt_show_lastobstime" /> Mark last possible starting time</label></span><br/>
+                <span class="middle"><label for="opt_colour_targets"><input type="checkbox" name="opt_colour_targets" id="opt_colour_targets" /> Colour targets when not in schedule mode</label></span><br/>
             </div></div> <!-- #config-right, #config -->
         </div> <!-- #config-container -->
         <div id="help-container"><div id="help">
