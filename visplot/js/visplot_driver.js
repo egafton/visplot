@@ -589,7 +589,7 @@ Driver.prototype.ParseOBInfoIfAny = function () {
 /**
  * @memberof Driver
  */
-Driver.prototype.CallbackSetDate = function (obj) {
+Driver.prototype.CallbackSetDate = function () {
     try {
         this.night.setEphemerides();
         this.nightInitialized = true;
@@ -603,7 +603,7 @@ Driver.prototype.CallbackSetDate = function (obj) {
             let constraint;
             const lines = [];
             for (let i = 1; i <= ntargets; i += 1) {
-                obj = this.obdata.Targets[`target${i}`];
+                const obj = this.obdata.Targets[`target${i}`];
                 if ("LST1" in obj && "LST2" in obj) {
                     constraint = `LST[${obj.LST1}-${obj.LST2}]`;
                 } else {
@@ -614,10 +614,11 @@ Driver.prototype.CallbackSetDate = function (obj) {
             }
             this.obprocessed = true;
             this.CMeditor.setValue(lines.join("\n"));
-            this.targets.validateAndFormatTargets().then(() => {
-                $("#plotTargets").trigger("click");
-            }).catch(ex => { helper.LogException(ex); });
         }
+
+        // Force recalculation of all targets
+        this.targets.InputText = "";
+        $("#plotTargets").trigger("click");
     } catch (ex) {
         helper.LogException(ex);
     }
@@ -672,8 +673,13 @@ Driver.prototype.CallbackUpdateSchedule = function () {
 /**
  * @memberof Driver
  */
-Driver.prototype.BtnEvtSetDate = function () {
+Driver.prototype.BtnEvtSetDate = function (e) {
     try {
+        if (this.scheduleMode && !window.confirm("Are you sure you want to replot the targets?\nThe current schedule WILL BE LOST!")) {
+            e.preventDefault();
+            return;
+        }
+
         const year = helper.filterInt($("#dateY").val());
         const month = helper.filterInt($("#dateM").val());
         const day = helper.filterInt($("#dateD").val());
@@ -719,6 +725,7 @@ Driver.prototype.BtnEvtSetDate = function () {
             helper.LogEntry(`Initializing date to ${year}-${helper.padTwoDigits(month)}-${helper.padTwoDigits(day)}; time zone set to ${Driver.timezoneName} (${adE.desc}}`);
         }
         this.night = new Night(year, month, day);
+        this.scheduleMode = false;
         driver.CallbackSetDate();
     } catch (ex) {
         helper.LogException(ex);
@@ -1164,17 +1171,17 @@ Driver.prototype.BindEvents = function () {
     // Allow the current date to be changed with a simple Enter key
     $("#dateD").keydown(function (e) {
         if (e.key === "Enter") {
-            $("#dateSet").trigger("click");
+            driver.BtnEvtSetDate(e);
         }
     });
     $("#dateM").keydown(function (e) {
         if (e.key === "Enter") {
-            $("#dateSet").trigger("click");
+            driver.BtnEvtSetDate(e);
         }
     });
     $("#dateY").keydown(function (e) {
         if (e.key === "Enter") {
-            $("#dateSet").trigger("click");
+            driver.BtnEvtSetDate(e);
         }
     });
     $("#def_epoch").keydown(function (e) {
