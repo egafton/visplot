@@ -593,7 +593,7 @@ Driver.prototype.CallbackSetDate = function () {
     try {
         this.night.setEphemerides();
         this.nightInitialized = true;
-        this.Refresh();
+        this.Refresh(true);
         helper.LogEntry("Done.");
 
         if (this.ob && !this.obprocessed) {
@@ -1607,7 +1607,7 @@ Driver.prototype.CallbackShowCurrentTime = function () {
 /**
  * @memberof Driver
  */
-Driver.prototype.Refresh = function () {
+Driver.prototype.Refresh = function (resized = false) {
     try {
         // Cache some variables
         const graph = driver.graph;
@@ -1656,7 +1656,9 @@ Driver.prototype.Refresh = function () {
         for (let i = 0; i < night.Nx; i += 1) {
             graph.xaxis.push(graph.xstart + graph.width * (night.xaxis[i] - night.Sunset) / night.wnight);
         }
-        targets.setTargetsSize();
+        if (resized) {
+            targets.setTargetsSize();
+        }
         if (driver.nightInitialized) {
             graph.drawBackground(context);
             graph.drawEphemerides(context);

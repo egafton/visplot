@@ -21,7 +21,9 @@ $(document).ready(function () {
         $("body").toggle();
 
         /* Catch resize events */
-        window.addEventListener("resize", driver.Refresh);
+        window.addEventListener("resize", function() {
+            driver.Refresh(true);
+        });
 
         /* Create the panel divider */
         $("#divider").jSplitter({

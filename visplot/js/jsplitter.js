@@ -113,7 +113,7 @@
                     $(divider).css('margin-left', splitterMargin + "px");
                     $(rightdiv).css('margin-left', rightdivMargin + "px");
                 }
-                window.driver.Refresh();
+                window.driver.Refresh(true);
             }
             function endSplitMouse(evt) {
                 currentWidth = $(leftdiv).width();
