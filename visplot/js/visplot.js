@@ -189,7 +189,11 @@ function postInitialization() {
         Trigger for the "Set" current date button; this calculates the ephemerides
         and plots them.
         */
-        $("#dateSet").click(function () {
+        $("#dateSet").click(function (e) {
+            if (driver.scheduleMode && !window.confirm("Are you sure you want to replot the targets?\nThe current schedule WILL BE LOST!")) {
+                e.preventDefault();
+                return;
+            }
             driver.BtnEvtSetDate();
         });
 
