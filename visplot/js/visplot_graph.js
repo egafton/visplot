@@ -401,17 +401,17 @@ Graph.prototype.highlightTarget = function (ctx, target) {
             const x = this.xaxis[j];
             const y = this.yend - this.degree * target.Graph[j];
             if (typeof target.MoonDistance !== "undefined") { // for older versions
-                this.plotText(ctx, `☽︎ ${Math.round(target.MoonDistance[j])}°`, this.pt(9), target.LabelStrokeColor, x, y + this.scale(15), "center", "top");
+                this.plotText(ctx, `☽︎ ${Math.round(target.MoonDistance[j])}°`, this.pt(9), "blue", x, y + this.scale(15), "center", "top");
             }
             if (typeof target.PAngles !== "undefined") { // for older versions
-                this.plotText(ctx, `∡ ${Math.round(target.PAngles[j])}°`, this.pt(9), target.LabelStrokeColor, x, y + this.scale(30), "center", "top");
+                this.plotText(ctx, `∡ ${Math.round(target.PAngles[j])}°`, this.pt(9), "blue", x, y + this.scale(30), "center", "top");
             }
             addedSymbols += 1;
             j += 100;
         }
         ctx.restore();
         ctx.save();
-        ctx.strokeStyle = "black";
+        ctx.fillStyle = "blue";
         ctx.font = `${this.pt(8)} ${this.fontFamily}`;
         ctx.textAlign = "left";
         ctx.textBaseline = "middle";
@@ -436,6 +436,7 @@ Graph.prototype.highlightTarget = function (ctx, target) {
  */
 Graph.prototype.drawTargets = function (ctx, Targets, grayedOut = false) {
     try {
+        const colourTargets = $("#opt_colour_targets").is(":checked");
         ctx.save();
         ctx.strokeStyle = "black";
         ctx.beginPath();
@@ -443,7 +444,7 @@ Graph.prototype.drawTargets = function (ctx, Targets, grayedOut = false) {
         ctx.rect(this.xstart, this.ystart, this.width, this.height);
         ctx.clip();
         ctx.setLineDash([]);
-        const strokes = [], dashes = [], lws = [];
+        let strokes = [], dashes = [], lws = [];
         if (grayedOut) {
             strokes[0] = "rgba(170, 170, 170, 0.3)";
             strokes[1] = "rgba(0, 0, 0, 0.3)";
@@ -455,18 +456,24 @@ Graph.prototype.drawTargets = function (ctx, Targets, grayedOut = false) {
             strokes[2] = "rgb(255, 85, 85)";
             strokes[3] = "rgb(0, 0, 0)";
         }
+        const defaultStrokes = strokes.splice();
         dashes[0] = [];
         dashes[1] = [];
         dashes[2] = [1, 3];
         dashes[3] = [2, 2];
         lws[0] = 1.2;
-        lws[1] = 1.2;
+        lws[1] = colourTargets ? 1.5 : 1.2;
         lws[2] = 3.2;
         lws[3] = 3.2;
 
         for (let i = 0; i < Targets.length; i += 1) {
             const obj = Targets[i];
             let obs = obj.observable[0];
+            if (colourTargets) {
+                strokes[0] = grayedOut ? obj.LabelVeryFaintStrokeColor : obj.LabelFaintStrokeColor;
+                strokes[1] = grayedOut ? obj.LabelFaintStrokeColor : obj.LabelStrokeColor;
+                strokes[3] = strokes[0];
+            }
             ctx.strokeStyle = strokes[obs];
             ctx.setLineDash(dashes[obs]);
             ctx.lineWidth = this.scale(lws[obs]);
@@ -500,6 +507,7 @@ Graph.prototype.drawTargets = function (ctx, Targets, grayedOut = false) {
 
         /* If over-the-axis observations are possible, show a legend */
         if (Targets.length > 0 && Driver.telescopeName === "HJST" && $("#opt_allow_over_axis").is(":checked")) {
+            strokes = defaultStrokes;
             ctx.restore();
             const legtext = {
                 1: "tube-east only",
@@ -539,6 +547,7 @@ Graph.prototype.drawTargets = function (ctx, Targets, grayedOut = false) {
  */
 Graph.prototype.drawTargetNames = function (ctx, Targets) {
     try {
+        const colourTargets = $("#opt_colour_targets").is(":checked");
         ctx.setLineDash([]);
         ctx.save();
         ctx.strokeStyle = "black";
@@ -547,13 +556,13 @@ Graph.prototype.drawTargetNames = function (ctx, Targets) {
         ctx.rect(this.xstart, this.ystart, this.width, this.height);
         ctx.clip();
         for (const obj of Targets) {
-            ctx.strokeStyle = "black";
+            ctx.strokeStyle = colourTargets ? obj.LabelStrokeColor : "black";
             ctx.fillStyle = "white";
             ctx.beginPath();
             ctx.arc(obj.xlab, obj.ylab, this.CircleSize, 0, sla.d2pi, false);
             ctx.fill();
             ctx.stroke();
-            this.plotText(ctx, obj.Label, this.pt(8), "black", obj.xlab, obj.ylab, "center", "middle");
+            this.plotText(ctx, obj.Label, this.pt(8), colourTargets ? obj.LabelStrokeColor : "black", obj.xlab, obj.ylab, "center", "middle");
         }
         ctx.restore();
         let y = this.targetsy;
@@ -561,13 +570,13 @@ Graph.prototype.drawTargetNames = function (ctx, Targets) {
             obj.rxmid = this.targetsx;
             obj.rymid = y - 6.5;
             this.plotText(ctx, obj.Name, this.pt(8), "black", obj.rxmid + this.scale(15), obj.rymid - 1, "left", "middle");
-            ctx.strokeStyle = "black";
+            ctx.strokeStyle = colourTargets ? obj.LabelStrokeColor : "black";
             ctx.fillStyle = "white";
             ctx.beginPath();
             ctx.arc(obj.rxmid, obj.rymid, this.CircleSize, 0, sla.d2pi, false);
             ctx.fill();
             ctx.stroke();
-            this.plotText(ctx, obj.Label, this.pt(8), "black", obj.rxmid, obj.rymid, "center", "middle");
+            this.plotText(ctx, obj.Label, this.pt(8), colourTargets ? obj.LabelStrokeColor : "black", obj.rxmid, obj.rymid, "center", "middle");
             if (this.doubleTargets) {
                 this.plotText(ctx, `(${obj.ProjectNumber})`, this.pt(8), "black", obj.rxmid + this.scale(15), obj.rymid + this.targetsyskip - 1, "left", "middle");
                 y += this.targetsyskip;
@@ -935,9 +944,9 @@ Graph.prototype.drawBackground = function (ctx, rectangleLast = false) {
         ctx.fillText(Driver.plotTitle, this.xmid, 27);
 
         // Copyright notice
-        ctx.font = `${this.pt(7)} ${this.fontFamily}`;
+        ctx.font = `${this.pt(6.5)} ${this.fontFamily}`;
         ctx.textAlign = "left";
-        ctx.fillText(config.graphCopyright, this.xleftlabels, this.canvasHeight - 18);
+        ctx.fillText(config.graphCopyright, this.xleftlabels - 1, this.canvasHeight - 11);
 
         if (rectangleLast) {
             // Draw main rectangle that contains the visibility plot

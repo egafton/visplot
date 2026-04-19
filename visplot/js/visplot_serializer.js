@@ -117,7 +117,8 @@ serializer.saveDocument = function () {
                 "opt_allow_over_axis": $("#opt_allow_over_axis").is(":checked"),
                 "opt_algorithm": $('input[type="radio"][name="opt_algorithm"]:checked').val(),
                 "opt_schedule_between": $('input[type="radio"][name="opt_schedule_between"]:checked').val(),
-                "opt_show_lastobstime": $("#opt_show_lastobstime").is(":checked")
+                "opt_show_lastobstime": $("#opt_show_lastobstime").is(":checked"),
+                "opt_colour_targets": $("#opt_colour_targets").is(":checked")
             },
             version: window.version
         }));
@@ -233,6 +234,9 @@ serializer.loadDocument = function (e) {
                 }
                 if (typeof obj.driver.opt_show_lastobstime !== "undefined") {
                     $("#opt_show_lastobstime").prop("checked", obj.driver.opt_show_lastobstime === true);
+                }
+                if (typeof obj.driver.opt_colour_targets !== "undefined") {
+                    $("#opt_colour_targets").prop("checked", obj.driver.opt_colour_targets === true);
                 }
                 if (typeof obj.driver.resolvedEphemerides !== "undefined") {
                     driver.resolvedEphemerides = obj.driver.resolvedEphemerides;

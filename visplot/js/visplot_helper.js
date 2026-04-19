@@ -853,6 +853,27 @@ helper.validColour = function(stringToTest) {
     }
 };
 
+const colorCtx = document.createElement("canvas").getContext("2d");
+colorCtx.canvas.width = 1;
+colorCtx.canvas.height = 1;
+helper.toRGBA = function(color, alpha = 1) {
+    colorCtx.clearRect(0, 0, 1, 1);
+    colorCtx.fillStyle = "#000"; // reset (important)
+    colorCtx.fillStyle = color; // browser parses here
+    colorCtx.fillRect(0, 0, 1, 1);
+    const data = colorCtx.getImageData(0, 0, 1, 1).data;
+    const { r, g, b } = { r: data[0], g: data[1], b: data[2], a: data[3] / 255 };
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
+helper.faint = function(color) {
+    return helper.toRGBA(color, 0.3);
+};
+
+helper.veryFaint = function(color) {
+    return helper.toRGBA(color, 0.15);
+};
+
 /**
  * Create a multi-dimensional array filled with zeros.
  * Supports arbitrary dimensions by recursively nesting arrays.

@@ -830,10 +830,10 @@ Driver.prototype.EvtFrameMouseMove = function (e) {
                 if (this.mouseInsideObject !== i) {
                     this.mouseInsideObject = i;
                     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                    this.graph.drawTargets(this.context, this.targets.Targets, true);
-                    this.graph.highlightTarget(this.context, obj);
-                    this.graph.drawEphemerides(this.context);
                     this.graph.drawBackground(this.context);
+                    this.graph.drawEphemerides(this.context);
+                    this.graph.highlightTarget(this.context, obj);
+                    this.graph.drawTargets(this.context, this.targets.Targets, true);
                     if (this.scheduleMode) {
                         this.graph.drawSchedule(this.context);
                     } else {
@@ -1520,11 +1520,9 @@ Driver.prototype.CallbackUpdateDefaultsAfterTelUpdate = function (resetTel) {
                     target.resetColours();
                 }
             }
-            if (resetTel || resetCol) {
-                this.Refresh();
-            }
         }
         this.night.setEphemerides();
+        this.Refresh();
 
         helper.LogDebug("Saving new configuration to the browser...");
         localStorage.setItem("visplot", true);
@@ -1551,6 +1549,7 @@ Driver.prototype.CallbackUpdateDefaultsAfterTelUpdate = function (resetTel) {
         localStorage.setItem("opt_algorithm", $('input[type="radio"][name="opt_algorithm"]:checked').val());
         localStorage.setItem("opt_schedule_between", $('input[type="radio"][name="opt_schedule_between"]:checked').val());
         localStorage.setItem("opt_show_lastobstime", $("#opt_show_lastobstime").is(":checked"));
+        localStorage.setItem("opt_colour_targets", $("#opt_colour_targets").is(":checked"));
         helper.LogEntry("Done.");
     } catch (ex) {
         helper.LogException(ex);
@@ -1658,21 +1657,22 @@ Driver.prototype.Refresh = function () {
             graph.xaxis.push(graph.xstart + graph.width * (night.xaxis[i] - night.Sunset) / night.wnight);
         }
         targets.setTargetsSize();
-        graph.drawTargets(context, targets.Targets, driver.mouseInsideObject > -1);
-        graph.drawEphemerides(context);
         if (driver.nightInitialized) {
             graph.drawBackground(context);
+            graph.drawEphemerides(context);
+            if (driver.mouseInsideObject > -1) {
+                driver.graph.highlightTarget(context, targets.Targets[driver.mouseInsideObject]);
+            }
+            graph.drawTargets(context, targets.Targets, driver.mouseInsideObject > -1);
             if (driver.scheduleMode) {
                 graph.drawSchedule(context);
             } else if (targets.nTargets > 0) {
                 graph.drawTargetNames(context, targets.Targets);
             }
-            if (driver.mouseInsideObject > -1) {
-                driver.graph.highlightTarget(context, targets.Targets[driver.mouseInsideObject]);
-            }
         }
 
-        $(".canvas-link").css("bottom", `${$("#canvas-wrapper").height() - ch + 8}px`);
+        $(".canvas-link").css("bottom", `${$("#canvas-wrapper").height() - ch + graph.scale(12)}px`).css("font-size", graph.pt(7));
+        $(".canvas-link").blur();
     } catch (ex) {
         helper.LogException(ex);
     }

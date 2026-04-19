@@ -50,6 +50,8 @@ function Target(k, line) {
         this.LabelFillColor = Driver.FillColors[this.Type];
         this.LabelTextColor = Driver.TextColors[this.Type];
         this.LabelStrokeColor = this.LabelFillColor;
+        this.LabelFaintStrokeColor = helper.faint(this.LabelFillColor);
+        this.LabelVeryFaintStrokeColor = helper.veryFaint(this.LabelFillColor);
         this.Observed = false;
         this.ObservedStartTime = null;
         this.ObservedEndTime = null;

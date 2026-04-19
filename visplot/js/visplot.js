@@ -31,6 +31,11 @@ $(document).ready(function () {
             "persist": true,
             "cookie": "jSplitter",
             "minleftwidth": 400
+        }).on("mousedown", function() {
+            document.body.classList.add("resizing");
+        });
+        $(document).on("mouseup", function () {
+            document.body.classList.remove("resizing");
         });
 
         // Populate the telescope select input
@@ -144,6 +149,10 @@ $(document).ready(function () {
                             helper.LogEntry(`Restoring <i>opt_show_lastobstime</i> to <i>${localStorage.opt_show_lastobstime}</i>`);
                             $("#opt_show_lastobstime").prop("checked", localStorage.opt_show_lastobstime === "true");
                         }
+                        if ("opt_colour_targets" in localStorage) {
+                            helper.LogEntry(`Restoring <i>opt_colour_targets</i> to <i>${localStorage.opt_colour_targets}</i>`);
+                            $("#opt_colour_targets").prop("checked", localStorage.opt_colour_targets === "true");
+                        }
                         postInitialization();
                     });
                 } else {
@@ -190,11 +199,7 @@ function postInitialization() {
         and plots them.
         */
         $("#dateSet").click(function (e) {
-            if (driver.scheduleMode && !window.confirm("Are you sure you want to replot the targets?\nThe current schedule WILL BE LOST!")) {
-                e.preventDefault();
-                return;
-            }
-            driver.BtnEvtSetDate();
+            driver.BtnEvtSetDate(e);
         });
 
         /*
