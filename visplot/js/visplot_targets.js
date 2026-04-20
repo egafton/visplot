@@ -1327,6 +1327,7 @@ TargetList.prototype.processTargetListAfterSIMBAD = function(lines) {
         };
         this.BadWolfStart = [];
         this.BadWolfEnd = [];
+        let actualLineCount = 0;
         for (let i = 0; i < lines.length; i += 1) {
             const line = lines[i].trim();
             if (line === "") {
@@ -1338,10 +1339,11 @@ TargetList.prototype.processTargetListAfterSIMBAD = function(lines) {
                 continue;
             }
             let words;
+            actualLineCount += 1;
             try {
                 words = this.extractLineInfo(i + 1, lines[i].trim());
             } catch (ex) {
-                helper.LogError(`(Line #${i + 1}) ${ex.message}`);
+                helper.LogError(`(Line #${actualLineCount}) ${ex.message}`);
                 return false;
             }
             const mLTN = driver.graph.maxLenTgtName;
