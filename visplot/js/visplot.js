@@ -38,6 +38,7 @@ $(document).ready(function () {
         });
         $(document).on("mouseup", function () {
             document.body.classList.remove("resizing");
+            driver.CMeditor.refresh();
         });
 
         // Populate the telescope select input

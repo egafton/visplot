@@ -71,6 +71,7 @@ function Driver() {
         this.CMeditor = CodeMirror.fromTextArea($("#targets")[0], {
             lineNumbers: true,
             mode: "simplemode",
+            scrollbarStyle: "simple",
             styleActiveLine: { nonEmpty: false },
             extraKeys: {
                 Tab: function () {

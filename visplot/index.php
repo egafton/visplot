@@ -6,7 +6,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. See LICENSE.md.
  */
-$version = "5.2";
+$version = "5.3";
 /*
 * Version history (with brief changelog):
 *
@@ -156,6 +156,8 @@ $version = "5.2";
 *
 * 5.2  - Fixed some bugs when changing date (and Offline time would disappear).
 *      - Added option to colour targets even when not in schedule mode.
+*
+* 5.3  - Added simplescrollbars add-on to the CodeMirror editor.
 */
 session_start();
 if (isset($_SESSION["obinfo"])) {
@@ -221,8 +223,9 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
     MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
     </script>
     <script src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="stylesheet" href="<?php echo($baseurl);?>css/aladin.min.css" type="text/css" />
-    <link rel="stylesheet" href="<?php echo($baseurl);?>css/leaflet-openweathermap.css" type="text/css" />
+    <link rel="stylesheet" href="<?php echo($baseurl);?>css/aladin.min.css?v=<?php echo($version);?>" type="text/css" />
+    <link rel="stylesheet" href="<?php echo($baseurl);?>css/leaflet-openweathermap.css?v=<?php echo($version);?>" type="text/css" />
+    <link rel="stylesheet" href="<?php echo($baseurl);?>css/simplescrollbars.css?v=<?php echo($version);?>" type="text/css" />
     <link rel="stylesheet" href="<?php echo($baseurl);?>css/visplot.css?v=<?php echo($version);?>" type="text/css" />
     <script type="text/javascript">window.version = "<?php echo($version);?>";</script>
 </head>
@@ -488,6 +491,7 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
     <script src="<?php echo($baseurl);?>js/moment-timezone-with-data.min.js?v=<?php echo($version);?>"></script>
     <script src="<?php echo($baseurl);?>js/moment-round.min.js?v=<?php echo($version);?>"></script>
     <script src="<?php echo($baseurl);?>js/leaflet-openweathermap.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
+    <script src="<?php echo($baseurl);?>js/simplescrollbars.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
     <!-- Configuration files -->
     <script src="<?php echo($baseurl);?>js/config_settings.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
     <script src="<?php echo($baseurl);?>js/config_telescopes.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
