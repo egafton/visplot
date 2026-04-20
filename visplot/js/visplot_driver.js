@@ -600,16 +600,31 @@ Driver.prototype.CallbackSetDate = function () {
             helper.LogEntry("Processing the targets from the OB queue...");
             const ntargets = this.obdata.nTargets;
             helper.LogEntry(`${helper.plural(ntargets, "target")} found.`);
-            let constraint;
+            let constraint, priority;
             const lines = [];
             for (let i = 1; i <= ntargets; i += 1) {
                 const obj = this.obdata.Targets[`target${i}`];
+                const constraints = [];
+                constraints.push(`AM${obj.Constraint}`);
                 if ("LST1" in obj && "LST2" in obj) {
-                    constraint = `LST[${obj.LST1}-${obj.LST2}]`;
-                } else {
-                    constraint = obj.Constraint;
+                    constraints.push(`LST[${obj.LST1}-${obj.LST2}]`);
                 }
-                const line = helper.quoteIfNeeded(obj.Name) + " " + obj.RA + (parseFloat(obj.PM.RA) === 0.0 ? "" : "/" + parseFloat(obj.PM.RA)) + " " + obj.Dec + (parseFloat(obj.PM.Dec) === 0.0 ? "" : "/" + parseFloat(obj.PM.Dec)) + " " + parseInt(obj.Epoch) + " " + obj.ObsTime + " " + helper.quoteIfNeeded(obj.Proposal) + " " + constraint + " " + obj.Type + " " + `${obj.Instrument}:${obj.Mode}:${obj.GroupID}:${obj.BlockID}`;
+                if ("UTC1" in obj && "UTC2" in obj) {
+                    constraints.push(`UTC[${obj.UTC1}-${obj.UTC2}]`);
+                }
+                if ("Moondist" in obj && obj.Moondist !== "Any") {
+                    constraints.push(`MOON${obj.Moondist}`);
+                }
+                constraint = constraints.join(",");
+                if (constraints.length === 1 && constraint.startsWith("AM")) {
+                    constraint = constraint.slice(2);
+                }
+                if ("Priority" in obj) {
+                    priority = obj.Priority;
+                } else {
+                    priority = 1;
+                }
+                const line = helper.quoteIfNeeded(obj.Name) + " " + obj.RA + (parseFloat(obj.PM.RA) === 0.0 ? "" : "/" + parseFloat(obj.PM.RA)) + " " + obj.Dec + (parseFloat(obj.PM.Dec) === 0.0 ? "" : "/" + parseFloat(obj.PM.Dec)) + " " + parseInt(obj.Epoch) + " " + obj.ObsTime + " " + helper.quoteIfNeeded(obj.Proposal) + " " + constraint + " " + obj.Type + " " + `${obj.Instrument}:${obj.Mode}:${obj.GroupID}:${obj.BlockID}` + " 0 " + priority;
                 lines.push(line);
             }
             this.obprocessed = true;
