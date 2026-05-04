@@ -1788,3 +1788,11 @@ telescopes["Three College Observatory"] = {
     altitude: 183,
     timezoneName: "US/Eastern"
 };
+telescopes["North Georgia Astronomical Observatory"] = {
+    name: "North Georgia Astronomical Observatory (UNG) 0.7m",
+    location: "Georgia, United States",
+    latitude: 34.52106,
+    longitude: -84.05376,
+    altitude: 420,
+    timezoneName: "US/Eastern"
+};
