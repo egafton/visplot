@@ -1780,3 +1780,11 @@ telescopes["LCO #04/#05/#09"] = {
     altitude: 2163,
     timezoneName: "America/Santiago"
 };
+telescopes["Three College Observatory"] = {
+    name: "Three College Observatory (TCO) 0.81m",
+    location: "North Carolina, United States",
+    latitude: 35.94492,
+    longitude: -79.40679,
+    altitude: 183,
+    timezoneName: "US/Eastern"
+};
