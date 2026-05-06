@@ -6,7 +6,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. See LICENSE.md.
  */
-$version = "5.3";
+$version = "5.4";
 /*
 * Version history (with brief changelog):
 *
@@ -158,6 +158,8 @@ $version = "5.3";
 *      - Added option to colour targets even when not in schedule mode.
 *
 * 5.3  - Added simplescrollbars add-on to the CodeMirror editor.
+*
+* 5.4  - Added a few more telescopes.
 */
 session_start();
 if (isset($_SESSION["obinfo"])) {

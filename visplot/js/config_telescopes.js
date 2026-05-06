@@ -1796,3 +1796,12 @@ telescopes["North Georgia Astronomical Observatory"] = {
     altitude: 420,
     timezoneName: "US/Eastern"
 };
+telescopes["VIRT"] = {
+    site: "Etelman Observatory",
+    name: "Virgin Islands Robotic Telescope (VIRT) 0.5m",
+    location: "United States Virgin Islands",
+    latitude: 18.35243,
+    longitude: -64.95678,
+    altitude: 420,
+    timezoneName: "America/Virgin"
+};
