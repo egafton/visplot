@@ -275,6 +275,7 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
                     Released under the <a target="_blank" href="https://github.com/egafton/visplot/blob/master/LICENSE.md">GNU General Public License v3.0</a>.
                     Please see the <a target="_blank" href="https://visplot.readthedocs.io/">documentation</a>.
                     Report bugs and feature requests in the <a target="_blank" href="https://github.com/egafton/visplot/issues"><i>Issues</i> section</a> on GitHub.
+                    If you use Visplot for scientific work, please cite <a href="https://arxiv.org/abs/2604.14151">arXiv:2604.14151</a>.
                     </div> <!-- #footer-inner -->
                 </div> <!-- #footer -->
             </div> <!-- #sidebarpad -->
