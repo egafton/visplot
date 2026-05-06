@@ -1805,3 +1805,30 @@ telescopes["VIRT"] = {
     altitude: 420,
     timezoneName: "America/Virgin"
 };
+telescopes["ZimMAIN"] = {
+    site: "Zimmerwald Observatory",
+    name: "ZimMAIN 0.8m Multiple Applications INstrument",
+    location: "Bern, Switzerland",
+    latitude: 46.87696,
+    longitude: 7.46508,
+    altitude: 950,
+    timezoneName: "Europe/Zurich"
+};
+telescopes["ZIMLAT"] = {
+    site: "Zimmerwald Observatory",
+    name: "ZIMLAT 1m Laser- and Astrometry-Telescope",
+    location: "Bern, Switzerland",
+    latitude: 46.87723,
+    longitude: 7.46521,
+    altitude: 950,
+    timezoneName: "Europe/Zurich"
+};
+telescopes["ZimTWIN"] = {
+    site: "Zimmerwald Observatory",
+    name: "ZimTWIN 2×0.4m Twin Wide-field INstrument",
+    location: "Bern, Switzerland",
+    latitude: 46.87644,
+    longitude: 7.46512,
+    altitude: 950,
+    timezoneName: "Europe/Zurich"
+};
