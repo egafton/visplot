@@ -26,6 +26,7 @@ through the common usage of Visplot, from first steps to more advanced options.
    tutorial
    webinterface
    custom_install
+   observatory_integration
    links
    issues
    news
