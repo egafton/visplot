@@ -288,6 +288,53 @@ consistency in the scheduling philosophy.
 
    Example output from the flexible-placement beam search algorithm.
 
+When the schedulers disagree: a deeper comparison
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This is a good test case for the two scheduling engines. We use a small set of long observations clustered in the first part of the night, plus a long `Offline` block that leaves the end of the night mostly empty.
+
+.. code:: text
+
+  Object1 10 00 0  25 00 0 2000 6000 project1 2.0       Staff ALFOSC 0 1
+  Object2 10 00 0  85 00 0 2000 6000 project2 3         ToO   ALFOSC 0 3
+  Object3 06 00 0  35 00 0 2000 6000 project1 2.0       Staff ALFOSC 0 1
+  Object4 18 00 0  45 00 0 2000 6000 project1 2.0       Staff ALFOSC 0 1
+  Offline                          *          UTC[24-3]                 
+
+The first three objects compete for the same early-night window, while the last target is only safely observable after the offline period.
+
+
+.. _fig.scheduled_extreme:
+.. figure:: figs/schedule_extreme.png
+   :alt: Extreme target placement scenario
+   :width: 1000px
+
+   Extreme target placement scenario.
+
+When we run the :ref:`tut-schedule.heuristic` scheduler, it selects the highest-scoring target at each step. In this case, that means the high-priority ToO is chosen early and target 4 is pushed out of the feasible window, leaving about 2:44 of empty time.
+
+
+.. _fig.scheduled_extreme_heuristic:
+.. figure:: figs/schedule_extreme_heuristic.png
+   :alt: Greedy heuristic schedule result
+   :width: 800px
+
+   Schedule produced by the `Greedy heuristic` algorithm.
+
+By contrast, the :ref:`tut-schedule.flexible` scheduler evaluates whole-night placement and can recover from early choices that would otherwise dead-end. In this example it finds a valid plan for all targets while still respecting the same priority, urgency, altitude, and slewing criteria.
+
+.. _fig.scheduled_extreme_flexible:
+.. figure:: figs/schedule_extreme_flexible.png
+   :alt: Flexible-placement schedule result
+   :width: 800px
+
+   Schedule produced by the `Flexible-placement` algorithm.
+
+The takeaway is not that one scheduler is always better than the other. The greedy approach is fast and usually sensible, while the flexible beam search is better at extreme, tightly constrained cases. If the night is not promising, you might still choose to observe the ToO first and accept a less-complete schedule, and that is a perfectly reasonable operational choice.
+
+Most nights will not expose a large difference between the two algorithms, but when constraints pinch hard, it helps to know why the schedulers can diverge. In practice, the choice is still up to the observer — sometimes that means choosing the one that feels best for the night, not just the one that is technically optimal.
+
+
 
 Review and refine
 -----------------
@@ -351,7 +398,7 @@ The interactive world map displays pins for all pre-configured telescopes. You c
 This beats hunting through a dropdown menu with 100+ telescopes. (Especially when your brain is running on lukewarm coffee at 2 a.m.) 
 
 Telescope-specific pages
-""""""""""""""""""""""""
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Some telescopes have dedicated Visplot pages with pre-configured settings and additional resources. These are accessible at URLs like ``https://www.visplot.com/[telescope_code]`` (e.g., ``https://www.visplot.com/not`` for the Nordic Optical Telescope). Check the :ref:`links` page for a full list of available telescope-specific pages and their URLs. 
 
