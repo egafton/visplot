@@ -6,6 +6,8 @@ Custom installation of Visplot
 
 You can also run a local copy of the project in your machine.
 
+For information about connecting Visplot to your observatory's observing system, see :ref:`observatory_integration`.
+
 Prerequisites
 ==============
 
