@@ -112,8 +112,7 @@ The mandatory fields on the list are the target coordinates `[RA]` and `[DEC]`, 
 
 In the case that the object is included in `Simbad <https://simbad.u-strasbg.fr/simbad/>`__, only the `[NAME]` is mandatory, the coordinates will then be retrieve from the database. (Pro tip: SIMBAD is like that knowledgeable friend who always knows where everything is—except when it doesn't, and then you're back to manual entry.)
 
-Field definitions
-""""""""""""""""" 
+
 
 Field definitions
 """""""""""""""""
@@ -175,11 +174,13 @@ Examples
 """""""""""
 
 * Basic target:
+
 .. code-block::
 
     EQPsc 23 34 34 -01 19 36
 
 * SIMBAD identifier only:
+
 .. code-block::
 
     Aldebaran
@@ -224,6 +225,7 @@ shown as a line representing altitude versus time.
    Visplot visualization of the visibility curves  for the inputed targets after pressing :guilabel:`Plot targets`.
 
 .. _tut-schedule:
+
 Schedule observations
 ---------------------
 
@@ -236,6 +238,7 @@ than resetting it completely.
 Visplot currently includes two different  algorithms for scheduling: :ref:`tut-schedule.heuristic` and :ref:`tut-schedule.flexible`.
 
 .. _tut-schedule.heuristic:
+
 Greedy heuristic scheduling algorithm
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -262,6 +265,7 @@ night-planning scenarios.
    Example output from the greedy heuristic algorithm.
 
 .. _tut-schedule.flexible:
+
 Flexible-placement beam search
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
