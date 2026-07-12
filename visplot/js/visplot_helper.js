@@ -1143,3 +1143,16 @@ helper.findTransit = function(utcguess, dut, obj, eqeqx) {
         ret: ret
     };
 };
+
+helper.startTiming = function() {
+    window.timingStart = new Date().getTime();
+};
+
+helper.timeLastOperation = function() {
+    if (typeof window.timingStart !== "undefined" && window.timingStart !== null) {
+        const duration = new Date().getTime() - window.timingStart;
+        window.timingStart = null;
+        return `The operation took ${duration.toFixed(0)} ms`;
+    }
+    return "";
+};

@@ -592,10 +592,11 @@ Driver.prototype.ParseOBInfoIfAny = function () {
  */
 Driver.prototype.CallbackSetDate = function () {
     try {
+        helper.startTiming();
         this.night.setEphemerides();
         this.nightInitialized = true;
         this.Refresh(true);
-        helper.LogEntry("Done.");
+        helper.LogEntry(`Done. ${helper.timeLastOperation()}`);
 
         if (this.ob && !this.obprocessed) {
             helper.LogEntry("Processing the targets from the OB queue...");
@@ -665,12 +666,10 @@ Driver.prototype.CallbackUpdateSchedule = function () {
         if (this.RequestedScheduleType === 1) {
             helper.LogEntry("Updating schedule. Please wait...");
             this.targets.updateSchedule();
-            helper.LogEntry("Done.");
         }
         if (this.RequestedScheduleType === 2) {
             helper.LogEntry("Scheduling the observing night. Please wait...");
             this.targets.plan(this.targets.Targets);
-            helper.LogEntry("Done.");
             this.scheduleMode = true;
             $("#planNight").val(Driver.updSchedText);
         }
@@ -679,6 +678,7 @@ Driver.prototype.CallbackUpdateSchedule = function () {
             $("#planNight").val("Schedule observations");
             $("#planNight").removeAttr("disabled");
         }
+        helper.LogEntry(`Done. ${helper.timeLastOperation()}`);
         $("#saveDoc").removeAttr("disabled");
         this.Refresh();
     } catch (ex) {
@@ -761,6 +761,7 @@ Driver.prototype.BtnEvtPlotTargets = function () {
             helper.LogError("Night not initialized. Click on [Set] first!");
             return;
         }
+        helper.startTiming();
         this.targets.validateAndFormatTargets().then(val => {
             if (!val) {
                 return;
@@ -769,6 +770,8 @@ Driver.prototype.BtnEvtPlotTargets = function () {
                 if (!window.confirm("Are you sure you want to replot the targets?\nThe current schedule WILL BE LOST!")) {
                     return;
                 }
+                // Don't count the time it took the user to click in the dialog box
+                helper.startTiming();
             }
             if (driver.RequestedScheduleType === 1) {
                 const ret = driver.targets.prepareScheduleForUpdate();
@@ -1418,7 +1421,7 @@ Driver.prototype.BtnEvtConfig = function () {
     }
 };
 
-Driver.prototype.CallbackUpdateDefaultsAfterTelUpdate = function (resetTel) {
+Driver.prototype.CallbackUpdateDefaultsAfterTelUpdate = function () {
     try {
         let re, resetCol = false;
         re = $("#def_epoch").val().trim();
@@ -1588,14 +1591,14 @@ Driver.prototype.CallbackUpdateDefaults = function () {
                     // Recalculate ephemerides
                     driver.CallbackSetDate();
                     helper.LogSuccess(`<i>Telescope name</i> set to <i>${re}</i>.`);
-                    driver.CallbackUpdateDefaultsAfterTelUpdate(true);
+                    driver.CallbackUpdateDefaultsAfterTelUpdate();
                 });
             } else {
                 helper.LogError("<i>Telescope name</i> was not updated since the input was invalid.");
-                driver.CallbackUpdateDefaultsAfterTelUpdate(false);
+                driver.CallbackUpdateDefaultsAfterTelUpdate();
             }
         } else {
-            driver.CallbackUpdateDefaultsAfterTelUpdate(false);
+            driver.CallbackUpdateDefaultsAfterTelUpdate();
         }
     } catch (ex) {
         helper.LogException(ex);
