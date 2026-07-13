@@ -30,10 +30,10 @@ function Driver() {
 
         /* global A */
         /* Preload Aladin object */
-        this.objAladin = A.aladin("#details_map", config.aladinDefaultSettings);
-        this.aladinInitialized = true;
-        this.objAladin.on("positionChanged", function () {
-            driver.objAladin.view.applyRotation();
+        A.init.then(() => {
+            this.objAladin = A.aladin("#details_map", config.aladinDefaultSettings);
+            this.aladinInitialized = true;
+            console.log('initialized');
         });
 
         /* OB queue - related */
@@ -1069,9 +1069,9 @@ Driver.prototype.EvtFrameClick = function (e) {
                 $("#details_map_hang").html(surveyName);
                 this.objAladin.setImageSurvey(surveyName);
                 this.objAladin.setFov(fov);
-                this.objAladin.setFlip(flip);
+                this.objAladin.reverseLongitude(flip);
+                this.objAladin.setRotation(obj.SkyPA === 0 ? 0.001 : obj.SkyPA);
                 this.objAladin.gotoRaDec(ra, dec);
-                this.objAladin.setPA(obj.SkyPA);
                 $("a#inline").trigger("click");
                 break;
             }

@@ -87,7 +87,7 @@ const config = {
         default: {
             fov: 6, // arcmin
             type: "optical",
-            flip: null
+            flip: false
         }
     },
     defaultInstrument: "default",
@@ -99,16 +99,14 @@ const config = {
     nightCutoff: 10, // if local hour is smaller, show the plot for previous night by default
     planets: ["mercury", "venus", "moon", "mars", "jupiter", "saturn", "uranus", "neptune", "pluto"], // celestial bodies for which sla.rdplan works (exclude the Sun at night...)
     aladinDefaultSettings: {
-        target: `0.0 0.0`,
         survey: "P/DSS2/color",
+        target: `0.0 0.0`,
         fov: 0.1, // deg
-        pa: 0,
-        flip: null,
-        reticle: true,
+        showFov: true,
+        showReticle: true,
         showZoomControl: true,
         showFullscreenControl: false,
         showLayersControl: false,
-        showGotoControl: false,
         reticleColor: "rgb(144, 238, 144)"
     },
     aladinOpticalSurvey: "P/DSS2/color",

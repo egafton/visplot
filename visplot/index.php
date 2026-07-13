@@ -163,6 +163,8 @@ $version = "5.5";
 *
 * 5.5  - Added timing for the main operations (ephemeride calculations,
 *        visibility calculations, and scheduling).
+*      - Using standard Aladin Lite v3 instead of a customized version of v2,
+*        since now setRotation() and reverseLongitude() have been implemented.
 */
 session_start();
 if (isset($_SESSION["obinfo"])) {
@@ -490,8 +492,8 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
     <script src="https://cdn.jsdelivr.net/npm/pdfkit@0.18.0/js/pdfkit.standalone.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/blob-stream-browserify@0.1.3/index.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/svg-to-pdfkit@0.1.8/source.min.js"></script>
+    <script src="https://aladin.cds.unistra.fr/AladinLite/api/v3/latest/aladin.js"></script>
     <!-- Locally-hosted, 3rd party libraries -->
-    <script src="<?php echo($baseurl);?>js/aladin.min.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
     <script src="<?php echo($baseurl);?>js/jsplitter.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
     <script src="<?php echo($baseurl);?>js/canvas2svg.js?v=<?php echo($version);?>" type="text/javascript" charset="utf-8"></script>
     <script src="<?php echo($baseurl);?>js/moment-timezone-with-data.min.js?v=<?php echo($version);?>"></script>

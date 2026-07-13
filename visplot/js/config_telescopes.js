@@ -62,27 +62,27 @@ telescopes["NOT"] = {
         "ALFOSC": {
             type: "optical",
             fov: 6.4,
-            flip: null
+            flip: false
         },
         "NOTCAM": {
             type: "infrared",
             fov: 4,
-            flip: null
+            flip: false
         },
         "MOSCA": {
             type: "optical",
             fov: 7.7,
-            flip: null
+            flip: false
         },
         "STANCAM": {
             type: "optical",
             fov: 3,
-            flip: null
+            flip: false
         },
         "FIES": {
             type: "optical",
             fov: 3, /* Uses STANCAM for acquisition */
-            flip: null
+            flip: false
         }
     },
 
@@ -135,22 +135,22 @@ telescopes["WHT"] = {
         "ACAM": {
             type: "optical",
             fov: 8,
-            flip: null
+            flip: false
         },
         "LIRIS": {
             type: "infrared",
             fov: 4.3,
-            flip: null
+            flip: false
         },
         "ISIS": {
             type: "optical",
             fov: 15, /* Uses A&G unit for acquisition */
-            flip: null
+            flip: false
         },
         "WEAVE": {
             type: "optical",
             fov: 144, /* Field of view of the FPI camera */
-            flip: null
+            flip: false
         }
     },
 
@@ -214,12 +214,12 @@ telescopes["INT"] = {
         "WFC": {
             type: "optical",
             fov: 33.8,
-            flip: null
+            flip: false
         },
         "IDS": {
             type: "optical",
             fov: 1.2, /* Uses AG0 for acquisition */
-            flip: null
+            flip: false
         }
     },
 
@@ -261,7 +261,7 @@ telescopes["CSS 60in"] = {
         "default": {
             type: "optical",
             fov: 135,
-            flip: null
+            flip: false
         }
     },
 
@@ -302,7 +302,7 @@ telescopes["WIRO"] = {
         "WDP": {
             type: "optical",
             fov: 39,
-            flip: null
+            flip: false
         }
     },
 
@@ -366,7 +366,7 @@ telescopes["CAHA"] = {
         "CAFOS": {
             type: "optical",
             fov: 16,
-            flip: null
+            flip: false
         }
     },
 
@@ -407,7 +407,7 @@ telescopes["OAJ"] = {
         "JPCam": {
             type: "optical",
             fov: 33.6,
-            flip: null
+            flip: false
         }
     },
 
@@ -454,27 +454,27 @@ telescopes["Subaru"] = {
         "HSC": {
             type: "optical",
             fov: 90,
-            flip: null
+            flip: false
         },
         "FOCAS": {
             type: "optical",
             fov: 6,
-            flip: null
+            flip: false
         },
         "HDS": {
             type: "optical",
             fov: 1,
-            flip: null
+            flip: false
         },
         "IRCS": {
             type: "infrared",
             fov: 1,
-            flip: null
+            flip: false
         },
         "PFS": {
             type: "optical",
             fov: 75,
-            flip: null
+            flip: false
         }
     },
 
@@ -560,22 +560,22 @@ telescopes["HJST"] = {
         "COUDE": {
             type: "optical",
             fov: 6,
-            flip: null
+            flip: false
         },
         "DIAFI": {
             type: "optical",
             fov: 8.8,
-            flip: null
+            flip: false
         },
         "GCMS": {
             type: "optical",
             fov: 20,
-            flip: null
+            flip: false
         },
         "VIRUS": {
             type: "optical",
             fov: 20, /* Uses a separate guide camera 540 arcsec North of the IFU */
-            flip: "x"
+            flip: true
         }
     },
 
@@ -628,7 +628,7 @@ telescopes["OST"] = {
         "CQUEAN": {
             type: "optical",
             fov: 4.7,
-            flip: null
+            flip: false
         }
     },
 
@@ -678,7 +678,7 @@ telescopes["HET"] = {
         "VIRUS": {
             type: "optical",
             fov: 16,
-            flip: null
+            flip: false
         }
     },
 
@@ -719,7 +719,7 @@ telescopes["CDK"] = {
         "CCD": {
             type: "optical",
             fov: 30,
-            flip: null
+            flip: false
         }
     },
 
@@ -770,7 +770,7 @@ telescopes["DSO"] = {
         "CCD": {
             type: "optical",
             fov: 30,
-            flip: null
+            flip: false
         }
     },
 
@@ -811,7 +811,7 @@ telescopes["CTJO"] = {
         "default": {
             type: "optical",
             fov: 30,
-            flip: null
+            flip: false
         }
     },
 
@@ -858,7 +858,7 @@ telescopes["VLT"] = {
         "default": {
             type: "optical",
             fov: 6.4,
-            flip: null
+            flip: false
         }
     },
 
