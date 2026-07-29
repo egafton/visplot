@@ -33,7 +33,6 @@ function Driver() {
         A.init.then(() => {
             this.objAladin = A.aladin("#details_map", config.aladinDefaultSettings);
             this.aladinInitialized = true;
-            console.log('initialized');
         });
 
         /* OB queue - related */

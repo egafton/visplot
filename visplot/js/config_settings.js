@@ -106,6 +106,7 @@ const config = {
         showReticle: true,
         showZoomControl: true,
         showFullscreenControl: false,
+        showProjectionControl: false,
         showLayersControl: false,
         reticleColor: "rgb(144, 238, 144)"
     },

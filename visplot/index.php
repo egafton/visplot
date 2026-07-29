@@ -230,7 +230,6 @@ $baseurl = get_scheme() . '://' . $_SERVER['HTTP_HOST'] . "/";
     MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
     </script>
     <script src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="stylesheet" href="<?php echo($baseurl);?>css/aladin.min.css?v=<?php echo($version);?>" type="text/css" />
     <link rel="stylesheet" href="<?php echo($baseurl);?>css/leaflet-openweathermap.css?v=<?php echo($version);?>" type="text/css" />
     <link rel="stylesheet" href="<?php echo($baseurl);?>css/simplescrollbars.css?v=<?php echo($version);?>" type="text/css" />
     <link rel="stylesheet" href="<?php echo($baseurl);?>css/visplot.css?v=<?php echo($version);?>" type="text/css" />
