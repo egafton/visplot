@@ -1708,6 +1708,15 @@ telescopes["GOTO South"] = {
     altitude: 1164,
     timezoneName: "Australia/Sydney"
 };
+telescopes["Pan-STARRS"] = {
+    site: "Haleakala Observatory",
+    name: "Panoramic Survey Telescope And Rapid Response System (Pan-STARRS) 2×1.8m",
+    location: "Hawaii, United States",
+    latitude: 20.707296,
+    longitude: -156.255923,
+    altitude: 3042,
+    timezoneName: "US/Hawaii"
+};
 telescopes["ATLAS-HKO"] = {
     site: "Haleakala Observatory",
     name: "ATLAS-HKO 0.5m",
