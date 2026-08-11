@@ -1,8 +1,8 @@
-[![Latest version](https://img.shields.io/github/v/tag/egafton/visplot?label=latest%20version)](https://github.com/egafton/visplot/releases/latest)
+[![Latest version](https://img.shields.io/github/v/tag/egafton/visplot?sort=semver&label=latest%20version)](https://github.com/egafton/visplot/tags)
 [![arXiv](https://img.shields.io/badge/arXiv-2604.14151-b31b1b.svg)](https://arxiv.org/abs/2604.14151)
 [![ASCL](https://img.shields.io/badge/ascl-2607.020-blue.svg?colorB=262255)](https://ascl.net/2607.020)
 [![Docs status](https://app.readthedocs.org/projects/visplot/badge/)](https://visplot.readthedocs.io/en/latest/index.html)
-[![License](https://img.shields.io/github/license/egafton/visplot)](https://github.com/egafton/visplot/blob/main/LICENSE)
+[![License](https://img.shields.io/github/license/egafton/visplot)](https://github.com/egafton/visplot/blob/master/LICENSE.md)
 
 # Visplot
 Visibility plot and observation scheduling tool for telescopes. It allows automatic, nearly-optimal scheduling of an entire observing night.
