@@ -1588,6 +1588,15 @@ telescopes["Rosemary Hill Observatory"] = {
     altitude: 23,
     timezoneName: "US/Eastern"
 };
+telescopes["ERAU"] = {
+    name: "Embry-Riddle Aeronautical University (ERAU) Observatory 1m",
+    location: "Florida, United States",
+    latitude: 29.188285,
+    longitude: -81.048327,
+    altitude: 25,
+    timezoneName: "US/Eastern",
+    lowestLimit: 20
+};
 telescopes["Perek Telescope"] = {
     site: "Ondřejov Observatory",
     name: "Perek Telescope 2m",

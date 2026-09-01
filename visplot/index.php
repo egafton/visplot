@@ -6,7 +6,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. See LICENSE.md.
  */
-$version = "5.5";
+$version = "5.6";
 /*
 * Version history (with brief changelog):
 *
@@ -165,6 +165,8 @@ $version = "5.5";
 *        visibility calculations, and scheduling).
 *      - Using standard Aladin Lite v3 instead of a customized version of v2,
 *        since now setRotation() and reverseLongitude() have been implemented.
+*
+* 5.6  - Added ERAU 1m telescope.
 */
 session_start();
 if (isset($_SESSION["obinfo"])) {
