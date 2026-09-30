@@ -332,6 +332,9 @@ telescopes["CAHA"] = {
     // Location (province, country)
     location: "Almería, Spain",
 
+    // MPC observatory code
+    mpc: "493",
+
     // Latitude in degrees, +North
     latitude: 37.223151,
 
@@ -764,6 +767,9 @@ telescopes["DSO"] = {
     // Location (state, country)
     location: "North Carolina, United States",
 
+    // MPC observatory code
+    mpc: "W38",
+
     // Latitude in degrees, +North
     latitude: 36.25292,
 
@@ -844,59 +850,13 @@ telescopes["CTJO"] = {
 };
 
 /**
- * Configuration for the 2.5m Nordic Optical Telescope.
- */
-telescopes["VLT"] = {
-    // Name of the observatory site
-    site: "Cerro Paranal",
-
-    // Full name of the telescope
-    name: "Very Large Telescope (VLT) 4×8.2m",
-
-    // Country
-    location: "Chile",
-
-    // Latitude in degrees, +North
-    latitude: -24.6275,
-
-    // Longitude in degrees, +East
-    longitude: -70.404167,
-
-    // Altitude above sea level, in metres
-    altitude: 2636,
-
-    // Lowest limit in elevation for observing, in degrees
-    lowestLimit: 20,
-
-    // Highest limit in elevation for observing, in degrees
-    highestLimit: 87,
-
-    // Background image for plot
-    background: "img/telescopes/VLT.jpg",
-
-    // Instrument definitions; fov in arcminutes
-    instruments: {
-        "default": {
-            type: "optical",
-            fov: 6.4,
-            flip: false
-        }
-    },
-
-    // When all else fails, what to use?
-    defaultInstrument: "default",
-
-    // Time zone as defined in momentjs
-    timezoneName: "America/Santiago"
-};
-
-/**
  * Configuration for other telescopes (no details).
  */
 telescopes["TNG"] = {
     site: "Roque de Los Muchachos",
     name: "Telescopio Nazionale Galileo (TNG) 3.6m",
     location: "La Palma, Spain",
+    mpc: "Z19",
     latitude: 28.75411,
     longitude: -17.88910,
     altitude: 2359,
@@ -906,6 +866,7 @@ telescopes["Mercator Telescope"] = {
     site: "Roque de Los Muchachos",
     name: "Mercator Telescope 1.2m",
     location: "La Palma, Spain",
+    mpc: "Z20",
     latitude: 28.76240,
     longitude: -17.87849,
     altitude: 2331,
@@ -915,6 +876,7 @@ telescopes["LT"] = {
     site: "Roque de Los Muchachos",
     name: "Liverpool Telescope (LT) 2m",
     location: "La Palma, Spain",
+    mpc: "J13",
     latitude: 28.76239,
     longitude: -17.87914,
     altitude: 2363,
@@ -933,6 +895,7 @@ telescopes["SARA-CT"] = {
     site: "Cerro Tololo",
     name: "SARA-CT 0.6m",
     location: "Chile",
+    mpc: "X27",
     latitude: -30.17212,
     longitude: -70.79921,
     altitude: 2012,
@@ -942,6 +905,7 @@ telescopes["SARA-KP"] = {
     site: "Kitt Peak",
     name: "SARA-KP 0.96m",
     location: "Arizona, United States",
+    mpc: "G82",
     latitude: 31.96064,
     longitude: -111.59961,
     altitude: 2073,
@@ -951,6 +915,7 @@ telescopes["GTC"] = {
     site: "Roque de Los Muchachos",
     name: "Gran Telescopio Canarias (GTC) 10.4m",
     location: "La Palma, Spain",
+    mpc: "Z18",
     latitude: 28.75666,
     longitude: -17.89200,
     altitude: 2267,
@@ -960,6 +925,7 @@ telescopes["LBT"] = {
     site: "Mt. Graham",
     name: "Large Binocular Telescope (LBT) 2×8.4m",
     location: "Arizona, United States",
+    mpc: "G83",
     latitude: 32.70144,
     longitude: -109.88933,
     altitude: 3221,
@@ -969,6 +935,7 @@ telescopes["VATT"] = {
     site: "Mt. Graham",
     name: "Vatican Advanced Technology Telescope (VATT) 72in",
     location: "Arizona, United States",
+    mpc: "290",
     latitude: 32.70126,
     longitude: -109.89207,
     altitude: 3178,
@@ -978,6 +945,7 @@ telescopes["MMT"] = {
     site: "Mt. Hopkins",
     name: "MMT Observatory 6.5m",
     location: "Arizona, United States",
+    mpc: "696",
     latitude: 31.68896,
     longitude: -110.88516,
     altitude: 2616,
@@ -987,19 +955,11 @@ telescopes["Hale Telescope"] = {
     site: "Palomar Observatory",
     name: "Hale Telescope 200in",
     location: "California, United States",
+    mpc: "675",
     latitude: 33.35629,
     longitude: -116.86490,
     altitude: 1713,
     timezoneName: "US/Pacific"
-};
-telescopes["Magellan Telescopes"] = {
-    site: "Las Campanas Observatory",
-    name: "Magellan Telescopes 2×6.5m",
-    location: "Chile",
-    latitude: -29.01421,
-    longitude: -70.69243,
-    altitude: 2392,
-    timezoneName: "America/Santiago"
 };
 telescopes["Du Pont Telescope"] = {
     site: "Las Campanas Observatory",
@@ -1037,19 +997,11 @@ telescopes["NTT"] = {
     altitude: 2375,
     timezoneName: "America/Santiago"
 };
-telescopes["W. M. Keck Observatory"] = {
-    site: "Mauna Kea",
-    name: "Keck Telescopes 2×10m",
-    location: "Hawaii, United States",
-    latitude: 19.82638,
-    longitude: -155.47441,
-    altitude: 4145,
-    timezoneName: "US/Hawaii"
-};
 telescopes["Gemini North"] = {
     site: "Mauna Kea",
     name: "Gemini North 8.1m",
     location: "Hawaii, United States",
+    mpc: "T15",
     latitude: 19.82376,
     longitude: -155.46909,
     altitude: 4213,
@@ -1059,6 +1011,7 @@ telescopes["CFHT"] = {
     site: "Mauna Kea",
     name: "Canada–France–Hawaii Telescope (CFHT) 3.58m",
     location: "Hawaii, United States",
+    mpc: "T14",
     latitude: 19.82523,
     longitude: -155.46892,
     altitude: 4204,
@@ -1068,6 +1021,7 @@ telescopes["UKIRT"] = {
     site: "Mauna Kea",
     name: "United Kingdom Infra-Red Telescope (UKIRT) 3.8m",
     location: "Hawaii, United States",
+    mpc: "T11",
     latitude: 19.82244,
     longitude: -155.47037,
     altitude: 4194,
@@ -1077,6 +1031,7 @@ telescopes["Gemini South"] = {
     site: "Cerro Pachón",
     name: "Gemini South 8.1m",
     location: "Chile",
+    mpc: "I11",
     latitude: -30.24068,
     longitude: -70.73654,
     altitude: 2722,
@@ -1192,6 +1147,7 @@ telescopes["Skinakas Observatory"] = {
 telescopes["Kryoneri Observatory"] = {
     name: "Kryoneri Observatory 1.3m",
     location: "Greece",
+    mpc: "L10",
     latitude: 37.97194,
     longitude: 22.61860,
     altitude: 930,
@@ -1200,6 +1156,7 @@ telescopes["Kryoneri Observatory"] = {
 telescopes["Tautenburg Observatory"] = {
     name: "Tautenburg Observatory 2m",
     location: "Thüringen, Germany",
+    mpc: "033",
     latitude: 50.98016,
     longitude: 11.71123,
     altitude: 341,
@@ -1235,6 +1192,7 @@ telescopes["SDSS"] = {
     site: "Apache Point Observatory",
     name: "SDSS 2.5m",
     location: "New Mexico, United States",
+    mpc: "645",
     latitude: 32.77959,
     longitude: -105.82037,
     altitude: 2788,
@@ -1277,10 +1235,69 @@ telescopes["OSN"] = {
     altitude: 2896,
     timezoneName: "Europe/Madrid"
 };
+telescopes["VLT UT1"] = {
+    site: "Cerro Paranal",
+    name: "Very Large Telescope (VLT) UT1 (Antu) 8.2m",
+    location: "Chile",
+    latitude: -24.62767,
+    longitude: -70.40505,
+    altitude: 2636,
+    lowestLimit: 20,
+    highestLimit: 87,
+    background: "img/telescopes/VLT.jpg",
+    timezoneName: "America/Santiago"
+};
+telescopes["VLT UT2"] = {
+    site: "Cerro Paranal",
+    name: "Very Large Telescope (VLT) UT2 (Kueyen) 8.2m",
+    location: "Chile",
+    latitude: -24.62716,
+    longitude: -70.40480,
+    altitude: 2636,
+    lowestLimit: 20,
+    highestLimit: 87,
+    background: "img/telescopes/VLT.jpg",
+    timezoneName: "America/Santiago"
+};
+telescopes["VLT UT3"] = {
+    site: "Cerro Paranal",
+    name: "Very Large Telescope (VLT) UT3 (Melipal) 8.2m",
+    location: "Chile",
+    latitude: -24.62687,
+    longitude: -70.40449,
+    altitude: 2636,
+    lowestLimit: 20,
+    highestLimit: 87,
+    background: "img/telescopes/VLT.jpg",
+    timezoneName: "America/Santiago"
+};
+telescopes["VLT UT4"] = {
+    site: "Cerro Paranal",
+    name: "Very Large Telescope (VLT) UT4 (Yepun) 8.2m",
+    location: "Chile",
+    latitude: -24.62706,
+    longitude: -70.40392,
+    altitude: 2636,
+    lowestLimit: 20,
+    highestLimit: 87,
+    background: "img/telescopes/VLT.jpg",
+    timezoneName: "America/Santiago"
+};
+telescopes["VST"] = {
+    site: "Cerro Paranal",
+    name: "VLT Survey Telescope (VST) 2.6m",
+    location: "Chile",
+    mpc: "X11",
+    latitude: -24.62636,
+    longitude: -70.40399,
+    altitude: 2635,
+    timezoneName: "America/Santiago"
+};
 telescopes["VISTA"] = {
     site: "Cerro Paranal",
     name: "VISTA 4.1m",
     location: "Chile",
+    mpc: "W91",
     latitude: -24.61590,
     longitude: -70.39749,
     altitude: 2518,
@@ -1289,6 +1306,7 @@ telescopes["VISTA"] = {
 telescopes["Wise Observatory"] = {
     name: "Wise Observatory 1m",
     location: "Israel",
+    mpc: "097",
     latitude: 30.59737,
     longitude: 34.76217,
     altitude: 875,
@@ -1298,6 +1316,7 @@ telescopes["TRAPPIST-North"] = {
     site: "Oukaïmeden Observatory",
     name: "TRAPPIST-North 0.6m",
     location: "Morocco",
+    mpc: "Z53",
     latitude: 31.20606,
     longitude: -7.86653,
     altitude: 2750,
@@ -1307,6 +1326,7 @@ telescopes["TRAPPIST-South"] = {
     site: "La Silla Observatory",
     name: "TRAPPIST-South 0.6m",
     location: "Chile",
+    mpc: "I40",
     latitude: -29.25455,
     longitude: -70.73940,
     altitude: 2313,
@@ -1333,6 +1353,7 @@ telescopes["AlbaNova"] = {
 telescopes["Brorfelde Observatory"] = {
     name: "Brorfelde Observatory 77cm",
     location: "Denmark",
+    mpc: "054",
     latitude: 55.62466,
     longitude: 11.66522,
     altitude: 60,
@@ -1342,6 +1363,7 @@ telescopes["MOA Telescope 1.8m"] = {
     site: "Mt. John Observatory",
     name: "MOA Telescope 1.8m",
     location: "New Zealand",
+    mpc: "474",
     latitude: -43.98520,
     longitude: 170.46408,
     altitude: 1029,
@@ -1366,6 +1388,7 @@ telescopes["Sertão de Itaparica Observatory"] = {
 telescopes["Pico dos Dias Observatory"] = {
     name: "Pico dos Dias Observatory 1.6m",
     location: "Brazil",
+    mpc: "874",
     latitude: -22.53494,
     longitude: -45.58312,
     altitude: 1864,
@@ -1398,6 +1421,7 @@ telescopes["Byurakan Observatory"] = {
 telescopes["Lulin Observatory"] = {
     name: "Lulin Observatory 1m",
     location: "Taiwan",
+    mpc: "D35",
     latitude: 23.46937,
     longitude: 120.87264,
     altitude: 2862,
@@ -1416,6 +1440,7 @@ telescopes["Lijiang Telescope"] = {
     site: "Yunnan Observatory",
     name: "Lijiang Telescope 2.4m",
     location: "China",
+    mpc: "O44",
     latitude: 26.69507,
     longitude: 100.02985,
     altitude: 2014,
@@ -1458,6 +1483,7 @@ telescopes["Pulkovo Observatory"] = {
 telescopes["Sharjah Astronomical Observatory"] = {
     name: "Sharjah Astronomical Observatory",
     location: "Dubai, United Arab Emirates",
+    mpc: "M47",
     latitude: 25.28257,
     longitude: 55.46202,
     altitude: 17,
@@ -1466,6 +1492,7 @@ telescopes["Sharjah Astronomical Observatory"] = {
 telescopes["Tien Shan Astronomical Observatory"] = {
     name: "Tien Shan Astronomical Observatory 1m",
     location: "Kazakhstan",
+    mpc: "N42",
     latitude: 43.05725,
     longitude: 76.97180,
     altitude: 2735,
@@ -1582,6 +1609,7 @@ telescopes["RTT150"] = {
     site: "TÜBİTAK National Observatory",
     name: "RTT150 1.5m",
     location: "Antalya, Turkey",
+    mpc: "A84",
     latitude: 36.82550,
     longitude: 30.33534,
     altitude: 2457,
@@ -1741,6 +1769,46 @@ telescopes["GOTO South"] = {
     longitude: 149.06417,
     altitude: 1164,
     timezoneName: "Australia/Sydney"
+};
+telescopes["Magellan 1"] = {
+    site: "Las Campanas Observatory",
+    name: "Magellan 1 Baade Telescope 6.5m",
+    location: "Chile",
+    mpc: "269",
+    latitude: -29.01445,
+    longitude: -70.69219,
+    altitude: 2392,
+    timezoneName: "America/Santiago"
+};
+telescopes["Magellan 2"] = {
+    site: "Las Campanas Observatory",
+    name: "Magellan 2 Clay Telescope 6.5m",
+    location: "Chile",
+    mpc: "268",
+    latitude: -29.01404,
+    longitude: -70.69263,
+    altitude: 2392,
+    timezoneName: "America/Santiago"
+};
+telescopes["Keck I"] = {
+    site: "Mauna Kea",
+    name: "Keck I Telescope 10m",
+    location: "Hawaii, United States",
+    mpc: "T16",
+    latitude: 19.82591,
+    longitude: -155.47479,
+    altitude: 4145,
+    timezoneName: "US/Hawaii"
+};
+telescopes["Keck II"] = {
+    site: "Mauna Kea",
+    name: "Keck II Telescope 10m",
+    location: "Hawaii, United States",
+    mpc: "T17",
+    latitude: 19.82649,
+    longitude: -155.47427,
+    altitude: 4145,
+    timezoneName: "US/Hawaii"
 };
 telescopes["Pan-STARRS 1"] = {
     site: "Haleakala Observatory",

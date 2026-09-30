@@ -6,7 +6,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. See LICENSE.md.
  */
-$version = "5.7";
+$version = "5.8";
 /*
 * Version history (with brief changelog):
 *
@@ -170,6 +170,8 @@ $version = "5.7";
 *
 * 5.7  - Added Crni Vrh Observatory.
 *      - Started adding MPC observatory codes.
+*
+* 5.8  - Added more MPC codes.
 */
 session_start();
 if (isset($_SESSION["obinfo"])) {
