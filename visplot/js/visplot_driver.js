@@ -319,7 +319,7 @@ Driver.prototype.SetupMap = function() {
                 {lng: telescope.longitude, lat: telescope.latitude},
                 {icon: this.bluePin, alt: key}
             ).bindTooltip(
-                telescope.name + (telescope.site ? `<br/>${telescope.site}, ` : "<br/>") + `${telescope.location}`
+                telescope.name + (telescope.site ? `<br/>${telescope.site}, ` : "<br/>") + `${telescope.location}` + (telescope.mpc ? `<br/>MPC code ${telescope.mpc}` : '')
             ).on("click", function() {
                 $("#def_telescope").val(key).trigger("change");
             });

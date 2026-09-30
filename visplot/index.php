@@ -6,7 +6,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. See LICENSE.md.
  */
-$version = "5.6";
+$version = "5.7";
 /*
 * Version history (with brief changelog):
 *
@@ -167,6 +167,9 @@ $version = "5.6";
 *        since now setRotation() and reverseLongitude() have been implemented.
 *
 * 5.6  - Added ERAU 1m telescope.
+*
+* 5.7  - Added Crni Vrh Observatory.
+*      - Started adding MPC observatory codes.
 */
 session_start();
 if (isset($_SESSION["obinfo"])) {

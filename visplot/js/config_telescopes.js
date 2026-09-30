@@ -26,6 +26,9 @@ telescopes["NOT"] = {
     // Location (island, country)
     location: "La Palma, Spain",
 
+    // MPC observatory code
+    mpc: "Z23",
+
     // Latitude in degrees, +North
     latitude: 28.75723,
 
@@ -244,6 +247,9 @@ telescopes["CSS 60in"] = {
     // Location (state, country)
     location: "Arizona, United States",
 
+    // MPC observatory code
+    mpc: "G96",
+
     // Latitude in degrees, +North
     latitude: 32.442754,
 
@@ -390,6 +396,9 @@ telescopes["OAJ"] = {
     // Location (province, country)
     location: "Teruel, Spain",
 
+    // MPC observatory code
+    mpc: "Z32",
+
     // Latitude in degrees, +North
     latitude: 40.042018,
 
@@ -430,6 +439,9 @@ telescopes["Subaru"] = {
 
     // Location (state, country)
     location: "Hawaii, United States",
+
+    // MPC observatory code
+    mpc: "T09",
 
     // Latitude in degrees, +North
     latitude: 19.8256,
@@ -497,6 +509,9 @@ telescopes["HJST"] = {
 
     // Location (state, country)
     location: "Texas, United States",
+
+    // MPC observatory code
+    mpc: "711",
 
     // Latitude in degrees, +North
     latitude: 30.671743,
@@ -599,6 +614,9 @@ telescopes["OST"] = {
     // Location (state, country)
     location: "Texas, United States",
 
+    // MPC observatory code
+    mpc: "711",
+
     // Latitude in degrees, +North
     latitude: 30.67150,
 
@@ -651,6 +669,9 @@ telescopes["HET"] = {
 
     // Location (state, country)
     location: "Texas, United States",
+
+    // MPC observatory code
+    mpc: "711",
 
     // Latitude in degrees, +North
     latitude: 30.681444,
@@ -1241,6 +1262,7 @@ telescopes["Bok Telescope"] = {
     site: "Kitt Peak",
     name: "Bok Telescope 90in",
     location: "Arizona, United States",
+    mpc: "V00",
     latitude: 31.963127,
     longitude: -111.60019,
     altitude: 2031,
@@ -1488,6 +1510,7 @@ telescopes["CSS 0.7m"] = {
     site: "Mt. Bigelow",
     name: "Catalina Sky Survey (CSS) 0.7m Schmidt",
     location: "Arizona, United States",
+    mpc: "703",
     latitude: 32.41675,
     longitude: -110.73253,
     altitude: 2516,
@@ -1497,6 +1520,7 @@ telescopes["CSS 40in"] = {
     site: "Mt. Lemmon",
     name: "Catalina Sky Survey (CSS) 40in Follow-up Telescope",
     location: "Arizona, United States",
+    mpc: "I52",
     latitude: 32.44257,
     longitude: -110.78889,
     altitude: 2789,
@@ -1506,6 +1530,7 @@ telescopes["Kuiper Telescope"] = {
     site: "Mt. Bigelow",
     name: "Kuiper Telescope 61in",
     location: "Arizona, United States",
+    mpc: "V06",
     latitude: 32.41691,
     longitude: -110.73262,
     altitude: 2520,
@@ -1717,19 +1742,31 @@ telescopes["GOTO South"] = {
     altitude: 1164,
     timezoneName: "Australia/Sydney"
 };
-telescopes["Pan-STARRS"] = {
+telescopes["Pan-STARRS 1"] = {
     site: "Haleakala Observatory",
-    name: "Panoramic Survey Telescope And Rapid Response System (Pan-STARRS) 2×1.8m",
+    name: "Panoramic Survey Telescope And Rapid Response System (Pan-STARRS 1) 1.8m",
     location: "Hawaii, United States",
-    latitude: 20.707296,
-    longitude: -156.255923,
-    altitude: 3042,
+    mpc: "F51",
+    latitude: 20.707205,
+    longitude: -156.25596,
+    altitude: 3048,
+    timezoneName: "US/Hawaii"
+};
+telescopes["Pan-STARRS 2"] = {
+    site: "Haleakala Observatory",
+    name: "Panoramic Survey Telescope And Rapid Response System (Pan-STARRS 2) 1.8m",
+    location: "Hawaii, United States",
+    mpc: "F52",
+    latitude: 20.707384,
+    longitude: -156.25596,
+    altitude: 3052,
     timezoneName: "US/Hawaii"
 };
 telescopes["ATLAS-HKO"] = {
     site: "Haleakala Observatory",
     name: "ATLAS-HKO 0.5m",
     location: "Hawaii, United States",
+    mpc: "T05",
     latitude: 20.70757,
     longitude: -156.25706,
     altitude: 3041,
@@ -1739,6 +1776,7 @@ telescopes["ATLAS-MLO"] = {
     site: "Mauna Loa",
     name: "ATLAS-MLO 0.5m",
     location: "Hawaii, United States",
+    mpc: "T08",
     latitude: 19.53615,
     longitude: -155.57609,
     altitude: 3429,
@@ -1748,6 +1786,7 @@ telescopes["ATLAS-STH"] = {
     site: "South African Astronomical Observatory",
     name: "ATLAS-STH 0.5m",
     location: "Sutherland, South Africa",
+    mpc: "M22",
     latitude: -32.38048,
     longitude: 20.81035,
     altitude: 1764,
@@ -1757,6 +1796,7 @@ telescopes["ATLAS-CHL"] = {
     site: "El Sauce Observatory",
     name: "ATLAS-CHL 0.5m",
     location: "Rio Hurtado Valley, Chile",
+    mpc: "W68",
     latitude: -30.47059,
     longitude: -70.76498,
     altitude: 1609,
@@ -1766,6 +1806,7 @@ telescopes["ATLAS-TDO"] = {
     site: "Teide Observatory",
     name: "ATLAS-TDO",
     location: "Tenerife, Spain",
+    mpc: "R17",
     latitude: 28.29874,
     longitude: -16.5103,
     altitude: 2415,
@@ -1775,6 +1816,7 @@ telescopes["LCO #01"] = {
     site: "Haleakala Observatory",
     name: "Faulkes Telescope North (FTN) 2m, Las Cumbres Observatory (LCO #01)",
     location: "Hawaii, United States",
+    mpc: "F65",
     latitude: 20.70701,
     longitude: -156.25751,
     altitude: 3055,
@@ -1784,6 +1826,7 @@ telescopes["LCO #02"] = {
     site: "Siding Spring Observatory",
     name: "Faulkes Telescope South (FTS) 2m, Las Cumbre Observatory (LCO #02)",
     location: "New South Wales, Australia",
+    mpc: "E10",
     latitude: -31.27284,
     longitude: 149.07079,
     altitude: 1146,
@@ -1854,6 +1897,7 @@ telescopes["Cichocki 60cm"] = {
     site: "Črni Vrh Observatory",
     name: "Cichocki Sky Survey Telescope 60cm",
     location: "Idrijo, Slovenia",
+    mpc: "106",
     latitude: 45.945855,
     longitude: 14.071267,
     altitude: 726,

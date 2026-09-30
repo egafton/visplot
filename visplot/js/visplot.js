@@ -45,7 +45,8 @@ $(document).ready(function () {
         Object.entries(telescopes)
             .sort(([, a], [, b]) => a.name.localeCompare(b.name))
             .forEach(([key, value]) => {
-                $("#def_telescope").append(new Option(`${value.name}${value.site ? ', ' + value.site : ''} (${value.location})`, key));
+                $("#def_telescope").append(new Option(
+                    `${value.name}${value.site ? ', ' + value.site : ''} (${value.mpc ? value.mpc + '; ' : ''}${value.location})`, key));
             });
         $("#num_telescopes").html(Object.keys(telescopes).length);
 
