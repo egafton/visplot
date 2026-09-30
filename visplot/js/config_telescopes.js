@@ -1850,3 +1850,12 @@ telescopes["ZimTWIN"] = {
     altitude: 950,
     timezoneName: "Europe/Zurich"
 };
+telescopes["Cichocki 60cm"] = {
+    site: "Črni Vrh Observatory",
+    name: "Cichocki Sky Survey Telescope 60cm",
+    location: "Idrijo, Slovenia",
+    latitude: 45.945855,
+    longitude: 14.071267,
+    altitude: 726,
+    timezoneName: "Europe/Ljubljana"
+};
