@@ -1,4 +1,4 @@
-FROM php:8.1-apache
+FROM php:8.4-apache
 RUN a2enmod rewrite
 RUN a2enmod expires
 RUN a2enmod headers
