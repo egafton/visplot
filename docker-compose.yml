@@ -1,4 +1,3 @@
-version: '3'
 services:
   visplot:
     container_name: visplot
