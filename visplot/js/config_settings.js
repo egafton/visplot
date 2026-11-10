@@ -115,7 +115,7 @@ const config = {
     simbadCoordsRegex: String.raw`Coordinates\(ICRS.*?\):\s+(\d+)\s+(\d+)\s+([\d\.]+)\s+([+\-\d]+)\s+(\d+)\s+([\d\.]+)`,
     simbadPMRegex: String.raw`Proper motions:\s+([+\-\d\.]+)\s+([+\-\d\.]+)`,
     simbadURL: function(identifier) {
-        return `https://simbad.cds.unistra.fr/simbad/sim-id?output.format=ASCII&Ident=${encodeURIComponent(identifier)}`;
+        return `https://simbad.cfa.harvard.edu/simbad/sim-id?output.format=ASCII&Ident=${encodeURIComponent(identifier)}`;
     },
     simbadTimeout: 3000, // ms
     horizonsURL: function(params) {
